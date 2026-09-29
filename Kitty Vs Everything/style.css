@@ -1,0 +1,645 @@
+/* Filename: style.css */
+/* Kitty Vs Everything — v3.12.0 */
+/* v3.1.0: Replaced .touch-btn.elem with .touch-btn.weapon. Added thermal indicator styles. */
+/* v3.7.0: NAPALM indicator + NAPALM touch button; touch buttons now a 2×3 grid. */
+
+:root {
+  --bg: #0a0e1a;
+  --panel: #111827;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --accent: #ffd54f;
+  --hp: #ff5252;
+  --shield: #00e5ff;
+  --good: #4caf50;
+  --bad: #ff5252;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* v3.12.0: ViewScaler.js applies `transform: scale(s)` to fit this fixed
+   1280×720 stage to any window/display — uniform scale, letterboxed by the
+   flex-centered body, never distorted (ultrawide/portrait safe).
+   max-width/max-height removed: they squashed (distorted) the stage. */
+#game-root {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  transform-origin: center center;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--bg);
+}
+
+/* ─── HUD ─── */
+#hud {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.hud-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+.hud-section { display: flex; flex-direction: column; gap: 3px; }
+.hud-left { min-width: 180px; }
+.hud-center { text-align: center; }
+.hud-right { text-align: right; min-width: 200px; }
+.hud-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.hud-label { width: 28px; font-weight: bold; }
+.bar { width: 100px; height: 10px; background: #1a1a2e; border: 1px solid #333; border-radius: 2px; overflow: hidden; }
+.fill { height: 100%; transition: width 0.15s; }
+.fill.hp { background: linear-gradient(90deg, #ff5252, #ff8a80); }
+.fill.shield { background: linear-gradient(90deg, #00b8d4, #00e5ff); }
+
+/* ─── FLEET — docked mini-ship HP (v3.10.0) ─── */
+.fleet-row { gap: 10px; }
+.fleet-mini { display: flex; align-items: center; gap: 3px; }
+.fleet-tag { font-size: 10px; font-weight: bold; color: #b0bec5; }
+.fleet-bar { width: 64px; height: 8px; background: #1a1a2e; border: 1px solid #333; border-radius: 2px; overflow: hidden; }
+.fleet-fill { display: block; height: 100%; transition: width 0.15s; }
+.fleet-fill.ok   { background: linear-gradient(90deg, #69f0ae, #b9f6ca); }
+.fleet-fill.warn { background: linear-gradient(90deg, #ffd740, #ffe57f); }
+.fleet-fill.crit { background: linear-gradient(90deg, #ff5252, #ff8a80); }
+.fleet-num { font-size: 10px; color: #cfd8dc; min-width: 18px; text-align: right; }
+.fleet-mini.fleet-hit .fleet-bar { border-color: #ffffff; box-shadow: 0 0 6px rgba(255,255,255,0.8); }
+.fleet-mini.fleet-hit .fleet-tag { color: #ffffff; }
+#hp-text, #shield-text { min-width: 24px; text-align: right; }
+#lives { font-size: 14px; color: #ff8a80; }
+#wave-label { font-size: 16px; font-weight: bold; color: var(--accent); }
+#mission-timer { font-size: 12px; opacity: 0.7; }
+#score { font-size: 14px; font-weight: bold; }
+#multiplier { font-size: 12px; color: #ffd54f; }
+#weapon-label { font-size: 11px; color: #ff9d3b; font-weight: bold; }
+/* v3.21.0: stun/napalm/nova indicator styles removed — the duplicate top-right
+   tags are gone; the fire-control panel slots are the single source of truth. */
+#aimbot-label { font-size: 11px; color: #ff5252; font-weight: bold; }
+#version-label { font-size: 10px; opacity: 0.4; }
+/* v3.22.0: pause button lives in the fire-control console header (under TIME) */
+#pause-btn {
+  pointer-events: auto;
+  width: 100%; /* matches the TIME box width (console-right-stack) */
+  background: none; border: 1px solid #444; color: #aaa;
+  font-size: 12px; padding: 1px 8px; cursor: pointer; border-radius: 3px;
+}
+#pause-btn:hover { border-color: #888; color: #fff; }
+
+/* ─── THERMAL INDICATOR (Vulkan) ─── */
+#thermal-indicator { font-size: 10px; margin-left: 4px; }
+#thermal-indicator.thermal-ok { color: #ff9800; }
+#thermal-indicator.thermal-warn { color: #ff5722; }
+#thermal-indicator.thermal-lockout { color: #ff1744; animation: blink 0.3s infinite; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ─── ALERT BANNER ─── */
+#alert-banner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  pointer-events: none;
+  z-index: 20;
+  text-shadow: 0 0 20px currentColor;
+}
+#alert-banner.good { color: #4caf50; }
+#alert-banner.bad { color: #ff5252; }
+
+/* ─── PAUSE OVERLAY ─── */
+#pause-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+.pause-content { text-align: center; }
+.pause-content h2 { font-size: 36px; margin-bottom: 12px; }
+.pause-content kbd { background: #333; padding: 2px 6px; border-radius: 3px; }
+
+/* ─── MENU SCREEN ─── */
+#menu-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0e1a 70%);
+  z-index: 40;
+}
+#menu-screen h1 {
+  font-size: 52px;
+  text-align: center;
+  color: var(--accent);
+  text-shadow: 0 0 30px rgba(255,213,79,0.4);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.tagline { color: #888; margin-bottom: 24px; font-size: 14px; }
+.menu-ship-select { display: flex; gap: 12px; margin-bottom: 20px; }
+.ship-option {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 12px; border: 2px solid #333; border-radius: 6px;
+  cursor: pointer; font-size: 11px; transition: all 0.2s;
+}
+.ship-option:hover { border-color: #666; }
+.ship-option.selected { border-color: var(--accent); background: rgba(255,213,79,0.1); }
+.ship-icon { width: 56px; height: 56px; display: block; }
+#start-btn {
+  font-size: 18px; padding: 12px 36px; margin-bottom: 20px;
+  background: var(--accent); color: #000; border: none; border-radius: 4px;
+  cursor: pointer; font-weight: bold; font-family: inherit;
+}
+#start-btn:hover { background: #ffe082; transform: scale(1.05); }
+.menu-scores, .go-scores { margin-bottom: 16px; text-align: center; }
+.menu-scores h3, .go-scores h3 { font-size: 12px; color: #888; margin-bottom: 6px; }
+#menu-scores-list, #go-scores-list { font-size: 12px; color: #aaa; }
+
+.controls-help { font-size: 11px; color: #666; text-align: center; line-height: 1.8; }
+.controls-help kbd { background: #222; padding: 1px 5px; border-radius: 2px; border: 1px solid #444; }
+
+/* ─── GAME OVER ─── */
+#gameover-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10,14,26,0.95);
+  z-index: 40;
+}
+#gameover-screen h2 { font-size: 40px; color: var(--bad); margin-bottom: 12px; }
+#final-score { font-size: 20px; margin-bottom: 16px; }
+.go-input { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.go-input label { font-size: 12px; }
+.go-input input {
+  width: 60px; font-size: 18px; text-align: center;
+  background: #1a1a2e; border: 1px solid #444; color: var(--accent);
+  padding: 4px; font-family: inherit; text-transform: uppercase;
+}
+.go-input button {
+  padding: 6px 16px; background: #333; color: #fff; border: none;
+  cursor: pointer; font-family: inherit;
+}
+#retry-btn {
+  font-size: 16px; padding: 10px 30px;
+  background: var(--accent); color: #000; border: none; border-radius: 4px;
+  cursor: pointer; font-weight: bold; font-family: inherit;
+}
+#retry-btn:hover { background: #ffe082; }
+
+/* ─── DEV PANEL (v3.34.0: redesigned — scrollable + resolution-adaptive) ───
+   The panel lives inside #game-root (the logical stage ViewScaler.js scales
+   to fill ANY window). The header and footer are pinned; .dev-body scrolls,
+   so every control stays reachable at ANY stage height — 720px on 16:9 up
+   to portrait/ultra-wide. max-height is stage-relative (% of #game-root),
+   never viewport units: the stage is what fills the window, and the whole
+   panel scales with it (uniform CSS scale), so it fits identically on a
+   1366×768 laptop, 1080p, 4K or 32:9. */
+#dev-panel {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 300px;
+  max-height: calc(100% - 20px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(17,24,39,0.96);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.55);
+  z-index: 50;
+  font-size: 12px;
+  overflow: hidden;
+}
+.dev-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; border-bottom: 1px solid #334155;
+  font-weight: bold; letter-spacing: 1px;
+  background: rgba(255,213,79,0.07);
+  flex: none;
+}
+#dev-version { color: var(--accent); font-weight: normal; }
+#dev-close {
+  background: none; border: none; color: #ff5252; cursor: pointer;
+  font-size: 14px; padding: 0 2px; line-height: 1;
+}
+#dev-close:hover { color: #ff8a80; }
+.dev-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #0f1524;
+}
+.dev-body::-webkit-scrollbar { width: 8px; }
+.dev-body::-webkit-scrollbar-track { background: #0f1524; }
+.dev-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.dev-body::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.dev-section { padding: 8px 10px; border-bottom: 1px solid #1e293b; }
+.dev-section:last-child { border-bottom: none; }
+.dev-section label {
+  display: block; font-size: 10px; color: var(--accent);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+}
+.dev-section select {
+  width: 100%; padding: 4px; background: #1a1a2e; color: #fff;
+  border: 1px solid #444; margin-bottom: 4px; font-family: inherit; font-size: 11px;
+}
+.dev-select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dev-section button {
+  padding: 5px 8px; background: #232a3d; color: #ddd;
+  border: 1px solid #3b4560; border-radius: 4px;
+  cursor: pointer; font-family: inherit; font-size: 11px; text-align: center;
+}
+.dev-section button:hover { background: #313b56; border-color: #55628a; }
+.dev-section button.active {
+  background: var(--good); border-color: var(--good); color: #000; font-weight: bold;
+}
+.dev-btn-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.dev-grid button { width: 100%; }
+.dev-full { width: 100%; }
+.dev-mt { margin-top: 5px; }
+.dev-primary {
+  background: rgba(255,213,79,0.12); border-color: var(--accent);
+  color: var(--accent); font-weight: bold;
+}
+.dev-primary:hover { background: rgba(255,213,79,0.22); border-color: var(--accent); }
+.dev-value { color: #ffd54f; font-weight: bold; }
+.dev-hint {
+  display: block; font-size: 10px; color: #888;
+  text-transform: none; margin-top: 4px;
+}
+.dev-slider-row { display: flex; align-items: center; gap: 8px; }
+.dev-slider-row input[type="range"] { flex: 1; width: auto; margin: 0; }
+.dev-slider-val {
+  min-width: 46px; text-align: center; font-size: 11px; font-weight: bold;
+  color: var(--accent); background: #1a1a2e;
+  border: 1px solid #444; border-radius: 4px; padding: 2px 4px;
+}
+.dev-section input[type="range"] {
+  width: 100%; margin: 6px 0 4px; accent-color: #ffd54f; cursor: pointer;
+}
+.dev-footer {
+  flex: none;
+  padding: 5px 10px;
+  border-top: 1px solid #334155;
+  background: rgba(255,213,79,0.05);
+  font-size: 10px; color: #8fa0bd;
+  line-height: 1.5; word-break: break-word;
+}
+
+/* ─── TOUCH UI ─── */
+#touch-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+#joy-base {
+  position: absolute;
+  bottom: 30px; left: 30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.15);
+  pointer-events: auto;
+  display: flex; align-items: center; justify-content: center;
+}
+#joy-knob {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: transform 0.05s;
+}
+#touch-buttons {
+  position: absolute;
+  bottom: 30px; right: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, 60px);
+  gap: 10px;
+  pointer-events: auto;
+}
+.touch-btn {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.touch-btn:active { background: rgba(255,255,255,0.2); }
+.touch-btn.fire { border-color: #ff9d3b; }
+.touch-btn.boost { border-color: #69f0ae; }
+.touch-btn.stun { border-color: #80d8ff; }
+.touch-btn.napalm { border-color: #ff6d00; }
+.touch-btn.nova { border-color: #ffd54f; }
+.touch-btn.weapon { border-color: #b388ff; }
+
+/* ─── UTILITIES ─── */
+.hidden { display: none !important; }
+
+/* ─── v3.14.0: SETTINGS SCREEN ─── */
+#settings-screen {
+  position: absolute; inset: 0; z-index: 50;
+  background: rgba(4, 6, 14, 0.88);
+  display: flex; align-items: center; justify-content: center;
+}
+/* v3.29.0: stage-relative sizing — this panel lives inside #game-root, a
+   fixed 1280×720 CSS stage that ViewScaler.js scales to fill the window.
+   The old 92vw/88vh were BROWSER viewport units: on 1080p/4K displays the
+   panel was allowed to grow past the 720px-tall stage, and #settings-screen's
+   flex centering then pushed the overflowed top edge above the window, so the
+   menu rendered off-screen. % of the stage (which exactly fills the window)
+   is the correct unit; margin:auto keeps an oversized item pinned to the top
+   so its header always stays visible. */
+.settings-content {
+  width: min(860px, 92%); max-height: 88%; overflow-y: auto;
+  margin: auto;
+  background: #0d1120; border: 1px solid #2c3a5c; border-radius: 8px;
+  padding: 16px 20px; box-shadow: 0 0 40px rgba(64, 120, 255, 0.25);
+}
+.settings-header {
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #22304e; padding-bottom: 10px; margin-bottom: 12px;
+}
+.settings-header h2 { margin: 0; font-size: 22px; letter-spacing: 2px; }
+#settings-close {
+  background: none; border: none; color: #ff5252; font-size: 18px; cursor: pointer;
+}
+.settings-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+.settings-section h3 {
+  margin: 10px 0 6px; font-size: 12px; letter-spacing: 2px; color: #7fb2ff;
+  border-bottom: 1px solid #1c2740; padding-bottom: 4px;
+}
+.settings-section h3:first-child { margin-top: 0; }
+.settings-section label { display: block; font-size: 11px; color: #aab4cc; margin: 8px 0 3px; }
+.settings-section input[type="range"] { width: 100%; accent-color: #7fb2ff; cursor: pointer; }
+.settings-val { color: #ffd54f; font-weight: bold; float: right; }
+.settings-toggle { display: flex !important; align-items: center; gap: 8px; margin-top: 12px; }
+.settings-toggle input { width: 16px; height: 16px; accent-color: #7fb2ff; }
+.settings-hint { font-size: 10px; color: #667; margin-top: 8px; }
+.settings-footer {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;
+  border-top: 1px solid #22304e; padding-top: 12px;
+}
+.settings-footer button, #menu-settings-btn {
+  background: #16203a; color: #cfe0ff; border: 1px solid #33456e;
+  padding: 8px 18px; cursor: pointer; font-family: inherit; font-size: 13px;
+  letter-spacing: 1px; border-radius: 4px;
+}
+.settings-footer button:hover, #menu-settings-btn:hover { background: #22305a; }
+#settings-done { background: #1d4632; border-color: #2f7a52; color: #b8f0c8; }
+#settings-done:hover { background: #266043; }
+.menu-settings-btn { margin-top: 10px; width: 240px; }
+
+/* v3.14.0: keybind chips */
+.kb-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 3px 0; border-bottom: 1px dotted #1a2440;
+}
+.kb-label { width: 130px; font-size: 11px; color: #c6d2ec; }
+.kb-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.kb-chip {
+  min-width: 44px; padding: 3px 8px; font-family: inherit; font-size: 11px;
+  background: #182444; color: #ffd54f; border: 1px solid #33456e;
+  border-radius: 3px; cursor: pointer;
+}
+.kb-chip:hover { background: #22325e; }
+.kb-chip.capturing {
+  background: #4a2d00; color: #ffb300; border-color: #ff9800;
+  animation: kb-pulse 0.8s infinite alternate;
+}
+.kb-chip.kb-empty { color: #667; border-style: dashed; }
+@keyframes kb-pulse { from { opacity: 0.7; } to { opacity: 1; } }
+
+/* ─── v3.14.0: PAUSE MENU BUTTONS ─── */
+.pause-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; width: 240px; }
+.pause-btns button {
+  background: #16203a; color: #cfe0ff; border: 1px solid #33456e;
+  padding: 10px 16px; font-family: inherit; font-size: 14px;
+  letter-spacing: 1px; cursor: pointer; border-radius: 4px;
+}
+.pause-btns button:hover { background: #22305a; }
+#pause-resume { background: #1d4632; border-color: #2f7a52; color: #b8f0c8; }
+#pause-resume:hover { background: #266043; }
+
+/* ─── v3.14.0: COMBAT CONSOLE (v3.19.0: lives inside #fc-dashboard left column) ─── */
+#combat-console {
+  width: 320px; max-height: 180px; overflow: hidden;
+  background: rgba(5, 10, 20, 0.72); border: 1px solid #1e3a5f;
+  border-radius: 4px; padding: 6px 8px; pointer-events: none;
+  font-size: 11px; line-height: 1.5;
+  justify-self: start; align-self: center;
+}
+.console-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 9px; letter-spacing: 2px; color: #4f7fbf; margin-bottom: 4px;
+}
+/* v3.19.0: TIME tucked into the console header's top-right corner */
+.console-title { display: inline-flex; align-items: center; gap: 6px; }
+.console-time { display: inline-flex; align-items: center; gap: 6px; }
+/* v3.22.0: right-side stack in the console header — TIME on top, pause button
+   below it; stretch makes the button exactly as wide as the TIME box. */
+.console-right-stack { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
+.cl-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-time { color: #556; margin-right: 6px; font-size: 10px; }
+.cl-info { color: #9fb4d8; }
+.cl-good { color: #7ee2a8; }
+.cl-warn { color: #ffd54f; }
+.cl-bad { color: #ff7a6b; }
+
+/* ─── v3.14.0: FIRE-CONTROL DASHBOARD (v3.19.0: console left / center health / weapons+SPD right) ─── */
+#fc-dashboard {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  z-index: 20; width: min(900px, 94vw);
+  background: rgba(5, 10, 20, 0.78); border: 1px solid #1e3a5f;
+  border-radius: 6px; padding: 8px 14px;
+  display: grid; grid-template-columns: auto auto 1fr;
+  align-items: center; gap: 18px; pointer-events: none;
+  font-size: 11px;
+}
+/* v3.19.0: three columns — left console / center health stack / right weapons+SPD */
+.fc-col { display: flex; flex-direction: column; gap: 6px; }
+.fc-center { justify-self: center; align-items: flex-start; }
+/* v3.19.0: right column is a row — weapon panel + SPD readout (far right) */
+.fc-right { flex-direction: row; align-items: center; justify-content: space-between; gap: 14px; }
+.fc-weapon-panel { display: flex; flex-direction: column; gap: 6px; }
+.fc-block { display: flex; flex-direction: column; gap: 3px; }
+.fc-block-title { font-size: 9px; letter-spacing: 2px; color: #4f7fbf; }
+.fc-meter { width: 120px; height: 8px; background: #0a1220; border: 1px solid #22304e; border-radius: 2px; overflow: hidden; }
+.fc-meter-fill { height: 100%; width: 100%; background: #4caf50; transition: width 0.1s linear; }
+.fc-meter-fill.shield { background: #4fc3f7; }
+.fc-meter-fill.crit { background: #e53935; }
+.fc-readout { color: #cfe0ff; font-size: 12px; }
+#fc-speed { color: #ffd54f; }
+#weapon-label { color: #fff; font-weight: bold; letter-spacing: 1px; }
+.fc-weapon-status { font-size: 10px; letter-spacing: 1px; }
+.fc-weapon-status.ready { color: #7ee2a8; }
+.fc-weapon-status.hot { color: #ffd54f; }
+.fc-weapon-status.locked { color: #ff7a6b; }
+.thermal-ok { color: #7ee2a8; }
+.thermal-warn { color: #ffd54f; }
+.thermal-lockout { color: #ff7a6b; font-weight: bold; }
+/* v3.33.0: FRENZY indicator — 30s all-cooldowns-off power-up (gold pulse) */
+.frenzy-indicator {
+  color: #ffd600; font-weight: bold; letter-spacing: 1px;
+  animation: frenzy-pulse 0.5s ease-in-out infinite alternate;
+}
+@keyframes frenzy-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+.fc-slots { display: flex; gap: 10px; } /* v3.18.0: right column — margin-left:auto no longer needed */
+.fc-slot {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 74px; padding: 4px 6px;
+  background: #0a1220; border: 1px solid #22304e; border-radius: 4px;
+}
+.fc-slot-key { font-size: 10px; color: #ffd54f; font-weight: bold; }
+.fc-slot-state { font-size: 9px; letter-spacing: 1px; color: #7ee2a8; }
+.fc-slot.cooldown .fc-slot-state { color: #8a93a8; }
+.fc-slot-bar { width: 100%; height: 4px; background: #101a2e; border-radius: 2px; overflow: hidden; }
+.fc-slot-fill { display: block; height: 100%; width: 100%; background: #4f7fbf; }
+
+/* v3.20.0: P2 HUD (co-op / LAN) + net status + LAN settings panel */
+#p2-hud {
+  position: absolute;
+  top: 44px; left: 12px;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  border-left: 2px solid #ff69b4;
+  pointer-events: none;
+}
+.p2-hud-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.p2-callsign { color: #ff69b4; font-weight: bold; letter-spacing: 1px; }
+#p2-lives { color: #ff8a80; }
+#p2-score { color: #ffd54f; font-weight: bold; }
+.p2-hud-bars { gap: 6px; }
+.p2-hud-bars .fc-meter { width: 90px; }
+
+/* Net status indicator (LAN) */
+#net-hud {
+  position: absolute;
+  top: 44px; right: 12px;
+  padding: 3px 10px;
+  font-size: 11px; letter-spacing: 1px; font-weight: bold;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.net-hud-connected { background: rgba(76,175,80,0.2); color: #7ee2a8; border: 1px solid #4caf50; }
+.net-hud-connecting { background: rgba(255,213,79,0.2); color: #ffd54f; border: 1px solid #ffd54f; }
+.net-hud-disconnected, .net-hud-error { background: rgba(229,57,53,0.2); color: #ff8a80; border: 1px solid #e53935; }
+
+/* LAN settings panel (inside the settings screen) */
+#net-settings { display: flex; flex-direction: column; gap: 4px; }
+#net-settings label { display: block; font-size: 11px; color: #aab4cc; margin: 8px 0 3px; }
+#net-settings select, #net-settings input[type="text"], #net-settings input[type="number"] {
+  width: 100%; padding: 5px 8px; background: #0a1220; color: #cfe0ff;
+  border: 1px solid #22304e; border-radius: 3px; font-size: 12px;
+}
+#net-settings input[type="range"] { width: 100%; accent-color: #7fb2ff; cursor: pointer; }
+#net-settings .settings-val { color: #ffd54f; font-weight: bold; float: right; }
+#net-settings .net-actions { display: flex; gap: 8px; margin-top: 12px; }
+#net-settings .net-actions button, #net-settings .net-export button {
+  flex: 1; padding: 8px 6px; background: #16233f; color: #cfe0ff;
+  border: 1px solid #2f4a7a; border-radius: 4px; font-size: 11px;
+  letter-spacing: 1px; cursor: pointer; font-weight: bold;
+}
+#net-settings .net-actions button:hover, #net-settings .net-export button:hover { background: #1f3157; }
+#net-settings .net-status { margin-top: 10px; font-size: 11px; color: #7ee2a8; letter-spacing: 1px; }
+#net-settings .net-export { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+#net-settings .settings-hint { font-size: 10px; color: #667; margin-top: 8px; }
+#net-settings .settings-hint code { color: #ffd54f; }
+.fc-slot.ready .fc-slot-fill { background: #4caf50; }
+.fc-fleet { display: flex; flex-direction: row; align-items: center; gap: 6px; } /* v3.18.0: horizontal status row under the mini HP bars */
+#fc-fleet-count { color: #cfe0ff; font-size: 12px; }
+/* v3.16.0: fleet deploy status (DOCKED = inert, DEPLOYED = combat orbit) */
+.fc-fleet-deploy { font-size: 10px; font-weight: bold; letter-spacing: 1px; padding: 1px 6px; border-radius: 3px; border: 1px solid; }
+.fc-fleet-deploy.docked { color: #8a93a8; border-color: #3a4256; background: rgba(30, 36, 52, 0.6); }
+.fc-fleet-deploy.deployed { color: #69f0ae; border-color: #2e7d52; background: rgba(20, 60, 40, 0.5); box-shadow: 0 0 6px rgba(105, 240, 174, 0.35); }
+/* v3.19.0: mini HP side-by-side (was a vertical stack) under the shield bar */
+.fleet-stack { display: flex; flex-direction: row; gap: 8px; align-items: center; }
+.fleet-mini { display: inline-flex; align-items: center; gap: 4px; }
+.fleet-tag { font-size: 9px; color: #8a93a8; }
+/* v3.19.0: mini HP bars narrowed for the side-by-side layout */
+.fleet-bar {
+  width: 44px; height: 5px; background: #0a1220;
+  border: 1px solid #22304e; border-radius: 2px; overflow: hidden;
+}
+.fleet-fill { display: block; height: 100%; width: 100%; }
+.fleet-fill.ok { background: #4caf50; }
+.fleet-fill.warn { background: #ffb300; }
+.fleet-fill.crit { background: #e53935; }
+.fleet-num { font-size: 10px; color: #cfe0ff; }
+.fleet-mini.fleet-hit { outline: 1px solid #fff; }
+
+/* ─── v3.21.0: MINIMIZED FIRE-CONTROL BAR (M key toggle) ───
+   .minimized hides the three full columns and shows #fc-mini-bar — a clean
+   single strip with just HULL + SHIELD at the bottom of the screen. */
+#fc-mini-bar { display: none; }
+#fc-dashboard.minimized { width: auto; padding: 6px 14px; }
+#fc-dashboard.minimized .fc-col,
+#fc-dashboard.minimized #combat-console { display: none; }
+#fc-dashboard.minimized #fc-mini-bar { display: flex; align-items: center; gap: 10px; }
+.fc-mini-meter { width: 140px; }
+.fc-mini-hint { font-size: 9px; letter-spacing: 1px; color: #4f7fbf; margin-left: 8px; }
+
+/* ─── v3.23.0: DYNAMIC KEYBIND FOOTER (MenuKeybinds.js) ───
+   #menu-keybinds replaces the old hardcoded .controls-help lines:
+   11 rows in a 2-column grid (the WSAD row spans both, centered),
+   showing the player's active binds — the standard default set while
+   unmodified, the real keys the moment they're rebound in Settings. */
+#menu-keybinds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 28px;
+  width: 660px;
+  max-width: 92%;
+  margin: 0 auto;
+}
+#menu-keybinds .menu-kb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+#menu-keybinds .menu-kb-wide { grid-column: 1 / -1; justify-content: center; }
+#menu-keybinds .menu-kb-keys {
+  display: inline-flex;
+  gap: 3px;
+  justify-content: flex-end;
+  min-width: 72px;
+}
+#menu-keybinds .menu-kb-label { color: #889; }
+.menu-kb-note { margin-top: 4px; }

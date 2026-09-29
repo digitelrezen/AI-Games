@@ -1,0 +1,119 @@
+// Filename: AlienEnemy.js
+// Everything Vs Kitty ΓÇö v1.1.0
+// Alien Ship: pulsing UFO disc with a translucent dome, glowing lights,
+// and a phase-shift alpha oscillation. Moves in wide sine sweeps.
+export const VERSION = 'v1.1.0';
+import EnemyBase from './EnemyBase.js';
+import { TAU, rand, clamp } from './utils.js';
+
+export default class AlienEnemy extends EnemyBase {
+  move(dt, slowMul) {
+    const s = this.speed * slowMul;
+    this.y += s * dt * 0.7;
+    this.x = this.baseX + Math.sin(this.t * 2) * 120;
+    this.x = clamp(this.x, -50, this.game.W + 50);
+  }
+
+  attack() {
+    const a = this.angleToPlayer();
+    this.fireAtPlayer(a, 250, 1.1);
+  }
+
+  draw(ctx) {
+    const r = this.radius;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (this.flash > 0) ctx.globalAlpha = 0.5;
+    // Phase-shift: oscillate overall alpha
+    ctx.globalAlpha = 0.5 + 0.5 * Math.sin(this.t * 4);
+
+    // ΓöÇΓöÇΓöÇ DISC BODY (wide, flat) ΓöÇΓöÇΓöÇ
+    const discGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+    discGrad.addColorStop(0, '#a060e0');
+    discGrad.addColorStop(0.5, this.color);
+    discGrad.addColorStop(1, '#3a1060');
+    ctx.fillStyle = discGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.95, r * 0.35, 0, 0, TAU);
+    ctx.fill();
+
+    // Disc rim (lighter ring)
+    ctx.strokeStyle = 'rgba(200, 150, 255, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.95, r * 0.35, 0, 0, TAU);
+    ctx.stroke();
+
+    // ΓöÇΓöÇΓöÇ DOME (translucent, on top) ΓöÇΓöÇΓöÇ
+    const domeGrad = ctx.createRadialGradient(0, -r * 0.25, 0, 0, -r * 0.25, r * 0.4);
+    domeGrad.addColorStop(0, 'rgba(200, 180, 255, 0.6)');
+    domeGrad.addColorStop(1, 'rgba(100, 50, 180, 0.3)');
+    ctx.fillStyle = domeGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.2, r * 0.45, r * 0.3, 0, Math.PI, 0);
+    ctx.fill();
+    // Dome highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.1, -r * 0.35, r * 0.15, r * 0.1, -0.3, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ GLOWING LIGHTS (around disc rim) ΓöÇΓöÇΓöÇ
+    const lightCount = 8;
+    for (let i = 0; i < lightCount; i++) {
+      const a = (i / lightCount) * TAU;
+      const lx = Math.cos(a) * r * 0.8;
+      const ly = Math.sin(a) * r * 0.28;
+      const pulse = 0.5 + 0.5 * Math.sin(this.t * 6 + i * 0.8);
+      ctx.fillStyle = `rgba(180, 100, 255, ${0.4 + pulse * 0.5})`;
+      ctx.shadowColor = '#b388ff';
+      ctx.shadowBlur = 4 * pulse;
+      ctx.beginPath();
+      ctx.arc(lx, ly, r * 0.06, 0, TAU);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // ΓöÇΓöÇΓöÇ UNDER-BELLY (darker, with details) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = 'rgba(30, 10, 60, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.15, r * 0.6, r * 0.15, 0, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ BEAM PROJECTOR (center bottom, glowing) ΓöÇΓöÇΓöÇ
+    const beamPulse = 0.5 + 0.5 * Math.sin(this.t * 3);
+    ctx.fillStyle = `rgba(150, 50, 255, ${0.3 + beamPulse * 0.4})`;
+    ctx.shadowColor = '#7b2ff7';
+    ctx.shadowBlur = 8 * beamPulse;
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.3, r * 0.15, r * 0.08, 0, 0, TAU);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // ΓöÇΓöÇΓöÇ ALIEN PILOT (visible through dome) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = 'rgba(100, 200, 100, 0.5)';
+    ctx.beginPath();
+    ctx.arc(0, -r * 0.25, r * 0.12, 0, TAU);
+    ctx.fill();
+    // Pilot eyes
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.beginPath(); ctx.arc(-r * 0.05, -r * 0.28, r * 0.03, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(r * 0.05, -r * 0.28, r * 0.03, 0, TAU); ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ TRAILING ENERGY (subtle) ΓöÇΓöÇΓöÇ
+    ctx.strokeStyle = `rgba(150, 50, 255, ${0.2 + beamPulse * 0.15})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.3, r * 0.35);
+    ctx.lineTo(-r * 0.4, r * 0.6);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(r * 0.3, r * 0.35);
+    ctx.lineTo(r * 0.4, r * 0.6);
+    ctx.stroke();
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+}

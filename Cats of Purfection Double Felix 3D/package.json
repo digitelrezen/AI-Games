@@ -1,0 +1,21 @@
+{
+  "name": "cats-of-purfection-double-felix-3d",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Cats of Purfection Double Felix 3D - PVE action looter shooter with genetically modified super cats (Babylon.js)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "validate": "tsc --noEmit && vite build"
+  },
+  "devDependencies": {
+    "@babylonjs/core": "^8.0.0",
+    "@babylonjs/gui": "^8.0.0",
+    "@babylonjs/loaders": "^8.0.0",
+    "@babylonjs/materials": "^8.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  }
+}

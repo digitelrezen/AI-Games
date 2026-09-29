@@ -1,0 +1,337 @@
+BENDER v2 PREVIEW — source 666x500, content bbox (187,26) 293x441
+
+== FULL BODY (alpha, 1 char = 3px) ==
+ 26                                                     +##+                                          
+ 29                                                     +###                                          
+ 32                                                     +###                                          
+ 35                                                     +##+                                          
+ 38                                                      ##+                                          
+ 41                                                      ##+                                          
+ 44                                                     +##+                                          
+ 47                                                     +##+                                          
+ 50                                                     +##+                                          
+ 53                                                     +##+                                          
+ 56                                                     +##+                                          
+ 59                                                     +##+                                          
+ 62                                                   ++####+                                         
+ 65                                                   +######+                                        
+ 68                                               +++#########+                                       
+ 71                                              +##############+                                     
+ 74                                             +################+                                    
+ 77                                            +##################+                                   
+ 80                                           +###################+                                   
+ 83                                           +####################+                                  
+ 86                                           #####################+                                  
+ 89                                          +######################                                  
+ 92                                          +######################                                  
+ 95                                          +######################+                                 
+ 98                                          +######################+                                 
+101                                          +######################+                                 
+104                                          +######################+                                 
+107                                         ++######################+                                 
+110                                      ++#########################                                  
+113                                     +###########################                                  
+116                                   ++############################                                  
+119                                   ##############################                                  
+122                                  +##############################                                  
+125                                  ###############################                                  
+128                                 +###############################                                  
+131                                 +###############################                                  
+134                                 +###############################                                  
+137                                  ###############################                                  
+140                                  +##############################                                  
+143                                   +#############################                                  
+146                                    ++++#########################                                  
+149                                        ++#######################                                  
+152        ++##+                            +#######################                                  
+155        +###+                            +#######################                                  
+158        #####                             +++####################                       +#####+    
+161        #####                                ####################                       +######    
+164        +####+                               ####################                       +######+   
+167      +#######+                              ####################                       +######+   
+170     +#########++                            ####################                       +######+   
+173     ############+                          +####################                        ######    
+176    +############+                         +#####################                        ######+   
+179    +##############+                       +####################+                       +######+   
+182     +##############+                      +######################                      +######+   
+185     +###############+                    +########################++                   +######+   
+188   +#################+                 ++############################+                  +######+   
+191  +##################+                ++##############################+                 +######+   
+194 +###################+               +##################################+               +#######+  
+197 +###################               +###################################+              +#########+ 
+200 #####+######+#######              +#####################################+            +##########+ 
+203 ####+ +####+ ######+              ######################################+            +########### 
+206 ++#+   ++++  ######+              ######################################+            +###########+
+209 +           +######+             +######################################+          ++############+
+212             +######+             #######################################++        +##############+
+215             +######+            +########################################+        +##############+
+218             +######+            +#########################################+       ###############+
+221             +######+            +#########################################+       +##############+
+224             +######+            ##########################################+       +##############+
+227              #######          ++##########################################+       +##############+
+230              #######+       ++############################################+       +##############+
+233              +#######+     ++#############################################+        +#############+
+236              +########++++################################################+        +#############+
+239               ############################################################+        +#############+
+242               +############################################################+       +#############+
+245               ++############################################################+      +#############+
+248                +#################++#########################################+      +#############+
+251                 +###############+  ##########################################+     ##############+
+254                  ++###########++   +##########################################+   +##############+
+257                     +++###+++      +###########################################+ +###############+
+260                       ++++         +##################################+#########++###############+
+263                                    +################################## +#########################+
+266                                    +##################################  #######################++ 
+269                                    +#################################+  ++###############++       
+272                                    +#################################+    ##############+         
+275                                    +#################################+    ++############          
+278                                    +#################################       +#########++          
+281                                    +#################################        ++######++           
+284                                     +###############################+          +++++              
+287                                     +###############################+                             
+290                                     +###############################                              
+293                                     +###############################                              
+296                                     +##############################+                              
+299                                     +##############################+                              
+302                                     +##############################+                              
+305                                     +##############################+                              
+308                                     +##############################                               
+311                                     +##############################                               
+314                                      #############################+                               
+317                                      #############################+                               
+320                                       +###########################+                               
+323                                       +#########################+++                               
+326                                      +#########+++#############+                                  
+329                                      +########+      +########+                                   
+332                                     +#########+      +########+                                   
+335                                     +########+      +########+                                    
+338                                    +########+       +########                                     
+341                                    +########+      +########+                                     
+344                                   +########+       +########+                                     
+347                                   +########+       ########+                                      
+350                                   +#######+       +########+                                      
+353                                  +########+       +#######++                                      
+356                                  +########        +#######+                                       
+359                                  ########+        +#######+                                       
+362                                 +########+        ########+                                       
+365                                 +########+        ########                                        
+368                                 +########+       +########                                        
+371                                 +########        +########                                        
+374                                 +########        +########                                        
+377                                 +########        +########                                        
+380                                 +########        +########                                        
+383                                 +########         ########                                        
+386                                 +########         ########+                                       
+389                                 +########         +#######+                                       
+392                                 +########+        +#######+                                       
+395                                 +########+        +#######+                                       
+398                                 +########+        +########+                                      
+401                                  ########+         ########+                                      
+404                                  +########         +#######+                                      
+407                                  +########+        +########+                                     
+410                                   ########+        ++#######+                                     
+413                                   +#######+         +########                                     
+416                                   +########+         ########+                                    
+419                                    #########+        +########+                                   
+422                                   ++##########+      +########+                                   
+425                                   #############+      +########+                                  
+428                                 +################      ########++                                 
+431                                +#################++    +#########++                               
+434                                +##################+   +############+                              
+437                               +####################  +##############+                             
+440                               +#################### +################+                            
+443                               #####################+##################+                           
+446                               #####################+###################                           
+449                               +###################+####################+                          
+452                                ++++###########+++ +####################+                          
+455                                       +++         +####################+                          
+458                                                   +###################++                          
+461                                                    +#################+                            
+464                                                      ++++########+++                              
+
+== ARM REGION (content x 0..62, y 124..236, 1px, colored) ==
+   legend: W=white g=gray o=orange k=black y=yellow r=red c=cyan l=green m=magenta b=blue +=mid alpha
+150                                                               
+151                                                               
+152                           WgoooggW                            
+153                        WookkkkkkkoW                           
+154                       Wkkkbbbbbookg                           
+155                       okbbbbbbbbbko                           
+156                       okbbbbbbbbbko                           
+157                      gkbbbbbbbbbbkk                           
+158                      gkbbbbbbbbbbbkW                          
+159                      gkbbbbbbbbbbbkW                          
+160                      gkbbbbbbbbbbbkg                          
+161                      gkbbbbbbbbbbbbo                          
+162                      gkbbbbbbbbbbbbk                          
+163                      gkbbbbbbbbbbbbk                          
+164                      WkbbbbbbbbbbbbkW                         
+165                       obbbbbbbbbbbbko                         
+166                       gbbbbbbbbbbbbbkgg                       
+167                    Wgookbbbbbbbbbbbbkkkg                      
+168                 Wookkkkkkkkkkoggggkbbkkkg                     
+169                Wkkkbbbbbbbbbbbkbbokbbbbkko                    
+170                Wkkkbbbbbbbbbbbkbbokbbbbkko                    
+171               WkkoobbbbbbbbbbbbbbkbbbbbbkkoW                  
+172              WkkobbbbbbbbbbbbbbbbbbbbbbbbbkoWW                
+173              okbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkkW               
+174             gkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkkg              
+175             okbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkg             
+176           WWkkbbbbbbbbbbbbbbbbkbbbbbbbbbbbbbbbbkkg            
+177           WWkkbbbbbbbbbbbbbbbbkbbbbbbbbbbbbbbbbkkg            
+178           ggkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko           
+179           ggkbbbbbbbbbbbkkkkobbbbbbbbbbbbbbbbbbbbkkooW        
+180           ggkbbbbbbbbbbkkkykkkobbbbbbbbbbbbbbbbbbbokkoW       
+181           WWkbbbbbbbbbkkyyyykkgbbbbbbbbbbbbbbbbbbbbookkW      
+182             gkbbbbbbbbkyyyyykkgbbbbbbbbbbbbbbbbbbbbbbokkg     
+183              gkkkoobbkkyyyyykkbbbbbbbbbbbbbbbbbbbbbbbbbkkg    
+184              gkkkoobbkkyyyyykkbbbbbbbbbbbbbbbbbbbbbbbbbkkg    
+185               gkkkkkkkyyyyyykobbbbbbbbbbbbbbbbbbbbbbbbbbkkgg  
+186              Wokyyyyyyyyyyyykbbbbbbbbbbbbbbbbbbbbbbbbbbbgkkkg 
+187             gkkyyyyyyyyyyyyykbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkg
+188           ookkyyyyyyyyyyyyykkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko
+189         Woyyyyyyyyyyyyyyyykkkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkg
+190        WkkyyyyyyyyyyyyykkkkWkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkkg
+191        WkkyyyyyyyyyyyyykkkkWkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkkg
+192       Wkkyyyyyyyyyyyyyykkkkgkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkk 
+193      Wkkoyyyyyyyyyyyyykkbbbkkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkko 
+194    WWkkkoyyyyyyyyyyyykkbbbbbkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkg 
+195   Wkkkggkyyyyyyyyyyykbbbbbbbobbbbbbbbbbbbbbbbbbbbbbbbbbbbbkkg 
+196  WokkgbgkyyyyyyyyyykbbbbbbbbokkoooggbbbbbbbbbbbbbbbbbbbbbbkkW 
+197  okyyyggooyyyyyykkkbbbbbbbbbbbkkkkkkkkkkbbbbbbbbbbbbbbbbbboo  
+198  okyyyggooyyyyyykkkbbbbbbbbbbbkkkkkkkkkkbbbbbbbbbbbbbbbbbboo  
+199 gyyyyyyggbooyyyykbbbbbbbbbbbbbbbbbkkkkkkkkbbbbbbbbbbbbbbbkoo  
+200 kyyyyyyybgggoyykkkkbbbbbbbbbbbbbbbkkgggokkbbbbbbbbbbbbbbbkgg  
+201 kyyyyyyyogWWgkkoWookkbbbbbbbbbbbboko    kbbbbbbbbbbbbbbbokgg  
+202 kyyyyyyyogggkkg    gkkbbbbbbbbbbbkkW   WbbbbbbbbbbbbbbbbkkWW  
+203 okyyyyyyyokkkg      gkkbbbbbbbbkkkg    gkbbbbbbbbbbbbbbbko    
+204 byyyyyyykkkkW        WokkkbbbkkkkW     gkbbbbbbbbbbbbbbbko    
+205 byyyyyyykkkkW        WokkkbbbkkkkW     gkbbbbbbbbbbbbbbbko    
+206  gkyyyyykoWW           gookkkogWW      okbbbbbbbbbbbbbbbkg    
+207   gookkkg                 WgWW         obbbbbbbbbbbbbbbbkg    
+208 W    ggW                               kbbbbbbbbbbbbbbbbkg    
+209  WW                                  WWkbbbbbbbbbbbbbbbbkg    
+210  WW                                  ggkbbbbbbbbbbbbbbbbkW    
+211                                      ggkbbbbbbbbbbbbbbbbkW    
+212                                      ggkbbbbbbbbbbbbbbbbkW    
+213                                      ggkbbbbbbbbbbbbbbbbkW    
+214                                      ookbbbbbbbbbbbbbbbbk     
+215                                      ookbbbbbbbbbbbbbbbkk     
+216                                      ookbbbbbbbbbbbbbbbkkW    
+217                                      ookbbbbbbbbbbbbbbbbkW    
+218                                      ookbbbbbbbbbbbbbbbbkW    
+219                                      ookbbbbbbbbbbbbbbbbkW    
+220                                      ookbbbbbbbbbbbbbbbbkg    
+221                                      ookbbbbbbbbbbbbbbbbkg    
+222                                      ookbbbbbbbbbbbbbbbbkg    
+223                                      ggkbbbbbbbbbbbbbbbbkg    
+224                                      ggkbbbbbbbbbbbbbbbbko    
+225                                      WWkbbbbbbbbbbbbbbbbbkWW  
+226                                      WWkbbbbbbbbbbbbbbbbbkWW  
+227                                      WWkbbbbbbbbbbbbbbbbbkgg  
+228                                        obbbbbbbbbbbbbbbbbboo  
+229                                        okbbbbbbbbbbbbbbbbbkkW 
+230                                        gkbbbbbbbbbbbbbbbbbkkg 
+231                                        gkbbbbbbbbbbbbbbbbbkkkW
+232                                        Wkbbbbbbbbbbbbbbbbbkkko
+233                                        Wkbbbbbbbbbbbbbbbbbkkko
+234                                         okbbbbbbbbbbbbbbbbbbkk
+235                                         gkbbbbbbbbbbbbbbbbbbbk
+236                                         Wkbbbbbbbbbbbbbbbbbbbb
+237                                          okbbbbbbbbbbbbbbbbbbb
+238                                          gkbbbbbbbbbbbbbbbbbbb
+239                                          Wkbbbbbbbbbbbbbbbbbbb
+240                                          Wkbbbbbbbbbbbbbbbbbbb
+241                                           gkbbbbbbbbbbbbbbbbbb
+242                                            kkkkbbbbbbbbbbbbbbb
+243                                            gkkobbbbbbbbbbbbbbb
+244                                            Wookbbbbbbbbbbbbbbb
+245                                             WWkbbbbbbbbbbbbbbb
+246                                               gkkbbbbbbbbbbbbb
+247                                               gkkbbbbbbbbbbbbb
+248                                                okbbbbbbbbbbbbb
+249                                                 okbbbbbbbbbbbb
+250                                                 Wokbbbbbbbbbbb
+251                                                  Wokkbbbbbbbbb
+252                                                    ggkkobbbbbb
+253                                                    ggkkobbbbbb
+254                                                      gokbbbbbb
+255                                                       Wgkkbbbb
+256                                                         Wgkkkk
+257                                                             go
+258                                                               
+259                                                               
+260                                                               
+261                                                               
+
+== HEAD REGION (content x 100..200, y 0..140, 2px, colored) ==
+ 26                              ooook                
+ 28                             oobbbo                
+ 30                             kbbbbo                
+ 32                            kobbbbo                
+ 34                             oobbbo                
+ 36                              obbk                 
+ 38                              obbb                 
+ 40                              kbbb                 
+ 42                              obbb                 
+ 44                              obbb                 
+ 46                              obbbo                
+ 48                              obbbo                
+ 50                              obbbo                
+ 52                              obbbk                
+ 54                             kkbbbk                
+ 56                             obbbbk                
+ 58                             obbbbk                
+ 60                             obbbbk                
+ 62                           koobbbbo                
+ 64                          kogbbbbboog              
+ 66                          oobbbbbbbko              
+ 68                      ookokWbbbbbbbWoo             
+ 70                    ookkbbbbbbbogoookkkko          
+ 72                   okbbbbbbbbbbbbbbbbbbkko         
+ 74                 kokbbbbbbbbbbbbbbbbbbbbokk        
+ 76                 obbbbbbbbbbbbbbbbbbbbbbbbko       
+ 78                kobbbbbbbbbbbbbbbbbbbbbbbbbko      
+ 80               okbbbbbbbbbbbbbbbbbbbbbbbbbbbk      
+ 82              kkbbbbbbbbbbbbbbbbbbbbbbbbbbbbko     
+ 84              okbbbbbbbbbbbbbbbbbbbbbbbbbbbbbo     
+ 86              obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbo     
+ 88              kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko    
+ 90             okbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbg    
+ 92             kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk    
+ 94             kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkk   
+ 96             obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+ 98             obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+100             obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+102             obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+104             obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+106             kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+108           kokbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbko   
+110         ooobbgoobbbbbbbbbbbbbbbbbbbbbbbbbbbbbk    
+112      kooobbbbbbbbbbboooooooooobbbbbbbbbbbbbbbk    
+114     oobbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk    
+116   koobbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk    
+118  kobbbbbggbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk    
+120  obbokkkkklllllllllokkkoooooooooobbbbbbbbbbbbk    
+122 obbkkkkkkyyyyyyyylllokolyyyyyllyogbbbbbbbbbbbk    
+124 kbbkkkkkkyyyyyyyyyyylolyyyyyyyyyyobbbbbbbbbbbk    
+126 bbkkkkkkoyyyyyyyyyyyoyyyyyyyyyyyyykbbbbbbbbbbk    
+128 bbkkkkkkoyyyyyyylyyyoyyyyyyyyyyllyoobbbbbbbbbk    
+130 bbkkkkkkoyyyyyyykkyyolyylyyyyyokkylobbbbbbbbbk    
+132 bbkkkkkkoyyyyyylkkyyolyyyyyyyyokkylobbbbbbbbbk    
+134 bbkkkkkkkyyyyyyylyyyolyyyyyyyyyolygobbbbbbbbbo    
+136 obkkkkkkklyyyyyyyyyylyyyyyyyyyylllobbbbbbbbbbo    
+138 kbbkkkkkkoyyyyyyyyyylkyyyyyyyyyyyygbbbbbbbbbbo    
+140 gobbokkkkkolllyyyyyyokollyyyyylloobbbbbbbbbbbo    
+142 oogWgokkkkkkooooooookkkollllllooobbbbbbbbbbbbo    
+144   ooobbbbbbbbbbbbbbbbbbbbbbbbgbbbbbbbbbbbbbbog    
+146    koooooooobbbbbbbbboobbbbbbbbbbbbbbbbbbbbbog    
+148         WWgkgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbog    
+150           kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbog    
+152           kkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbog    
+154           kkbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkg    
+156           kkobbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbkg    
+158            kkoookkkkkbbkkkkkbkkookooobbbbbbbkg    
+160                kollyyyyyyyylyyyyyoyllokbbbbbkg    
+162                 olyyyyyyyyyyyyyyyoggkokbbbbbkg    
+164                kkllllgollllloolllkllyyybbbbbkg    

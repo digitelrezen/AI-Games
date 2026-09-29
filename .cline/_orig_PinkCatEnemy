@@ -1,0 +1,209 @@
+// Filename: PinkCatEnemy.js
+// Everything Vs Kitty ΓÇö v2.2.0
+// Pink Cat Boss: a small but fierce feline boss with glowing pink eyes,
+// fluffy tail, and aggressive fire patterns. The "Internet" boss.
+// v2.2.0: Skinny & short build ΓÇö drawn squeezed narrower and compressed
+//         shorter (the Internet Bonus Round look).
+export const VERSION = 'v2.2.0';
+import EnemyBase from './EnemyBase.js';
+import { TAU, rand, clamp } from './utils.js';
+
+export default class PinkCatEnemy extends EnemyBase {
+  move(dt, slowMul) {
+    const s = this.speed * slowMul;
+    this.y += s * dt * 0.3;
+    if (this.y > 160) this.y = 160 + Math.sin(this.t * 1.2) * 25;
+    this.x = this.game.W / 2 + Math.sin(this.t * 0.8) * 150;
+    this.x = clamp(this.x, 80, this.game.W - 80);
+  }
+
+  attack() {
+    // 3-way pink energy shot
+    const a = this.angleToPlayer();
+    this.fireAtPlayer(a - 0.2, 280, 1.1);
+    this.fireAtPlayer(a, 300, 1.2);
+    this.fireAtPlayer(a + 0.2, 280, 1.1);
+  }
+
+  specialAttack() {
+    // Pink Cat special: 5-shot fan + 2 homing-ish bursts
+    const a = this.angleToPlayer();
+    for (let i = -2; i <= 2; i++) {
+      this.fireAtPlayer(a + i * 0.2, 260, 0.9);
+    }
+    // Side bursts
+    this.game.spawnEnemyBullet(this.x - 30, this.y, Math.PI * 0.7, 200, this.damage * 0.6, '#ff69b4');
+    this.game.spawnEnemyBullet(this.x + 30, this.y, Math.PI * 0.3, 200, this.damage * 0.6, '#ff69b4');
+    this.game.shake = Math.max(this.game.shake, 5);
+  }
+
+  draw(ctx) {
+    const r = this.radius;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (this.flash > 0) ctx.globalAlpha = 0.5;
+    // Skinny & short: squeeze the width, compress the height (whole silhouette)
+    ctx.scale(0.7, 0.75);
+
+    // ΓöÇΓöÇΓöÇ TAIL (fluffy, pink, sinuous) ΓöÇΓöÇΓöÇ
+    const tailWave = Math.sin(this.t * 3) * r * 0.35;
+    ctx.strokeStyle = '#ff8fbf';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(r * 0.4, r * 0.3);
+    ctx.bezierCurveTo(
+      r * 0.8, r * 0.5 + tailWave,
+      r * 1.1, r * 0.1 - tailWave,
+      r * 1.2, -r * 0.2 + tailWave * 0.5
+    );
+    ctx.stroke();
+    // Tail tip (fluffy white)
+    ctx.fillStyle = '#fff0f5';
+    ctx.shadowColor = '#ff69b4';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(r * 1.2, -r * 0.2 + tailWave * 0.5, r * 0.12, 0, TAU);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // ΓöÇΓöÇΓöÇ BODY (plump, pink gradient) ΓöÇΓöÇΓöÇ
+    const bodyGrad = ctx.createRadialGradient(0, r * 0.1, 0, 0, r * 0.1, r * 0.7);
+    bodyGrad.addColorStop(0, '#ffb6d9');
+    bodyGrad.addColorStop(0.5, this.color);
+    bodyGrad.addColorStop(1, '#c04080');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.2, r * 0.55, r * 0.65, 0, 0, TAU);
+    ctx.fill();
+    // Belly (lighter)
+    ctx.fillStyle = 'rgba(255, 240, 245, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.35, r * 0.3, r * 0.35, 0, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ HEAD (round, cute but fierce) ΓöÇΓöÇΓöÇ
+    const headGrad = ctx.createRadialGradient(0, -r * 0.4, 0, 0, -r * 0.4, r * 0.45);
+    headGrad.addColorStop(0, '#ffcce5');
+    headGrad.addColorStop(1, this.color);
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.arc(0, -r * 0.4, r * 0.42, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ EARS (tall, pointed, pink inside) ΓöÇΓöÇΓöÇ
+    // Left ear
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.3, -r * 0.7);
+    ctx.lineTo(-r * 0.55, -r * 1.3);
+    ctx.lineTo(-r * 0.05, -r * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ffb6d9';
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.3, -r * 0.78);
+    ctx.lineTo(-r * 0.45, -r * 1.15);
+    ctx.lineTo(-r * 0.1, -r * 0.82);
+    ctx.closePath();
+    ctx.fill();
+    // Right ear
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.moveTo(r * 0.3, -r * 0.7);
+    ctx.lineTo(r * 0.55, -r * 1.3);
+    ctx.lineTo(r * 0.05, -r * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ffb6d9';
+    ctx.beginPath();
+    ctx.moveTo(r * 0.3, -r * 0.78);
+    ctx.lineTo(r * 0.45, -r * 1.15);
+    ctx.lineTo(r * 0.1, -r * 0.82);
+    ctx.closePath();
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ EYES (glowing pink, large, fierce) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#ff69b4';
+    ctx.shadowColor = '#ff69b4';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.15, -r * 0.45, r * 0.12, r * 0.09, 0, 0, TAU);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(r * 0.15, -r * 0.45, r * 0.12, r * 0.09, 0, 0, TAU);
+    ctx.fill();
+    // Slit pupils
+    ctx.fillStyle = '#111';
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.15, -r * 0.45, r * 0.03, r * 0.07, 0, 0, TAU);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(r * 0.15, -r * 0.45, r * 0.03, r * 0.07, 0, 0, TAU);
+    ctx.fill();
+    // Eye highlights
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath(); ctx.arc(-r * 0.18, -r * 0.48, r * 0.03, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(r * 0.12, -r * 0.48, r * 0.03, 0, TAU); ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ NOSE (small, dark pink) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#c04080';
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 0.3);
+    ctx.lineTo(-r * 0.05, -r * 0.25);
+    ctx.lineTo(r * 0.05, -r * 0.25);
+    ctx.closePath();
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ MOUTH (fierce grin) ΓöÇΓöÇΓöÇ
+    ctx.strokeStyle = '#802060';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.12, -r * 0.2);
+    ctx.quadraticCurveTo(0, -r * 0.12, r * 0.12, -r * 0.2);
+    ctx.stroke();
+
+    // ΓöÇΓöÇΓöÇ WHISKERS (long, pink-tinted) ΓöÇΓöÇΓöÇ
+    ctx.strokeStyle = 'rgba(255, 180, 220, 0.6)';
+    ctx.lineWidth = 0.8;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.3, -r * 0.3 + i * r * 0.08);
+      ctx.lineTo(-r * 0.75, -r * 0.35 + i * r * 0.12);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(r * 0.3, -r * 0.3 + i * r * 0.08);
+      ctx.lineTo(r * 0.75, -r * 0.35 + i * r * 0.12);
+      ctx.stroke();
+    }
+
+    // ΓöÇΓöÇΓöÇ PAWS (small, visible) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#ffb6d9';
+    ctx.beginPath(); ctx.ellipse(-r * 0.25, r * 0.7, r * 0.12, r * 0.08, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r * 0.25, r * 0.7, r * 0.12, r * 0.08, 0, 0, TAU); ctx.fill();
+    // Toe beans
+    ctx.fillStyle = '#fff0f5';
+    ctx.beginPath(); ctx.arc(-r * 0.28, r * 0.7, r * 0.04, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.22, r * 0.7, r * 0.04, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(r * 0.28, r * 0.7, r * 0.04, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(r * 0.22, r * 0.7, r * 0.04, 0, TAU); ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ PINK AURA (boss glow) ΓöÇΓöÇΓöÇ
+    const auraPulse = 0.3 + 0.2 * Math.sin(this.t * 2);
+    ctx.globalAlpha = auraPulse;
+    ctx.strokeStyle = '#ff69b4';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#ff69b4';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.1, 0, TAU);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+}

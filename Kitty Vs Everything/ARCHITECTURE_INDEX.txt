@@ -1,0 +1,206 @@
+═══════════════════════════════════════════════════════════════════
+  KITTY VS EVERYTHING — ARCHITECTURE ROADMAP / FILE INDEX
+  Workspace : c:\AI-Games\Kitty Vs Everything
+  Generated : 2026-09-25 (v3.13.0 dynamic ultra-wide viewport)
+  Layout    : ~70 files, all flat in the root folder
+              (npm run build inlines all modules into one
+               self-contained HTML in C:\AI-Games\Builds\)
+  Stack     : Native ES modules, Canvas 2D, WebAudio, plain DOM
+  Run       : python -m http.server 8000  →  http://localhost:8000
+═══════════════════════════════════════════════════════════════════
+
+  DEPENDENCY FLOW (top → bottom)
+  index.html ─▶ main.js ─▶ Game.js (orchestrator)
+  Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
+          ─▶ WaveManager ─▶ EnemyFactory ─▶ EnemyBase ─▶ 15 species
+          ─▶ Combat / Bullet / PowerUp / MiniShip
+          ─▶ BonusLevel ─▶ BoneYardBonus / InternetBonus
+          ─▶ HUD / DevPanel / Leaderboard (DOM)
+          ─▶ InputManager / AudioSystem / ParticleSystem
+  Foundation : config.js, utils.js, EventBus.js, Entity.js
+               (imported by nearly every other file)
+
+───────────────────────────────────────────────────────────────────
+  1. ENTRY & APP SHELL  (4 files)
+───────────────────────────────────────────────────────────────────
+  index.html      App shell: canvas, main menu (5 .ship-option cards),
+                  game-over + leaderboard lists, touch UI, HUD DOM;
+                  loads main.js as the ES-module entry point.
+  style.css       All styling: layout, menu cards, HUD bars, touch-
+                  button colors, and the .hidden utility class.
+  main.js         Entry point: boots Game, wires #start-btn/#retry-btn/
+                  #save-score, .ship-option theme selection, Enter
+                  shortcut; also carries the project manifest comment.
+  Game.js         Orchestrator: state machine, fixed update loop, all
+                  collision detection, scoring, starfield, render
+                  dispatch. v3.13.0: W/H mirror the live viewW/H and
+                  re-sync on resize (ultra-wide tracking).
+
+───────────────────────────────────────────────────────────────────
+  2. CORE INFRASTRUCTURE  (6 files)
+───────────────────────────────────────────────────────────────────
+  config.js       Single source of truth for tunables: GAME dims
+                  (native 1280x720 REFERENCE since v3.13.0),
+                  WEAPONS, PLAYER_THEMES, ENEMY_TYPES/TIERS, BONUS.
+  Viewport.js     v3.13.0 viewport fit math: computeViewport() ->
+                  viewW/H (constrained axis native, other stretches,
+                  zero letterboxing), buffer scale q (<= 3),
+                  ULTRA_WIDE_PRESETS (3440x1440 / 5120x1440 native).
+  ViewScaler.js   Applies computeViewport: CSS scale() on #game-root,
+                  canvas buffer viewW*q x viewH*q, identity ctx
+                  transform (Game.js ctx.scale(q) per frame).
+  utils.js        Shared math helpers: TAU, rand, clamp, dist2,
+                  angleTo, pick.
+  EventBus.js     Global pub/sub `bus` for UI events (banner, score,
+                  life) so game logic never touches the DOM directly.
+  Entity.js       Base class for every actor: position, velocity,
+                  radius, hp/shield, alive flag.
+
+───────────────────────────────────────────────────────────────────
+  3. PLAYER SHIPS / ART  (9 files)
+───────────────────────────────────────────────────────────────────
+  Player.js       Base cat-ship: WASD move, SPACE boost, weapon fire,
+                  Q stun rocket, F ultimate (generic fallback), mini-
+                  ship docking, lives & respawn.
+  PlayerRenderer.js  Canvas art for the player ship: hull, ears,
+                  face, paws, reactive tail, foot-engine glow, docked
+                  mini-pods.
+  CatShipFactory.js  Theme-ID → class registry; createCatShip(theme,
+                  game) is the single player spawn path (grey/gray
+                  alias, yellow fallback); getUltimateName for HUD.
+  orangeCat.js    Orange Tabby variant — ultimate: Nova Shockwave.
+  yellowCat.js    Yellow Tabby variant — ultimate: Energy Ring
+                  Explosion (bullet rings + shield break + knockback).
+  greyCat.js      Grey variant — ultimate: Black Hole Pull (warps
+                  enemies into a dense, crushable cluster).
+  whiteCat.js     White variant — ultimate: Tactical Nuke (screen-
+                  wide AOE + mushroom-cloud visual).
+  brownCat.js     Brown variant — ultimate: Shield Overcharge (brief
+                  invulnerability + pushes nearby enemies away).
+  MiniShip.js     Galaga-style docked clone firing the player's active
+                  weapon profile.
+
+───────────────────────────────────────────────────────────────────
+  4. WEAPONS / COMBAT  (3 files)
+───────────────────────────────────────────────────────────────────
+  Bullet.js       Projectile: velocity, damage, weapon profile,
+                  optional homing/tracking, friendly flag, lifetime.
+  Combat.js       applyWeaponHit — per-weapon damage rules (incl.
+                  plasma-pulse shield melt), hit-flash, onEnemyDeath.
+  PowerUp.js      Falling drops: extra life, shield, mini-ship,
+                  bonus crate, rare Bender (easter egg).
+                  v3.36.0: bonus crate draws the shared .assets PNG
+                  (key "crate", Crate-pixel-art.png, 620x574 -> 128x119)
+                  via AssetManager; procedural fallback.
+
+───────────────────────────────────────────────────────────────────
+  5. ENEMIES  (22 files)
+───────────────────────────────────────────────────────────────────
+  EnemyBase.js    Base enemy: descend, move(dt, slowMul) hook, fire
+                  logic, stun/slow state, flash decay, death book-
+                  keeping.
+  EnemyFactory.js Type-ID → class registry; createEnemy({type, tier,
+                  x, y, game}) with tier-scaled stats.
+  WaveManager.js  Wave definitions + spawn scheduling through
+                  EnemyFactory; wave-clear detection, bonus scoring.
+  WaspEnemy.js      Fast sine-weaving striker with aimed shots.
+                    v1.2.0: pixel-art sprite (.assets/Wasp Update
+                    pixel_art.png, key "wasp") via AssetManager;
+                    faces the player, procedural fallback.
+  Wasp2Enemy.js     Black wireframe wasp (Wasp2Sprite.js PNG pipeline).
+                    Tracks player X, oscillates, periodic lunges.
+  Wasp2Sprite.js    Wasp2 sprite pipeline: base64 PNG, white keyed to
+                    transparent, 882x500 -> 256x145, 1-px dilation.
+  BeetleEnemy.js    Slow armored tank with periodic charge lunges.
+  ButterflyEnemy.js Fast fluttering dodger, light shots.
+  RatEnemy.js       Fast dashing scavenger with lateral jitter.
+  WolfEnemy.js      Mid-speed pack hunter, offset pack sines.
+  FalconEnemy.js    Hovers high, then dives straight at the player.
+  BatEnemy.js       Erratic random-jitter flutterer.
+  BlackCatEnemy.js  Teleporting phantom, phases every ~1.8s.
+  LizardEnemy.js    Slow tank, 3-way acid spit from fixed altitude.
+  DragonEnemy.js    Heavy high-hover firing 5-shot fire cones.
+  HumanEnemy.js     v3.13.0: a REAL PERSON (HumanSprite.js). Waves:
+                    hover band + strafe + telegraphed aimed rifle;
+                    Bone Yard: marchMode = straight-down march.
+  HumanSprite.js    v3.13.0 procedural chibi human: 4 shirts, 6 hair
+                    colors, 3 styles, 4 skin tones, walk cycle +
+                    rifle aim (drawHuman / randomOutfit).
+  AlienEnemy.js     Pulsing UFO disc, phase-shift alpha, sine sweeps.
+  SnakeEnemy.js     Undulating serpent, smooth sine wave.
+  SpiderEnemy.js    Slow web-spinner, slow web projectiles.
+  PinkCatEnemy.js   "Internet" boss (InternetBonus). v3.13.0: small
+                    cute FEMALE chibi boss (radius 18), boss behavior
+                    unchanged.
+  PinkCatBossArt.js v3.13.0 boss art: drawPinkCatBoss — bow, long
+                    lashes, blush, "w" mouth, hearts, enraged eyes
+                    under 35% HP.
+
+───────────────────────────────────────────────────────────────────
+  6. BONUS LEVELS / SPECIAL SEQUENCES  (5 files)
+───────────────────────────────────────────────────────────────────
+  BonusLevel.js      Randomly dispatches Bone Yard vs Internet Classic.
+  BoneYardBonus.js   3-phase comedic round: floating bones → marching
+                     humans (HumanEnemy marchMode) → "win by NOT
+                     making it" timer (restores wave flow on finish).
+  BoneFragment.js    Shootable bone: shatter shrapnel, 500-pt score.
+  InternetBonus.js   Boss round: 8 Black Cats + 1 Pink Cat boss with
+                     crate/power-up drops.
+  EasterEgg.js       Bender easter egg (v3.24.0): "BENDER ENGAGED" banner, slides in
+                     from the right, 10s auto-aim, parting quip on exit.
+
+───────────────────────────────────────────────────────────────────
+  7. HUD / UI / META  (3 files)
+───────────────────────────────────────────────────────────────────
+  HUD.js        DOM top bar: score, lives, wave, HP/shield bars,
+                stun/nova/weapon indicators, banners, #version-label.
+  DevPanel.js   Backtick/F9 admin panel: spawn species/tier, weapon
+                override, instant bonus, god mode, robot drop (Bender egg).
+                v3.34.0: scrollable .dev-body + pinned header/footer,
+                stage-relative max-height (any resolution), live viewport.
+  Leaderboard.js  localStorage high scores: submit(name, score),
+                render into #menu-scores-list / #go-scores-list.
+
+───────────────────────────────────────────────────────────────────
+  8. CORE MECHANICS / CONTROLS  (1 file)
+───────────────────────────────────────────────────────────────────
+  InputManager.js  Unified keyboard/mouse/touch: WASD/arrows, L/LMB
+                   fire, Q/H stun, E/J napalm, F/C nova, R/G switch,
+                   SPACE thrust (alone = forward, +W boost), delta-mouse
+                   360° spin, virtual joystick + FIRE/STUN/NAPALM/
+                   BOOST/NOVA/WPN touch buttons.
+
+───────────────────────────────────────────────────────────────────
+  9. AUDIO & FX  (2 files)
+───────────────────────────────────────────────────────────────────
+  AudioSystem.js    Zero-file WebAudio-synthesized SFX (hits, blasts,
+                    weapon and UI tones).
+  ParticleSystem.js Particle bursts + jagged lightning bolts for
+                    explosions, impacts, ultimates.
+
+═══════════════════════════════════════════════════════════════════
+  KEY CROSS-FILE CONTRACTS (refactor hot spots)
+═══════════════════════════════════════════════════════════════════
+  • DOM ids      : main.js, Game.js, HUD.js, InputManager.js all
+                   reference ids that must match index.html —
+                   #game-canvas, #start-btn, #retry-btn, #save-
+                   score, #initials, #menu-scores-list, #go-scores-
+                   list, #version-label, #touch-ui, #joy-base/
+                   #joy-knob, #btn-fire/#btn-boost/...
+  • Theme IDs    : index.html data-theme ↔ CatShipFactory REGISTRY ↔
+                   PLAYER_THEMES keys in config.js (yellow/orange/
+                   white/gray/brown).
+  • Enemy types  : EnemyFactory REGISTRY keys ↔ ENEMY_TYPES in
+                   config.js ↔ WaveManager wave definitions ↔
+                   DevPanel spawn list.
+  • Viewport     : v3.13.0 — GAME.W/H is the native 1280x720
+                   REFERENCE only; live bounds = game.viewW/H (Game
+                   W/H mirror them, re-sync on resize). Spawn/bounds/
+                   centering code uses live bounds.
+  • Weapon IDs   : WEAPONS keys in config.js ↔ Player/MiniShip fire
+                   code ↔ Combat.applyWeaponHit rules ↔ DevPanel.
+  • Ultimates    : Game.js createCatShip call is the single player
+                   spawn path; ULTIMATE_COOLDOWN/ultimateName are
+                   set per variant class.
+  • EventBus     : `bus` event names (e.g. 'banner') are the game-
+                   logic → HUD bridge; keep names stable.

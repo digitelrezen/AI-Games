@@ -1,0 +1,44 @@
+// Filename: CatShipFactory.js
+// Kitty Vs Everything — v3.3.0
+// Single factory for the player fleet:
+//   createCatShip(theme, game) — builds the main hull (per-theme variant)
+//   createMiniShip(player)     — THE SOLE mini-ship spawn path. v3.3.0 strict
+//                                same-color rule: minis always clone the
+//                                player's current theme and dock on the free
+//                                flank (SHIP_GEOMETRY.miniDockL / miniDockR).
+export const VERSION = 'v3.3.0';
+import { MINI_SHIP } from './config.js';
+import MiniShip from './MiniShip.js';
+import OrangeCat from '../enemies/orangeCat.js';
+import YellowCat from '../enemies/yellowCat.js';
+import GreyCat from '../enemies/greyCat.js';
+import WhiteCat from '../enemies/whiteCat.js';
+import BrownCat from '../enemies/brownCat.js';
+
+const VARIANTS = {
+  orange: OrangeCat,
+  yellow: YellowCat,
+  gray: GreyCat,
+  white: WhiteCat,
+  brown: BrownCat,
+};
+
+/** Create the main hull variant for a theme (Game.start calls this). */
+export function createCatShip(theme, game) {
+  const Variant = VARIANTS[theme] || YellowCat;
+  return new Variant(game, theme);
+}
+
+/**
+ * Create a docked mini-ship (v3.3.0: the ONLY mini spawn path).
+ * Clones the player's theme, picks the free dock side, and initializes
+ * independent HP / radius / color / pattern / visual state.
+ * @returns {MiniShip|null} null when the fleet is at capacity
+ *                          (MINI_SHIP.maxDocked).
+ */
+export function createMiniShip(player) {
+  if (!player || player.minis.length >= MINI_SHIP.maxDocked) return null;
+  // Free flank: the first mini docks left, the second takes the opposite side.
+  const side = player.minis.length === 0 ? -1 : (player.minis[0].side === -1 ? 1 : -1);
+  return new MiniShip(player, side);
+}

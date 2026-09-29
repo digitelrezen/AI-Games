@@ -1,0 +1,127 @@
+FINAL SHIP SPRITE — 422x159 (nearest /2 of content bbox 844x319)
+nose faces +x (right); flies left->right
+
+== ALPHA (1 char = 4px) ==
+   0                                                                              ++                           
+   4                                                                      +++    +##+                          
+   8                                                                     +###+ ++#++                           
+  12                                                                     #####+##+  +++++++++++                
+  16                                                                    +#######++##############+++            
+  20                                                                   +#############################++        
+  24                             +++++++++++++                      +++################################+++     
+  28                   ++++++++################++                ++######################################++    
+  32     +   ++++++++#############################++         +++###########################################+   
+  36 ++++############################################++    ++################################################++
+  40 +++++++++################################################################################################+
+  44             +++++++++##################################################################################++ 
+  48                         +++++########################################################################++   
+  52                              +#####################################################################++     
+  56                               +##################################################################+        
+  60                                +##############################################################++          
+  64                                 #############################################################+            
+  68                                 +############################################################             
+  72                                  +##########################################################+             
+  76                           ++###############################################################+              
+  80                           +###############################################################+               
+  84                          +###############################################################+                
+  88                          +#############################################################++                 
+  92                           ############################################################+                   
+  96                           +#########################################################+                     
+ 100                           +####################################################++++                       
+ 104                            +#######+######################################++++                            
+ 108                             ######+  +++#######################++++++++                                   
+ 112                             +####+      +###############+++                                               
+ 116                              +#++       +##############+                                                  
+ 120                                      ++################                                                   
+ 124                                   ++###++ +###########+                                                   
+ 128                                 ++#+++     +##########                                                    
+ 132                                 +         +##########+                                                    
+ 136                                         ++########++                                                      
+ 140                                      ++#######+++                                                         
+ 144                                   ++#####+++                                                              
+ 148                                +#####+++                                                                  
+ 152                             ++###++                                                                       
+ 156                            +#++                                                                           
+
+== COLORED (1 char = 2px) ==
+   legend: W=white g=gray o=orange k=black y=yellow r=red c=cyan l=green m=magenta b=blue +=mid alpha
+   0                                                                                                                                                             ok                                                     
+   2                                                                                                                                                            oWg                                                     
+   4                                                                                                                                                           oWWWo                                                    
+   6                                                                                                                                            bbbbk         ogggok                                                    
+   8                                                                                                                                          kbbbbbbb      kgWgkk                                                      
+  10                                                                                                                                         kbbbbbbbbb  kkkgggk                                                        
+  12                                                                                                                                         gbbbbbbbbckoggggo                                                          
+  14                                                                                                                                         cbbbbccccccccggo     kkkkkkollcccclcccckkkkk                               
+  16                                                                                                                                        cccccccccccccccgkkkklccccccccccccccccccccccclllkkk                          
+  18                                                                                                                                      kccccccccccccccccckcccccccccccccccccccccccccccccccclllk                       
+  20                                                                                                                                      ccccccccccccccccclccccccccccccccccccccccccccccccccccccccckokk                 
+  22                                                                                                                                     kcccccccccccccllccccccccccccccccccccccccccccccccccccccccccccbbk                
+  24                                                                    kkkccccckkk                                                     kccccccccccccccccccccccccccccccccccccccccccccccccccccllooccbbbbbbbbbk           
+  26                                                         kkkkcccccccccccccccccccckk                                             kklcccccgggccccccccccccccccccccccccccccccccccccccccccllllgbbbbbbbbbbbbbbok          
+  28                                                kkkcccccccccccccccccccccccccccccccccck                                      kkccccccccccccccccccccccccccccccccccccccccccccccccccccccccgkcbbbbbccbbbbbccllk          
+  30                                     kkkkccccccccccccccccccccccccccccccccccccccccccccccck                               kkcccccccccccccccccccccccccccccccccccccccccccccccclllccccccccbbcllogllllgccclllllllk        
+  32                            kkkccccccccccccccccccccccccccccccccccccccccooocclcccccccccccccck                         kkcccccccccccccccccccccccccccccccccccccccccccccccccccWWWlccccccllllglllglllllclcccccclllk      
+  34          kk     kkkkccccccccccccccccccccccccccccccccccccccccccccccccylyyylllccccccccccccccccck                   klccccccccccccccccccccccccccccccccccccccccccccccccccccccWWWccccccclllllllccccccccccccccccccllk    
+  36     kkyyygcccccccccccccccccccccccccccccccccccccccccccccccccccccccccygllyllllcccccccccccccccccccckk            kkccccccccccccccccccccccccccccccccccccccccccccWWlcccccccccccccccccccclccccccccccccccccccccccccclllkk 
+  38 yyyyyyyyygccccccccccccccccccccccccccccccccccccccccccccccccccccccccyyyyyyllllgcccccccccccccccccccccckk      kkccccccccccccccccccccccccccccccccccccccccccccccWWWWccccccccccccccccccccccccccccccccccccccccccccccclyyyy
+  40 krrrrryyygcccccccccccccccccccccccccccccccccccccccccccccccccccccccoylyrrylllgllcccccccccccccccccccccccckokkcccccccccccccccccccccccccccccccccccclllccccccccccWWWWccccccccccccccccccccccccccccccccccccccccccccllyyyyyy
+  42         kokkkkcccccccccccccccccccccccccccccccccccccccccccccccccccylyyrylllyyygcccccccccccccccccccccccggcccccccccccccccccccccccccccccccccccccccWWWccccccccccccccccccccccccccccccccccccccccccccccccccccccclyyyyyyyyyk
+  44                         kkkccccccccccccccccccccccccccccccccccccccylyrylllyyyllccccccccccccccccccccgggccccccccccccccccccccccccccclcccccccccccccWWWcccccccccccccccccccccccccccccccccccccccccccccccccclllyyyyyyyyyyy  
+  46                                     kkkccccccccccccccccccccccccccylyyllllryyylccccccccccccccccccggccccccccccccccccccccccccccccccWWWcccccccccccWWcccccccccccccccccccccccccccccccccccccccccccccccllyyyyyyyyyyyylk    
+  48                                                 kkkccccccccccccccylyyylllrryllccccccccccccccccggccccccccccccccccccccccccccccccccWWWccccccccccccccccccccccccccccccccccccccccccccccccccccccclllyyyyyyyyyyyyylcck     
+  50                                                          kcccccccllyyyyyyrylyocccccccccccccgggccccccccccccccccccccccccccccccccccWWWcccccccccccccccccccccccccccccccccccccccccccccccccccllyyyyyyyyyyyyyyllccck       
+  52                                                            cccccccyWlyyryyyylccccccccccccggccccccccccccccccccccccclllccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccllyyyyyyyyyyyyyyylcccccck         
+  54                                                             kcccccollllylyyWkccccccccccggcccccccccccccccccccccccgggggcccccccccccccccccccccccccccccccccccccccccccccccccccccccllyyyyyyyyyyyyyyyllccccccck            
+  56                                                              ccccccolylyyylcccccccccgggcccccccccccccccccccccccccgggggccccccccccccccccccccccccccccccccccccccccccccccccclllyyyyyyyyyyyyyyyyllccccccccck              
+  58                                                              kcccccccoogooccccccccggccccccccccccccccccccccccccccgWoWgcccccccccccccccccccccccccccccccccccccccccccclllyyyyyyyyyyyyyyyyllccccccccccck                 
+  60                                                               kcccccccccccccccccggcccccccccccccccccllgccccccccccggggglcccccccccccccccccccccccccccccccccccccclllyyyyyyyyyyyyyyyyyllcccccccccccck                    
+  62                                                                cccccccccccccccggcccccccccccccccclggWgWccccccccccgWgWggcccccccccccccccccccccccccccccccccllyyyyyyryyyyyyyyyylllccccccccccccccck                      
+  64                                                                kccccccccccccggcccccccccccccclggggWgWgWccccccccccgWWgWgcccccccccccccccccccccccccclllyyyyyyyyyyryyyyyyylllccccccccccccccccccck                       
+  66                                                                 cccccccccccgcccccccccccllgWgWggggWgWgWcccccccccclgccllcccccccccccccccccccclllyyyyyyyyyyrrryyyyylllccccccccccccccccccccccccc                        
+  68                                                                  ccccccccggccccccccllgggWgWgWgWggWgWgWcccccccccclglllgcccccccccccccclllyyyyyyyyyyyyryyyyyyllcccccccccccccccccccccccccccccc                         
+  70                                                                  kcccccggccccccccWgWggggggWgWgWggWgWgWcccccccccclglllglccccccclllyyyyyyyyyyyyyyyyyyylllcccccccccccccccccccccccccccccccccck                         
+  72                                                                   ccccgccccccccclWgWggggWgWgWgWggWgWgWcccllccccclWlccglllllyyyyyyyyyyyyyyyyyyylllccccccccccccccccccccccccccccccccccccccck                          
+  74                                                            kk     kcggcccccccccclWgWgWggWgWgWgWWWWWWWWllllllllcccWgyyyyyyyyyyyyyyyyyyyyyllcccccccccccccccccccccccccccccccccccccccccccccc                           
+  76                                                        koggggggokkkWgccccccccccclWgWgWggWgWWWWWWWWWggllllcllllyyyyyyyyyyyyyyyyyyyylllcccccccccccccccccccccccccccccccccccccccccccccccccc                            
+  78                                                      koggggggggggooccccccccccccclWgWgWWWWWWWWggllllllllyyyyyyyyyyyyyyyyyyyyylllccccccccccccccccccccccccccccccccccccccccccccccccccccccck                            
+  80                                                     kWggggggggggggcccccccccclllclWWWWWWgggcllllllyyyyyyyyyyyyyyyyyyyyylllcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccck                             
+  82                                                     kWgggggggggggglccccclllllllllgggclllllyyyyyyyyyyyyyyyyyyyyylllllllgccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccck                              
+  84                                                    oWWWgggggggggggccclllllllllWWllllyyyyyyyyyyyyyyyyyyyyyllllcccccglccllccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc                                
+  86                                                    gWWWgggggggggggllllllllllyyyyyyyyyyyyyyyyyyyyyyylllccccccccccccggccclcccccccccccccccccccccccccccccccccccccccccccccccccccccccccc                                 
+  88                                                    oWWWWgggggggggglllyyyyyyyyyyyyyyyyyyyyyyyllllccccccccccccccccccggllcccccccccccccccccccccccccccccccccccccccccccccccccccccccccck                                  
+  90                                                     gWWWWWgggggggyyyyyyyyyyyyyyyyyyyyylllcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccck                                   
+  92                                                     WWWWWWgggggggyyyyyyyyyyyyyllllcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc                                     
+  94                                                     oWWWWWgggggggyyyyyylllcccccccccccccccccccclggggggggggggggggggggccccccccccccccccccccccccccccccccccccccccccccccccccccccccck                                      
+  96                                                      ogWWWggggggggglcccccccccccccccccccclggWWWWggggccccccccccccgggggccccccccccccccccccccccccccccccccccccccccccccccccccccckk                                        
+  98                                                      oWWWWgggggggggccccccccccccccccggWWWWggggccccccccccccccccccccccggcccccccccccccccccccccccccccccccccccccccccccccccccoo                                           
+ 100                                                      kWWWWgggggggggcccccccccccccgWWWgggggccccccccccccccccccccccccccooccccccccccccccccccccccccccccccccccccccccccccccggg                                             
+ 102                                                       ogWWWgggggggggcccccccccclgggggcccccccccccccccccccccccccccccccoccccccccccccccccccccccccccccccccccccccccoggggg                                                 
+ 104                                                        kWWWgggggggggocccccccccggccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccgggg                                                       
+ 106                                                        oWWWWgggggggook kccccccgcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccooo o                                                          
+ 108                                                        kWWWWgggggggoo      kccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccckkk kkk                                                                   
+ 110                                                         kgWWWgggggook          kcccccccccccccccccccccccccccccccccccccccccccccccckkkk                                                                               
+ 112                                                          oWWWmggoook             ccccccccccccccccccccccccccccccccckkkkk                                                                                            
+ 114                                                          kgWWWboook              kcccccccccccccccccccccccccccccc                                                                                                   
+ 116                                                           ogWWgokk                ccccccccccccccccccccccccccccck                                                                                                   
+ 118                                                            kokok                 kccccccccccccccccccccccccccccc                                                                                                    
+ 120                                                                               kccccccccccccccccccccccccccccccck                                                                                                    
+ 122                                                                           kkcccccccccccccccccccccccccccccccccc                                                                                                     
+ 124                                                                        kogccccccckk  cccccccccccccccccccccccck                                                                                                     
+ 126                                                                      yyyygcccck      kccccccccccccccccccccccc                                                                                                      
+ 128                                                                   kyyyyyyok           kccccccccccccccccccccck                                                                                                      
+ 130                                                                 kyyyyyk                cccccccccccccccccccck                                                                                                       
+ 132                                                                 krk                   kccccccccccccccccccco                                                                                                        
+ 134                                                                                      kccccccccccccccccccck                                                                                                         
+ 136                                                                                   kkccccccccccccccccccckk                                                                                                          
+ 138                                                                                kcccccccccccccccccccckk                                                                                                             
+ 140                                                                             kcccccccccccccccccckk                                                                                                                  
+ 142                                                                          kccccccccccccccccckk                                                                                                                      
+ 144                                                                       kccccccccccccccckkk                                                                                                                          
+ 146                                                                    kkccccccccccccckk                                                                                                                               
+ 148                                                                 ooccccccccccckk                                                                                                                                    
+ 150                                                              kyyWcccccccckk                                                                                                                                        
+ 152                                                            yyyyyWgcckkk                                                                                                                                            
+ 154                                                         kyyyyyyyook                                                                                                                                                
+ 156                                                        yyyyyrk                                                                                                                                                     
+ 158                                                        yyr                                                                                                                                                         

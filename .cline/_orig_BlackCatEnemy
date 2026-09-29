@@ -1,0 +1,169 @@
+// Filename: BlackCatEnemy.js
+// Everything Vs Kitty ΓÇö v1.2.0
+// Black Cat: teleporting phantom with glowing yellow eyes, a long sinuous
+// tail, and a sleek dark silhouette. Phases between positions with a flash.
+// v1.2.0: Skinny & tall build ΓÇö drawn squeezed narrower and stretched
+//         taller (the Internet Bonus Round look).
+export const VERSION = 'v1.2.0';
+import EnemyBase from './EnemyBase.js';
+import { TAU, rand, clamp } from './utils.js';
+
+export default class BlackCatEnemy extends EnemyBase {
+  move(dt, slowMul) {
+    const s = this.speed * slowMul;
+    this.y += s * dt * 0.3;
+    // Teleport every ~1.8s
+    if (this.t % 1.8 < dt) {
+      this.x = rand(80, this.game.W - 80);
+      this.y = Math.min(this.y + rand(0, 120), this.game.H - 200);
+      this.flash = 0.2;
+      // Teleport particles
+      this.game.particles.burst(this.x, this.y, { count: 8, color: '#ffee58', speed: 100, life: 0.3 });
+    }
+    this.x = clamp(this.x, -50, this.game.W + 50);
+  }
+
+  attack() {
+    const a = this.angleToPlayer();
+    this.fireAtPlayer(a, 260, 1.1);
+  }
+
+  draw(ctx) {
+    const r = this.radius;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (this.flash > 0) ctx.globalAlpha = 0.4;
+    // Skinny & tall: squeeze the width, stretch the height (whole silhouette)
+    ctx.scale(0.65, 1.5);
+
+    // ΓöÇΓöÇΓöÇ TAIL (long, sinuous, glowing tip) ΓöÇΓöÇΓöÇ
+    const tailWave = Math.sin(this.t * 3) * r * 0.3;
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(r * 0.4, r * 0.3);
+    ctx.bezierCurveTo(
+      r * 0.8, r * 0.5 + tailWave,
+      r * 1.0, r * 0.2 - tailWave,
+      r * 1.1, -r * 0.1 + tailWave * 0.5
+    );
+    ctx.stroke();
+    // Tail tip glow
+    ctx.fillStyle = '#ffee58';
+    ctx.shadowColor = '#ffee58';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(r * 1.1, -r * 0.1 + tailWave * 0.5, r * 0.08, 0, TAU);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // ΓöÇΓöÇΓöÇ BODY (sleek, arched) ΓöÇΓöÇΓöÇ
+    const bodyGrad = ctx.createRadialGradient(0, r * 0.1, 0, 0, r * 0.1, r * 0.7);
+    bodyGrad.addColorStop(0, '#4a4a5a');
+    bodyGrad.addColorStop(0.6, this.color);
+    bodyGrad.addColorStop(1, '#1a1a2a');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.2, r * 0.55, r * 0.65, 0, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ HEAD (round) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#2b2b3a';
+    ctx.beginPath();
+    ctx.arc(0, -r * 0.4, r * 0.42, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ EARS (tall, pointed) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#2b2b3a';
+    // Left
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.3, -r * 0.7);
+    ctx.lineTo(-r * 0.55, -r * 1.25);
+    ctx.lineTo(-r * 0.05, -r * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    // Right
+    ctx.beginPath();
+    ctx.moveTo(r * 0.3, -r * 0.7);
+    ctx.lineTo(r * 0.55, -r * 1.25);
+    ctx.lineTo(r * 0.05, -r * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    // Inner ears (dark)
+    ctx.fillStyle = '#1a1a2a';
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.3, -r * 0.75);
+    ctx.lineTo(-r * 0.45, -r * 1.1);
+    ctx.lineTo(-r * 0.1, -r * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(r * 0.3, -r * 0.75);
+    ctx.lineTo(r * 0.45, -r * 1.1);
+    ctx.lineTo(r * 0.1, -r * 0.8);
+    ctx.closePath();
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ EYES (glowing yellow, slit pupils) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#ffee58';
+    ctx.shadowColor = '#ffee58';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.15, -r * 0.45, r * 0.1, r * 0.07, 0, 0, TAU);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(r * 0.15, -r * 0.45, r * 0.1, r * 0.07, 0, 0, TAU);
+    ctx.fill();
+    // Slit pupils
+    ctx.fillStyle = '#111';
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.15, -r * 0.45, r * 0.03, r * 0.06, 0, 0, TAU);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(r * 0.15, -r * 0.45, r * 0.03, r * 0.06, 0, 0, TAU);
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ NOSE (tiny pink) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#d4a0a0';
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 0.3);
+    ctx.lineTo(-r * 0.05, -r * 0.25);
+    ctx.lineTo(r * 0.05, -r * 0.25);
+    ctx.closePath();
+    ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ WHISKERS ΓöÇΓöÇΓöÇ
+    ctx.strokeStyle = 'rgba(200, 200, 220, 0.4)';
+    ctx.lineWidth = 0.7;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.3, -r * 0.3 + i * r * 0.08);
+      ctx.lineTo(-r * 0.7, -r * 0.35 + i * r * 0.12);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(r * 0.3, -r * 0.3 + i * r * 0.08);
+      ctx.lineTo(r * 0.7, -r * 0.35 + i * r * 0.12);
+      ctx.stroke();
+    }
+
+    // ΓöÇΓöÇΓöÇ PAWS (small, visible) ΓöÇΓöÇΓöÇ
+    ctx.fillStyle = '#3a3a4a';
+    ctx.beginPath(); ctx.ellipse(-r * 0.25, r * 0.7, r * 0.12, r * 0.08, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r * 0.25, r * 0.7, r * 0.12, r * 0.08, 0, 0, TAU); ctx.fill();
+
+    // ΓöÇΓöÇΓöÇ GHOST TRAIL (subtle afterimage) ΓöÇΓöÇΓöÇ
+    const trailAlpha = 0.1 + 0.05 * Math.sin(this.t * 2);
+    ctx.globalAlpha = trailAlpha;
+    ctx.fillStyle = '#ffee58';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.7, r * 0.9, 0, 0, TAU);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+}

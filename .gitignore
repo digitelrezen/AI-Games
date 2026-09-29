@@ -1,0 +1,5 @@
+Builds/
+.tools/
+node_modules/
+*.png
+Thumbs.db

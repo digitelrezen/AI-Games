@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pixel Art Preview — Kitty Vs Everything</title>
+<style>
+  :root {
+    --bg: #14161c;
+    --panel: #1e222b;
+    --border: #313846;
+    --text: #e8ecf3;
+    --accent: #7fd1ff;
+    --muted: #8b94a7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 24px 16px 40px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }
+  h1 span { color: var(--accent); }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .toolbar label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  select, button {
+    background: #262c38;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  select { max-width: 320px; }
+  button:hover, select:hover { border-color: var(--accent); }
+  button.active { border-color: var(--accent); background: #2e3a4c; }
+
+  .zoom-group { display: flex; gap: 4px; }
+
+  #stage {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    max-width: min(96vw, 1400px);
+    max-height: 72vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+  }
+  /* Crisp pixels: kill any browser smoothing on the canvas itself */
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    box-shadow: 0 0 0 1px #000, 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  #meta {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: Consolas, "Cascadia Mono", monospace;
+  }
+  #status {
+    font-size: 13px;
+    min-height: 18px;
+  }
+  #status.error { color: #ff8484; font-family: Consolas, monospace; }
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 640px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  code {
+    background: #262c38;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Pixel Art Preview <span>· Kitty Vs Everything</span></h1>
+
+  <div class="toolbar">
+    <label for="asset-select">Asset</label>
+    <select id="asset-select"></select>
+
+    <label>Zoom</label>
+    <div class="zoom-group" id="zoom-group">
+      <button data-zoom="2">2×</button>
+      <button data-zoom="4" class="active">4×</button>
+      <button data-zoom="6">6×</button>
+      <button data-zoom="8">8×</button>
+      <button data-zoom="12">12×</button>
+      <button data-zoom="16">16×</button>
+    </div>
+
+    <label>Background</label>
+    <div class="zoom-group" id="bg-group">
+      <button data-bg="checker" class="active">Checkerboard</button>
+      <button data-bg="black">Black</button>
+      <button data-bg="white">White</button>
+    </div>
+  </div>
+
+  <div id="stage"><canvas id="canvas" width="100" height="100"></canvas></div>
+  <div id="meta"></div>
+  <div id="status"></div>
+  <p class="hint">
+    Nearest-neighbor rendering (no smoothing) — each art pixel is a crisp square.
+    The checkerboard cells are 2 art-pixels wide, so transparent edge pixels line up
+    with the grid for easy inspection. If the image fails to load, open this file from
+    the game folder (e.g. double-click <code>preview.html</code>) so the relative path
+    <code>../.assets/…</code> resolves (the .assets folder now lives one level up, at
+    Z:\Dev\AI-GAMES\.assets).
+  </p>
+
+<script>
+(function () {
+  "use strict";
+
+  var ASSETS = [
+    "Robot Pixel Art.png",
+    "Cat 1 Pixel Art.png",
+    "Cat 2 Pixel Art.png",
+    "Cat  Paw Pixel Art.png",
+    "Cat Poses Pixel Art.png",
+    "Wasp 1 Pixel Art.png",
+    "Wolf 1 Pixel Art.png",
+    "enemy black cat pixel art.png"
+  ];
+
+  var DEFAULT_ASSET = "Robot Pixel Art.png";
+  var CHECKER_SIZE = 2; // art pixels per checkerboard cell
+
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  var select = document.getElementById("asset-select");
+  var meta = document.getElementById("meta");
+  var status = document.getElementById("status");
+
+  var currentImage = null;
+  var zoom = 4;
+  var bg = "checker";
+
+  // ---- Asset dropdown -------------------------------------------------
+  ASSETS.forEach(function (name, i) {
+    var opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+  select.value = String(ASSETS.indexOf(DEFAULT_ASSET));
+
+  // ---- Controls -------------------------------------------------------
+  document.getElementById("zoom-group").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-zoom]");
+    if (!btn) return;
+    zoom = parseInt(btn.dataset.zoom, 10);
+    setActive("zoom-group", btn);
+    render();
+  });
+
+  document.getElementById("bg-group").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-bg]");
+    if (!btn) return;
+    bg = btn.dataset.bg;
+    setActive("bg-group", btn);
+    render();
+  });
+
+  select.addEventListener("change", function () {
+    loadAsset(parseInt(select.value, 10));
+  });
+
+  function setActive(groupId, btn) {
+    var group = document.getElementById(groupId);
+    Array.prototype.forEach.call(group.children, function (b) {
+      b.classList.remove("active");
+    });
+    btn.classList.add("active");
+  }
+
+  // ---- Loading --------------------------------------------------------
+  function loadAsset(index) {
+    var name = ASSETS[index];
+    status.className = "";
+    status.textContent = "Loading " + name + " …";
+
+    var img = new Image();
+    img.onload = function () {
+      currentImage = img;
+      status.textContent = "";
+      meta.textContent =
+        "native: " + img.naturalWidth + " × " + img.naturalHeight +
+        " px   ·   displayed: " + (img.naturalWidth * zoom) + " × " + (img.naturalHeight * zoom) +
+        " px   ·   " + zoom + "× nearest-neighbor";
+      render();
+    };
+    img.onerror = function () {
+      status.className = "error";
+      status.textContent =
+        "Failed to load ../.assets/" + name +
+        " — make sure preview.html is opened from the game folder (.assets moved up one level).";
+    };
+    img.src = "../.assets/" + encodeURIComponent(name);
+  }
+
+  // ---- Rendering ------------------------------------------------------
+  function drawCheckerboard(w, h) {
+    var cell = CHECKER_SIZE * zoom;
+    var light = "#c9cdd6";
+    var dark = "#8f96a3";
+    for (var y = 0; y < h; y += cell) {
+      for (var x = 0; x < w; x += cell) {
+        var isEven = ((x / cell) + (y / cell)) % 2 === 0;
+        ctx.fillStyle = isEven ? light : dark;
+        ctx.fillRect(x, y, Math.min(cell, w - x), Math.min(cell, h - y));
+      }
+    }
+  }
+
+  function render() {
+    if (!currentImage) return;
+
+    var w = currentImage.naturalWidth;
+    var h = currentImage.naturalHeight;
+    canvas.width = w * zoom;
+    canvas.height = h * zoom;
+
+    // Key to crisp pixels: never let the canvas smooth the art.
+    ctx.imageSmoothingEnabled = false;
+
+    if (bg === "checker") {
+      drawCheckerboard(canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = bg === "black" ? "#000000" : "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+  }
+
+  loadAsset(ASSETS.indexOf(DEFAULT_ASSET));
+})();
+</script>
+</body>
+</html>

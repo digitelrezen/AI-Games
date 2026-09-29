@@ -1,0 +1,38 @@
+feat: v3.20.0 - LAN co-op + full second Cat Ship + E6 flat-file config/state
+
+Multiplayer (host-authoritative LAN over a WebSocket relay):
+- New net/ module: E6 flat-file codec, JSON wire protocol, NetSettings,
+  PlayerProfile, Player2Controls, NetClient, NetSync, CoopManager,
+  ClientMirror, NetSettingsUI, and a Node ws relay (net/server.mjs).
+- Host simulates the full game and broadcasts authoritative state; the
+  client sends P2 input only and mirrors the world (no local physics).
+- In-game "MULTIPLAYER (LAN)" panel: host/join/disconnect plus E6
+  export/import of the config and per-player profiles.
+
+Second Cat Ship (P2):
+- A full second CatShipFactory ship, not a visual clone: own HP/shield/
+  lives/score/theme/callsign/minis/weapons. Auto-aims at the nearest
+  enemy (no mouse, no manual rotation).
+- Local co-op: separate P2 keyboard controls (Player2Controls).
+- Per-player combat: bullet.owner flows through Combat.onEnemyDeath for
+  score credit. Co-op game-over only when ALL player ships are dead.
+
+E6 flat-file support (strict):
+- Config + profiles stored as plain-text E6 records (net/data/*.e6).
+- Wire state uses E6 blocks inside JSON messages.
+- Fixed splitRow/unescapeValue to correctly preserve backslash, pipe,
+  and newline escaping (round-trip test now 24/24).
+
+UI / HUD:
+- P2 HUD (callsign/lives/score/HP/shield), net status HUD, and LAN
+  settings panel styling.
+
+Also:
+- package.json: v3.20.0, new "lan" script, ws dependency.
+- config.js: PLAYER2 config block.
+- New art assets (not yet wired into gameplay): Asteroid
+  pixel_art_small.png, Robot-Bender Pixel Art.png.
+- ARCHITECTURE.md: v3.20.0 multiplayer/LAN/E6 section.
+
+Verified: validator clean, E6 round-trip 24/24, LAN relay 5/5, browser
+smoke tests (solo / local co-op / LAN host+client), build clean.

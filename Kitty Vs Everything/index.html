@@ -1,0 +1,368 @@
+<!-- Filename: index.html -->
+<!-- Kitty Vs Everything — v3.18.0 — DOM shell. -->
+<!--
+  ═══════════════════════════════════════════════════════════════
+  NO SCREENSHOTS — HARD CONSTRAINT (see "No Screenshots Cline.txt")
+  ═══════════════════════════════════════════════════════════════
+  The build/verify pipeline MUST NOT capture screenshots or any
+  image input. The LLM server rejects image payloads with:
+    500 "image input is not supported"
+  Verify v3.17.0 (and all future work) using CODE ANALYSIS, LOGS,
+  and the headless tooling only:
+    • ../tools/validate.mjs  — static import/syntax/contract checks
+    • ../tools/smoke.mjs     — headless boot + N-frame simulation
+    • ../tools/harness.mjs   — deterministic gameplay assertions
+  (headless tooling lives one level up, at Z:\Dev\AI-GAMES\tools)
+  Do NOT call browser screenshot tools, do NOT embed images, and
+  do NOT attach screenshots to any response.
+  ═══════════════════════════════════════════════════════════════
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Kitty Vs Everything — v3.40.0</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-root">
+    <canvas id="game-canvas" width="1280" height="720"></canvas>
+
+    <!-- ─── HUD (v3.14.0: slim top bar — HP/shield/weapon/fleet moved to #fc-dashboard) ─── -->
+    <div id="hud" class="hidden">
+      <div class="hud-top-bar">
+        <div class="hud-section hud-left">
+          <div class="hud-row hud-lives-row">
+            <span id="lives">❤ 3</span>
+          </div>
+        </div>
+        <div class="hud-section hud-center">
+          <div id="wave-label">WAVE 1</div>
+          <div id="mission-timer">00:00</div>
+        </div>
+        <div class="hud-section hud-right">
+          <div id="score">SCORE 0</div>
+          <div id="multiplier">x1.0</div>
+          <!-- v3.21.0: duplicate stun/napalm/nova tags removed — the fire-control
+               panel (bottom) is the single source of truth for ability state. -->
+          <div id="aimbot-label" class="hidden"></div>
+          <!-- v3.22.0: pause button moved to the fire-control panel (under TIME) -->
+          <div id="version-label">v3.34.0</div>
+        </div>
+      </div>
+      <!-- v3.20.0: P2 HUD (co-op / LAN) — hidden in solo -->
+      <div id="p2-hud" class="hidden">
+        <div class="p2-hud-row">
+          <span id="p2-callsign" class="p2-callsign">P2</span>
+          <span id="p2-lives">❤ 3</span>
+          <span id="p2-score">0</span>
+        </div>
+        <div class="p2-hud-row p2-hud-bars">
+          <div class="fc-meter"><div id="p2-hp-fill" class="fc-meter-fill"></div></div>
+          <div class="fc-meter"><div id="p2-shield-fill" class="fc-meter-fill shield"></div></div>
+        </div>
+      </div>
+      <!-- v3.20.0: net status indicator (LAN) -->
+      <div id="net-hud" class="net-hud net-hud-disconnected hidden">OFFLINE</div>
+    </div>
+
+    <!-- ─── FIRE-CONTROL DASHBOARD (v3.14.0: HUDFireControl.js; v3.19.0: console left / SPD far-right / minis side-by-side) ─── -->
+    <div id="fc-dashboard" class="hidden">
+      <!-- v3.21.0: MINIMIZED BAR (M key) — compact hull/shield strip shown when
+           the panel is collapsed; the full columns hide via .minimized. -->
+      <div id="fc-mini-bar">
+        <span class="fc-block-title">HULL</span>
+        <div class="fc-meter fc-mini-meter"><div id="fc-mini-hp-fill" class="fc-meter-fill"></div></div>
+        <span class="fc-readout" id="fc-mini-hp-text">100</span>
+        <span class="fc-block-title">SHIELD</span>
+        <div class="fc-meter fc-mini-meter"><div id="fc-mini-shield-fill" class="fc-meter-fill shield"></div></div>
+        <span class="fc-readout" id="fc-mini-shield-text">50</span>
+        <span class="fc-mini-hint">M: EXPAND</span>
+      </div>
+      <!-- v3.19.0: LEFT — combat console (TIME tucked into its top-right corner) -->
+      <div id="combat-console" class="hidden">
+        <div class="console-header">
+          <span class="console-title">COMBAT CONSOLE <span id="console-count">0</span></span>
+          <!-- v3.22.0: right-side stack — TIME on top, pause button below (moved
+               from the top-right HUD); the button matches the TIME box width. -->
+          <div class="console-right-stack">
+            <span class="console-time"><span class="fc-block-title">TIME</span> <span class="fc-readout" id="fc-time">--:--</span></span>
+            <button id="pause-btn" title="Pause (Esc / P)">⏸</button>
+          </div>
+        </div>
+        <div id="console-lines"></div>
+      </div>
+      <!-- v3.18.0: CENTER — hull / shield / mini HP stack -->
+      <div class="fc-col fc-center">
+        <div class="fc-block">
+          <span class="fc-block-title">HULL</span>
+          <div class="fc-meter"><div id="hp-fill" class="fc-meter-fill"></div></div>
+          <span class="fc-readout" id="hp-text">100</span>
+        </div>
+        <div class="fc-block">
+          <span class="fc-block-title">SHIELD</span>
+          <div class="fc-meter"><div id="shield-fill" class="fc-meter-fill shield"></div></div>
+          <span class="fc-readout" id="shield-text">50</span>
+        </div>
+        <!-- v3.17.0: mini HP — v3.19.0: side-by-side under the shield bar -->
+        <div class="fleet-stack" id="fleet-row">
+          <span id="fleet-m1" class="fleet-mini" style="display:none">
+            <span class="fleet-tag">M1</span>
+            <span class="fleet-bar"><span class="fleet-fill ok"></span></span>
+            <span class="fleet-num">60</span>
+          </span>
+          <span id="fleet-m2" class="fleet-mini" style="display:none">
+            <span class="fleet-tag">M2</span>
+            <span class="fleet-bar"><span class="fleet-fill ok"></span></span>
+            <span class="fleet-num">60</span>
+          </span>
+        </div>
+        <div class="fc-fleet">
+          <span class="fc-block-title">FLEET</span>
+          <span id="fc-fleet-count">0/2</span>
+          <!-- v3.16.0: fleet deploy status (DOCKED = coupled, DEPLOYED = orbit) -->
+          <span id="fc-fleet-deploy" class="fc-fleet-deploy docked">DOCKED</span>
+        </div>
+      </div>
+      <!-- v3.19.0: RIGHT — weapon selection panel + SPD readout (far right) -->
+      <div class="fc-col fc-right">
+        <div class="fc-weapon-panel">
+          <div class="fc-block">
+            <span class="fc-block-title">WEAPON</span>
+            <span id="weapon-label">VULKAN CANNON</span>
+            <span id="fc-weapon-status" class="fc-weapon-status ready">READY</span>
+            <span id="thermal-indicator" class="thermal-ok"></span>
+            <!-- v3.33.0: FRENZY indicator (30s all-cooldowns-off power-up) -->
+            <span id="frenzy-indicator" class="frenzy-indicator hidden">⚡ FRENZY</span>
+          </div>
+          <div class="fc-slots">
+            <div class="fc-slot" id="stun-slot">
+              <span class="fc-slot-key">Q</span>
+              <span class="fc-slot-state">READY</span>
+              <div class="fc-slot-bar"><span class="fc-slot-fill"></span></div>
+            </div>
+            <div class="fc-slot" id="napalm-slot">
+              <span class="fc-slot-key">E</span>
+              <span class="fc-slot-state">READY</span>
+              <div class="fc-slot-bar"><span class="fc-slot-fill"></span></div>
+            </div>
+            <div class="fc-slot" id="nova-slot">
+              <span class="fc-slot-key">F</span>
+              <span class="fc-slot-state">NEED MINI</span>
+              <div class="fc-slot-bar"><span class="fc-slot-fill"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="fc-block fc-speed-block">
+          <span class="fc-block-title">SPD</span>
+          <span class="fc-readout" id="fc-speed">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="alert-banner" class="hidden"></div>
+
+    <!-- ─── PAUSE OVERLAY (v3.14.0: PauseMenu.js) ─── -->
+    <div id="pause-overlay" class="hidden">
+      <div class="pause-content">
+        <h2>⏸ PAUSED</h2>
+        <p>Press <kbd>ESC</kbd> or <kbd>P</kbd> to resume</p>
+        <div class="pause-btns">
+          <button id="pause-resume">▶ RESUME</button>
+          <button id="pause-options">⚙ OPTIONS</button>
+          <button id="pause-restart">↻ RESTART LEVEL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TOUCH UI ─── -->
+    <div id="touch-ui" class="hidden">
+      <div id="joy-base"><div id="joy-knob"></div></div>
+      <div id="touch-buttons">
+        <button id="btn-fire" class="touch-btn fire">FIRE</button>
+        <button id="btn-stun" class="touch-btn stun">STUN</button>
+        <button id="btn-napalm" class="touch-btn napalm">NAPALM</button>
+        <button id="btn-boost" class="touch-btn boost">BOOST</button>
+        <button id="btn-nova" class="touch-btn nova">NOVA</button>
+        <button id="btn-weapon" class="touch-btn weapon">WPN</button>
+      </div>
+    </div>
+
+    <!-- ─── MAIN MENU ─── -->
+    <div id="menu-screen">
+      <h1>KITTY<br/>VS EVERYTHING</h1>
+      <p class="tagline">The cat defends the galaxy. Obviously.</p>
+      <div class="menu-ship-select">
+        <div class="ship-option selected" data-theme="yellow">
+          <canvas class="ship-icon"></canvas>
+          <span>Yellow</span>
+        </div>
+        <div class="ship-option" data-theme="orange">
+          <canvas class="ship-icon"></canvas>
+          <span>Orange</span>
+        </div>
+        <div class="ship-option" data-theme="white">
+          <canvas class="ship-icon"></canvas>
+          <span>White</span>
+        </div>
+        <div class="ship-option" data-theme="gray">
+          <canvas class="ship-icon"></canvas>
+          <span>Gray</span>
+        </div>
+        <div class="ship-option" data-theme="brown">
+          <canvas class="ship-icon"></canvas>
+          <span>Brown</span>
+        </div>
+      </div>
+      <button id="start-btn">▶ LAUNCH MISSION</button>
+      <button id="menu-settings-btn" class="menu-settings-btn" title="Settings & keybinds">⚙ SETTINGS</button>
+      <div class="menu-scores">
+        <h3>TOP PILOTS</h3>
+        <div id="menu-scores-list"></div>
+      </div>
+      <!-- v3.23.0: dynamic keybind footer — MenuKeybinds.js renders the
+           player's ACTIVE binds (standard default set when unmodified)
+           and re-renders live on every keybindsChanged event from
+           Settings. Replaces the old hardcoded .controls-help lines. -->
+      <div class="controls-help" id="menu-keybinds"></div>
+      <p class="controls-help menu-kb-note">High score saved automatically</p>
+    </div>
+
+    <!-- ─── GAME OVER ─── -->
+    <div id="gameover-screen" class="hidden">
+      <h2>MISSION FAILED</h2>
+      <p id="final-score">FINAL SCORE: 0</p>
+      <div class="go-scores">
+        <h3>TOP PILOTS</h3>
+        <div id="go-scores-list"></div>
+      </div>
+      <div class="go-input">
+        <label>CALLSIGN</label>
+        <input id="initials" maxlength="3" placeholder="AAA" />
+        <button id="save-score">SAVE</button>
+      </div>
+      <button id="retry-btn">↻ RETRY MISSION</button>
+    </div>
+
+    <!-- ─── SETTINGS SCREEN (v3.14.0: SettingsScreen.js) ─── -->
+    <div id="settings-screen" class="hidden">
+      <div class="settings-content">
+        <div class="settings-header">
+          <h2>⚙ SETTINGS</h2>
+          <button id="settings-close">✕</button>
+        </div>
+        <div class="settings-grid">
+          <section class="settings-section">
+            <h3>KEYBINDS</h3>
+            <div id="settings-keybinds"></div>
+            <p class="settings-hint">Click a chip, then press any key or mouse button. ESC cancels. Conflicts steal the key.</p>
+          </section>
+          <section class="settings-section">
+            <h3>FLIGHT</h3>
+            <label>Keyboard spin <span id="set-spin-kb-val" class="settings-val">1.00×</span></label>
+            <input type="range" id="set-spin-kb" min="0.25" max="3" step="0.05" value="1" />
+            <label>Mouse spin <span id="set-spin-mouse-val" class="settings-val">1.00×</span></label>
+            <input type="range" id="set-spin-mouse" min="0.25" max="3" step="0.05" value="1" />
+            <h3>AUDIO</h3>
+            <label>Master volume <span id="set-vol-master-val" class="settings-val">100%</span></label>
+            <input type="range" id="set-vol-master" min="0" max="1" step="0.05" value="1" />
+            <label>SFX volume <span id="set-vol-sfx-val" class="settings-val">100%</span></label>
+            <input type="range" id="set-vol-sfx" min="0" max="1" step="0.05" value="1" />
+            <label>Music volume <span id="set-vol-music-val" class="settings-val">100%</span></label>
+            <input type="range" id="set-vol-music" min="0" max="1" step="0.05" value="1" />
+            <h3>FX</h3>
+            <label>Particle density <span id="set-density-val" class="settings-val">100%</span></label>
+            <input type="range" id="set-density" min="0.1" max="1" step="0.05" value="1" />
+            <label class="settings-toggle"><input type="checkbox" id="set-shake" checked /> Screen shake</label>
+          </section>
+          <section class="settings-section">
+            <h3>MULTIPLAYER (LAN)</h3>
+            <div id="net-settings"></div>
+          </section>
+        </div>
+        <div class="settings-footer">
+          <button id="settings-reset">RESET TO DEFAULTS</button>
+          <button id="settings-done">DONE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── DEV PANEL (v3.34.0: pinned header/footer + scrollable .dev-body,
+         stage-relative max-height → every control reachable at ANY resolution) ─── -->
+    <div id="dev-panel" class="hidden">
+      <div class="dev-header">
+        <span>DEV PANEL — <span id="dev-version"></span></span>
+        <button id="dev-close" title="Close (backtick / F9)">✕</button>
+      </div>
+      <div class="dev-body">
+        <div class="dev-section">
+          <label>Spawn Enemy</label>
+          <div class="dev-select-row">
+            <select id="dev-type"></select>
+            <select id="dev-tier"></select>
+          </div>
+          <button id="dev-spawn" class="dev-primary dev-full dev-mt">SPAWN</button>
+          <label class="dev-mt">Wave Spawn Count</label>
+          <div class="dev-slider-row">
+            <input type="range" id="dev-spawn-count" min="0" max="300" step="1" value="0" />
+            <span id="dev-spawn-count-val" class="dev-slider-val">AUTO</span>
+          </div>
+          <span class="dev-hint">0 = auto ramp (20→300) · pins the active enemy count per wave</span>
+        </div>
+        <div class="dev-section">
+          <label>Weapon Testing</label>
+          <div class="dev-btn-row">
+            <button id="dev-aimbot" class="dev-full">TEST AIMBOT</button>
+          </div>
+          <span class="dev-hint">T key · auto-aim + fire at nearest enemy</span>
+          <label class="dev-mt">Weapon Override</label>
+          <div id="dev-weapons" class="dev-btn-row"></div>
+        </div>
+        <div class="dev-section">
+          <label>Player</label>
+          <div class="dev-grid">
+            <button id="dev-life">+LIFE</button>
+            <button id="dev-mini">+MINI (theme)</button>
+            <button id="dev-score">+10K SCORE</button>
+            <button id="dev-god">GOD MODE</button>
+          </div>
+        </div>
+        <div class="dev-section">
+          <label>Bonus Levels</label>
+          <div class="dev-grid">
+            <button id="dev-bonus">Random</button>
+            <button id="dev-bonus-bone">Bone Yard</button>
+            <button id="dev-bonus-internet" class="dev-full">Internet</button>
+          </div>
+        </div>
+        <div class="dev-section">
+          <label>Drops</label>
+          <div class="dev-grid">
+            <button id="dev-robot">Drop Robot</button>
+            <button id="dev-ship">Drop Ship</button>
+            <button id="dev-asteroid" class="dev-full">Drop Asteroid</button>
+          </div>
+        </div>
+        <div class="dev-section">
+          <label>World &amp; Display</label>
+          <div class="dev-btn-row">
+            <button id="dev-clear" class="dev-full">Clear Enemies</button>
+          </div>
+          <div class="dev-btn-row dev-mt">
+            <button id="dev-bounds" class="dev-full">BOUNDS: WRAP (classic)</button>
+          </div>
+          <span class="dev-hint">classic wrap-around vs bounce off arena edges</span>
+          <div class="dev-btn-row dev-mt">
+            <button id="dev-fullscreen" class="dev-full">FULLSCREEN: OFF</button>
+          </div>
+          <span class="dev-hint">U key · auto-scales, letterboxed</span>
+        </div>
+      </div>
+      <div class="dev-footer" id="dev-viewport" title="Live viewport (refreshes on resize)">—</div>
+    </div>
+  </div>
+
+  <script type="module" src="js/core/main.js"></script>
+</body>
+</html>

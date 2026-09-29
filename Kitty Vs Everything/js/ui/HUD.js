@@ -1,0 +1,136 @@
+// Filename: HUD.js
+// Kitty Vs Everything — v3.3.0
+// DOM HUD top bar (HP, Shield, Lives, Score, Wave, Timer, Weapon,
+// Stun/Nova/Thermal indicators) + canvas floating combat text + banners.
+// v3.1.0: Replaced ELEMENTS with WEAPONS. Added thermal indicator.
+// v3.2.0: No HUD layout changes (catship redesign lives in PlayerRenderer).
+// v3.3.0: Version label bumped with the mini-ship module split.
+// v3.6.0: Version label bumped with the catship art pass (arm-style rear
+//         legs, invisible dock ports, determined face) + 360° mouse-look.
+// v3.7.0: NAPALM indicator (E/J napalm rocket cooldown).
+// v3.10.0: FLEET row — docked mini-ship HP bars (L / R) in the HUD top bar:
+//          per-side bar + number, green / amber / red by remaining HP,
+//          white flash frame while the mini's hitFlash is up. Row hides
+//          when no minis are docked.
+// v3.12.0: Version label bumped with dynamic display scaling + fullscreen.
+// v3.13.0: Version label bumped with the dynamic ultra-wide viewport.
+// v3.14.0: FLEET strip + weapon-label / thermal readouts moved to
+//          HUDFireControl.js (bottom fire-control dashboard). HUD keeps
+//          HP/shield/lives/score/wave/timer + compact stun/napalm/nova tags.
+// v3.15.0: Version label bumped with the Internet entourage (gold chain
+//          + iced-out real-time clock pendants on the Black Cats).
+// v3.16.0: Version label bumped with mini-fleet deploy/recall + weapon anim.
+// v3.21.0: Removed the duplicate STUN / NAPALM / NOVA top-right indicators —
+//          the fire-control panel's slots (HUDFireControl.js) are the single
+//          source of truth for ability state.
+// v3.29.0: Bender easter egg — the 10 s countdown is gone; the label now
+//          shows the kill counter "BENDER x/4" (game.aimbot.killCount /
+//          BENDER_KILLS) while the egg's aim window is open.
+export const VERSION = 'v3.31.0';
+import { formatTime } from '../core/utils.js';
+import { bus } from '../core/EventBus.js';
+import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter
+
+export default class HUD {
+  constructor(game) {
+    this.game = game;
+    this.bannerEl = document.getElementById('alert-banner');
+    this.floaters = [];
+    this.bannerTimer = 0;
+    document.getElementById('version-label').textContent = VERSION;
+    bus.on('banner', (d) => this.showBanner(d.text, d.tone, d.duration));
+    bus.on('dmg', (d) => {
+      if (this.floaters.length < 60) this.floaters.push({ x: d.x, y: d.y, text: d.text, color: d.color, life: 0.9 });
+    });
+  }
+  showBanner(text, tone, duration) {
+    this.bannerEl.textContent = text;
+    this.bannerEl.className = tone || 'good';
+    this.bannerTimer = duration || 2;
+  }
+  update(dt) {
+    if (this.bannerTimer > 0) {
+      this.bannerTimer -= dt;
+      if (this.bannerTimer <= 0) this.bannerEl.className = 'hidden';
+    }
+    const g = this.game;
+    if (g.state === 'menu' || g.state === 'gameover' || !g.player) return;
+    const p = g.player;
+
+    const hpPct = Math.max(0, 100 * p.hp / p.maxHp);
+    document.getElementById('hp-fill').style.width = hpPct + '%';
+    document.getElementById('hp-text').textContent = Math.ceil(p.hp);
+    const shPct = p.maxShield > 0 ? Math.max(0, 100 * p.shield / p.maxShield) : 0;
+    document.getElementById('shield-fill').style.width = shPct + '%';
+    document.getElementById('shield-text').textContent = Math.ceil(p.shield);
+
+    // ─── FLEET strip (v3.14.0): owned by HUDFireControl.js (dashboard) ───
+
+    document.getElementById('lives').textContent = '❤ ' + p.lives;
+    document.getElementById('score').textContent = 'SCORE ' + g.score.toLocaleString();
+    document.getElementById('multiplier').textContent = 'x' + g.multiplier.toFixed(1);
+
+    let waveText;
+    if (g.state === 'bonus') {
+      if (g.bonus.currentBonus === g.bonus.boneYard) waveText = '☠ BONE YARD ☠';
+      else if (g.bonus.currentBonus === g.bonus.internet) waveText = '🌐 INTERNET 🌐';
+      else waveText = 'BONUS LEVEL';
+    } else {
+      waveText = 'WAVE ' + g.waveManager.wave;
+    }
+    document.getElementById('wave-label').textContent = waveText;
+    document.getElementById('mission-timer').textContent = formatTime(g.time);
+
+    // Weapon label + thermal: v3.14.0 — owned by HUDFireControl.js (it
+    // updates weapon-label / fc-weapon-status / thermal-indicator live,
+    // including the ×N mini multiplier and HOT/LOCKED states).
+
+    // Stun / Napalm / Nova: v3.21.0 — the duplicate top-right indicators were
+    // removed; the fire-control panel's slots (HUDFireControl.js) are the
+    // single source of truth for ability state.
+
+    // Bender easter egg (v3.24.0, kill-based v3.29.0) — kill counter
+    const abEl = document.getElementById('aimbot-label');
+    if (g.aimbot.active || g.aimbot.aimbotActive) {
+      abEl.classList.remove('hidden');
+      abEl.textContent = 'BENDER ' + g.aimbot.killCount + '/' + BENDER_KILLS;
+    } else {
+      abEl.classList.add('hidden');
+    }
+
+    // v3.20.0: P2 HUD (co-op / LAN)
+    this._updateP2Hud(g);
+
+    // Floating combat text
+    for (const f of this.floaters) { f.y -= 40 * dt; f.life -= dt; }
+    this.floaters = this.floaters.filter(f => f.life > 0);
+  }
+  draw(ctx) {
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    for (const f of this.floaters) {
+      ctx.globalAlpha = Math.min(1, f.life * 2);
+      ctx.fillStyle = f.color;
+      ctx.fillText(f.text, f.x, f.y);
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'left';
+  }
+
+  /** v3.20.0: update the P2 HUD (co-op / LAN). Hidden in solo. */
+  _updateP2Hud(g) {
+    const p2Hud = document.getElementById('p2-hud');
+    if (!p2Hud) return;
+    const p2 = g.player2;
+    if (!p2) { p2Hud.classList.add('hidden'); return; }
+    p2Hud.classList.remove('hidden');
+    const callsign = document.getElementById('p2-callsign');
+    if (callsign) callsign.textContent = (p2.callsign || 'P2').toUpperCase();
+    document.getElementById('p2-lives').textContent = '❤ ' + p2.lives;
+    document.getElementById('p2-score').textContent = Math.round(p2.score || 0).toLocaleString();
+    const hpPct = Math.max(0, 100 * p2.hp / p2.maxHp);
+    document.getElementById('p2-hp-fill').style.width = hpPct + '%';
+    const shPct = p2.maxShield > 0 ? Math.max(0, 100 * p2.shield / p2.maxShield) : 0;
+    document.getElementById('p2-shield-fill').style.width = shPct + '%';
+  }
+}
