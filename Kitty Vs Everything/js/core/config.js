@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.45.0
+// Kitty Vs Everything — v3.46.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.1.0: Replaced 8-element system with 3-weapon system (Vulkan / Plasma / Rail).
@@ -85,7 +85,12 @@
 //          source (enemy kills, wave-clear, asteroid shatter, Internet
 //          bonus, crate destruction) samples it, so Health / Frenzy /
 //          Shields / Wanted (mini) / Extra Life all appear everywhere.
-export const VERSION = 'v3.45.0';
+// v3.46.0: Per-weapon paw barrel lengths (WEAPONS[weapon].barrelLen):
+//          Vulcan 15 (twin Gatling), Plasma 10 (twin short pods), Rail 22
+//          (single long charge barrel). SHIP_GEOMETRY.barrelLen remains the
+//          fallback. Plasma now fires a 3-bolt fan from BOTH front paws
+//          (no alternation) — see PlayerWeapons.js / MiniShip.js.
+export const VERSION = 'v3.46.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -134,10 +139,12 @@ export const SHIP_GEOMETRY = {
   thrusterR: { x: 15,  y: 28 },  // right back paw  — thruster rocket pod at the rear-leg ankle (no bullets)
   miniDockL: { x: -26, y: 2 },   // left mini dock  — docked mini-ship slot
   miniDockR: { x: 26,  y: 2 },   // right mini dock — docked mini-ship slot
-  // v3.17.0: OVERSIZED weapon barrels — barrel length (local -Y) from the paw
-  // hardpoint to the muzzle tip. The art (PlayerShipFx.drawWeaponPaw) draws
-  // the barrels this long and bullets spawn at the tip (PlayerHardpoints
-  // .getMuzzleTipOffsets). ~15 is well over half the front-arm length (~24).
+  // v3.17.0: OVERSIZED weapon barrels — DEFAULT barrel length (local -Y) from
+  // the paw hardpoint to the muzzle tip. The art (PlayerShipFx.drawWeaponPaw)
+  // draws the barrels this long and bullets spawn at the tip (PlayerHardpoints
+  // .getMuzzleTipOffsets). v3.46.0: this is the VULKAN default / fallback; each
+  // weapon can override it via WEAPONS[weapon].barrelLen (vulkan 15 / plasma
+  // 10 / rail 22). ~15 is well over half the front-arm length (~24).
   barrelLen: 15,
 };
 
@@ -280,6 +287,8 @@ export const WEAPONS = {
     thermalDecay: 0.35,
     thermalMax: 1.0,
     thermalLockout: 1.2,
+    // v3.46.0: per-weapon paw barrel length (local -Y) — twin Gatling barrels
+    barrelLen: 15,
     desc: 'High-RoF Gatling · Ballistic Tracking · Thermal Buildup',
   },
   plasma: {
@@ -291,8 +300,9 @@ export const WEAPONS = {
     rate: 0.24,
     pierce: 0,
     shieldMelt: 15,
-    alternating: true,
-    desc: 'Burst Damage · Alternating Bolts · Shield Melt',
+    // v3.46.0: per-weapon paw barrel length (local -Y) — short emitter pods
+    barrelLen: 10,
+    desc: 'Twin-Pod Burst · 3 Bolts/Paw · Shield Melt',
   },
   rail: {
     name: 'RAIL CANNON',
@@ -303,6 +313,8 @@ export const WEAPONS = {
     rate: 1.0,
     pierce: 999,
     chargeTime: 0.5,
+    // v3.46.0: per-weapon paw barrel length (local -Y) — single long barrel
+    barrelLen: 22,
     desc: 'Piercing Beam · Charge Mechanic · Massive Impact',
   },
 };

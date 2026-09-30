@@ -1,5 +1,5 @@
 // Filename: PlayerWeapons.js
-// Kitty Vs Everything — v3.11.0
+// Kitty Vs Everything — v3.46.0
 // 3-weapon primary fire system (Vulkan / Plasma / Rail), thermal management,
 // Q/H stun rockets, E/J napalm rockets, R/G weapon cycling. Pure logic —
 // mutates Player weapon state and pushes bullets via player.game.
@@ -18,7 +18,12 @@
 //          zero every frame: every weapon fires at max rate, the Vulcan
 //          never builds heat and can never overheat (updateWeaponState +
 //          firePrimary).
-export const VERSION = 'v3.33.0';
+// v3.46.0: PLASMA TWIN-POD BURST — firePrimary's plasma case now fires a
+//          3-bolt fan from BOTH front-paw emitter tips on every shot (no
+//          alternation; both pods fire together). Per-weapon barrelLen
+//          (WEAPONS.plasma.barrelLen = 10) places the tips at the pod
+//          mouths (PlayerHardpoints.getMuzzleTipOffsets).
+export const VERSION = 'v3.46.0';
 import Bullet from '../combat/Bullet.js';
 import { PLAYER, WEAPONS, WEAPON_ORDER, MINI_SHIP } from '../core/config.js';
 import { TAU, rand, dist2 } from '../core/utils.js';
@@ -163,22 +168,28 @@ export function firePrimary(p) {
     }
 
     case 'plasma': {
-      // Alternating: fire from one front-paw barrel TIP, alternate each shot
+      // v3.46.0: TWIN-POD BURST — fire a 3-bolt fan from BOTH front-paw
+      // emitter tips on every shot (no alternation; both pods fire together).
+      // Per-weapon barrelLen (WEAPONS.plasma.barrelLen = 10) places the tips
+      // at the pod mouths (PlayerHardpoints.getMuzzleTipOffsets).
       const tips = getMuzzleTipOffsets(p);
-      const firingLeft = p.plasmaAlt % 2 === 0;
-      const paw = tips[p.plasmaAlt % 2];
-      p.plasmaAlt++;
-      const b = new Bullet({
-        x: paw.x, y: paw.y,
-        vx: Math.cos(aim) * w.speed, vy: Math.sin(aim) * w.speed,
-        damage: w.damage * dmgMul,
-        color: w.color, weapon: 'plasma',
-        friendly: true, life: 2.0, radius: 6,
-        shieldMelt: w.shieldMelt, owner: p,
-      });
-      if (aimAssist(p)) b.homing = true;
-      p.game.bullets.push(b);
-      if (firingLeft) p.pawFlashL = 0.12; else p.pawFlashR = 0.12;
+      for (const paw of tips) {
+        for (let i = -1; i <= 1; i++) {
+          const spread = aim + i * 0.14;
+          const b = new Bullet({
+            x: paw.x, y: paw.y,
+            vx: Math.cos(spread) * w.speed, vy: Math.sin(spread) * w.speed,
+            damage: w.damage * dmgMul,
+            color: w.color, weapon: 'plasma',
+            friendly: true, life: 2.0, radius: 6,
+            shieldMelt: w.shieldMelt, owner: p,
+          });
+          if (aimAssist(p)) b.homing = true;
+          p.game.bullets.push(b);
+        }
+      }
+      p.pawFlashL = 0.12;
+      p.pawFlashR = 0.12;
       audio.shoot();
       break;
     }

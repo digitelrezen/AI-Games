@@ -1,5 +1,5 @@
 // Filename: PlayerShipFx.js
-// Kitty Vs Everything — v3.8.0
+// Kitty Vs Everything — v3.46.0
 // Shared cat-ship art FX: front-paw weapon pods, back-paw thruster pods,
 // muzzle flashes. Used by both the main hull (PlayerShipArt) and the
 // docked minis (PlayerMiniArt).
@@ -16,10 +16,16 @@
 // v3.44.0: vulkan spin pivot fix — barrels now rotate around the center of
 //         the barrel assembly (Gatling-style in-place spin) instead of the
 //         paw center (which made them orbit like clock hands / weed-whacker).
-export const VERSION = 'v3.44.0';
+// v3.46.0: PER-WEAPON PAW HARDPOINT LOOKS — drawWeaponPaw now renders a
+//         distinct hardpoint per weapon: vulkan = twin rotating Gatling
+//         barrels, plasma = short blue emitter pods, rail = single long
+//         charge barrel with coil bands + charge glow. Barrel length is
+//         per-weapon (WEAPONS[weapon].barrelLen; vulkan 15 / plasma 10 /
+//         rail 22), matching PlayerHardpoints.getMuzzleTipOffsets.
+export const VERSION = 'v3.46.0';
 import { TAU } from '../core/utils.js';
 import { hexA } from '../core/utils.js';
-import { SHIP_GEOMETRY } from '../core/config.js';
+import { SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
 
 // ─── PAW PAD CLUSTER (main pad + toe beans + claws) ─────────────
 // dir = -1 → toes point forward (-Y, front weapon paws)
@@ -67,22 +73,78 @@ export function drawWeaponPaw(ctx, px, py, c, a, flash, weaponColor, anim = {}) 
   const spin = anim.vulkanSpin || 0;
   const charge = anim.railCharge || 0;
   const pulse = anim.plasmaPulse || 0;
-  // ─── v3.17.0: OVERSIZED twin gun barrels — the ship's focal point ───
-  // Long (SHIP_GEOMETRY.barrelLen, well over half the front arm), thick,
-  // and wide-spaced so they read as heavy cannon barrels. The muzzle tip
-  // (py - BL) is where bullets spawn (PlayerHardpoints.getMuzzleTipOffsets).
-  const BL = SHIP_GEOMETRY.barrelLen; // barrel length (local -Y, ahead of paw)
-  const SP = 2.4;                     // half-spacing between the twin barrels
-  const BW = 3.5;                     // barrel stroke width
-  // v3.16.0: vulkan spin — the twin barrels rotate around the paw center
-  // v3.44.0: PIVOT FIX — anchor the spin at the CENTER of the barrel
-  // assembly (midpoint of the drawn barrels, local y = -(BL + 1.5)/2)
-  // instead of the paw center. The paw anchor made the 15px barrels orbit
-  // a distant point like clock hands / weed-whacker blades; the assembly
-  // center spins them locally in place around their own axis, like a
-  // classic multi-barrel Gatling. Rest pose (spin = 0) is unchanged: the
-  // barrels still run (±SP, -1.5) → (±SP, -BL) relative to the paw.
-  const BL_HALF = (BL + 1.5) / 2; // half the barrel span (base -1.5, tip -BL)
+  // v3.46.0: PER-WEAPON PAW HARDPOINT LOOKS — each weapon reads as a distinct
+  // hardpoint on the front paws (vulkan = twin Gatling barrels, plasma = short
+  // blue emitter pods, rail = single long charge barrel). Barrel length (local
+  // -Y) from the paw to the muzzle tip is per-weapon (WEAPONS[weapon].barrelLen;
+  // vulkan 15 / plasma 10 / rail 22), matching PlayerHardpoints.getMuzzleTipOffsets.
+  const weapon = anim.weapon || 'vulkan';
+  const BL = (WEAPONS[weapon] && WEAPONS[weapon].barrelLen) || SHIP_GEOMETRY.barrelLen;
+  // ─── WEAPON-SPECIFIC BARRELS / PODS (drawn first, under the mount ring) ───
+  if (weapon === 'plasma') {
+    drawPlasmaPods(ctx, px, py, BL, weaponColor);
+  } else if (weapon === 'rail') {
+    drawRailBarrel(ctx, px, py, BL, weaponColor, charge);
+  } else {
+    drawVulkanBarrels(ctx, px, py, BL, spin);
+  }
+  // Mount ring (dark metal gauntlet) — bigger to cradle the oversized barrels
+  ctx.fillStyle = '#232a3d';
+  ctx.strokeStyle = hexA(a, 0.7);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(px, py, 7.8, 7.1, 0, 0, TAU);
+  ctx.fill();
+  ctx.stroke();
+  // Paw fur (theme color, cradles the pads)
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.ellipse(px, py + 0.3, 6.3, 5.5, 0, 0, TAU);
+  ctx.fill();
+  // Cat paw: main pad + toe beans + claws (toes forward, -Y)
+  drawPawPads(ctx, px, py, -1);
+  // ─── RAIL CHARGE GLOW (charge-up visual at the barrel tip, drawn on top) ───
+  if (weapon === 'rail' && charge > 0.02) {
+    const cy = py - BL;
+    const cg = ctx.createRadialGradient(px, cy, 0, px, cy, 4 + 8 * charge);
+    cg.addColorStop(0, hexA('#ffffff', 0.85 * charge));
+    cg.addColorStop(0.5, hexA(weaponColor, 0.6 * charge));
+    cg.addColorStop(1, hexA(weaponColor, 0));
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.arc(px, cy, 4 + 8 * charge, 0, TAU);
+    ctx.fill();
+  }
+  // ─── PLASMA PULSE (emitter glow at both pod tips, drawn on top) ───
+  if (weapon === 'plasma' && pulse > 0.02) {
+    const pr = 2.5 + 3.5 * pulse;
+    for (const sx of [-3.2, 3.2]) {
+      const my = py - BL;
+      const mg = ctx.createRadialGradient(px + sx, my, 0, px + sx, my, pr * 2.2);
+      mg.addColorStop(0, hexA(weaponColor, 0.9 * pulse));
+      mg.addColorStop(0.5, hexA(weaponColor, 0.5 * pulse));
+      mg.addColorStop(1, hexA(weaponColor, 0));
+      ctx.fillStyle = mg;
+      ctx.beginPath();
+      ctx.arc(px + sx, my, pr * 2.2, 0, TAU);
+      ctx.fill();
+    }
+  }
+  // Muzzle flash (this hardpoint is firing) — at the barrel tips
+  if (flash > 0) {
+    drawMuzzleFlash(ctx, px, py - BL, Math.min(1, flash / 0.07), weaponColor);
+  }
+}
+
+// ─── v3.46.0: VULKAN — twin rotating Gatling barrels ───
+function drawVulkanBarrels(ctx, px, py, BL, spin) {
+  const SP = 2.4;   // half-spacing between the twin barrels
+  const BW = 3.5;   // barrel stroke width
+  // v3.44.0: PIVOT FIX — anchor the spin at the CENTER of the barrel assembly
+  // (midpoint of the drawn barrels, local y = -(BL + 1.5)/2) instead of the
+  // paw center, so the barrels spin locally in place like a multi-barrel
+  // Gatling. Rest pose (spin = 0) is unchanged: (±SP, -1.5) → (±SP, -BL).
+  const BL_HALF = (BL + 1.5) / 2;
   const cs = Math.cos(spin), sn = Math.sin(spin);
   const rx = (lx, ly) => px + lx * cs - (ly + BL_HALF) * sn;
   const ry = (lx, ly) => py - BL_HALF + lx * sn + (ly + BL_HALF) * cs;
@@ -101,48 +163,61 @@ export function drawWeaponPaw(ctx, px, py, c, a, flash, weaponColor, anim = {}) 
   ctx.fillStyle = '#9fb0cc';
   ctx.beginPath(); ctx.arc(rx(-SP, -BL), ry(-SP, -BL), 1.7, 0, TAU); ctx.fill();
   ctx.beginPath(); ctx.arc(rx(SP, -BL), ry(SP, -BL), 1.7, 0, TAU); ctx.fill();
-  // Mount ring (dark metal gauntlet) — bigger to cradle the oversized barrels
-  ctx.fillStyle = '#232a3d';
-  ctx.strokeStyle = hexA(a, 0.7);
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.ellipse(px, py, 7.8, 7.1, 0, 0, TAU);
-  ctx.fill();
-  ctx.stroke();
-  // Paw fur (theme color, cradles the pads)
-  ctx.fillStyle = c;
-  ctx.beginPath();
-  ctx.ellipse(px, py + 0.3, 6.3, 5.5, 0, 0, TAU);
-  ctx.fill();
-  // Cat paw: main pad + toe beans + claws (toes forward, -Y)
-  drawPawPads(ctx, px, py, -1);
-  // v3.16.0: rail charge — energy builds between the barrels as it charges
-  if (charge > 0.02) {
-    const cy = py - BL * 0.55;
-    const cg = ctx.createRadialGradient(px, cy, 0, px, cy, 4 + 6 * charge);
-    cg.addColorStop(0, hexA(weaponColor, 0.85 * charge));
-    cg.addColorStop(1, hexA(weaponColor, 0));
-    ctx.fillStyle = cg;
+}
+
+// ─── v3.46.0: PLASMA — short blue emitter pods (twin) ───
+function drawPlasmaPods(ctx, px, py, BL, weaponColor) {
+  const SP = 3.2;   // half-spacing between the twin pods
+  const PW = 4.6;   // pod width
+  for (const sx of [-SP, SP]) {
+    const cx = px + sx;
+    const topY = py - BL;
+    // Pod body (rounded top) — plain rect + arc (no global roundRect helper)
+    ctx.fillStyle = '#1c2540';
     ctx.beginPath();
-    ctx.arc(px, cy, 4 + 6 * charge, 0, TAU);
+    ctx.moveTo(cx - PW / 2, py);
+    ctx.lineTo(cx - PW / 2, topY + PW / 2);
+    ctx.arc(cx, topY + PW / 2, PW / 2, Math.PI, 0);
+    ctx.lineTo(cx + PW / 2, py);
+    ctx.closePath();
+    ctx.fill();
+    // Glowing emitter core (blue) at the pod mouth
+    ctx.fillStyle = hexA(weaponColor, 0.9);
+    ctx.beginPath();
+    ctx.arc(cx, topY + PW / 2, PW * 0.34, 0, TAU);
+    ctx.fill();
+    // Core highlight
+    ctx.fillStyle = hexA('#ffffff', 0.75);
+    ctx.beginPath();
+    ctx.arc(cx, topY + PW / 2, PW * 0.15, 0, TAU);
     ctx.fill();
   }
-  // v3.16.0: plasma pulse — emitter orb pulses at the muzzle tip
-  if (pulse > 0.02) {
-    const my = py - BL;
-    const pr = 2.5 + 3.5 * pulse;
-    const pg = ctx.createRadialGradient(px, my, 0, px, my, pr * 2.2);
-    pg.addColorStop(0, hexA(weaponColor, 0.9 * pulse));
-    pg.addColorStop(0.5, hexA(weaponColor, 0.5 * pulse));
-    pg.addColorStop(1, hexA(weaponColor, 0));
-    ctx.fillStyle = pg;
+}
+
+// ─── v3.46.0: RAIL — single long charge barrel with coil bands ───
+function drawRailBarrel(ctx, px, py, BL, weaponColor, charge) {
+  const BW = 4.0;   // barrel width
+  // Barrel body (dark metal, single central barrel)
+  ctx.strokeStyle = '#39415c';
+  ctx.lineWidth = BW;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(px, py - 1.5); ctx.lineTo(px, py - BL); ctx.stroke();
+  // Barrel highlight (lighter core)
+  ctx.strokeStyle = '#5a6a8c';
+  ctx.lineWidth = BW * 0.38;
+  ctx.beginPath(); ctx.moveTo(px, py - 2.2); ctx.lineTo(px, py - BL + 1.2); ctx.stroke();
+  // Muzzle ring (at the barrel tip)
+  ctx.fillStyle = '#9fb0cc';
+  ctx.beginPath(); ctx.arc(px, py - BL, 2.0, 0, TAU); ctx.fill();
+  // Charge coil bands (rail-specific; brighten as the cannon charges)
+  ctx.strokeStyle = hexA(weaponColor, 0.3 + 0.5 * charge);
+  ctx.lineWidth = 1.2;
+  for (let i = 1; i <= 3; i++) {
+    const by = py - BL * (i / 4);
     ctx.beginPath();
-    ctx.arc(px, my, pr * 2.2, 0, TAU);
-    ctx.fill();
-  }
-  // Muzzle flash (this hardpoint is firing) — at the barrel tips
-  if (flash > 0) {
-    drawMuzzleFlash(ctx, px, py - BL, Math.min(1, flash / 0.07), weaponColor);
+    ctx.moveTo(px - BW / 2 - 0.8, by);
+    ctx.lineTo(px + BW / 2 + 0.8, by);
+    ctx.stroke();
   }
 }
 

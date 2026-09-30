@@ -1,12 +1,12 @@
 // Filename: PlayerHardpoints.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.46.0
 // Catship hardpoint math: converts SHIP_GEOMETRY local-space positions
 // (weapon paws, muzzle, mini docks) into world space.
 // v3.3.0: Extracted from Player.js (module split of oversized files).
 // SHIP_GEOMETRY (config.js) is the single source of truth for all of these
 // positions — shared by this module and the art (PlayerShipArt.js).
-export const VERSION = 'v3.3.0';
-import { SHIP_GEOMETRY } from '../core/config.js';
+export const VERSION = 'v3.46.0';
+import { SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
 
 /**
  * Transform a ship-local point (nose = -Y, tail = +Y, flanks = ±X) to world.
@@ -36,13 +36,16 @@ export function getUpperPawOffsets(player) {
 
 /**
  * v3.17.0: World positions of the OVERSIZED barrel TIPS [left, right].
- * The barrels extend forward (-Y) from each paw by SHIP_GEOMETRY.barrelLen,
- * so bullets spawn at the tip — matching the drawn muzzle (PlayerShipFx).
+ * The barrels extend forward (-Y) from each paw by barrelLen, so bullets
+ * spawn at the tip — matching the drawn muzzle (PlayerShipFx).
+ * v3.46.0: per-weapon barrelLen (WEAPONS[weapon].barrelLen; vulkan 15 /
+ * plasma 10 / rail 22), falling back to SHIP_GEOMETRY.barrelLen.
  */
 export function getMuzzleTipOffsets(player) {
   const l = SHIP_GEOMETRY.frontPawL;
   const r = SHIP_GEOMETRY.frontPawR;
-  const BL = SHIP_GEOMETRY.barrelLen;
+  // v3.46.0: per-weapon barrel length (vulkan 15 / plasma 10 / rail 22)
+  const BL = (WEAPONS[player.weapon] && WEAPONS[player.weapon].barrelLen) || SHIP_GEOMETRY.barrelLen;
   return [
     localToWorld(player, l.x, l.y - BL),
     localToWorld(player, r.x, r.y - BL),

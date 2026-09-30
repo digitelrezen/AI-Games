@@ -1,5 +1,5 @@
 // Filename: MiniShip.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.46.0
 // Docked mini-ship: a shrunken clone of the player's cat ship with an
 // independent HP pool. Spawns ONLY via CatShipFactory.createMiniShip —
 // the strict same-color rule (minis always clone the player's current
@@ -41,7 +41,13 @@
 //         animation stays active so spin/charge/pulse match the hull. The
 //         fleet can still be DEPLOYED (MiniDeploy.js) into a combat orbit
 //         where minis fire on their own cadence.
-export const VERSION = 'v3.17.0';
+// v3.46.0: PER-WEAPON BARREL LENGTH + PLASMA TWIN-POD BURST — the mini's
+//         barrel-tip spawn point now uses the per-weapon barrelLen
+//         (WEAPONS[weapon].barrelLen: vulkan 15 / plasma 10 / rail 22,
+//         fallback SHIP_GEOMETRY.barrelLen) instead of the global value, and
+//         the plasma volley now fires a 3-bolt fan from BOTH front paws (no
+//         alternation), matching the hull's PlayerWeapons.firePrimary.
+export const VERSION = 'v3.46.0';
 import Entity from './Entity.js';
 import Bullet from '../combat/Bullet.js';
 import { MINI_SHIP, PLAYER_THEMES, SHIP_GEOMETRY, WEAPONS } from './config.js';
@@ -143,13 +149,15 @@ export default class MiniShip extends Entity {
   /**
    * Fire the player's ACTIVE weapon as a FULL CLONE volley (v3.10.0) from
    * this mini's own 0.6×-scaled hardpoints: vulkan = twin-barrel-tip burst,
-   * plasma = one bolt from the mini's alternating barrel tip, rail = one beam
-   * from the mini's muzzle. v3.17.0: vulkan/plasma now spawn at the OVERSIZED
-   * barrel tips (paw extended forward by SHIP_GEOMETRY.barrelLen, scaled by
-   * MINI_SCALE) so the mini's shots match its drawn guns. Mini bullets are
-   * friendly and deal damageMul × weapon damage (the +50%/mini hull bonus is
-   * NOT re-applied); they get homing when the aim-bot is active, exactly like
-   * the main hull's shots.
+   * plasma = 3-bolt fan from BOTH front paws (v3.46.0), rail = one beam from
+   * the mini's muzzle. v3.17.0: vulkan/plasma spawn at the barrel tips (paw
+   * extended forward by the barrel length, scaled by MINI_SCALE) so the
+   * mini's shots match its drawn guns. v3.46.0: the barrel length is now
+   * PER-WEAPON (WEAPONS[weapon].barrelLen: vulkan 15 / plasma 10 / rail 22,
+   * fallback SHIP_GEOMETRY.barrelLen) so each weapon's tip aligns with its
+   * drawn paw art. Mini bullets are friendly and deal damageMul × weapon
+   * damage (the +50%/mini hull bonus is NOT re-applied); they get homing when
+   * the aim-bot is active, exactly like the main hull's shots.
    */
   fireWeapon(player) {
     const w = WEAPONS[player.weapon];
@@ -157,8 +165,10 @@ export default class MiniShip extends Entity {
     const assist = player.game.aimbot.active || (player.game.testAimbot && player.game.testAimbot.active);
     const spread = assist ? 0 : rand(-0.04, 0.04);
     const aim = player.angle + spread;
-    // v3.17.0: barrel-tip geometry point (paw extended forward by barrelLen).
-    const tip = (g) => ({ x: g.x, y: g.y - SHIP_GEOMETRY.barrelLen });
+    // v3.46.0: barrel-tip geometry point (paw extended forward by the
+    // PER-WEAPON barrelLen — WEAPONS[weapon].barrelLen: vulkan 15 / plasma 10 /
+    // rail 22 — fallback to the global SHIP_GEOMETRY.barrelLen).
+    const tip = (g) => ({ x: g.x, y: g.y - (w.barrelLen || SHIP_GEOMETRY.barrelLen) });
     const mk = (pt) => {
       const b = new Bullet({
         x: pt.x, y: pt.y,
@@ -183,13 +193,20 @@ export default class MiniShip extends Entity {
         break;
       }
       case 'plasma': {
-        // One bolt from the mini's own alternating barrel tip.
-        const g = tip(this.plasmaAlt % 2 === 0
-          ? SHIP_GEOMETRY.frontPawL : SHIP_GEOMETRY.frontPawR);
-        this.plasmaAlt++;
-        const b = mk(this._miniPoint(g, player));
-        b.life = 2.0; b.radius = 4; b.shieldMelt = w.shieldMelt;
-        player.game.bullets.push(b);
+        // v3.46.0: TWIN-POD BURST — fire a 3-bolt fan from BOTH front-paw
+        // emitter tips (no alternation; both pods fire together), matching
+        // the hull's PlayerWeapons.firePrimary plasma volley.
+        const paws = [SHIP_GEOMETRY.frontPawL, SHIP_GEOMETRY.frontPawR];
+        for (const g of paws) {
+          for (let i = -1; i <= 1; i++) {
+            const b = mk(this._miniPoint(tip(g), player));
+            // Fan: offset each bolt's heading around the aim direction.
+            b.vx = Math.cos(aim + i * 0.14) * w.speed;
+            b.vy = Math.sin(aim + i * 0.14) * w.speed;
+            b.life = 2.0; b.radius = 4; b.shieldMelt = w.shieldMelt;
+            player.game.bullets.push(b);
+          }
+        }
         this.pawFlash = 0.12;
         break;
       }
