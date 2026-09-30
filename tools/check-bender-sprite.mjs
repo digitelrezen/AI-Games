@@ -15,8 +15,6 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'Kitty Vs Everything');
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 let failures = 0;
 const check = (label, cond) => {
   console.log(`  ${cond ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${label}`);

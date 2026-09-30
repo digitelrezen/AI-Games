@@ -4,7 +4,7 @@
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
 // levels) plus the v3.33.0 FRENZY / hull-repair / PNG pipeline / HUD checks.
-// Pure Node — no canvas, no browser, no screenshots.
+// Pure Node — no canvas, no browser.
 //
 //   node tools/check.mjs          → version sync + module surface + asset
 //                                   pipeline (import-assets --check, validate)
@@ -25,8 +25,6 @@ const TOOLS = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(TOOLS, '..', 'Kitty Vs Everything');
 const FULL = process.argv.includes('--full');
 
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — pure Node check, no canvas, no browser, no screenshots.\x1b[0m');
 console.log(`\n[check] game root : ${ROOT}`);
 console.log(`[check] mode      : ${FULL ? 'full (includes smoke.mjs)' : 'default'}`);
 

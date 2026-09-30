@@ -9,7 +9,7 @@
 //   - arm  : cigar arm pre-rotated so shoulder->hand points along +x,
 //            shoulder translated to origin (animated reach arm)
 //   - head : head+antenna icon at /2 integer downsample (power-up drop)
-// No screenshots, no canvas — pure pixel math.
+// No canvas — pure pixel math.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';

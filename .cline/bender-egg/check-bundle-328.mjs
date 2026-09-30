@@ -1,12 +1,10 @@
-// check-bundle-328.mjs — v3.28.0 bundle text verification (no screenshots).
+// check-bundle-328.mjs — v3.28.0 bundle text verification.
 // Confirms the built single-file bundle uses the tiny FULL-BODY Bender for
 // the 'robot' power-up drop icon (not the head), and carries v3.28.0.
 // Run: node .cline/bender-egg/check-bundle-328.mjs
 import { readFileSync } from 'node:fs';
 
 const BUNDLE = 'z:/Dev/AI-GAMES/Builds/Kitty Vs Everything 3.28.0.html';
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 const s = readFileSync(BUNDLE, 'utf8');
 let failures = 0;
 const t = (cond, msg) => {

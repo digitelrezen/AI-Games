@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 // test-poster.mjs — Everything Vs Kitty (sandbox scratchpad)
-// Headless verification of the "Adopt Me!" poster PNG. NO screenshots / no
-// image input — everything is checked by decoding the PNG bytes and asserting
-// on the pixel grid (per the project's "No Screenshots" hard constraint).
+// Headless verification of the "Adopt Me!" poster PNG — everything is checked
+// by decoding the PNG bytes and asserting on the pixel grid.
 //
 // Run: node test-poster.mjs
 // Exits 0 on success, 1 on any failure.

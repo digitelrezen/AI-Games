@@ -1,6 +1,6 @@
 // analyze-bender.mjs — Kitty Vs Everything (sandbox scratchpad)
-// Programmatic analysis of `.assets/Robot-Bender Pixel Art.png` (NO screenshots,
-// per project rule — we decode the PNG and inspect pixel statistics only).
+// Programmatic analysis of `.assets/Robot-Bender Pixel Art.png` — we decode
+// the PNG and inspect pixel statistics only.
 //
 // Outputs:
 //   • overall opaque-pixel bounding box

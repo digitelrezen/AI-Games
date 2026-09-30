@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ../tools/check-cat-sprites.mjs — Kitty Vs Everything v3.32.0
-// Headless validation of the v3.32.0 generated cat sprites (NO SCREENSHOTS):
+// Headless validation of the v3.32.0 generated cat sprites:
 //   [1] Import BlackCatSprite.js / PinkCatSprite.js — verify the exports and
 //       the null-sprite contract (the sprite is OPTIONAL at runtime; the
 //       enemies fall back to a plain circle until/if it decodes).
@@ -229,9 +229,6 @@ if (mode === '--enemy-fallback' || mode === '--enemy-sprite') {
   process.exit(failures ? 1 : 0);
 }
 if (mode) { console.log(`Unknown mode: ${mode}`); process.exit(2); }
-
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 
 console.log('\n[1] Sprite modules — exports + null contract (headless Node)');
 const blackSprite = await import(url('js/enemies/BlackCatSprite.js'));

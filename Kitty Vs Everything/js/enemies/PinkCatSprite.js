@@ -18,7 +18,7 @@
 // The sprite is OPTIONAL at runtime: PinkCatEnemy.js draws a plain pink circle
 // until (or if) the decode finishes / works.
 //
-// Headless validation (no browser, no screenshot):
+// Headless validation:
 //   node tools/check-cat-sprites.mjs
 
 export const PINK_CAT_B64 =

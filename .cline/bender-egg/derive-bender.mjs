@@ -1,6 +1,6 @@
 // derive-bender.mjs — Kitty Vs Everything (sandbox scratchpad)
 // Derives game sprites from `.assets/Robot-Bender Pixel Art.png` (single static
-// full-body pose). NO screenshots — verification is text/ASCII only.
+// full-body pose). Verification is text/ASCII only.
 //
 // Stage 1 (this run): high-res ASCII of arm + head regions, connected
 //   components, then derive FULL / ARM / BODY / HEAD sprites and emit

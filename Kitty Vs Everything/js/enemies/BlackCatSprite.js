@@ -18,7 +18,7 @@
 // The sprite is OPTIONAL at runtime: BlackCatEnemy.js draws a plain dark circle (this.color)
 // until (or if) the decode finishes / works.
 //
-// Headless validation (no browser, no screenshot):
+// Headless validation:
 //   node tools/check-cat-sprites.mjs
 
 export const BLACK_CAT_B64 =

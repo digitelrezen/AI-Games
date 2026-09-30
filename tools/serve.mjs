@@ -6,8 +6,6 @@ import { join, normalize } from 'node:path';
 
 const ROOT = 'Z:/Dev/AI-GAMES/Builds';
 const PORT = 8765;
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 
 createServer((req, res) => {
   try {

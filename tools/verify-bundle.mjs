@@ -6,8 +6,6 @@ import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..'); // AI-GAMES workspace root
 const bundle = join(root, 'Builds', 'Kitty Vs Everything 3.29.0.html');
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 const s = readFileSync(bundle, 'utf8');
 
 const tests = [

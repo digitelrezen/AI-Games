@@ -1,6 +1,6 @@
 // analyze-ufo.mjs — pure-pixel analysis of the two alien UFO pixel-art assets.
-// No screenshots, no canvas — decode the PNGs in Node and print the content
-// bbox + ASCII previews so the sprites can be eyeballed in text.
+// Decode the PNGs in Node and print the content bbox + ASCII previews so the
+// sprites can be eyeballed in text.
 // Run: node .cline/alien-ships/analyze-ufo.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';

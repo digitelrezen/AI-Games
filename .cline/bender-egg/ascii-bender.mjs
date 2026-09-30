@@ -1,5 +1,5 @@
 // ascii-bender.mjs — TEXT-ONLY structural preview of the Bender asset
-// (same pattern as .cline/adoptme-poster: ASCII on stdout, NO screenshots).
+// (same pattern as .cline/adoptme-poster: ASCII on stdout).
 // Renders the alpha mask of the cropped content bbox to ASCII so the
 // layout (head / body / arms) can be identified programmatically.
 

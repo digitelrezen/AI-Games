@@ -1,6 +1,6 @@
 // analyze-wasp.mjs — Kitty Vs Everything (sandbox scratchpad)
-// Programmatic analysis of `.assets/Wasp Update pixel_art.png` (NO screenshots,
-// per project rule — we decode the PNG and inspect pixel statistics only).
+// Programmatic analysis of `.assets/Wasp Update pixel_art.png` — we decode
+// the PNG and inspect pixel statistics only.
 // Also compares against the legacy `.assets/Wasp 1 Pixel Art.png` (wasp2 art).
 //
 // Outputs:

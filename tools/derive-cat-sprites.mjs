@@ -14,8 +14,7 @@
 //   4. Writes the two sprite modules with the derived base64 payload.
 //
 // The decode/encode helpers are exported so tools/check-cat-sprites.mjs
-// can re-validate the embedded payloads headlessly (no browser, no
-// screenshot — the project's validation rule).
+// can re-validate the embedded payloads headlessly (no browser).
 //
 // Run:  node tools/derive-cat-sprites.mjs   (from anywhere)
 
@@ -269,7 +268,7 @@ function moduleSource(a, stats) {
 // The sprite is OPTIONAL at runtime: ${a.enemy} draws ${a.fallback}
 // until (or if) the decode finishes / works.
 //
-// Headless validation (no browser, no screenshot):
+// Headless validation:
 //   node tools/check-cat-sprites.mjs
 
 export const ${a.prefix}_B64 =

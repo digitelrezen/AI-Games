@@ -8,8 +8,6 @@ import { inflateSync } from 'node:zlib';
 const ROOT = 'z:/Dev/AI-GAMES';
 const JS = ROOT + '/Kitty Vs Everything/BenderSprite.js';
 const JSONF = ROOT + '/.cline/bender-egg/sprites-v2.json';
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 
 const src = readFileSync(JS, 'utf8');
 const ref = JSON.parse(readFileSync(JSONF, 'utf8'));

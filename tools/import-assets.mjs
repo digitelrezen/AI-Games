@@ -34,7 +34,7 @@
 //   node tools/import-assets.mjs          → import + regenerate AssetSprites.js
 //   node tools/import-assets.mjs --check  → verify the generated registry is
 //                                           current (no writes; exit 1 if stale)
-// NO SCREENSHOTS — pure Node (zlib + manual PNG decode/encode), no canvas.
+// Pure Node (zlib + manual PNG decode/encode), no canvas.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -193,7 +193,6 @@ function resolveAssetFile(wanted, listing) {
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────────
-console.log('\x1b[33m⚠ NO SCREENSHOTS — pure Node PNG pipeline, no canvas, no browser.\x1b[0m');
 console.log(`\n[import-assets] asset dir : ${ASSET_DIR}`);
 console.log(`[import-assets] manifest  : ${MANIFEST}`);
 console.log(`[import-assets] output    : ${OUT}${checkMode ? '  (--check: no writes)' : ''}`);

@@ -1,6 +1,6 @@
 // hi-res-preview.mjs — Kitty Vs Everything (sandbox scratchpad)
 // Finer ASCII preview (128 cols) of `.assets/Rat pixel_art.png` to confirm
-// head vs tail orientation. NO screenshots — alpha-based pixel stats only.
+// head vs tail orientation (alpha-based pixel stats only).
 
 import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';

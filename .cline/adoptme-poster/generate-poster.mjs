@@ -6,7 +6,7 @@
 // Output:
 //   • adoptme-poster.png  — 28×28 RGBA PNG (matches the r=14 power-up hitbox)
 //   • adoptme-poster.b64.txt — the base64 string
-//   • an ASCII preview on stdout (TEXT ONLY — no screenshots, per project rule)
+//   • an ASCII preview on stdout (TEXT ONLY)
 
 import zlib from 'node:zlib';
 import fs from 'node:fs';

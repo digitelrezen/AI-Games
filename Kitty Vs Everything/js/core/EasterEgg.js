@@ -5,7 +5,7 @@
 //     the rare 'robot' power-up (dropped by the destroyed Planet Express
 //     ship, or the rare enemy drop) summons Bender from the right edge.
 //     Full-body pixel art (BenderSprite.js, derived from
-//     ../.assets/Robot-Bender Pixel Art.png — no screenshots) at normal
+//     ../.assets/Robot-Bender Pixel Art.png) at normal
 //     proportions (no stretch), cigar arm at rest (v3.29.0: no more ship
 //     tracking). v3.29.0: the 10-second timer is GONE — catching Bender
 //     starts a kill-based dialogue:

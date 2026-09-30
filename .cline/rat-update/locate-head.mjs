@@ -1,6 +1,6 @@
 // locate-head.mjs — Kitty Vs Everything (sandbox scratchpad)
 // Pinpoint the rat's head: find where pink (nose/ears) and white (eyes)
-// pixels live relative to the body mass. NO screenshots — pixel stats only.
+// pixels live relative to the body mass (pixel stats only).
 
 import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';

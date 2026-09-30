@@ -1,6 +1,6 @@
 // analyze-ship.mjs — pure-pixel analysis of the Planet Express ship asset.
-// No screenshots, no canvas — decode the PNG in Node and print the content
-// bbox + an ASCII preview so the sprite can be eyeballed in text.
+// Decode the PNG in Node and print the content bbox + an ASCII preview so the
+// sprite can be eyeballed in text.
 // Run: node analyze-ship.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';

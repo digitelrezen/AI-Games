@@ -1,6 +1,6 @@
 // analyze-rat.mjs — Kitty Vs Everything (sandbox scratchpad)
-// Programmatic analysis of `.assets/Rat pixel_art.png` (NO screenshots,
-// per project rule — we decode the PNG and inspect pixel statistics only).
+// Programmatic analysis of `.assets/Rat pixel_art.png` — we decode the PNG
+// and inspect pixel statistics only.
 //
 // Outputs:
 //   • dimensions, color type, alpha stats

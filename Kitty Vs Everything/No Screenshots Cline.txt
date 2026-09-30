@@ -1,7 +1,0 @@
-you cause this error 
-
-9 W srv    operator(): got exception: {"error":{"code":500,"message":"image input is not supported - hint: if this is unexpected, you may need to provide the mmproj","type":"server_error"}}
-
-so stop.
-
-Make a note.. NO SCREEN SHOTS!

@@ -14,8 +14,6 @@ import readline from 'node:readline';
 
 const PORT = Number(process.argv[2] || 3123);
 const BASE = 'http://localhost:' + PORT;
-// HARD RULE (every run): never take or view screenshots — it crashes the LLM server and gets you uninstalled.
-console.log('\x1b[33m⚠ NO SCREENSHOTS — never take or view screenshots; you will crash the server and get uninstalled.\x1b[0m');
 
 // The in-browser bridge: polls window.__KVE__ every 500 ms, executes queued
 // terminal commands, and POSTs results/snapshots to this server.
