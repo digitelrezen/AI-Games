@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.42.0 (tools/ lives at AI-GAMES root)
-// One-stop health check for the v3.42.0 release work (shared POWERUP_DROPS
+// ../tools/check.mjs — Kitty Vs Everything v3.43.0 (tools/ lives at AI-GAMES root)
+// One-stop health check for the v3.43.0 release work (alien UFO pixel-art
+// dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
 // levels) plus the v3.33.0 FRENZY / hull-repair / PNG pipeline / HUD checks.
 // Pure Node — no canvas, no browser, no screenshots.
@@ -156,7 +157,7 @@ const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 const keys = Object.keys(manifest.assets || {});
 // v3.33.0: the pipeline also carries enemy sprites (wasp, then rat) alongside
 // the 5 power-up drops — assert the exact expected key set, not a bare count.
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'rat', 'crate'];
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'rat', 'crate', 'ufo1', 'ufo2'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -309,6 +310,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.42.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.43.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

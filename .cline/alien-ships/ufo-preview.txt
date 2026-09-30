@@ -1,0 +1,184 @@
+═══ Alien-UFO1-pixel_art.png ═══
+canvas: 715x442
+content bbox: x=0 y=0 w=715 h=442
+aspect (w/h): 1.618
+center of mass: x=357.0 y=220.5 (xFrac=0.50 yFrac=0.50)
+
+== ALPHA (1 char = 11px) ==
+   0 #################################################################
+  11 #################################################################
+  22 #################################################################
+  33 #################################################################
+  44 #################################################################
+  55 #################################################################
+  66 #################################################################
+  77 #################################################################
+  88 #################################################################
+  99 #################################################################
+ 110 #################################################################
+ 121 #################################################################
+ 132 #################################################################
+ 143 #################################################################
+ 154 #################################################################
+ 165 #################################################################
+ 176 #################################################################
+ 187 #################################################################
+ 198 #################################################################
+ 209 #################################################################
+ 220 #################################################################
+ 231 #################################################################
+ 242 #################################################################
+ 253 #################################################################
+ 264 #################################################################
+ 275 #################################################################
+ 286 #################################################################
+ 297 #################################################################
+ 308 #################################################################
+ 319 #################################################################
+ 330 #################################################################
+ 341 #################################################################
+ 352 #################################################################
+ 363 #################################################################
+ 374 #################################################################
+ 385 #################################################################
+ 396 #################################################################
+ 407 #################################################################
+ 418 #################################################################
+ 429 #################################################################
+ 440 #################################################################
+
+== COLORED (1 char = 8px) ==
+   legend: W=white g=gray o=orange k=black y=yellow r=red c=cyan l=green m=magenta b=blue +=mid alpha
+   0 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+   8 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  16 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  24 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  32 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  40 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  48 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  56 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  64 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  72 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  80 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  88 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  96 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 104 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 112 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgWgWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 120 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgggooookokoooogggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 128 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWggggokoorrrrrrrrrrrroggooogggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 136 WWWWWWWWWWWWWWWWWWWWWWWWgggggookkkkkokkkkkkkokkkkkkkkookokoooggggWWWWWWWWWWWWWWWWWWWWWWWWW
+ 144 WWWWWWWWWWWWWWWWWWWWWgggooookooggggggookkkkkokkkkkkkkkkkkkkookkkoggWWWWWWWWWWWWWWWWWWWWWWW
+ 152 WWWWWWWWWWWWWWWWWWggggokkoggWWWggokkkkkkkkkkokkkkkkkkkkkkkkkkogggooooggWWWWWWWWWWWWWWWWWWW
+ 160 WWWWWWWWWWWWWWWWWWgokkogWWggookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkooggggoooWWWWWWWWWWWWWWWWWW
+ 168 WWWWWWWWWWWWWWWWgoooggookkkyyyyyyykkkkkkkkkkkkkkkkkkkkkkyyyyyyyykkkkogWggggWWWWWWWWWWWWWWW
+ 176 WWWWWWWWWWWWWggoookkkkkkkkyyyyyyyykkkkkkkkkkkkkkkkkkkkkkyyyyyyyykkkkkkkooggggWWWWWWWWWWWWW
+ 184 WWWWWWWWWWWgooyyyyykkkkkkkyyyyyykkkkkkkkkkkkkkkkkkkkkkkkkkkyyyyykkkkkkyyyyooggggWWWWWWWWWW
+ 192 WWWWWWWWgoookyyyyyyoookkkkkyyyyyykkkkkkkkkkkkkkkkkkkkkkkkkkyyyykkkkkkkyyyyykkkoggWWWWWWWWW
+ 200 WWWWWWgoookkkyyyyykkkkoooookyyykkkkkkkkkkkkkkkkkkkkkkkkkkkkyyyykkkkkkkkyyyykkkkoogWWWWWWWW
+ 208 WWWWWgookkoookkkkyoookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkoogWWWWWW
+ 216 WWWWggyyoookkkkkkoookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkookkkooyyoggWWWWW
+ 224 WWWWgoygoooooooooooooookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkoooooykogWWWWW
+ 232 WWWWgogoooooooooooooooookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkoooooookgWWWWW
+ 240 WWWWgoggggggooooooooookkkkkkkkkkkkkkkyyykkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkooooooogWWWWW
+ 248 WWWWgggggggggoooooooooooookoyyykkkkkyyyykkkkkkkkkkkkkkkyyyykkkkkkkkkkkkkkkkkoooooggogWWWWW
+ 256 WWWWWgggggggggooooooooooooooyyyyyykyyyyyykkkkkkrkkkkkyyyyyykkkkkkkkkkkkkkkkoooooogggWWWWWW
+ 264 WWWWWWggggggooggooooooooookyyyyyykkyyyyykkkkkkkkkkkkkkkyyykkkkkookkkkkkkkooooooogggWWWWWWW
+ 272 WWWWWWgggggggggggoookyyyykkkyyykkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkyyyykkkkkoooooogggggWWWWWWW
+ 280 WWWWWWWWggggggggokooooyyyykoookkkooooooyyyyyrrrykokkkkkkkkkkkkkyyykkkkkoooogooggggWWWWWWWW
+ 288 WWWWWWWWWWgggggookoooooyyoooooookkkkrrrryyyyyyrrogorrkkkkokkkokyykkokokoooggggggWWWWWWWWWW
+ 296 WWWWWWWWWWWWgggookkoooooooooookkkkkryrrryyyyyyyrrgorkkkkkkoooooookoookkoogggggWWWWWWWWWWWW
+ 304 WWWWWWWWWWWWWWggookkkookkooggokkkkkkkryyyyyyyyryrrkkkkkkkkoooooorookkkooggggWWWWWWWWWWWWWW
+ 312 WWWWWWWWWWWWWWWWggookkkokkyyyyookkkkkyykyyyyyyykkkkkkkkkkooyyykkkkkkkooggWWWWWWWWWWWWWWWWW
+ 320 WWWWWWWWWWWWWWWWWWWggkkkkkryyyykkkkkyykkykkykkykkkkkkkkkkkyyyykkkkkoggWWWWWWWWWWWWWWWWWWWW
+ 328 WWWWWWWWWWWWWWWWWWWWWWggooyyyyyyokkkkkkkkkkkkkykkkkkkkkkoyyyyooooggWWWWWWWWWWWWWWWWWWWWWWW
+ 336 WWWWWWWWWWWWWWWWWWWWWWWWWWgggyooyokkkkkkkkkkkkkkkkyykkkkykogggWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 344 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWokkkkkkkkkkkkkkkkkkkkkkkkkoWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 352 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWokkkkkkkkkkkkkkkkkkkkkkkoWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 360 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgkokkkkkkkkkkkkkykkkkkokgWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 368 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgggookkkryyyyyykykkogogWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 376 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgggoooookkkooggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 384 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgggggggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 392 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 400 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 408 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 416 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 424 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 432 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 440 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+
+═══ Alien-UFO2-pixel-art.png ═══
+canvas: 720x301
+content bbox: x=0 y=0 w=720 h=301
+aspect (w/h): 2.392
+center of mass: x=359.5 y=150.0 (xFrac=0.50 yFrac=0.50)
+
+== ALPHA (1 char = 11px) ==
+   0 ##################################################################
+  11 ##################################################################
+  22 ##################################################################
+  33 ##################################################################
+  44 ##################################################################
+  55 ##################################################################
+  66 ##################################################################
+  77 ##################################################################
+  88 ##################################################################
+  99 ##################################################################
+ 110 ##################################################################
+ 121 ##################################################################
+ 132 ##################################################################
+ 143 ##################################################################
+ 154 ##################################################################
+ 165 ##################################################################
+ 176 ##################################################################
+ 187 ##################################################################
+ 198 ##################################################################
+ 209 ##################################################################
+ 220 ##################################################################
+ 231 ##################################################################
+ 242 ##################################################################
+ 253 ##################################################################
+ 264 ##################################################################
+ 275 ##################################################################
+ 286 ##################################################################
+ 297 ##################################################################
+
+== COLORED (1 char = 8px) ==
+   legend: W=white g=gray o=orange k=black y=yellow r=red c=cyan l=green m=magenta b=blue +=mid alpha
+   0 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+   8 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgoookkkoggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  16 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgoooooookkkkogWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  24 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWgbbboooogoookkkkkoooooggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  32 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWggbbggoooooyokkkkkkkkkkkkkkkooggWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  40 gWWWWWWWWWWWWWWWWWWWWWWWWWgoooobbgkooogygokkookkkkkkkkkkkkkooogWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  48 gWWWWWWWWWWWWWWWWWWWWWWgggookogggkookggggkkkookkkkkkkkokkkkkooooogWWWWWWWWWWWWWWWWWWWWWWWW
+  56 gWWWWWWWWWWWWWWWWWWWWWggookoggggogokggogokggookkkkkkkkgokkkkkkoooooWWWWWWWWWWWWWWWWWWWWWWW
+  64 gWWWWWWWWWWWWWWWWWWgggokkkoggggWWgkggoggooggookkkkkkkykookkkkkkoooooogWWWWWWWWWWWWWWWWWWWW
+  72 gWWWWWWWWWWWWWWWWgggokkkoogggWWWogggooggggggookkkkkkkkkkkkkkkkkkkoobboogWWWWWWWWWWWWWWWWWW
+  80 gWWWWWWWWWWWWWWgggokoooooggggggooookkoooookkkkkkkkkkkkkkkkkkkkkkkkkkbbokgWWWWWWWWWWWWWWWWW
+  88 gWWWWWWWWWWWWggggoooooooookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkooooogWWWWWWWWWWWWWWW
+  96 gWWWWWWWWWWggggooookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkooooogWWWWWWWWWWWWW
+ 104 gWWWWWWWWWggookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkyyyyyyyykkkkkkkkkkkkkkkkoobggWWWWWWWWWWW
+ 112 gWWWWWWWoookkkkkkkkkkyyyyyykkkkkkkkkkkkkkkkkkkkkkkkyyyyyyykkkkkkkkkkkkkkkkkkkogbWWWWWWWWWW
+ 120 gWWWWWgokkkkkkkkkkkykyyyyyokkkkkkkkkkykkkkkkkkkkkkyyyyyyrrkkkkkkkkkkkkkkkkkkkkkoggWWWWWWWW
+ 128 gWWWWgookkkkkkkkkkkkkkyyyyyykkkkkkkkkkykkkkkkkkkkkyyyyyyrryyyykkkkkkkkkkkkkkkkkkkobWWWWWWW
+ 136 gWWWbookkkkkkkkkkyyyyyyyyyykkkkkkkkkkkykkkkkkkkkkkkkyyyyyrkkkkkkkkkkkkkkkkkkkykokkoogWWWWW
+ 144 gWWgooookkkkkkkkkkkkkryyykkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkryykkkobgWWWW
+ 152 gWgbooyyoookkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkykkkkkkkkkkkkkkkkkkkykykkobbWWWW
+ 160 gWbgooyygoookkokkkkkkykkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkykkkyykkkkkkkkkkkkkkkkyyykykkkbbgWWW
+ 168 gWgokyykogoookookkkkyyykkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkryykykkrobgWWW
+ 176 gWgokyyyygboooooookkkokkkkkkkkkkkkkyyyyykkkkkkkkkkkkkkkkkkkkkykkkkkkkykkookkoooookkkogWWWW
+ 184 gWgokkkoggbbgoookkkkkkkkkkkkkkkkkkyyyyyyyykkkkkkkkkkkyykkkkkkkkkkkkkkkkkkkooooogooobgWWWWW
+ 192 gWWWgoobWgbgokkkkkkkkkkkkkkkkkkkkyyyyyyyyyyykkyyykyyyyyyykkkkkkkookkkkkkkkkkoobbggggWWWWWW
+ 200 gWWWWWgWggggokkkkkkkkkkkkkkyyyyykyyyyyyyyykkkkkykkkkyyyyykyyykkkoWgkkkokkkkkobbgggWWWWWWWW
+ 208 gWWWWWWggWgoookokkkkkooyyykyykkkkkyyyyyyykkkkkkkkkkkkyyykkyyyyykkkokkkkokkooogggWWWWWWWWWW
+ 216 gWWWWWWWggggookokkkkoyyyykkkkkkkkkkkkoooookkkkkkkkkkkkkkkkkkkkkkykkokkkrgokoggWWWWWWWWWWWW
+ 224 gWWWWWWWWWWWgogkkkkkkyyykkoookkkkkkkkkkkkykkkkkkkkkkoookkkkkkkkkyyykrrrkkgogWWWWWWWWWWWWWW
+ 232 gWWWWWWWWWWWWggkkkkkkyookogggokkkkkkkkyyyykkkkkkkkooggokkkooookkkykkokkkkoWWWWWWWWWWWWWWWW
+ 240 gWWWWWWWWWWWWWgkkkookkyooogWWgokkkkkkyyyyyyyyyyykyykkoookobbggyyyykkgookkgWWWWWWWWWWWWWWWW
+ 248 gWWWWWWWWWWWWWWggWWggookogooWgokkyyykyyyyyyykkkkkyykyyykkoggooyyyoggWWWgWWWWWWWWWWWWWWWWWW
+ 256 gWWWWWWWWWWWWWWWWWWWWWWgggokokkoyyykkryyyyyyyyyyyykkkoyykkkoooggWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 264 gWWWWWWWWWWWWWWWWWWWWWWWWWokkokoyyyokyyyyrrgWkrryrkkoyyyoooWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 272 gWWWWWWWWWWWWWWWWWWWWWWWWWgokoWggggoyyykkkkkkkkkkkoyygggggWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 280 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWggWgWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 288 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 296 gWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
