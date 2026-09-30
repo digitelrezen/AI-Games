@@ -120,9 +120,9 @@ const MANIFEST = path.join(TOOLS, 'asset-manifest.json');
 check('.assets directory exists', fs.existsSync(ASSET_DIR));
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 const keys = Object.keys(manifest.assets || {});
-// v3.33.0: the pipeline also carries enemy sprites (wasp) alongside the
-// 5 power-up drops — assert the exact expected key set, not a bare count.
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'crate'];
+// v3.33.0: the pipeline also carries enemy sprites (wasp, then rat) alongside
+// the 5 power-up drops — assert the exact expected key set, not a bare count.
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'rat', 'crate'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);

@@ -79,7 +79,7 @@
 //          (PLAYER.HEALTH_RESTORE). Shared transparent PNG art for the four
 //          power-up drops via tools/import-assets.mjs (AssetSprites.js +
 //          AssetManager.js).
-export const VERSION = 'v3.40.0';
+export const VERSION = 'v3.41.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
