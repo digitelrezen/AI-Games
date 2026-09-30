@@ -1,6 +1,8 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.31.0
+// Kitty Vs Everything — v3.42.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.42.0: crate destruction spills one drop from the shared POWERUP_DROPS
+// pool (config.js) — Health / Frenzy / Shields / Wanted (mini) / Extra Life.
 // v3.27.0: EasterEgg.js is now the easter-egg manager — one slot per egg
 // (game.eggs = { bender, ship }), both can be alive at the same time:
 // Bender (robot power-up, aim-assist) and the Planet Express ship flyby
@@ -36,14 +38,15 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.41.0';
-import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
+export const VERSION = 'v3.42.0';
+import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
 import InputManager from '../input/InputManager.js';
 import ParticleSystem from './ParticleSystem.js';
 import { createCatShip } from './CatShipFactory.js';
 import Bullet from '../combat/Bullet.js';
+import PowerUp from '../combat/PowerUp.js'; // v3.42.0: crate destruction drops
 import WaveManager from './WaveManager.js';
 import BonusLevel from '../levels/BonusLevel.js';
 import EasterEgg from './EasterEgg.js';
@@ -378,6 +381,9 @@ export default class Game {
     const pts = Math.round(2500 * this.multiplier);
     this.score += pts;
     this.multiplier = Math.min(10, this.multiplier + 0.5);
+    // v3.42.0: destroyed crates spill one drop from the shared active pool
+    // (Health / Frenzy / Shields / Wanted / Extra Life / robot / crate).
+    this.powerups.push(new PowerUp({ x: pw.x, y: pw.y, type: rollPowerUpDrop(), game: this }));
     bus.emit('banner', {
       text: 'CRATE DESTROYED! +' + pts.toLocaleString() + ' (x' + this.multiplier.toFixed(1) + ')',
       tone: 'good', duration: 1.6,

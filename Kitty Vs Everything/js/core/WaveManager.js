@@ -1,5 +1,5 @@
 // Filename: WaveManager.js
-// Kitty Vs Everything — v3.30.0
+// Kitty Vs Everything — v3.42.0
 // 16-species sequential wave system: one species per wave (wraps after 16),
 // active enemy count sawtooth-ramps 20→300 over 12 waves then resets, and
 // wave difficulty scales enemy HP + damage (capped after two full species
@@ -9,11 +9,16 @@
 // v3.13.0: Spawn / wave-clear drop X ranges use the LIVE viewport width.
 // v3.33.0: wave-clear drop table gained the hull-repair (health) and
 //          FRENZY drops (tools/asset-manifest.json PNG art, v3.33.0).
-export const VERSION = 'v3.33.0';
-import { ENEMY_TYPES, WAVE } from './config.js';
+// v3.42.0: wave-clear drops roll the shared POWERUP_DROPS pool; the 15%
+//          asteroid spawns fully off-screen (ASTEROID.spawnY); the Planet
+//          Express ship flyby auto-triggers at the start of most waves
+//          (all but every 4th — the bonus-adjacent ones).
+export const VERSION = 'v3.42.0';
+import { ENEMY_TYPES, WAVE, ASTEROID, rollPowerUpDrop } from './config.js'; // v3.42.0: shared drop pool
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
 import { spawnAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0: asteroid chain drops
+import { switchEgg } from './EasterEgg.js'; // v3.42.0: ship flyby in most levels
 import { rand } from './utils.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
@@ -78,6 +83,10 @@ export default class WaveManager {
     this.currentSpecies = this.species[this.speciesIndex];
     this.buildQueue();
     this.active = true;
+    // v3.42.0: the Planet Express ship flyby appears reliably in most
+    // levels — every wave except the bonus-adjacent ones (every 4th), so
+    // ~75% of waves get the egg without any dev-panel involvement.
+    if (this.wave % this.bonusEvery !== 0) switchEgg(this.game, 'ship');
     const isFinal = this.wave % 10 === 0;
     bus.emit('banner', {
       text: isFinal ? `WAVE ${this.wave} — FINAL BOSS INBOUND` : `WAVE ${this.wave}`,
@@ -126,16 +135,15 @@ export default class WaveManager {
   }
 
   onWaveCleared() {
-    // Wave-clear drops (v3.33.0: + health repair 3.5% + FRENZY 3%)
-    const roll = Math.random();
+    // v3.42.0: wave-clear drop — 15% asteroid (spawns fully off-screen at
+    // ASTEROID.spawnY), otherwise one roll from the shared POWERUP_DROPS
+    // pool (Health / Frenzy / Shields / Wanted / Extra Life / robot / crate).
     const x = rand(200, this.game.viewW - 200); // v3.13.0: live viewport
-    if (roll < 0.015) this.game.powerups.push(new PowerUp({ x, y: -30, type: 'robot', game: this.game }));
-    else if (roll < 0.05) this.game.powerups.push(new PowerUp({ x, y: -30, type: 'health', game: this.game }));
-    else if (roll < 0.08) this.game.powerups.push(new PowerUp({ x, y: -30, type: 'frenzy', game: this.game }));
-    else if (roll < 0.165) this.game.powerups.push(new PowerUp({ x, y: -30, type: 'mini', game: this.game }));
-    else if (roll < 0.265) this.game.powerups.push(new PowerUp({ x, y: -30, type: 'life', game: this.game }));
-    else if (roll < 0.465) this.game.powerups.push(new PowerUp({ x, y: -30, type: 'crate', game: this.game }));
-    else if (roll < 0.615) spawnAsteroid(this.game, x, -30); // v3.11.0: asteroid chain (15%)
+    if (Math.random() < 0.15) {
+      spawnAsteroid(this.game, x, ASTEROID.spawnY); // v3.42.0: off-screen wave spawn
+    } else {
+      this.game.powerups.push(new PowerUp({ x, y: -30, type: rollPowerUpDrop(), game: this.game }));
+    }
     if (this.wave % this.bonusEvery === 0) this.game.startBonusLevel();
     else this.startNext();
   }

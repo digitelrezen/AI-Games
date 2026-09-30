@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.42.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.1.0: Replaced 8-element system with 3-weapon system (Vulkan / Plasma / Rail).
@@ -79,7 +79,13 @@
 //          (PLAYER.HEALTH_RESTORE). Shared transparent PNG art for the four
 //          power-up drops via tools/import-assets.mjs (AssetSprites.js +
 //          AssetManager.js).
-export const VERSION = 'v3.41.0';
+// v3.42.0: ASTEROID.spawnY (-80) — wave/bonus asteroids now spawn fully
+//          off-screen (large rock r=46 clears the top edge) — and the
+//          shared POWERUP_DROPS pool + rollPowerUpDrop(): every drop
+//          source (enemy kills, wave-clear, asteroid shatter, Internet
+//          bonus, crate destruction) samples it, so Health / Frenzy /
+//          Shields / Wanted (mini) / Extra Life all appear everywhere.
+export const VERSION = 'v3.42.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -217,7 +223,36 @@ export const ASTEROID = {
   ],
   dropChance: 0.4,        // destroyed small → regular power-up drop
   drift: 40,              // base drift speed (px/s), random direction
+  spawnY: -80,            // v3.42.0: wave-spawn Y — large rock (r=46) fully above the viewport
 };
+
+// ─── v3.42.0: SHARED POWER-UP DROP POOL (every drop source samples it) ───
+// The five core drops — Health, Frenzy, Shields, Wanted (the mini "Adopt
+// Me!" poster), Extra Life — plus the rare Bender (robot) and the score
+// crate. Enemy kills (Combat.maybeDrop), wave-clear drops (WaveManager),
+// asteroid shatter (AsteroidBonus), the Internet bonus (InternetBonus) and
+// crate destruction (Game.destroyCrate) all roll this one table, so no
+// source is ever missing a core drop. Asteroids are NOT in the pool: they
+// spawn fully off-screen from the wave spawner only (ASTEROID.spawnY).
+export const POWERUP_DROPS = {
+  health: 0.12,  // hull repair (PLAYER.HEALTH_RESTORE)
+  frenzy: 0.08,  // 30s all-cooldowns-off
+  shield: 0.16,  // shield restore
+  mini:   0.10,  // "Wanted" poster → mini-ship
+  life:   0.08,  // extra life
+  robot:  0.04,  // Bender easter egg
+  crate:  0.42,  // score crate (destructible — drops again)
+};
+
+/** v3.42.0: weighted roll over POWERUP_DROPS (weights sum to 1). */
+export function rollPowerUpDrop() {
+  let r = Math.random();
+  for (const [type, w] of Object.entries(POWERUP_DROPS)) {
+    if (r < w) return type;
+    r -= w;
+  }
+  return 'crate';
+}
 
 // Selectable cat ship color themes
 export const PLAYER_THEMES = {

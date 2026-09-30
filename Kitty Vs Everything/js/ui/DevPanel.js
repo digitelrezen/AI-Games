@@ -1,5 +1,5 @@
 // Filename: DevPanel.js
-// Kitty Vs Everything — v3.27.0
+// Kitty Vs Everything — v3.42.0
 // Toggleable admin panel (backtick / F9): spawn any species at any tier,
 // weapon override, instant bonus level, god mode, robot drop (Bender easter egg),
 // ship drop (Planet Express flyby easter egg, v3.27.0; v3.28.0: 3-pass
@@ -27,8 +27,10 @@
 //          Display) with 2-column grids. New footer: live viewport
 //          readout (window → logical stage → buffer) via Viewport.js,
 //          refreshed on resize + fullscreenchange.
-export const VERSION = 'v3.34.0';
-import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP } from '../core/config.js';
+// v3.42.0: debug asteroid drop now spawns fully off-screen (ASTEROID.spawnY),
+//          matching the v3.42.0 gameplay spawn rule.
+export const VERSION = 'v3.42.0';
+import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
 import { spawnAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0: debug asteroid drop
@@ -176,7 +178,7 @@ export default class DevPanel {
     }
     // ─── v3.11.0: drop a large asteroid chain power-up ───
     const asteroidBtn = document.getElementById('dev-asteroid');
-    if (asteroidBtn) asteroidBtn.onclick = () => spawnAsteroid(g, g.W / 2, -40);
+    if (asteroidBtn) asteroidBtn.onclick = () => spawnAsteroid(g, g.W / 2, ASTEROID.spawnY); // v3.42.0: off-screen
     document.getElementById('dev-god').onclick = (e) => {
       g.godMode = !g.godMode;
       e.target.classList.toggle('active', g.godMode);

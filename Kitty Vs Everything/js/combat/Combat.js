@@ -1,17 +1,20 @@
 // Filename: Combat.js
-// Kitty Vs Everything — v3.1.0
+// Kitty Vs Everything — v3.42.0
 // Weapon hit resolution: direct damage, shield-melt (plasma), death handling,
 // scoring, and drops. No legacy elemental secondary effects.
 // v3.1.0: Replaced applyElementalHit with applyWeaponHit. Removed aoeBlast,
 // chainLightning, ice-shatter, burn DoT, armor-melt.
 // v3.29.0: onEnemyDeath routes friendly kills to the Bender easter egg
 // (game.aimbot.onEnemyKilled — kill-based dialogue, EasterEgg.js).
-export const VERSION = 'v3.1.0';
-import { WEAPONS } from '../core/config.js';
+// v3.42.0: enemy kills drop from the shared POWERUP_DROPS pool (config.js)
+//          — Health / Frenzy / Shields / Wanted (mini) / Extra Life. The
+//          on-screen asteroid drop at the kill point is gone: asteroids
+//          now spawn fully off-screen from the wave spawner only.
+export const VERSION = 'v3.42.0';
+import { WEAPONS, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
 import PowerUp from './PowerUp.js';
-import { spawnAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0: asteroid chain drops
 
 /**
  * Resolve a friendly bullet hitting an enemy.
@@ -70,13 +73,8 @@ export function onEnemyDeath(game, enemy, owner) {
 function maybeDrop(game, enemy) {
   const chance = enemy.special ? 0.5 : 0.08;
   if (Math.random() > chance) return;
-  const roll = Math.random();
-  let type = 'crate';
-  if (roll < 0.02) type = 'robot';
-  else if (roll < 0.10) type = 'mini';
-  else if (roll < 0.20) type = 'life';
-  else if (roll < 0.35) type = 'shield';
-  else if (roll < 0.45) type = 'asteroid'; // v3.11.0: 10% → destructible chain
-  if (type === 'asteroid') { spawnAsteroid(game, enemy.x, enemy.y); return; }
-  game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type, game }));
+  // v3.42.0: enemy kills drop from the shared POWERUP_DROPS pool (Health /
+  // Frenzy / Shields / Wanted / Extra Life / robot / crate). No on-screen
+  // asteroid here — asteroids spawn fully off-screen from the wave spawner.
+  game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type: rollPowerUpDrop(), game }));
 }

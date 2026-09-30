@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.33.0 (tools/ lives at AI-GAMES root)
-// One-stop health check for the v3.33.0 release work (FRENZY power-up, hull
-// repair drop, shared PNG pipeline, HUD fire-control panel). Pure Node —
-// no canvas, no browser, no screenshots.
+// ../tools/check.mjs — Kitty Vs Everything v3.42.0 (tools/ lives at AI-GAMES root)
+// One-stop health check for the v3.42.0 release work (shared POWERUP_DROPS
+// drop pool, fully off-screen asteroid spawns, ship easter egg in most
+// levels) plus the v3.33.0 FRENZY / hull-repair / PNG pipeline / HUD checks.
+// Pure Node — no canvas, no browser, no screenshots.
 //
 //   node tools/check.mjs          → version sync + module surface + asset
 //                                   pipeline (import-assets --check, validate)
@@ -74,6 +75,11 @@ for (const [tag, rel] of [
   ['PlayerWeapons', 'js/player/PlayerWeapons.js'],
   ['PowerUp', 'js/combat/PowerUp.js'],
   ['HUDFireControl', 'js/ui/HUDFireControl.js'],
+  ['WaveManager', 'js/core/WaveManager.js'],        // v3.42.0
+  ['Combat', 'js/combat/Combat.js'],                // v3.42.0
+  ['AsteroidBonus', 'js/levels/AsteroidBonus.js'],  // v3.42.0
+  ['InternetBonus', 'js/levels/InternetBonus.js'],  // v3.42.0
+  ['DevPanel', 'js/ui/DevPanel.js'],                // v3.42.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -81,7 +87,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.33.0', PlayerWeapons: 'v3.33.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.33.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.33.0', PlayerWeapons: 'v3.33.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.33.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.42.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -89,18 +95,46 @@ check('AssetManager exports loadAssets/getSprite/getDims', typeof loadAssets ===
 check('AssetManager POWERUP_ASSETS maps 5 drop types', Object.keys(POWERUP_ASSETS || {}).length === 5, `got ${Object.keys(POWERUP_ASSETS || {}).join(', ')}`);
 
 // ═══════════════════════════════════════════════════════════
-//  [2] v3.33.0 MODULE SURFACE — config values + APIs the new
-//      features depend on (Player.activateFrenzy, Game.collectPowerUp,
-//      HUDFireControl panel, WEAPONS.vulkan thermal constants)
+//  [2] v3.42.0 MODULE SURFACE — config values + APIs the new
+//      features depend on (POWERUP_DROPS pool, ASTEROID.spawnY,
+//      Player.activateFrenzy, Game.collectPowerUp, HUDFireControl
+//      panel, WEAPONS.vulkan thermal constants)
 // ═══════════════════════════════════════════════════════════
-console.log('\n[2] v3.33.0 module surface');
-const { PLAYER, WEAPONS } = await mod('js/core/config.js');
+console.log('\n[2] v3.42.0 module surface');
+const { PLAYER, WEAPONS, ASTEROID, POWERUP_DROPS, rollPowerUpDrop } = await mod('js/core/config.js');
 check('PLAYER.FRENZY_DURATION = 30', PLAYER.FRENZY_DURATION === 30, `got ${PLAYER.FRENZY_DURATION}`);
 check('PLAYER.HEALTH_RESTORE = 25', PLAYER.HEALTH_RESTORE === 25, `got ${PLAYER.HEALTH_RESTORE}`);
 check('WEAPONS.vulkan.thermalPerShot = 0.05', WEAPONS.vulkan.thermalPerShot === 0.05, `got ${WEAPONS.vulkan.thermalPerShot}`);
 check('WEAPONS.vulkan.thermalMax = 1.0', WEAPONS.vulkan.thermalMax === 1.0, `got ${WEAPONS.vulkan.thermalMax}`);
 check('WEAPONS.vulkan.thermalLockout = 1.2', WEAPONS.vulkan.thermalLockout === 1.2, `got ${WEAPONS.vulkan.thermalLockout}`);
 check('WEAPONS.vulkan.rate = 0.07', WEAPONS.vulkan.rate === 0.07, `got ${WEAPONS.vulkan.rate}`);
+// v3.42.0: shared drop pool + fully off-screen asteroid spawn
+check('ASTEROID.spawnY = -80 (fully off-screen spawn)', ASTEROID.spawnY === -80, `got ${ASTEROID.spawnY}`);
+check('POWERUP_DROPS has the 7 v3.42.0 drop types',
+  JSON.stringify(Object.keys(POWERUP_DROPS || {}).sort()) === JSON.stringify(['crate', 'frenzy', 'health', 'life', 'mini', 'robot', 'shield']),
+  `got ${Object.keys(POWERUP_DROPS || {}).join(', ')}`);
+check('POWERUP_DROPS weights sum to 1',
+  Math.abs(Object.values(POWERUP_DROPS || {}).reduce((a, b) => a + b, 0) - 1) < 1e-9,
+  `got ${Object.values(POWERUP_DROPS || {}).reduce((a, b) => a + b, 0)}`);
+check('rollPowerUpDrop() covers every pool type (2000 rolls)', (() => {
+  const seen = new Set();
+  for (let i = 0; i < 2000; i++) seen.add(rollPowerUpDrop());
+  return seen.size === Object.keys(POWERUP_DROPS).length;
+})());
+// v3.42.0 source gates: every asteroid spawn off-screen, ship egg on most waves
+const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
+check('WaveManager: wave-clear asteroid spawns off-screen (ASTEROID.spawnY)', wmSrc.includes('spawnAsteroid(this.game, x, ASTEROID.spawnY)'));
+check('WaveManager: ship easter egg auto-triggers on non-bonus waves', wmSrc.includes("switchEgg(this.game, 'ship')") && wmSrc.includes('this.wave % this.bonusEvery !== 0'));
+const combatSrc = fs.readFileSync(path.join(ROOT, 'js/combat/Combat.js'), 'utf8');
+check('Combat: enemy kills roll the shared pool (no spawnAsteroid left)', combatSrc.includes('rollPowerUpDrop()') && !combatSrc.includes('spawnAsteroid'));
+const abSrc = fs.readFileSync(path.join(ROOT, 'js/levels/AsteroidBonus.js'), 'utf8');
+check('AsteroidBonus: shatter drops roll the shared pool', abSrc.includes('rollPowerUpDrop()'));
+const ibSrc = fs.readFileSync(path.join(ROOT, 'js/levels/InternetBonus.js'), 'utf8');
+check('InternetBonus: asteroid drops off-screen + shared pool', ibSrc.includes('spawnAsteroid(this.game, x, ASTEROID.spawnY)') && ibSrc.includes('rollPowerUpDrop()'));
+const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
+check('Game: crate destruction spills a shared-pool drop', gameSrc.includes('type: rollPowerUpDrop()'));
+const devSrc = fs.readFileSync(path.join(ROOT, 'js/ui/DevPanel.js'), 'utf8');
+check('DevPanel: debug asteroid drop also spawns off-screen', devSrc.includes('spawnAsteroid(g, g.W / 2, ASTEROID.spawnY)'));
 
 const { default: Game } = await mod('js/core/Game.js');
 const { default: Player } = await mod('js/player/Player.js');
@@ -275,6 +309,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.33.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.42.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

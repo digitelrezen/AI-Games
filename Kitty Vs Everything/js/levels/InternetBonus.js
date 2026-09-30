@@ -1,5 +1,5 @@
 // Filename: InternetBonus.js
-// Kitty Vs Everything — v2.3.0
+// Kitty Vs Everything — v3.42.0
 // "The Internet Classic" — High-intensity boss survival round:
 //   8 skinny, tall Black Cat mini-bosses orbiting in a circle
 //   around 1 skinny, short Pink Cat boss,
@@ -18,8 +18,11 @@
 //          digital clock pendant showing the player's REAL local system
 //          time (HH:MM), kept live by the RealTimeClock.js sync loop.
 //          Outfit art lives in BlackCatEntourage.js.
-export const VERSION = 'v3.15.0';
-import { BONUS } from '../core/config.js';
+// v3.42.0: the 12% asteroid drop spawns fully off-screen (ASTEROID.spawnY)
+//          and the remaining drops sample the shared POWERUP_DROPS pool
+//          (config.js) — Health / Frenzy / Shields / Wanted / Extra Life.
+export const VERSION = 'v3.42.0';
+import { BONUS, ASTEROID, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
 import { TAU, rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
@@ -150,17 +153,12 @@ export default class InternetBonus {
     if (this.dropTimer <= 0) {
       this.dropTimer = rand(1.5, 3.0);
       const x = rand(80, this.game.viewW - 80); // v3.13.0: live viewport
-      const roll = Math.random();
-      let type = 'crate';
-      if (roll < 0.05) type = 'robot';
-      else if (roll < 0.15) type = 'mini';
-      else if (roll < 0.30) type = 'life';
-      else if (roll < 0.50) type = 'shield';
-      else if (roll < 0.62) type = 'asteroid'; // v3.11.0: 12% → destructible chain
-      if (type === 'asteroid') {
-        spawnAsteroid(this.game, x, -30);
+      // v3.42.0: 12% asteroid (fully off-screen at ASTEROID.spawnY),
+      // otherwise one roll from the shared POWERUP_DROPS pool.
+      if (Math.random() < 0.12) {
+        spawnAsteroid(this.game, x, ASTEROID.spawnY);
       } else {
-        this.game.powerups.push(new PowerUp({ x, y: -30, type, game: this.game }));
+        this.game.powerups.push(new PowerUp({ x, y: -30, type: rollPowerUpDrop(), game: this.game }));
       }
     }
 

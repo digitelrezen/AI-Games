@@ -1,5 +1,5 @@
 // Filename: AsteroidBonus.js
-// Kitty Vs Everything — v3.22.0
+// Kitty Vs Everything — v3.42.0
 // Destructible asteroid chain power-up (ASTEROID in config.js):
 //   Large  → 2 Medium + 2 Small shards
 //   Medium → 4 Small
@@ -17,8 +17,10 @@
 // clipped to irregular polygons) so each piece looks like a broken jagged
 // chunk of it. Until the sprite pipeline finishes (or if it fails) the old
 // procedural jittered-rock fallback is drawn instead.
-export const VERSION = 'v3.22.0';
-import { ASTEROID } from '../core/config.js';
+// v3.42.0: shatter drops sample the shared POWERUP_DROPS pool (config.js)
+//          — Health / Frenzy / Shields / Wanted (mini) / Extra Life.
+export const VERSION = 'v3.42.0';
+import { ASTEROID, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
 import { TAU, rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
@@ -170,13 +172,8 @@ export function destroyAsteroid(game, a) {
       }));
     }
   } else if (Math.random() < ASTEROID.dropChance) {
-    // Small destroyed → regular power-up drop (same table as enemy kills).
-    const roll = Math.random();
-    let type = 'crate';
-    if (roll < 0.05) type = 'robot';
-    else if (roll < 0.15) type = 'mini';
-    else if (roll < 0.25) type = 'life';
-    else if (roll < 0.40) type = 'shield';
-    game.powerups.push(new PowerUp({ x: a.x, y: a.y, type, game }));
+    // v3.42.0: Small destroyed → roll from the shared POWERUP_DROPS pool
+    // (Health / Frenzy / Shields / Wanted / Extra Life / robot / crate).
+    game.powerups.push(new PowerUp({ x: a.x, y: a.y, type: rollPowerUpDrop(), game }));
   }
 }
