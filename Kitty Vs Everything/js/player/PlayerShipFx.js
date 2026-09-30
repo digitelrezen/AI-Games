@@ -13,7 +13,10 @@
 //         vulkanSpin spins the twin barrels, railCharge builds an energy
 //         glow between the barrels, plasmaPulse pulses an emitter orb at
 //         the muzzle. Docked (inert) minis pass anim = {} (no animation).
-export const VERSION = 'v3.17.0';
+// v3.44.0: vulkan spin pivot fix — barrels now rotate around the center of
+//         the barrel assembly (Gatling-style in-place spin) instead of the
+//         paw center (which made them orbit like clock hands / weed-whacker).
+export const VERSION = 'v3.44.0';
 import { TAU } from '../core/utils.js';
 import { hexA } from '../core/utils.js';
 import { SHIP_GEOMETRY } from '../core/config.js';
@@ -72,9 +75,17 @@ export function drawWeaponPaw(ctx, px, py, c, a, flash, weaponColor, anim = {}) 
   const SP = 2.4;                     // half-spacing between the twin barrels
   const BW = 3.5;                     // barrel stroke width
   // v3.16.0: vulkan spin — the twin barrels rotate around the paw center
+  // v3.44.0: PIVOT FIX — anchor the spin at the CENTER of the barrel
+  // assembly (midpoint of the drawn barrels, local y = -(BL + 1.5)/2)
+  // instead of the paw center. The paw anchor made the 15px barrels orbit
+  // a distant point like clock hands / weed-whacker blades; the assembly
+  // center spins them locally in place around their own axis, like a
+  // classic multi-barrel Gatling. Rest pose (spin = 0) is unchanged: the
+  // barrels still run (±SP, -1.5) → (±SP, -BL) relative to the paw.
+  const BL_HALF = (BL + 1.5) / 2; // half the barrel span (base -1.5, tip -BL)
   const cs = Math.cos(spin), sn = Math.sin(spin);
-  const rx = (lx, ly) => px + lx * cs - ly * sn;
-  const ry = (lx, ly) => py + lx * sn + ly * cs;
+  const rx = (lx, ly) => px + lx * cs - (ly + BL_HALF) * sn;
+  const ry = (lx, ly) => py - BL_HALF + lx * sn + (ly + BL_HALF) * cs;
   // Barrel bodies (dark metal)
   ctx.strokeStyle = '#39415c';
   ctx.lineWidth = BW;
