@@ -1,5 +1,5 @@
 // Filename: HUDFireControl.js
-// Kitty Vs Everything — v3.14.0
+// Kitty Vs Everything — v3.45.0
 // Bottom sci-fi fire-control dashboard panel: hull/shield meters, speed
 // readout, weapon status (READY / HOT / LOCKED), the three secondary-weapon
 // slots (STUN / NAPALM / NOVA) with live cooldown bars + bound-key labels,
@@ -26,7 +26,12 @@
 //          > 0 (all cooldowns off, Vulcan overheat neutralized). The
 //          weapon status naturally reads READY / T:0 during FRENZY since
 //          PlayerWeapons.js holds fireTimer/thermal/thermalLockout at zero.
-export const VERSION = 'v3.33.0';
+// v3.45.0: NOVA meter (F slot) — purple charge/cooldown/ready. Replaces the
+//          old "minis.length > 0" ready flag. charge = synergy (superCharge,
+//          the old gold ring), cooldown = ultimate recovery (ultimateCooldown),
+//          ready = fully charged & off cooldown. The ship-side rings are gone;
+//          this slot is the sole Nova display (nova-ready/-charging/-cooldown).
+export const VERSION = 'v3.45.0';
 import { WEAPONS, PLAYER, MINI_SHIP } from '../core/config.js';
 import { getBinds, codeLabel } from '../input/Keybinds.js';
 import { bus } from '../core/EventBus.js';
@@ -167,12 +172,26 @@ export default class HUDFireControl {
     // ─── SECONDARY SLOTS (cooldown bars + bound keys) ───
     this._updateSlot(e.stunSlot, 'stun', p.stunCooldown, PLAYER.STUN_COOLDOWN);
     this._updateSlot(e.napalmSlot, 'napalm', p.napalmCooldown, PLAYER.NAPALM_COOLDOWN);
-    const novaReady = p.minis.length > 0;
+    // v3.45.0: NOVA meter (F slot) — purple charge/cooldown/ready. The
+    // ship-side gold charge ring + cyan shield ring are gone; this is the sole
+    // Nova display. charge = synergy (superCharge, the old gold ring); cooldown
+    // = ultimate recovery (ultimateCooldown); ready = charged & off cooldown.
     if (e.novaSlot) {
-      e.novaSlot.classList.toggle('ready', novaReady);
-      e.novaSlot.classList.toggle('cooldown', !novaReady);
+      const maxCd = p.ULTIMATE_COOLDOWN || 8;
+      const onCooldown = p.ultimateCooldown > 0;
+      const charge = Math.max(0, Math.min(1, p.superCharge || 0));
+      const ready = !onCooldown && charge >= 1;
+      const charging = !onCooldown && !ready;
+      e.novaSlot.classList.toggle('nova-ready', ready);
+      e.novaSlot.classList.toggle('nova-charging', charging);
+      e.novaSlot.classList.toggle('nova-cooldown', onCooldown);
       const st = e.novaSlot.querySelector('.fc-slot-state');
-      if (st) st.textContent = novaReady ? 'READY' : 'NEED MINI';
+      if (st) st.textContent = onCooldown ? 'COOLDOWN' : (ready ? 'READY' : 'CHARGING');
+      const bar = e.novaSlot.querySelector('.fc-slot-bar .fc-slot-fill');
+      if (bar) {
+        const pct = onCooldown ? (1 - p.ultimateCooldown / maxCd) * 100 : charge * 100;
+        bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      }
       this._slotLabel(e.novaSlot, 'ultimate');
     }
     if (this._keysDirty) {

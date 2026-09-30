@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.44.0
+// Kitty Vs Everything — v3.45.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.1.0: Replaced 8-element system with 3-weapon system (Vulkan / Plasma / Rail).
@@ -85,7 +85,7 @@
 //          source (enemy kills, wave-clear, asteroid shatter, Internet
 //          bonus, crate destruction) samples it, so Health / Frenzy /
 //          Shields / Wanted (mini) / Extra Life all appear everywhere.
-export const VERSION = 'v3.44.0';
+export const VERSION = 'v3.45.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

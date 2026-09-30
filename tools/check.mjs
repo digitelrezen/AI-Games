@@ -86,7 +86,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.33.0', PlayerWeapons: 'v3.33.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.33.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.42.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.45.0', PlayerWeapons: 'v3.33.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.45.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.42.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -299,6 +299,33 @@ console.log('\n[6] Power-up drop lifecycle (headless)');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6b] v3.45.0 CLEAN CATSHIP — yellow shield bubble (ship-side
+//       charge/shield rings removed) + HUDFireControl purple Nova
+//       meter (charge/cooldown/ready) + one-shot shield-break burst
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6b] v3.45.0 clean catship (source gates)');
+{
+  const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
+  check('PlayerRenderer: SHIELD_BUBBLE_RADIUS = 48', /SHIELD_BUBBLE_RADIUS\s*=\s*48/.test(prSrc));
+  check('PlayerRenderer: yellow bubble drawn only while shield > 0',
+    prSrc.includes('if (p.shield > 0)') && prSrc.includes('rgba(255, 213, 79'));
+  check('PlayerRenderer: ship no longer reads superCharge (gold ring gone)',
+    !prSrc.includes('p.superCharge'));
+  const plSrc = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
+  check('Player: shield-break shatter burst (shield >0 → 0, one-shot)',
+    plSrc.includes('const shieldBefore = this.shield') &&
+    plSrc.includes('shieldBefore > 0 && this.shield <= 0') &&
+    plSrc.includes('#ffd54f'));
+  const hudSrc = fs.readFileSync(path.join(ROOT, 'js/ui/HUDFireControl.js'), 'utf8');
+  check('HUDFireControl: Nova meter reads superCharge + ultimateCooldown',
+    hudSrc.includes('p.superCharge') && hudSrc.includes('p.ultimateCooldown'));
+  check('HUDFireControl: Nova meter states nova-ready/-charging/-cooldown',
+    hudSrc.includes('nova-ready') && hudSrc.includes('nova-charging') && hudSrc.includes('nova-cooldown'));
+  check('HUDFireControl: old minis-based Nova ready flag (novaReady) removed',
+    !hudSrc.includes('novaReady'));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -308,6 +335,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.43.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.45.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

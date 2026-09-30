@@ -1,11 +1,14 @@
-// Verify the built bundle contains the v3.29.0 kill-based Bender easter egg.
-// Usage: node ../tools/verify-bundle.mjs  (tools/ moved up to AI-GAMES root)
+// Verify the built single-file bundle is valid and contains the current
+// milestone's features. The version is read from package.json so this always
+// checks the latest build. Usage: node ../tools/verify-bundle.mjs (tools/ at AI-GAMES root)
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..'); // AI-GAMES workspace root
-const bundle = join(root, 'Builds', 'Kitty Vs Everything 3.29.0.html');
+const pkg = JSON.parse(readFileSync(join(root, 'Kitty Vs Everything', 'package.json'), 'utf8'));
+const VER = String(pkg.version || '');
+const bundle = join(root, 'Builds', `Kitty Vs Everything ${VER}.html`);
 const s = readFileSync(bundle, 'utf8');
 
 const tests = [
@@ -29,8 +32,13 @@ const tests = [
   // PLAYER2.autoAimTurnRate / _autoAim() for the P2 co-op AI ship. The dead
   // reference from the old EasterEgg was specifically `player.autoAim`.
   ['no player.autoAim (dead reference removed)', !/player\.autoAim/.test(s) && !/this\.autoAim/.test(s)],
-  ['version 3.29.0', s.includes('3.29.0')],
   ['BENDER_SCALE 0.5', /BENDER_SCALE\s*=\s*0\.5/.test(s)],
+  // ── v3.45.0 clean catship (yellow shield bubble + purple Nova meter) ──
+  ['v3.45.0: yellow shield bubble (SHIELD_BUBBLE_RADIUS=48)', /SHIELD_BUBBLE_RADIUS\s*=\s*48/.test(s) && s.includes('rgba(255, 213, 79')],
+  ['v3.45.0: shield-break shatter burst', s.includes('const shieldBefore = this.shield') && s.includes('#ffd54f')],
+  ['v3.45.0: Nova meter (superCharge + ultimateCooldown + nova-ready)', s.includes('p.superCharge') && s.includes('p.ultimateCooldown') && s.includes('nova-ready')],
+  ['v3.45.0: purple Nova CSS (#7c4dff)', s.includes('#7c4dff')],
+  [`version ${VER}`, s.includes(VER)],
 ];
 
 let fail = 0;
@@ -38,5 +46,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? '\nBundle OK — v3.29.0 kill-based Bender easter egg is in the build.' : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

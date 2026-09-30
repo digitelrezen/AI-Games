@@ -1,5 +1,5 @@
 // Filename: Player.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.45.0
 // Core player controller: hull state (health/shield/lives/invulnerability),
 // per-frame orchestration of the extracted modules, and fleet-level damage
 // routing (docked minis intercept damage BEFORE the main hull).
@@ -22,7 +22,10 @@
 //          all-cooldowns-off: fire cooldown held at zero, Vulcan heat +
 //          overheat neutralized by PlayerWeapons.js; stun/napalm/ultimate
 //          cooldowns cleared on pickup). Reset on respawn.
-export const VERSION = 'v3.33.0';
+// v3.45.0: shield-break shatter — hit() plays a one-shot yellow particle
+//          burst when the hull shield drops from >0 to 0 (the yellow bubble
+//          in PlayerRenderer vanishes the same frame; this makes it read).
+export const VERSION = 'v3.45.0';
 import Entity from '../core/Entity.js';
 import Bullet from '../combat/Bullet.js';
 import { PLAYER, PLAYER_THEMES } from '../core/config.js';
@@ -240,7 +243,14 @@ export default class Player extends Entity {
       mini.applyDamage(damage);
       return;
     }
+    // v3.45.0: SHIELD BREAK — the yellow bubble (PlayerRenderer) renders only
+    // while shield > 0, so it vanishes the frame the shield hits 0; this
+    // one-shot shatter burst makes the break read cleanly.
+    const shieldBefore = this.shield;
     this.applyDamage(damage);
+    if (shieldBefore > 0 && this.shield <= 0) {
+      this.game.particles.burst(this.x, this.y, { count: 26, color: '#ffd54f', speed: 320, life: 0.45 });
+    }
     if (this.hp <= 0) {
       this.lives--;
       this.invuln = 2.5;

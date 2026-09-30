@@ -531,6 +531,19 @@ body {
 .fc-slot-bar { width: 100%; height: 4px; background: #101a2e; border-radius: 2px; overflow: hidden; }
 .fc-slot-fill { display: block; height: 100%; width: 100%; background: #4f7fbf; }
 
+/* v3.45.0: NOVA meter (F slot) — purple charge/cooldown/ready. The ship-side
+   gold charge ring + cyan shield ring are gone; this is the sole Nova display. */
+#nova-slot { border-color: #3d2f5e; }
+#nova-slot .fc-slot-key { color: #b388ff; }
+#nova-slot.nova-ready { border-color: #7c4dff; box-shadow: 0 0 9px rgba(124, 77, 255, 0.55); }
+#nova-slot.nova-ready .fc-slot-state { color: #d1b3ff; }
+#nova-slot.nova-ready .fc-slot-fill { background: linear-gradient(90deg, #7c4dff, #b388ff); animation: nova-pulse 0.8s ease-in-out infinite alternate; }
+#nova-slot.nova-charging .fc-slot-state { color: #9575cd; }
+#nova-slot.nova-charging .fc-slot-fill { background: linear-gradient(90deg, #4a3d6b, #7c4dff); }
+#nova-slot.nova-cooldown .fc-slot-state { color: #8a93a8; }
+#nova-slot.nova-cooldown .fc-slot-fill { background: #3a2f57; }
+@keyframes nova-pulse { from { opacity: 0.7; } to { opacity: 1; } }
+
 /* v3.20.0: P2 HUD (co-op / LAN) + net status + LAN settings panel */
 #p2-hud {
   position: absolute;
