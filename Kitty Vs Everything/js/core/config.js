@@ -1,7 +1,10 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.50.0
+// Kitty Vs Everything — v3.51.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.51.0: release version bump — PowerUp.js v3.51.0 adds programmatic JEWEL
+// SHADING to the frenzy / extra-life / shield drops (drawJewelDrop(): aura →
+// base → bevel depth → specular shine → shimmer). No config changes.
 // v3.50.0: space shuttle enemy — 17th species (key "shuttle", asset sprite
 // Human-SpaceShuttle-pixel-art.png 699×329 → 128×60) with banked-strafe glide
 // behavior (ShuttleEnemy.js). Regular waves only: Bone Yard Phase 2 stays
@@ -99,7 +102,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.50.0';
+export const VERSION = 'v3.51.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

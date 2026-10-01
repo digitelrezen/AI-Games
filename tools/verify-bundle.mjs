@@ -64,6 +64,13 @@ const tests = [
   ['v3.50.0: shuttle registered in EnemyFactory REGISTRY', /shuttle:\s*ShuttleEnemy/.test(s)],
   ['v3.50.0: WaveManager species pool = ENEMY_TYPES keys', s.includes('this.species = Object.keys(ENEMY_TYPES)')],
   ['v3.50.0: Bone Yard humanoid allowlist (["human"] only)', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
+  // ── v3.51.0 jewel shading (frenzy / extra-life / shield drops) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.51.0: PowerUp VERSION = v3.51.0 (esbuild may suffix: VERSION3)', /VERSION\d*\s*=\s*['"]v3\.51\.0['"]/.test(s)],
+  ['v3.51.0: drawJewelDrop gem pipeline (source-atop depth + lighter glow)', /function drawJewelDrop\(/.test(s) && s.includes('source-atop') && s.includes('lighter')],
+  ['v3.51.0: jewel buffer is headless-guarded (no DOM → base only)', /typeof document\s*===\s*['"]undefined['"]/.test(s)],
+  ['v3.51.0: life/shield/frenzy route through the jewel pass (def + 3 call sites)', (s.match(/drawJewelDrop\(/g) || []).length >= 4],
   [`version ${VER}`, s.includes(VER)],
 ];
 

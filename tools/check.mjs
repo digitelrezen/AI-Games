@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.50.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.51.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -91,7 +91,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.31.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.31.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -409,6 +409,50 @@ const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), '
 check('AssetSprites: shuttle sprite dims 128×60 registered', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(spritesSrc));
 
 // ═══════════════════════════════════════════════════════════
+//  [6e] v3.51.0 JEWEL SHADING — frenzy / extra-life / shield
+//      drops render through the programmatic drawJewelDrop()
+//      gem pass (aura → base → bevel depth → specular shine →
+//      shimmer); headless-safe (no DOM → base fallback only)
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6e] v3.51.0 jewel shading (frenzy / life / shield)');
+const pwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PowerUp.js'), 'utf8');
+check('PowerUp: VERSION = v3.51.0', pwSrc.includes("VERSION = 'v3.51.0'"));
+check('PowerUp: drawJewelDrop() gem pipeline (source-atop depth + lighter glow)',
+  pwSrc.includes('function drawJewelDrop(') &&
+  pwSrc.includes("globalCompositeOperation = 'source-atop'") &&
+  pwSrc.includes("globalCompositeOperation = 'lighter'"));
+check('PowerUp: per-type jewel palette (golden / emerald / azure)',
+  pwSrc.includes("frenzy: { aura: '255, 200, 40'") &&
+  pwSrc.includes("life:   { aura: '0, 230, 118'") &&
+  pwSrc.includes("shield: { aura: '64, 196, 255'"));
+check('PowerUp: life drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'life', this.t,"));
+check('PowerUp: shield drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'shield', this.t,"));
+check('PowerUp: frenzy drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'frenzy', this.t,"));
+check('PowerUp: jewel buffer is headless-guarded (no DOM → base only)',
+  pwSrc.includes("typeof document === 'undefined'") &&
+  pwSrc.includes('if (!buf) { drawBase(ctx); return; }'));
+check('PowerUp: procedural fallbacks preserved (red heart / cyan hex / gold bolt)',
+  pwSrc.includes('#ff5252') && pwSrc.includes('#4fc3f7') && pwSrc.includes('#ffd600'));
+// Headless draw smoke: all three jewel drops must draw with a bare mock
+// ctx (no DOM canvas) — the jewel pass falls back to the base glyph.
+{
+  const game = makeGame();
+  const mockCtx = {
+    save() {}, restore() {}, translate() {}, beginPath() {}, moveTo() {}, lineTo() {},
+    closePath() {}, bezierCurveTo() {}, arc() {}, fill() {}, stroke() {}, fillRect() {},
+    strokeRect() {}, drawImage() {}, clearRect() {},
+    createRadialGradient() { return { addColorStop() {} }; },
+    createLinearGradient() { return { addColorStop() {} }; },
+  };
+  for (const type of ['life', 'shield', 'frenzy']) {
+    const pw = new PowerUp({ x: 100, y: 100, type, game });
+    let ok = true;
+    try { pw.draw(mockCtx); } catch { ok = false; }
+    check(`headless: ${type} drop draws without a DOM canvas (jewel pass → base fallback)`, ok);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -418,6 +462,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.50.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.51.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

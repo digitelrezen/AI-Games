@@ -57,7 +57,7 @@ Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
 
 - **Bullet.js** — Projectile: velocity, damage, weapon profile, optional homing/tracking, friendly flag, lifetime.
 - **Combat.js** — `applyWeaponHit`: per-weapon damage rules (incl. plasma-pulse shield melt), hit-flash, `onEnemyDeath`.
-- **PowerUp.js** — Falling drops: extra life, shield, mini-ship, bonus crate, rare Bender (easter egg). v3.36.0: bonus crate draws the shared `.assets` PNG (key `crate`, `Crate-pixel-art.png`, 620×574 → 128×119) via the AssetManager pipeline, procedural crate kept as null-sprite fallback.
+- **PowerUp.js** — Falling drops: extra life, shield, mini-ship, bonus crate, rare Bender (easter egg). v3.51.0: frenzy / extra-life / shield drops render through `drawJewelDrop()`, a programmatic 5-pass gem treatment (no new art): pulsating additive AURA in the type's jewel color (golden/emerald/azure) → icon into a 40×40 offscreen buffer → source-atop DEPTH bevel (light top-left → shade bottom-right) + inset vignette → specular SHINE (white radial glint + rim arc + twinkling 4-point sparkle) → rotating perimeter SHIMMER; procedural fallbacks unchanged and headless-safe (no DOM → base only). v3.36.0: bonus crate draws the shared `.assets` PNG (key `crate`, `Crate-pixel-art.png`, 620×574 → 128×119) via the AssetManager pipeline, procedural crate kept as null-sprite fallback.
 
 ## 5. Enemies (28 files)
 
