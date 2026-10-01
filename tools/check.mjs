@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.52.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.53.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -85,6 +85,7 @@ for (const [tag, rel] of [
   ['BoneYardBonus', 'js/levels/BoneYardBonus.js'],  // v3.50.0
   ['ShuttleEnemy', 'js/enemies/ShuttleEnemy.js'],   // v3.50.0
   ['MothEnemy', 'js/enemies/MothEnemy.js'],         // v3.52.0
+  ['BeetleEnemy', 'js/enemies/BeetleEnemy.js'],     // v3.53.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -92,7 +93,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -163,7 +164,8 @@ const keys = Object.keys(manifest.assets || {});
 // the 5 power-up drops — assert the exact expected key set, not a bare count.
 // v3.50.0: + shuttle (space shuttle enemy, 17th species).
 // v3.52.0: + moth (moth enemy, 18th species).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth'];
+// v3.53.0: + beetle (beetle enemy pixel-art sprite swap).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -473,6 +475,21 @@ check('AssetSprites: moth sprite dims 128×79 registered', /moth:\s*\{\s*w:\s*12
 check('BoneYardBonus: humanoid allowlist excludes moth', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*'human'\s*\]/.test(bySrc));
 
 // ═══════════════════════════════════════════════════════════
+//  [6g] v3.53.0 BEETLE PIXEL-ART SPRITE — armored tank now draws
+//       the shared PNG (key "beetle") with charge-lunge pulse;
+//       procedural fallback kept
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6g] v3.53.0 beetle pixel-art sprite');
+{
+  const beSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/BeetleEnemy.js'), 'utf8');
+  check('BeetleEnemy: VERSION = v1.2.0', beSrc.includes("VERSION = 'v1.2.0'"));
+  check('BeetleEnemy: sprite key "beetle" via AssetManager', beSrc.includes("BEETLE_SPRITE_KEY = 'beetle'") && beSrc.includes('getSprite(BEETLE_SPRITE_KEY)'));
+  check('BeetleEnemy: null-sprite → procedural fallback branch', beSrc.includes('this._drawProcedural(ctx, r)'));
+  check('BeetleEnemy: charge-lunge pulse tracks the 2.4 s burst', beSrc.includes('_drawSprite(ctx, sprite, r)') && beSrc.includes('this.t % 2.4'));
+  check('AssetSprites: beetle sprite dims 123×128 registered', /beetle:\s*\{\s*w:\s*123,\s*h:\s*128\s*\}/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -482,6 +499,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.52.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.53.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

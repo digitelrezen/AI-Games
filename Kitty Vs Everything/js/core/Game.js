@@ -1,6 +1,10 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.52.0
+// Kitty Vs Everything — v3.53.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.53.0: beetle enemy sprite swap — BeetleEnemy.js v1.2.0 now draws the
+// shared pixel-art PNG (Beetle-new-pixel-art.png, 665×693 → 123×128, key
+// "beetle") aspect-preserving with a charge-lunge scale pulse; procedural
+// beetle kept as null-sprite fallback. Release version bump only.
 // v3.52.0: moth enemy — 18th species (regular waves only, MothEnemy.js).
 // Bone Yard Phase 2 stays standard-humanoid via an explicit allowlist
 // (BoneYardBonus.js). Release version bump only.
@@ -63,7 +67,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.52.0';
+export const VERSION = 'v3.53.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

@@ -111,7 +111,9 @@
                     Tracks player X, oscillates, periodic lunges.
   Wasp2Sprite.js    Wasp2 sprite pipeline: base64 PNG, white keyed to
                     transparent, 882x500 -> 256x145, 1-px dilation.
-  BeetleEnemy.js    Slow armored tank with periodic charge lunges.
+  BeetleEnemy.js    Slow armored tank with periodic charge lunges
+                    (v3.53.0: pixel-art sprite, key beetle, 665x693 ->
+                    123x128 + charge-lunge pulse).
   ButterflyEnemy.js Fast fluttering dodger, light shots.
   RatEnemy.js       Fast dashing scavenger with lateral jitter.
   WolfEnemy.js      Mid-speed pack hunter, offset pack sines.

@@ -69,7 +69,7 @@ Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
 mirrored to face the player (left-facing art), classic procedural wasp kept as null-sprite fallback.
 - **Wasp2Enemy.js** — Black wireframe wasp (sprite from `../.assets/Wasp 1 Pixel Art.png` via Wasp2Sprite.js). Tracks player X, oscillates, periodic lunges.
 - **Wasp2Sprite.js** — Wasp2 sprite pipeline: base64-embedded PNG, white keyed to transparent (alpha = 255 − luminance), downscaled 882×500 → 256×145, 1-px alpha dilation.
-- **BeetleEnemy.js** — Slow armored tank with periodic charge lunges.
+- **BeetleEnemy.js** — Slow armored tank with periodic charge lunges. v3.53.0: pixel-art sprite from `.assets/Beetle-new-pixel-art.png` via the AssetManager pipeline (key `beetle`, 665×693 → 123×128), drawn aspect-preserving + centered with a charge-lunge scale pulse tracking the 2.4 s burst; classic procedural beetle kept as null-sprite fallback.
 - **ButterflyEnemy.js** — Fast fluttering dodger, light shots. v1.2.0: top-down pixel-art sprite from
 `.assets/Butteryfly pixel_art.png` via the AssetManager pipeline (key `butterfly`, 530×343 → 128×83),
 drawn overhead with a procedural wing-beat (sinusoidal scaleY + subtle wing-fold scaleX + slow rotation

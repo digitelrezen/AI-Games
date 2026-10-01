@@ -84,6 +84,10 @@ const tests = [
   ['v3.52.0: moth registered in EnemyFactory REGISTRY', /moth:\s*MothEnemy/.test(s)],
   ['v3.52.0: MothEnemy class in bundle', /MothEnemy\s*=\s*class/.test(s)],
   ['v3.52.0: Bone Yard humanoid allowlist still ["human"] only', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
+  // ── v3.53.0 beetle pixel-art sprite (armored tank) ──
+  ['v3.53.0: beetle sprite dims 123×128', /beetle:\s*\{\s*w:\s*123,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.53.0: beetle sprite key in AssetSprites registry', s.includes('beetle: "iVBORw0KGgo')],
+  ['v3.53.0: BeetleEnemy sprite + procedural fallback', /BEETLE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   [`version ${VER}`, s.includes(VER)],
 ];
 
@@ -92,5 +96,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth species).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
