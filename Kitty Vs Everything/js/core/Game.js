@@ -1,6 +1,10 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.48.0
+// Kitty Vs Everything — v3.49.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.49.0: butterfly enemy now draws the shared top-down pixel-art PNG
+// (Butteryfly pixel_art.png, 530×343 → 128×83, key "butterfly") with a
+// smooth overhead wing-beat (sinusoidal scaleY + subtle wing-fold + slow
+// rotation wobble); classic procedural butterfly kept as null-sprite fallback.
 // v3.48.0: procedural aim reticle — Crosshair.js draws a neon crosshair
 // (two concentric circles + center dot + 4 ticks) offset in front of the
 // nose along the ship's heading, rotating with it. Toggle: Settings → FX
@@ -50,7 +54,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.48.0';
+export const VERSION = 'v3.49.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

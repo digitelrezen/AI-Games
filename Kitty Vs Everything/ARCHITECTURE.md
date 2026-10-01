@@ -70,7 +70,10 @@ mirrored to face the player (left-facing art), classic procedural wasp kept as n
 - **Wasp2Enemy.js** — Black wireframe wasp (sprite from `../.assets/Wasp 1 Pixel Art.png` via Wasp2Sprite.js). Tracks player X, oscillates, periodic lunges.
 - **Wasp2Sprite.js** — Wasp2 sprite pipeline: base64-embedded PNG, white keyed to transparent (alpha = 255 − luminance), downscaled 882×500 → 256×145, 1-px alpha dilation.
 - **BeetleEnemy.js** — Slow armored tank with periodic charge lunges.
-- **ButterflyEnemy.js** — Fast fluttering dodger, light shots.
+- **ButterflyEnemy.js** — Fast fluttering dodger, light shots. v1.2.0: top-down pixel-art sprite from
+`.assets/Butteryfly pixel_art.png` via the AssetManager pipeline (key `butterfly`, 530×343 → 128×83),
+drawn overhead with a procedural wing-beat (sinusoidal scaleY + subtle wing-fold scaleX + slow rotation
+wobble) — no face-the-player mirror (art is a top-down view), classic procedural butterfly kept as null-sprite fallback.
 - **RatEnemy.js** — Fast dashing scavenger with lateral jitter.
 - **WolfEnemy.js** — Mid-speed pack hunter, offset pack sines.
 - **FalconEnemy.js** — Hovers high, then dives straight at the player.

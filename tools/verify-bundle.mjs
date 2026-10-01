@@ -54,6 +54,7 @@ const tests = [
   ['v3.48.0: crosshair defaults (on + 64px offset, 24–160 limits)', /crosshair:\s*true/.test(s) && /crosshairOffset:\s*\{\s*min:\s*24,\s*max:\s*160,\s*def:\s*64/.test(s)],
   ['v3.48.0: reticle drawn in Game render', s.includes('this.crosshair.draw(ctx)')],
   ['v3.48.0: settings toggle + dev slider wired', s.includes('set-crosshair') && s.includes('dev-crosshair-offset')],
+  ['v3.49.0: butterfly top-down sprite registered (asset dims 128×83)', /butterfly:\s*\{\s*w:\s*128,\s*h:\s*83\s*\}/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 

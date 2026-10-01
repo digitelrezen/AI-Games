@@ -1,10 +1,25 @@
 // Filename: ButterflyEnemy.js
-// Kitty Vs Everything — v1.1.0
+// Kitty Vs Everything — v1.2.0
 // Butterfly: fast fluttering dodger with large iridescent wings, spots,
 // and a slim segmented body. Moves in rapid sine flutter, fires light shots.
-export const VERSION = 'v1.1.0';
+// v1.2.0: sprite swap — now draws the shared TOP-DOWN pixel-art PNG
+//         (.assets/Butteryfly pixel_art.png, 530×343, viewed from above)
+//         through the AssetManager pipeline (tools/import-assets.mjs →
+//         js/core/AssetSprites.js, key "butterfly", normalized to 128×83).
+//         Because the art is a top-down view there is NO face-the-player
+//         mirror (unlike the side-profile Wasp); instead a smooth procedural
+//         OVERHEAD animation sells the wing-beat from above — a sinusoidal
+//         vertical scale (scaleY) + a subtle wing-fold (scaleX) + a slow
+//         rotation wobble for natural drift/turn. Nearest-neighbor,
+//         aspect-preserving, centered on the hitbox, accent glow pass +
+//         crisp pass. The classic procedural butterfly is kept as the
+//         null-sprite fallback per the AssetManager contract.
+export const VERSION = 'v1.2.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
+
+const BUTTERFLY_SPRITE_KEY = 'butterfly';
 
 export default class ButterflyEnemy extends EnemyBase {
   move(dt, slowMul) {
@@ -25,6 +40,46 @@ export default class ButterflyEnemy extends EnemyBase {
     ctx.translate(this.x, this.y);
     if (this.flash > 0) ctx.globalAlpha = 0.55;
 
+    const sprite = getSprite(BUTTERFLY_SPRITE_KEY);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+
+  // v1.2.0 — top-down pixel-art sprite with overhead wing-beat animation.
+  // The art is a top-down view (no face-the-player mirror); a sinusoidal
+  // scaleY + subtle wing-fold scaleX + slow rotation wobble sell the flap.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(BUTTERFLY_SPRITE_KEY);
+    const targetW = r * 3.4;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    const flap = Math.sin(this.t * 10);
+    const scaleY = 1 + 0.10 * flap;    // vertical wing-beat
+    const scaleX = 1 + 0.05 * flap;    // subtle wing-fold
+    const wobble = Math.sin(this.t * 2.2) * 0.06;  // slow drift/turn
+    ctx.save();
+    ctx.rotate(wobble);
+    ctx.scale(scaleX, scaleY);
+    ctx.imageSmoothingEnabled = false;
+    const dx = -targetW / 2, dy = -targetH / 2;
+    ctx.globalAlpha = 0.30;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = r * 0.8;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = this.flash > 0 ? 0.55 : 1;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.restore();
+  }
+
+  // v1.1.0 procedural fallback (kept when the sprite is unavailable).
+  _drawProcedural(ctx, r) {
     const flap = Math.sin(this.t * 10) * 0.6;
 
     // ─── UPPER WINGS (large, iridescent) ───
@@ -139,9 +194,5 @@ export default class ButterflyEnemy extends EnemyBase {
     ctx.fillStyle = '#c77dff';
     ctx.beginPath(); ctx.arc(-r * 0.1, -r * 1.3, r * 0.04, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(r * 0.1, -r * 1.3, r * 0.04, 0, TAU); ctx.fill();
-
-    ctx.restore();
-    this.drawShieldRing(ctx);
-    this.drawBossBar(ctx);
   }
 }
