@@ -1,11 +1,20 @@
 // Filename: BoneFragment.js
-// Kitty Vs Everything — v2.1.0
-// Procedural bone shape that drifts downward in the Bone Yard bonus.
-// When shot, shatters into sharp bone shrapnel particles.
-export const VERSION = 'v2.1.0';
+// Kitty Vs Everything — v2.2.0
+// Bone that drifts downward in the Bone Yard bonus. When shot, shatters
+// into sharp bone shrapnel particles.
+// v2.2.0 (v3.54.0 release): sprite swap — each fragment now draws the
+// shared pixel-art PNG "femur" (126×128) or "profile_bone" (128×56)
+// through the AssetManager pipeline, aspect-preserving, rotated with the
+// fragment, with an ethereal glow pass. The classic procedural bone is
+// kept as the null-sprite fallback per the AssetManager contract.
+export const VERSION = 'v2.2.0';
 import Entity from '../core/Entity.js';
 import { TAU, rand } from '../core/utils.js';
 import { audio } from '../core/AudioSystem.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v2.2.0: shared PNG pipeline
+
+// v2.2.0: each fragment rolls one of the two bone sprites (per instance).
+const BONE_FRAGMENT_SPRITE_KEYS = ['femur', 'profile_bone'];
 
 export default class BoneFragment extends Entity {
   constructor({ x, y, game }) {
@@ -29,6 +38,8 @@ export default class BoneFragment extends Entity {
     this.knobOffset = rand(0.8, 1.1);
     this.bent = rand(-0.15, 0.15); // slight curve
     this.scoreValue = 500;
+    // v2.2.0: per-instance sprite (femur or profile bone).
+    this.spriteKey = BONE_FRAGMENT_SPRITE_KEYS[Math.floor(Math.random() * BONE_FRAGMENT_SPRITE_KEYS.length)];
   }
 
   update(dt) {
@@ -79,6 +90,36 @@ export default class BoneFragment extends Entity {
     ctx.rotate(this.rotation);
     if (this.flash > 0) ctx.globalAlpha = 0.5;
 
+    const sprite = getSprite(this.spriteKey);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+  }
+
+  // v2.2.0 — pixel-art bone sprite (femur or profile bone, per instance).
+  // Aspect-preserving, centered on the hitbox, nearest-neighbor, with the
+  // ethereal glow pass the procedural bone had.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(this.spriteKey);
+    const targetW = r * 2.4;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    ctx.imageSmoothingEnabled = false;
+    // Ethereal glow pass
+    ctx.globalAlpha = (this.flash > 0 ? 0.5 : 1) * 0.3;
+    ctx.shadowColor = '#fffef0';
+    ctx.shadowBlur = r * 0.9;
+    ctx.drawImage(sprite, -targetW / 2, -targetH / 2, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = this.flash > 0 ? 0.5 : 1;
+    ctx.drawImage(sprite, -targetW / 2, -targetH / 2, targetW, targetH);
+  }
+
+  // v2.2.0 — classic procedural bone, kept as the null-sprite fallback.
+  _drawProcedural(ctx, r) {
     // ─── BONE SHAFT (elongated, slightly curved) ───
     const shaftLen = r * this.shaftLen;
     const shaftW = r * this.shaftWidth;
@@ -146,7 +187,5 @@ export default class BoneFragment extends Entity {
     ctx.ellipse(0, 0, shaftLen * 1.2, shaftW * 2, 0, 0, TAU);
     ctx.fill();
     ctx.globalAlpha = 1;
-
-    ctx.restore();
   }
 }

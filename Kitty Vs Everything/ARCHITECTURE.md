@@ -1,7 +1,7 @@
 # Kitty Vs Everything — Architecture Roadmap / File Index
 
 > **Workspace:** `c:\AI-Games\Kitty Vs Everything`
-> **Generated:** 2026-09-27 (v3.27.0 easter-egg manager + Planet Express ship flyby)
+> **Generated:** 2026-10-01 (v3.54.0 boneyard pixel-art environment — skeleton / skull / femur / profile-bone)
 > **Layout:** ~80 files, flat in the root folder + a `net/` subfolder for multiplayer; `npm run build` (build.mjs) inlines every module into a single self-contained `Kitty Vs Everything <version>.html` in `C:\AI-Games\Builds\`
 > **Stack:** Native ES modules, Canvas 2D, WebAudio, plain DOM, `ws` (LAN relay, Node-only)
 > **Run:** `python -m http.server 8000` → http://localhost:8000  ·  LAN: `npm run lan`

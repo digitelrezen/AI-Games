@@ -88,6 +88,17 @@ const tests = [
   ['v3.53.0: beetle sprite dims 123×128', /beetle:\s*\{\s*w:\s*123,\s*h:\s*128\s*\}/.test(s)],
   ['v3.53.0: beetle sprite key in AssetSprites registry', s.includes('beetle: "iVBORw0KGgo')],
   ['v3.53.0: BeetleEnemy sprite + procedural fallback', /BEETLE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  // ── v3.54.0 boneyard pixel-art environment (skeleton/skull/femur/profile bone) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.54.0: skeleton sprite dims 76×128', /skeleton:\s*\{\s*w:\s*76,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.54.0: skull sprite dims 104×128', /skull:\s*\{\s*w:\s*104,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.54.0: femur sprite dims 126×128', /femur:\s*\{\s*w:\s*126,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.54.0: profile_bone sprite dims 128×56', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*56\s*\}/.test(s)],
+  ['v3.54.0: BoneYardBonus seeded backdrop (keys + mulberry32)', /BONEYARD_BG_KEYS/.test(s) && /mulberry32/.test(s)],
+  ['v3.54.0: BonusLevel draw() delegates to the active bonus', s.includes('this.currentBonus.draw(ctx)')],
+  ['v3.54.0: Game render draws the bonus backdrop', s.includes('this.bonus.draw(ctx)')],
+  ['v3.54.0: BoneFragment femur/profile-bone sprite + procedural fallback', /BONE_FRAGMENT_SPRITE_KEYS/.test(s) && s.includes('getSprite(this.spriteKey)')],
   [`version ${VER}`, s.includes(VER)],
 ];
 
@@ -96,5 +107,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

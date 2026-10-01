@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.53.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.54.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -86,6 +86,8 @@ for (const [tag, rel] of [
   ['ShuttleEnemy', 'js/enemies/ShuttleEnemy.js'],   // v3.50.0
   ['MothEnemy', 'js/enemies/MothEnemy.js'],         // v3.52.0
   ['BeetleEnemy', 'js/enemies/BeetleEnemy.js'],     // v3.53.0
+  ['BonusLevel', 'js/levels/BonusLevel.js'],        // v3.54.0
+  ['BoneFragment', 'js/levels/BoneFragment.js'],    // v3.54.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -93,7 +95,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -165,7 +167,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.50.0: + shuttle (space shuttle enemy, 17th species).
 // v3.52.0: + moth (moth enemy, 18th species).
 // v3.53.0: + beetle (beetle enemy pixel-art sprite swap).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle'];
+// v3.54.0: + femur / profile_bone / skeleton / skull (boneyard environment).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -490,6 +493,32 @@ console.log('\n[6g] v3.53.0 beetle pixel-art sprite');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6h] v3.54.0 BONEYARD PIXEL-ART ENVIRONMENT — Bone Yard bonus
+//       renders a seeded skeleton/skull/femur/profile-bone backdrop;
+//       BoneFragment draws femur/profile-bone sprites; procedural
+//       fallbacks kept
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6h] v3.54.0 boneyard pixel-art environment');
+{
+  const blSrc = fs.readFileSync(path.join(ROOT, 'js/levels/BonusLevel.js'), 'utf8');
+  const bfSrc = fs.readFileSync(path.join(ROOT, 'js/levels/BoneFragment.js'), 'utf8');
+  check('BonusLevel: VERSION = v2.2.0', blSrc.includes("VERSION = 'v2.2.0'"));
+  check('BonusLevel: draw(ctx) delegates to the active bonus', blSrc.includes('draw(ctx)') && blSrc.includes('this.currentBonus.draw(ctx)'));
+  check('BoneYardBonus: VERSION = v3.15.0', bySrc.includes("VERSION = 'v3.15.0'"));
+  check('BoneYardBonus: seeded backdrop keys (skeleton/skull/femur/profile_bone)', bySrc.includes("BONEYARD_BG_KEYS = ['skeleton', 'skull', 'femur', 'profile_bone']"));
+  check('BoneYardBonus: deterministic mulberry32 layout (seed 20261001)', bySrc.includes('function mulberry32') && bySrc.includes('mulberry32(20261001)'));
+  check('BoneYardBonus: aspect-preserving backdrop draw + procedural fallback', bySrc.includes('getDims(b.key)') && bySrc.includes('this._drawProceduralBg(ctx, b, w, h)'));
+  check('BoneFragment: VERSION = v2.2.0', bfSrc.includes("VERSION = 'v2.2.0'"));
+  check('BoneFragment: femur/profile_bone sprite key per instance', bfSrc.includes("BONE_FRAGMENT_SPRITE_KEYS = ['femur', 'profile_bone']") && bfSrc.includes('getSprite(this.spriteKey)'));
+  check('BoneFragment: aspect-preserving sprite + procedural fallback', bfSrc.includes('getDims(this.spriteKey)') && bfSrc.includes('this._drawProcedural(ctx, r)'));
+  check('Game: bonus backdrop drawn under the bonus targets', gameSrc.includes('this.bonus.draw(ctx)'));
+  check('AssetSprites: skeleton dims 76×128 registered', /skeleton:\s*\{\s*w:\s*76,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: skull dims 104×128 registered', /skull:\s*\{\s*w:\s*104,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: femur dims 126×128 registered', /femur:\s*\{\s*w:\s*126,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: profile_bone dims 128×56 registered', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*56\s*\}/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -499,6 +528,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.53.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.54.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);
