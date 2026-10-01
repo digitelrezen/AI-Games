@@ -1,5 +1,5 @@
 // Filename: Crosshair.js
-// Kitty Vs Everything — v3.48.0
+// Kitty Vs Everything — v3.55.0
 // Procedural canvas crosshair (aim reticle) for the local player ship.
 // Zero external assets — pure Canvas 2D primitives:
 //   • two concentric circles (outer + inner)
@@ -20,9 +20,11 @@
 //
 // Toggle: SETTINGS.crosshair (Settings screen → FX section, default ON).
 // Offset: SETTINGS.crosshairOffset (Dev panel → Player slider, live).
-export const VERSION = 'v3.48.0';
+// v3.55.0: range widened to 140–340 logical px — draw() clamps the offset
+// to LIMITS.crosshairOffset (single source of truth) defensively.
+export const VERSION = 'v3.55.0';
 import { TAU } from '../core/config.js';
-import { SETTINGS } from './Settings.js';
+import { SETTINGS, LIMITS } from './Settings.js'; // v3.55.0: LIMITS for the defensive clamp
 
 // ─── Reticle geometry (logical px) ───
 const R_OUTER = 16;    // outer circle radius
@@ -49,7 +51,11 @@ export default class Crosshair {
     if (!SETTINGS.crosshair || !p || p.dead) return;
 
     // Forward offset along the heading vector, in front of the nose.
-    const off = SETTINGS.crosshairOffset;
+    // v3.55.0: clamp to the published slider range (140–340 logical px) so a
+    // stale save or direct SETTINGS write can never push the reticle out of
+    // bounds — LIMITS (Settings.js) is the single source of truth.
+    const lim = LIMITS.crosshairOffset;
+    const off = Math.max(lim.min, Math.min(lim.max, SETTINGS.crosshairOffset));
     const cx = p.x + Math.cos(p.angle) * off;
     const cy = p.y + Math.sin(p.angle) * off;
 

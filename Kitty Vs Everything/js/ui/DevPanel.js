@@ -1,5 +1,5 @@
 // Filename: DevPanel.js
-// Kitty Vs Everything — v3.48.0
+// Kitty Vs Everything — v3.55.0
 // Toggleable admin panel (backtick / F9): spawn any species at any tier,
 // weapon override, instant bonus level, god mode, robot drop (Bender easter egg),
 // ship drop (Planet Express flyby easter egg, v3.27.0; v3.28.0: 3-pass
@@ -29,7 +29,9 @@
 //          refreshed on resize + fullscreenchange.
 // v3.42.0: debug asteroid drop now spawns fully off-screen (ASTEROID.spawnY),
 //          matching the v3.42.0 gameplay spawn rule.
-export const VERSION = 'v3.48.0';
+// v3.55.0: crosshair offset slider range widened to 140–340 logical px
+//          (Settings.js LIMITS is the source of truth; setSetting clamps).
+export const VERSION = 'v3.55.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -150,7 +152,7 @@ export default class DevPanel {
     document.getElementById('dev-score').onclick = () => { g.score += 10000; };
     // ─── v3.48.0: CROSSHAIR OFFSET SLIDER (live) ───
     // The reticle is drawn by Crosshair.js in Game.render(); this slider
-    // live-tweaks SETTINGS.crosshairOffset (24–160 logical px in front of the
+    // live-tweaks SETTINGS.crosshairOffset (140–340 logical px in front of the
     // nose). The on/off toggle lives in Settings → FX (set-crosshair).
     const xhOffset = document.getElementById('dev-crosshair-offset');
     const xhOffsetVal = document.getElementById('dev-crosshair-offset-val');

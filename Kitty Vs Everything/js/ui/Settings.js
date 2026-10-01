@@ -1,5 +1,5 @@
 // Filename: Settings.js
-// Kitty Vs Everything — v3.48.0
+// Kitty Vs Everything — v3.55.0
 // User-tunable settings (singleton + localStorage, same pattern as EventBus's
 // `bus` and AudioSystem's `audio`).
 // v3.5.0: spinSpeed (single shared multiplier).
@@ -12,19 +12,21 @@
 //   • screenShake toggle (Game.render) and particleDensity slider
 //     (ParticleSystem.burst).
 // Keybind remapping lives in Keybinds.js (separate persistence, own module).
-export const VERSION = 'v3.48.0';
+// v3.55.0: crosshairOffset range widened to 140–340 logical px (default 140);
+// LIMITS is exported so Crosshair.js clamps the drawn offset to it.
+export const VERSION = 'v3.55.0';
 
 const STORAGE_KEY = 'kve-settings-v1';
 
 // Numeric setting limits + factory defaults (single source of truth).
-const LIMITS = {
+export const LIMITS = {
   spinSpeedKeyboard: { min: 0.25, max: 3, def: 1 },
   spinSpeedMouse:    { min: 0.1,  max: 3, def: 1 },
   audioMaster:       { min: 0,    max: 1, def: 1 },
   audioSfx:          { min: 0,    max: 1, def: 0.8 },
   audioMusic:        { min: 0,    max: 1, def: 0.4 },
   particleDensity:   { min: 0,    max: 2, def: 1 },
-  crosshairOffset:   { min: 24,   max: 160, def: 64 },  // v3.48.0: reticle forward offset (logical px)
+  crosshairOffset:   { min: 140,  max: 340, def: 140 }, // v3.48.0: reticle forward offset (logical px) · v3.55.0: range 140–340
 };
 const BOOLEANS = {
   screenShake: true,    // default ON (classic feel) — dev toggle in the settings panel
