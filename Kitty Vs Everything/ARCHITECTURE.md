@@ -12,7 +12,7 @@
 index.html ─▶ main.js ─▶ Game.js (orchestrator)
 Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
         ─▶ PlayerFleet / MiniDeploy / WeaponAnim (v3.16.0 fleet deploy + weapon anim)
-        ─▶ WaveManager ─▶ EnemyFactory ─▶ EnemyBase ─▶ 17 species
+        ─▶ WaveManager ─▶ EnemyFactory ─▶ EnemyBase ─▶ 18 species
         ─▶ Combat / Bullet / PowerUp / MiniShip
         ─▶ BonusLevel ─▶ BoneYardBonus / InternetBonus
         ─▶ InternetBonus ─▶ BlackCatEntourage / RealTimeClock
@@ -59,7 +59,7 @@ Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
 - **Combat.js** — `applyWeaponHit`: per-weapon damage rules (incl. plasma-pulse shield melt), hit-flash, `onEnemyDeath`.
 - **PowerUp.js** — Falling drops: extra life, shield, mini-ship, bonus crate, rare Bender (easter egg). v3.51.0: frenzy / extra-life / shield drops render through `drawJewelDrop()`, a programmatic 5-pass gem treatment (no new art): pulsating additive AURA in the type's jewel color (golden/emerald/azure) → icon into a 40×40 offscreen buffer → source-atop DEPTH bevel (light top-left → shade bottom-right) + inset vignette → specular SHINE (white radial glint + rim arc + twinkling 4-point sparkle) → rotating perimeter SHIMMER; procedural fallbacks unchanged and headless-safe (no DOM → base only). v3.36.0: bonus crate draws the shared `.assets` PNG (key `crate`, `Crate-pixel-art.png`, 620×574 → 128×119) via the AssetManager pipeline, procedural crate kept as null-sprite fallback.
 
-## 5. Enemies (28 files)
+## 5. Enemies (29 files)
 
 - **EnemyBase.js** — Base enemy: descend, `move(dt, slowMul)` hook, fire logic, stun/slow state, flash decay, death bookkeeping.
 - **EnemyFactory.js** — Type-ID → class registry; `createEnemy({type, tier, x, y, game})` with tier-scaled stats.
@@ -89,6 +89,7 @@ wobble) — no face-the-player mirror (art is a top-down view), classic procedur
 - **PinkCatEnemy.js** — "Internet" boss (InternetBonus), aggressive fire patterns. v3.13.0: small cute FEMALE chibi boss (radius 18 — trash/crate scale); all boss HP/shield/damage/movement/attack behavior unchanged.
 - **PinkCatBossArt.js** — v3.13.0 boss art: `drawPinkCatBoss(ctx, { r, t, flash, hpFrac })` — hair bow, long lower lashes, blushing cheeks, tiny "w" mouth, fluffy tail + drifting hearts, "enraged" wide eyes below 35% HP.
 - **ShuttleEnemy.js** — v3.50.0: 17th species (REGULAR WAVES ONLY): a crewed space shuttle that glides in from the top, holds a hover band (y 80–180), and strafes left/right with a BANKED TILT (sprite rotates toward travel direction, eased at 4/s). Fires telegraphed aimed cannon shots — a red sight ring on the aim line before each shot (same telegraph contract as HumanEnemy: `attack()` arms the 0.4s aim, `move()` counts down and fires). Pixel-art sprite from `.assets/Human-SpaceShuttle-pixel-art.png` via the AssetManager pipeline (key `shuttle`, 699×329 → 128×60), classic procedural shuttle kept as null-sprite fallback.
+- **MothEnemy.js** — v3.52.0: 18th species (REGULAR WAVES ONLY): an erratic fluttering night-flyer that drifts down on a double-sine flutter path with sudden random darts (fresh lateral velocity every 0.4–1.3 s) and fires light aimed shots. Pixel-art sprite from `.assets/Moth-New-pixel-art.png` via the AssetManager pipeline (key `moth`, 795×490 → 128×79), drawn overhead with a fast procedural wing-beat (sinusoidal scaleY + subtle wing-fold scaleX + quicker rotation wobble) — no face-the-player mirror (top-down art), classic procedural moth kept as null-sprite fallback.
 
 ## 6. Bonus Levels / Special Sequences (10 files)
 

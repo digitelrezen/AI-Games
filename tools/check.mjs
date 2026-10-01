@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.51.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.52.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -84,6 +84,7 @@ for (const [tag, rel] of [
   ['EnemyFactory', 'js/enemies/EnemyFactory.js'],   // v3.50.0
   ['BoneYardBonus', 'js/levels/BoneYardBonus.js'],  // v3.50.0
   ['ShuttleEnemy', 'js/enemies/ShuttleEnemy.js'],   // v3.50.0
+  ['MothEnemy', 'js/enemies/MothEnemy.js'],         // v3.52.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -91,7 +92,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.31.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.48.0', Settings: 'v3.48.0', Crosshair: 'v3.48.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.14.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -161,7 +162,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.33.0: the pipeline also carries enemy sprites (wasp, then rat) alongside
 // the 5 power-up drops — assert the exact expected key set, not a bare count.
 // v3.50.0: + shuttle (space shuttle enemy, 17th species).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle'];
+// v3.52.0: + moth (moth enemy, 18th species).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -384,9 +386,9 @@ console.log('\n[6c] v3.47.0 key-triggered synergy explosion (source gates)');
 // ═══════════════════════════════════════════════════════════
 console.log('\n[6d] v3.50.0 shuttle enemy (17th species)');
 const { ENEMY_TYPES, WAVE } = await mod('js/core/config.js');
-check('config: ENEMY_TYPES has 17 species (shuttle added)', Object.keys(ENEMY_TYPES).length === 17, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
+check('config: ENEMY_TYPES has 18 species (shuttle + moth)', Object.keys(ENEMY_TYPES).length === 18, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
 check('config: shuttle entry (Space Shuttle, glide pattern)', ENEMY_TYPES.shuttle && ENEMY_TYPES.shuttle.name === 'Space Shuttle' && ENEMY_TYPES.shuttle.pattern === 'glide', `got ${JSON.stringify(ENEMY_TYPES.shuttle)}`);
-check('config: WAVE.SPECIES_COUNT = 17', WAVE.SPECIES_COUNT === 17, `got ${WAVE.SPECIES_COUNT}`);
+check('config: WAVE.SPECIES_COUNT = 18', WAVE.SPECIES_COUNT === 18, `got ${WAVE.SPECIES_COUNT}`);
 const { isValidEnemyType, getEnemyClass, getEnemyTypeIds } = await mod('js/enemies/EnemyFactory.js');
 check('EnemyFactory: shuttle registered in REGISTRY', isValidEnemyType('shuttle') && getEnemyTypeIds().includes('shuttle'));
 check('EnemyFactory: getEnemyClass("shuttle") is the ShuttleEnemy class', typeof getEnemyClass('shuttle') === 'function' && getEnemyClass('shuttle').name === 'ShuttleEnemy', `got ${getEnemyClass('shuttle') && getEnemyClass('shuttle').name}`);
@@ -394,10 +396,10 @@ const { default: ShuttleEnemy } = await mod('js/enemies/ShuttleEnemy.js');
 const seSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/ShuttleEnemy.js'), 'utf8');
 check('ShuttleEnemy: extends EnemyBase, sprite key "shuttle", banked-strafe + telegraph', Object.getPrototypeOf(ShuttleEnemy.prototype).constructor.name === 'EnemyBase' && seSrc.includes("SHUTTLE_SPRITE_KEY = 'shuttle'") && seSrc.includes('this.bank') && seSrc.includes('this.telegraph'));
 // Regular waves: WaveManager's species pool is Object.keys(ENEMY_TYPES) —
-// a headless instance must list shuttle among its 17 species.
+// a headless instance must list shuttle + moth among its 18 species.
 const { default: WaveManager } = await mod('js/core/WaveManager.js');
 const wm = new WaveManager({});
-check('WaveManager: regular-wave species pool includes shuttle (17 total)', wm.species.includes('shuttle') && wm.species.length === 17, `got ${wm.species.length}: ${wm.species.join(', ')}`);
+check('WaveManager: regular-wave species pool includes shuttle + moth (18 total)', wm.species.includes('shuttle') && wm.species.includes('moth') && wm.species.length === 18, `got ${wm.species.length}: ${wm.species.join(', ')}`);
 check('WaveManager: species pool comes from ENEMY_TYPES (source gate)', wmSrc.includes('this.species = Object.keys(ENEMY_TYPES)'));
 // Bone Yard Phase 2/3: explicit humanoid allowlist — a new species can
 // never leak into the march.
@@ -453,6 +455,24 @@ check('PowerUp: procedural fallbacks preserved (red heart / cyan hex / gold bolt
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6f] v3.52.0 MOTH ENEMY — 18th species: regular waves only
+//      (ENEMY_TYPES → WaveManager pool), Bone Yard Phase 2 stays
+//      locked to the explicit humanoid allowlist (BoneYardBonus.js)
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6f] v3.52.0 moth enemy (18th species)');
+check('config: moth entry (Moth, erratic pattern)', ENEMY_TYPES.moth && ENEMY_TYPES.moth.name === 'Moth' && ENEMY_TYPES.moth.pattern === 'erratic', `got ${JSON.stringify(ENEMY_TYPES.moth)}`);
+check('EnemyFactory: moth registered in REGISTRY', isValidEnemyType('moth') && getEnemyTypeIds().includes('moth'));
+check('EnemyFactory: getEnemyClass("moth") is the MothEnemy class', typeof getEnemyClass('moth') === 'function' && getEnemyClass('moth').name === 'MothEnemy', `got ${getEnemyClass('moth') && getEnemyClass('moth').name}`);
+const { default: MothEnemy } = await mod('js/enemies/MothEnemy.js');
+const meSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/MothEnemy.js'), 'utf8');
+check('MothEnemy: extends EnemyBase, sprite key "moth", erratic dart + flutter', Object.getPrototypeOf(MothEnemy.prototype).constructor.name === 'EnemyBase' && meSrc.includes("MOTH_SPRITE_KEY = 'moth'") && meSrc.includes('this._dartX') && meSrc.includes('this._dartT'));
+// Generated sprite data carries the moth PNG (128×79).
+check('AssetSprites: moth sprite dims 128×79 registered', /moth:\s*\{\s*w:\s*128,\s*h:\s*79\s*\}/.test(spritesSrc));
+// Bone Yard Phase 2/3: explicit humanoid allowlist — the moth can never
+// leak into the march.
+check('BoneYardBonus: humanoid allowlist excludes moth', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*'human'\s*\]/.test(bySrc));
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -462,6 +482,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.51.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.52.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

@@ -52,7 +52,7 @@ export default class WaveManager {
   /** v3.30.0: wave difficulty multiplier — scales enemy HP + damage only. */
   get difficulty() {
     const waves = Math.max(0, this.wave);
-    const capWaves = WAVE.SPECIES_COUNT * WAVE.DIFF_CAP_CYCLES; // 32 (two full cycles)
+    const capWaves = WAVE.SPECIES_COUNT * WAVE.DIFF_CAP_CYCLES; // 36 (two full 18-species cycles, v3.52.0)
     return Math.min(1 + Math.min(waves, capWaves) * WAVE.DIFF_PER_WAVE, WAVE.DIFF_CAP);
   }
 

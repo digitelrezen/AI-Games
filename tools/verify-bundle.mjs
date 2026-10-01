@@ -60,17 +60,30 @@ const tests = [
   // quotes — every pattern below is quote-tolerant (['"]).
   ['v3.50.0: shuttle sprite dims 128×60', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(s)],
   ['v3.50.0: shuttle in ENEMY_TYPES (Space Shuttle, glide pattern)', /shuttle:\s*\{\s*name:\s*["']Space Shuttle["']/.test(s)],
-  ['v3.50.0: WAVE.SPECIES_COUNT = 17', /SPECIES_COUNT:\s*17/.test(s)],
+  ['v3.52.0: WAVE.SPECIES_COUNT = 18', /SPECIES_COUNT:\s*18/.test(s)],
   ['v3.50.0: shuttle registered in EnemyFactory REGISTRY', /shuttle:\s*ShuttleEnemy/.test(s)],
   ['v3.50.0: WaveManager species pool = ENEMY_TYPES keys', s.includes('this.species = Object.keys(ENEMY_TYPES)')],
   ['v3.50.0: Bone Yard humanoid allowlist (["human"] only)', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
   // ── v3.51.0 jewel shading (frenzy / extra-life / shield drops) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.51.0: PowerUp VERSION = v3.51.0 (esbuild may suffix: VERSION3)', /VERSION\d*\s*=\s*['"]v3\.51\.0['"]/.test(s)],
+  // Release-version pin: the IIFE emits Game.js's VERSION as
+  // `var VERSION<n> = "vX.Y.Z"` (esbuild suffixes colliding top-level
+  // constants; unused module VERSION exports are tree-shaken, so this
+  // tracks the Game.js emission, not PowerUp's).
+  [`v${VER}: release VERSION pin in bundle (Game.js emission)`,
+    new RegExp(`VERSION\\d*\\s*=\\s*['"]v${VER.replace(/\./g, '\\.')}['"]`).test(s)],
   ['v3.51.0: drawJewelDrop gem pipeline (source-atop depth + lighter glow)', /function drawJewelDrop\(/.test(s) && s.includes('source-atop') && s.includes('lighter')],
   ['v3.51.0: jewel buffer is headless-guarded (no DOM → base only)', /typeof document\s*===\s*['"]undefined['"]/.test(s)],
   ['v3.51.0: life/shield/frenzy route through the jewel pass (def + 3 call sites)', (s.match(/drawJewelDrop\(/g) || []).length >= 4],
+  // ── v3.52.0 moth enemy (18th species, regular waves only) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.52.0: moth sprite dims 128×79', /moth:\s*\{\s*w:\s*128,\s*h:\s*79\s*\}/.test(s)],
+  ['v3.52.0: moth in ENEMY_TYPES (Moth, erratic pattern)', /moth:\s*\{\s*name:\s*["']Moth["']/.test(s)],
+  ['v3.52.0: moth registered in EnemyFactory REGISTRY', /moth:\s*MothEnemy/.test(s)],
+  ['v3.52.0: MothEnemy class in bundle', /MothEnemy\s*=\s*class/.test(s)],
+  ['v3.52.0: Bone Yard humanoid allowlist still ["human"] only', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 
@@ -79,5 +92,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle species).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth species).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
