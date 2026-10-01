@@ -1,7 +1,7 @@
 # Kitty Vs Everything — Architecture Roadmap / File Index
 
 > **Workspace:** `c:\AI-Games\Kitty Vs Everything`
-> **Generated:** 2026-10-01 (v3.54.0 boneyard pixel-art environment — skeleton / skull / femur / profile-bone)
+> **Generated:** 2026-10-01 (v3.56.0 shield ring resized to clear the guns + Fire Control Panel / minimized bar theme blue→yellow)
 > **Layout:** ~80 files, flat in the root folder + a `net/` subfolder for multiplayer; `npm run build` (build.mjs) inlines every module into a single self-contained `Kitty Vs Everything <version>.html` in `C:\AI-Games\Builds\`
 > **Stack:** Native ES modules, Canvas 2D, WebAudio, plain DOM, `ws` (LAN relay, Node-only)
 > **Run:** `python -m http.server 8000` → http://localhost:8000  ·  LAN: `npm run lan`
@@ -41,7 +41,7 @@ Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
 ## 3. Player Ships / Art (9 files)
 
 - **Player.js** — Base cat-ship: WASD move, SPACE boost, weapon fire, Q stun rocket, F ultimate (generic fallback), mini-ship docking, lives & respawn.
-- **PlayerRenderer.js** — Canvas art for the player ship (v3.2.0 base model): sleek teardrop hull with belly armor + neon nose trim, antenna ears, blinking glowing eyes, front-paw weapon pods at SHIP_GEOMETRY hardpoints, back-paw thruster rockets, reactive tail, muzzle flashes, docked mini-pods.
+- **PlayerRenderer.js** — Canvas art for the player ship (v3.2.0 base model): sleek teardrop hull with belly armor + neon nose trim, antenna ears, blinking glowing eyes, front-paw weapon pods at SHIP_GEOMETRY hardpoints, back-paw thruster rockets, reactive tail, muzzle flashes, docked mini-pods. v3.56.0: shield ring resized — `SHIELD_BUBBLE_RADIUS` 48→60 so the yellow bubble clears the railgun barrel tips (±16, -50 ≈ 52.5 px from center) with margin; rim stroke thinned 2.5→1.5 (inner highlight 1→0.75 at R-2.5, glow 10→6) for a sharper, thinner ring.
 - **CatShipFactory.js** — Theme-ID → class registry; `createCatShip(theme, game)` is the single player spawn path (grey/gray alias, yellow fallback); `getUltimateName` for HUD.
 - **orangeCat.js** — Orange Tabby variant — ultimate: Nova Shockwave.
 - **yellowCat.js** — Yellow Tabby variant — ultimate: Energy Ring Explosion (bullet rings + shield break + knockback).
@@ -106,7 +106,7 @@ wobble) — no face-the-player mirror (art is a top-down view), classic procedur
 
 ## 7. HUD / UI / Meta (3 files)
 
-- **HUD.js** — DOM top bar: score, lives, wave, HP/shield bars, stun/nova/weapon indicators, banners, `#version-label`.
+- **HUD.js** — DOM top bar: score, lives, wave, HP/shield bars, stun/nova/weapon indicators, banners, `#version-label`. v3.56.0: the Fire Control Panel (`#fc-dashboard`, incl. the M-key minimized bar) theme is yellow — accent `#ffd54f`, readouts `#ffe9a3`, amber borders `#5c4a1e`/`#3d3218` (style.css, scoped so the pink P2 HUD is untouched).
 - **DevPanel.js** — Backtick/F9 admin panel: spawn species/tier, weapon override, instant bonus, god mode, robot drop (Bender easter egg), ship drop (Planet Express flyby, v3.27.0). v3.34.0: redesigned — pinned header, scrollable `.dev-body`, pinned footer with a live viewport readout (`Viewport.describeViewport`, refreshes on resize/fullscreenchange); stage-relative `max-height: calc(100% - 20px)` so every control is reachable at any resolution.
 - **Leaderboard.js** — localStorage high scores: `submit(name, score)`, render into `#menu-scores-list` / `#go-scores-list`.
 

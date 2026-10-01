@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/smoke.mjs — Kitty Vs Everything v3.54.0 (tools/ moved up to AI-GAMES root)
+// ../tools/smoke.mjs — Kitty Vs Everything v3.56.0 (tools/ moved up to AI-GAMES root)
 // Headless smoke test for the pure-logic v3.47.0 modules (Settings, Keybinds,
 // MessageLog, EventBus, DebugBridge, MenuKeybinds) using minimal DOM shims.
 // Run: node ../tools/smoke.mjs
@@ -44,12 +44,18 @@ console.log('\n[1] Settings.js — defaults, clamping, reset');
   check('particleDensity default 1', SETTINGS.particleDensity === 1);
   check('screenShake default true', SETTINGS.screenShake === true);
   check('screenBounds default false', SETTINGS.screenBounds === false);
+  check('crosshair default true', SETTINGS.crosshair === true);
+  check('crosshairOffset default 140 (v3.55.0 range 140–340)', SETTINGS.crosshairOffset === 140);
   setSetting('audioMaster', 0.5);
   check('setSetting audioMaster 0.5', SETTINGS.audioMaster === 0.5);
   setSetting('audioMaster', 0);
   check('audioMaster 0 (muted) stays 0', SETTINGS.audioMaster === 0);
   setSetting('spinSpeedKeyboard', 99);
   check('spinSpeedKeyboard clamps to 3', SETTINGS.spinSpeedKeyboard === 3);
+  setSetting('crosshairOffset', 999);
+  check('crosshairOffset clamps to 340 (v3.55.0 max)', SETTINGS.crosshairOffset === 340);
+  setSetting('crosshairOffset', 10);
+  check('crosshairOffset clamps to 140 (v3.55.0 min)', SETTINGS.crosshairOffset === 140);
   setSetting('screenShake', false);
   check('screenShake toggle false', SETTINGS.screenShake === false);
   resetSettings();
@@ -179,5 +185,5 @@ if (failures) {
   console.log(`\x1b[31mFAILED\x1b[0m — ${failures} check(s) failed`);
   process.exit(1);
 } else {
-  console.log('\x1b[32mPASSED\x1b[0m — v3.54.0 module smoke tests clean');
+  console.log('\x1b[32mPASSED\x1b[0m — v3.56.0 module smoke tests clean');
 }

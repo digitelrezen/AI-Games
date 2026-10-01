@@ -34,7 +34,8 @@ const tests = [
   ['no player.autoAim (dead reference removed)', !/player\.autoAim/.test(s) && !/this\.autoAim/.test(s)],
   ['BENDER_SCALE 0.5', /BENDER_SCALE\s*=\s*0\.5/.test(s)],
   // ── v3.45.0 clean catship (yellow shield bubble + purple Nova meter) ──
-  ['v3.45.0: yellow shield bubble (SHIELD_BUBBLE_RADIUS=48)', /SHIELD_BUBBLE_RADIUS\s*=\s*48/.test(s) && s.includes('rgba(255, 213, 79')],
+  ['v3.56.0: shield ring clears the guns (SHIELD_BUBBLE_RADIUS=60, thin rim)', /SHIELD_BUBBLE_RADIUS\s*=\s*60/.test(s) && s.includes('rgba(255, 213, 79') && /ctx\.lineWidth\s*=\s*1\.5/.test(s)],
+  ['v3.56.0: FC panel + minimized bar yellow theme (scoped amber borders)', s.includes('#fc-dashboard .fc-meter') && s.includes('#5c4a1e') && s.includes('#3d3218')],
   ['v3.45.0: shield-break shatter burst', s.includes('const shieldBefore = this.shield') && s.includes('#ffd54f')],
   ['v3.45.0: Nova meter (superCharge + ultimateCooldown + nova-ready)', s.includes('p.superCharge') && s.includes('p.ultimateCooldown') && s.includes('nova-ready')],
   ['v3.45.0: purple Nova CSS (#7c4dff)', s.includes('#7c4dff')],
@@ -51,7 +52,9 @@ const tests = [
   ['v3.47.0: NOVA slot key label tracks synergy', /this\._slotLabel\(e\.novaSlot,\s*['"]synergy['"]\)/.test(s)],
   // ── v3.48.0 procedural aim reticle (Crosshair.js) ──
   ['v3.48.0: Crosshair reticle module (circles + dot + ticks)', /Crosshair\s*=\s*class/.test(s) && /R_OUTER\s*=\s*16/.test(s) && /DOT_R\s*=\s*2\.6/.test(s)],
-  ['v3.48.0: crosshair defaults (on + 64px offset, 24–160 limits)', /crosshair:\s*true/.test(s) && /crosshairOffset:\s*\{\s*min:\s*24,\s*max:\s*160,\s*def:\s*64/.test(s)],
+  ['v3.55.0: crosshair defaults (on + 140px offset, 140–340 limits)', /crosshair:\s*true/.test(s) && /crosshairOffset:\s*\{\s*min:\s*140,\s*max:\s*340,\s*def:\s*140/.test(s)],
+  ['v3.55.0: dev slider range 140–340 (index.html attributes)', /id=["']dev-crosshair-offset["']\s+min=["']140["']\s+max=["']340["']/.test(s)],
+  ['v3.55.0: reticle offset clamped in Crosshair.draw (LIMITS)', /Math\.max\(\w+\.min,\s*Math\.min\(\w+\.max,\s*SETTINGS\.crosshairOffset\)\)/.test(s)],
   ['v3.48.0: reticle drawn in Game render', s.includes('this.crosshair.draw(ctx)')],
   ['v3.48.0: settings toggle + dev slider wired', s.includes('set-crosshair') && s.includes('dev-crosshair-offset')],
   ['v3.49.0: butterfly top-down sprite registered (asset dims 128×83)', /butterfly:\s*\{\s*w:\s*128,\s*h:\s*83\s*\}/.test(s)],
@@ -107,5 +110,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard + crosshair 140–340 range).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

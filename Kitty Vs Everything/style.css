@@ -457,16 +457,20 @@ body {
 #pause-resume:hover { background: #266043; }
 
 /* ─── v3.14.0: COMBAT CONSOLE (v3.19.0: lives inside #fc-dashboard left column) ─── */
+/* v3.56.0: FC panel + minimized bar theme blue → yellow — accent #ffd54f
+   (matches the shield bubble), readouts #ffe9a3, panel borders #5c4a1e,
+   meter/slot/fleet borders #3d3218. .fc-meter overrides are scoped to
+   #fc-dashboard so the pink P2 HUD keeps its own look. */
 #combat-console {
   width: 320px; max-height: 180px; overflow: hidden;
-  background: rgba(5, 10, 20, 0.72); border: 1px solid #1e3a5f;
+  background: rgba(5, 10, 20, 0.72); border: 1px solid #5c4a1e;
   border-radius: 4px; padding: 6px 8px; pointer-events: none;
   font-size: 11px; line-height: 1.5;
   justify-self: start; align-self: center;
 }
 .console-header {
   display: flex; justify-content: space-between; align-items: center;
-  font-size: 9px; letter-spacing: 2px; color: #4f7fbf; margin-bottom: 4px;
+  font-size: 9px; letter-spacing: 2px; color: #ffd54f; margin-bottom: 4px;
 }
 /* v3.19.0: TIME tucked into the console header's top-right corner */
 .console-title { display: inline-flex; align-items: center; gap: 6px; }
@@ -485,7 +489,7 @@ body {
 #fc-dashboard {
   position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
   z-index: 20; width: min(900px, 94vw);
-  background: rgba(5, 10, 20, 0.78); border: 1px solid #1e3a5f;
+  background: rgba(5, 10, 20, 0.78); border: 1px solid #5c4a1e;
   border-radius: 6px; padding: 8px 14px;
   display: grid; grid-template-columns: auto auto 1fr;
   align-items: center; gap: 18px; pointer-events: none;
@@ -498,12 +502,16 @@ body {
 .fc-right { flex-direction: row; align-items: center; justify-content: space-between; gap: 14px; }
 .fc-weapon-panel { display: flex; flex-direction: column; gap: 6px; }
 .fc-block { display: flex; flex-direction: column; gap: 3px; }
-.fc-block-title { font-size: 9px; letter-spacing: 2px; color: #4f7fbf; }
+.fc-block-title { font-size: 9px; letter-spacing: 2px; color: #ffd54f; }
 .fc-meter { width: 120px; height: 8px; background: #0a1220; border: 1px solid #22304e; border-radius: 2px; overflow: hidden; }
+/* v3.56.0: FC panel yellow theme — scoped to #fc-dashboard so the P2 HUD
+   (which reuses .fc-meter) keeps its own look. */
+#fc-dashboard .fc-meter { border-color: #3d3218; }
+#fc-dashboard .fc-meter-fill.shield { background: #ffd54f; }
 .fc-meter-fill { height: 100%; width: 100%; background: #4caf50; transition: width 0.1s linear; }
 .fc-meter-fill.shield { background: #4fc3f7; }
 .fc-meter-fill.crit { background: #e53935; }
-.fc-readout { color: #cfe0ff; font-size: 12px; }
+.fc-readout { color: #ffe9a3; font-size: 12px; }
 #fc-speed { color: #ffd54f; }
 #weapon-label { color: #fff; font-weight: bold; letter-spacing: 1px; }
 .fc-weapon-status { font-size: 10px; letter-spacing: 1px; }
@@ -523,13 +531,13 @@ body {
 .fc-slot {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   width: 74px; padding: 4px 6px;
-  background: #0a1220; border: 1px solid #22304e; border-radius: 4px;
+  background: #0a1220; border: 1px solid #3d3218; border-radius: 4px;
 }
 .fc-slot-key { font-size: 10px; color: #ffd54f; font-weight: bold; }
 .fc-slot-state { font-size: 9px; letter-spacing: 1px; color: #7ee2a8; }
 .fc-slot.cooldown .fc-slot-state { color: #8a93a8; }
 .fc-slot-bar { width: 100%; height: 4px; background: #101a2e; border-radius: 2px; overflow: hidden; }
-.fc-slot-fill { display: block; height: 100%; width: 100%; background: #4f7fbf; }
+.fc-slot-fill { display: block; height: 100%; width: 100%; background: #ffd54f; }
 
 /* v3.45.0: NOVA meter (F slot) — purple charge/cooldown/ready. The ship-side
    gold charge ring + cyan shield ring are gone; this is the sole Nova display. */
@@ -596,7 +604,7 @@ body {
 #net-settings .settings-hint code { color: #ffd54f; }
 .fc-slot.ready .fc-slot-fill { background: #4caf50; }
 .fc-fleet { display: flex; flex-direction: row; align-items: center; gap: 6px; } /* v3.18.0: horizontal status row under the mini HP bars */
-#fc-fleet-count { color: #cfe0ff; font-size: 12px; }
+#fc-fleet-count { color: #ffe9a3; font-size: 12px; }
 /* v3.16.0: fleet deploy status (DOCKED = inert, DEPLOYED = combat orbit) */
 .fc-fleet-deploy { font-size: 10px; font-weight: bold; letter-spacing: 1px; padding: 1px 6px; border-radius: 3px; border: 1px solid; }
 .fc-fleet-deploy.docked { color: #8a93a8; border-color: #3a4256; background: rgba(30, 36, 52, 0.6); }
@@ -608,13 +616,13 @@ body {
 /* v3.19.0: mini HP bars narrowed for the side-by-side layout */
 .fleet-bar {
   width: 44px; height: 5px; background: #0a1220;
-  border: 1px solid #22304e; border-radius: 2px; overflow: hidden;
+  border: 1px solid #3d3218; border-radius: 2px; overflow: hidden;
 }
 .fleet-fill { display: block; height: 100%; width: 100%; }
 .fleet-fill.ok { background: #4caf50; }
 .fleet-fill.warn { background: #ffb300; }
 .fleet-fill.crit { background: #e53935; }
-.fleet-num { font-size: 10px; color: #cfe0ff; }
+.fleet-num { font-size: 10px; color: #ffe9a3; }
 .fleet-mini.fleet-hit { outline: 1px solid #fff; }
 
 /* ─── v3.21.0: MINIMIZED FIRE-CONTROL BAR (M key toggle) ───
@@ -626,7 +634,7 @@ body {
 #fc-dashboard.minimized #combat-console { display: none; }
 #fc-dashboard.minimized #fc-mini-bar { display: flex; align-items: center; gap: 10px; }
 .fc-mini-meter { width: 140px; }
-.fc-mini-hint { font-size: 9px; letter-spacing: 1px; color: #4f7fbf; margin-left: 8px; }
+.fc-mini-hint { font-size: 9px; letter-spacing: 1px; color: #ffd54f; margin-left: 8px; }
 
 /* ─── v3.23.0: DYNAMIC KEYBIND FOOTER (MenuKeybinds.js) ───
    #menu-keybinds replaces the old hardcoded .controls-help lines:
