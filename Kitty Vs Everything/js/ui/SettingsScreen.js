@@ -1,5 +1,5 @@
 // Filename: SettingsScreen.js
-// Kitty Vs Everything — v3.14.0
+// Kitty Vs Everything — v3.48.0
 // Shared settings panel (opened from the START SCREEN ⚙ button, the PAUSE
 // MENU Options button, or the Dev Panel). One screen serves both contexts:
 //   • KEYBINDS — click any key chip to rebind; captureNextInput grabs the
@@ -12,7 +12,7 @@
 // v3.31.0: cursor coordination — open() releases the pointer lock (the
 //          panel needs the cursor); close() re-locks it when the mission
 //          is still active (no-op from the menu / while paused).
-export const VERSION = 'v3.31.0';
+export const VERSION = 'v3.48.0';
 import { SETTINGS, setSetting, resetSettings } from './Settings.js';
 import {
   ACTIONS, ACTION_LABELS, getBinds, setBind, resetBinds,
@@ -161,6 +161,18 @@ export default class SettingsScreen {
         }
       });
       this._syncers.push(() => { shake.checked = !!SETTINGS.screenShake; });
+    }
+    // v3.48.0: crosshair (aim reticle) toggle — the reticle is drawn by
+    // Crosshair.js in Game.render(); the live offset slider lives in the Dev panel.
+    const crosshair = byId('set-crosshair');
+    if (crosshair) {
+      crosshair.addEventListener('change', () => {
+        setSetting('crosshair', crosshair.checked);
+        if (this.game.msglog && this.game.state === 'playing') {
+          this.game.msglog.log('CROSSHAIR: ' + (crosshair.checked ? 'ON' : 'OFF'), 'info', this.game.time);
+        }
+      });
+      this._syncers.push(() => { crosshair.checked = !!SETTINGS.crosshair; });
     }
   }
 

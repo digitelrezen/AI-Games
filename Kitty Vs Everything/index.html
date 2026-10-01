@@ -1,11 +1,11 @@
 <!-- Filename: index.html -->
-<!-- Kitty Vs Everything — v3.18.0 — DOM shell. -->
+<!-- Kitty Vs Everything — v3.48.0 — DOM shell. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Kitty Vs Everything — v3.47.0</title>
+  <title>Kitty Vs Everything — v3.48.0</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -258,6 +258,8 @@
             <label>Particle density <span id="set-density-val" class="settings-val">100%</span></label>
             <input type="range" id="set-density" min="0.1" max="1" step="0.05" value="1" />
             <label class="settings-toggle"><input type="checkbox" id="set-shake" checked /> Screen shake</label>
+            <!-- v3.48.0: procedural aim reticle (offset slider lives in the Dev panel) -->
+            <label class="settings-toggle"><input type="checkbox" id="set-crosshair" checked /> Crosshair (aim reticle)</label>
           </section>
           <section class="settings-section">
             <h3>MULTIPLAYER (LAN)</h3>
@@ -310,6 +312,13 @@
             <button id="dev-score">+10K SCORE</button>
             <button id="dev-god">GOD MODE</button>
           </div>
+          <!-- v3.48.0: live crosshair offset slider (reticle distance in front of the nose) -->
+          <label class="dev-mt">Crosshair Offset</label>
+          <div class="dev-slider-row">
+            <input type="range" id="dev-crosshair-offset" min="24" max="160" step="1" value="64" />
+            <span id="dev-crosshair-offset-val" class="dev-slider-val">64</span>
+          </div>
+          <span class="dev-hint">reticle distance in front of the nose · Settings → FX toggles it</span>
         </div>
         <div class="dev-section">
           <label>Bonus Levels</label>

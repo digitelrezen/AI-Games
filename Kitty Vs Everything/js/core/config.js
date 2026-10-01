@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.47.0
+// Kitty Vs Everything — v3.48.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.1.0: Replaced 8-element system with 3-weapon system (Vulkan / Plasma / Rail).
@@ -93,7 +93,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.47.0';
+export const VERSION = 'v3.48.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

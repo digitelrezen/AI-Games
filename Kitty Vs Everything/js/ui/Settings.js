@@ -1,5 +1,5 @@
 // Filename: Settings.js
-// Kitty Vs Everything — v3.14.0
+// Kitty Vs Everything — v3.48.0
 // User-tunable settings (singleton + localStorage, same pattern as EventBus's
 // `bus` and AudioSystem's `audio`).
 // v3.5.0: spinSpeed (single shared multiplier).
@@ -12,7 +12,7 @@
 //   • screenShake toggle (Game.render) and particleDensity slider
 //     (ParticleSystem.burst).
 // Keybind remapping lives in Keybinds.js (separate persistence, own module).
-export const VERSION = 'v3.14.0';
+export const VERSION = 'v3.48.0';
 
 const STORAGE_KEY = 'kve-settings-v1';
 
@@ -24,10 +24,12 @@ const LIMITS = {
   audioSfx:          { min: 0,    max: 1, def: 0.8 },
   audioMusic:        { min: 0,    max: 1, def: 0.4 },
   particleDensity:   { min: 0,    max: 2, def: 1 },
+  crosshairOffset:   { min: 24,   max: 160, def: 64 },  // v3.48.0: reticle forward offset (logical px)
 };
 const BOOLEANS = {
   screenShake: true,    // default ON (classic feel) — dev toggle in the settings panel
   screenBounds: false,  // v3.11.0 dev toggle: bounce walls vs classic wrap
+  crosshair: true,      // v3.48.0: procedural aim reticle (Settings → FX, default ON)
 };
 
 function loadSaved() {
@@ -70,8 +72,10 @@ export const SETTINGS = {
   audioSfx:          num(saved.audioSfx,          LIMITS.audioSfx),
   audioMusic:        num(saved.audioMusic,        LIMITS.audioMusic),
   particleDensity:   num(saved.particleDensity,   LIMITS.particleDensity),
+  crosshairOffset:   num(saved.crosshairOffset,   LIMITS.crosshairOffset),
   screenShake:       saved.screenShake !== false,
   screenBounds:      saved.screenBounds === true,
+  crosshair:         saved.crosshair !== false,
 };
 
 function persist() {

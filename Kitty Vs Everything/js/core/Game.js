@@ -1,6 +1,12 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.47.0
+// Kitty Vs Everything — v3.48.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.48.0: procedural aim reticle — Crosshair.js draws a neon crosshair
+// (two concentric circles + center dot + 4 ticks) offset in front of the
+// nose along the ship's heading, rotating with it. Toggle: Settings → FX
+// (SETTINGS.crosshair, default ON); live offset: Dev panel slider
+// (SETTINGS.crosshairOffset, 24–160 logical px). Drawn in logical viewport
+// coordinates, so ultrawide scaling needs no per-width compensation.
 // v3.47.0: Synergy Explosion is key-triggered — the 'synergy' action
 // (T / - default, P2 co-op ,) fires PlayerFleet.superWeapon when the
 // color-match meter is full, replacing the old 10s auto-fire. TestAimbot
@@ -44,7 +50,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.47.0';
+export const VERSION = 'v3.48.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -76,6 +82,7 @@ import TestAimbot from '../combat/TestAimbot.js';
 import HUDConsole from '../ui/HUDConsole.js';
 import HUDFireControl from '../ui/HUDFireControl.js';
 import SettingsScreen from '../ui/SettingsScreen.js';
+import Crosshair from '../ui/Crosshair.js'; // v3.48.0: procedural aim reticle
 import DebugBridge from '../ui/DebugBridge.js';
 // ─── v3.20.0: LAN / local co-op (P2) ───
 import coopManager from '../../net/CoopManager.js';
@@ -107,6 +114,7 @@ export default class Game {
     this.waveManager = new WaveManager(this);
     this.bonus = new BonusLevel(this);
     this.dev = new DevPanel(this);
+    this.crosshair = new Crosshair(this); // v3.48.0: procedural aim reticle
     this.state = 'menu';
     this.score = 0;
     this.multiplier = 1;
@@ -450,6 +458,7 @@ export default class Game {
     for (const bt of this.bonusTargets) bt.draw(ctx);
     for (const e of this.enemies) e.draw(ctx);
     if (this.player && !this.player.dead) this.player.draw(ctx);
+    this.crosshair.draw(ctx); // v3.48.0: procedural aim reticle (offset + heading-rotated)
     if (coopManager.active) coopManager.render(ctx); // v3.20.0: P2
     for (const b of this.bullets) b.draw(ctx);
     this.particles.draw(ctx);

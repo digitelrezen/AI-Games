@@ -49,6 +49,11 @@ const tests = [
   ['v3.47.0: P2 synergy default (Comma)', /synergy:\s*\[\s*['"]Comma['"]\s*\]/.test(s)],
   ['v3.47.0: TestAimbot on F8 (KeyT hotkey gone)', /e\.code\s*!==\s*['"]F8['"]/.test(s) && !/e\.code\s*!==\s*['"]KeyT['"]/.test(s) && s.includes('F8 to disengage')],
   ['v3.47.0: NOVA slot key label tracks synergy', /this\._slotLabel\(e\.novaSlot,\s*['"]synergy['"]\)/.test(s)],
+  // ── v3.48.0 procedural aim reticle (Crosshair.js) ──
+  ['v3.48.0: Crosshair reticle module (circles + dot + ticks)', /Crosshair\s*=\s*class/.test(s) && /R_OUTER\s*=\s*16/.test(s) && /DOT_R\s*=\s*2\.6/.test(s)],
+  ['v3.48.0: crosshair defaults (on + 64px offset, 24–160 limits)', /crosshair:\s*true/.test(s) && /crosshairOffset:\s*\{\s*min:\s*24,\s*max:\s*160,\s*def:\s*64/.test(s)],
+  ['v3.48.0: reticle drawn in Game render', s.includes('this.crosshair.draw(ctx)')],
+  ['v3.48.0: settings toggle + dev slider wired', s.includes('set-crosshair') && s.includes('dev-crosshair-offset')],
   [`version ${VER}`, s.includes(VER)],
 ];
 
