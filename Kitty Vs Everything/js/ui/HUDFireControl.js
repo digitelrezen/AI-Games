@@ -1,5 +1,5 @@
 // Filename: HUDFireControl.js
-// Kitty Vs Everything — v3.45.0
+// Kitty Vs Everything — v3.47.0
 // Bottom sci-fi fire-control dashboard panel: hull/shield meters, speed
 // readout, weapon status (READY / HOT / LOCKED), the three secondary-weapon
 // slots (STUN / NAPALM / NOVA) with live cooldown bars + bound-key labels,
@@ -31,7 +31,11 @@
 //          the old gold ring), cooldown = ultimate recovery (ultimateCooldown),
 //          ready = fully charged & off cooldown. The ship-side rings are gone;
 //          this slot is the sole Nova display (nova-ready/-charging/-cooldown).
-export const VERSION = 'v3.45.0';
+// v3.47.0: NOVA slot key label now tracks the 'synergy' action (T / -
+//          default) — the Synergy Explosion is key-triggered (PlayerFleet.js)
+//          instead of the old 10s auto-fire. Slot state logic unchanged
+//          (superCharge / ultimateCooldown / nova-ready/-charging/-cooldown).
+export const VERSION = 'v3.47.0';
 import { WEAPONS, PLAYER, MINI_SHIP } from '../core/config.js';
 import { getBinds, codeLabel } from '../input/Keybinds.js';
 import { bus } from '../core/EventBus.js';
@@ -172,10 +176,11 @@ export default class HUDFireControl {
     // ─── SECONDARY SLOTS (cooldown bars + bound keys) ───
     this._updateSlot(e.stunSlot, 'stun', p.stunCooldown, PLAYER.STUN_COOLDOWN);
     this._updateSlot(e.napalmSlot, 'napalm', p.napalmCooldown, PLAYER.NAPALM_COOLDOWN);
-    // v3.45.0: NOVA meter (F slot) — purple charge/cooldown/ready. The
-    // ship-side gold charge ring + cyan shield ring are gone; this is the sole
-    // Nova display. charge = synergy (superCharge, the old gold ring); cooldown
-    // = ultimate recovery (ultimateCooldown); ready = charged & off cooldown.
+    // v3.45.0: NOVA meter (T slot since v3.47.0) — purple charge/cooldown/
+    // ready. The ship-side gold charge ring + cyan shield ring are gone; this
+    // is the sole Nova display. charge = synergy (superCharge, the old gold
+    // ring); cooldown = ultimate recovery (ultimateCooldown); ready = charged
+    // & off cooldown. v3.47.0: pressing the 'synergy' key (T / -) fires it.
     if (e.novaSlot) {
       const maxCd = p.ULTIMATE_COOLDOWN || 8;
       const onCooldown = p.ultimateCooldown > 0;
@@ -192,7 +197,7 @@ export default class HUDFireControl {
         const pct = onCooldown ? (1 - p.ultimateCooldown / maxCd) * 100 : charge * 100;
         bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       }
-      this._slotLabel(e.novaSlot, 'ultimate');
+      this._slotLabel(e.novaSlot, 'synergy'); // v3.47.0: synergy key (T / -)
     }
     if (this._keysDirty) {
       this._slotLabel(e.stunSlot, 'stun');

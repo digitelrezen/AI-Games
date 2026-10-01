@@ -1,7 +1,8 @@
 // Filename: TestAimbot.js
-// Kitty Vs Everything — v3.14.0
+// Kitty Vs Everything — v3.47.0
 // DEVELOPER-ONLY test aimbot (debug tooling — NOT gameplay). Toggled from
-// the Dev Panel (TEST AIMBOT button) or the T hotkey; status banner +
+// the Dev Panel (TEST AIMBOT button) or the F8 hotkey (v3.47.0 — moved from
+// T, which now triggers the Synergy Explosion); status banner +
 // MessageLog entry on every toggle.
 // While engaged:
 //   • locks onto the NEAREST valid enemy (any tier — bosses included)
@@ -15,7 +16,7 @@
 //     (name/tier/HP/range/lead-time/DPS) for weapon testing
 // It never mutates enemy state, scoring, or drops — it only aims and fires
 // through the normal weapon path.
-export const VERSION = 'v3.14.0';
+export const VERSION = 'v3.47.0';
 import { TAU } from '../core/utils.js';
 import { WEAPONS } from '../core/config.js';
 import { bus } from '../core/EventBus.js';
@@ -34,7 +35,7 @@ export default class TestAimbot {
     this._prevTarget = null;
     this._prevHp = 0;
     window.addEventListener('keydown', (e) => {
-      if (e.repeat || e.code !== 'KeyT') return;
+      if (e.repeat || e.code !== 'F8') return;
       const tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       this.toggle();
@@ -47,7 +48,7 @@ export default class TestAimbot {
     this.active = !this.active;
     this.target = null;
     this.dps = 0;
-    const msg = this.active ? 'TEST AIMBOT: ENGAGED (T to disengage)' : 'TEST AIMBOT: DISENGAGED';
+    const msg = this.active ? 'TEST AIMBOT: ENGAGED (F8 to disengage)' : 'TEST AIMBOT: DISENGAGED';
     bus.emit('banner', { text: msg, tone: this.active ? 'bad' : 'info', duration: 1.4 });
     if (g.msglog) g.msglog.log(msg, this.active ? 'warn' : 'info', g.time);
     bus.emit('testAimbotChanged');

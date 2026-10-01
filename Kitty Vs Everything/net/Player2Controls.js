@@ -1,5 +1,5 @@
 // Filename: net/Player2Controls.js
-// Kitty Vs Everything — v3.20.0
+// Kitty Vs Everything — v3.47.0
 // Player 2 keyboard input — a SEPARATE keybind set + input state for the
 // second cat ship (local co-op and host-driven remote P2). It exposes the SAME
 // action-layer interface the rest of the game consumes (isDownAction /
@@ -13,7 +13,8 @@
 //
 // Default P2 binds (chosen to never collide with P1's defaults):
 //   fire KeyK · thrust KeyI · brake KeyO · boost KeyY · stun KeyV ·
-//   napalm KeyX · ultimate KeyM · cycleWeapon KeyZ · deployFleet Numpad0
+//   napalm KeyX · ultimate KeyM · cycleWeapon KeyZ · deployFleet Numpad0 ·
+//   synergy Comma (v3.47.0 — P2 Synergy Explosion, mirrors P1's T / -)
 // Remappable + persisted to localStorage (kve-keybinds-p2-v1).
 import { bus } from '../js/core/EventBus.js';
 
@@ -21,7 +22,7 @@ const STORAGE_KEY = 'kve-keybinds-p2-v1';
 
 export const P2_ACTIONS = [
   'fire', 'thrust', 'brake', 'boost',
-  'stun', 'napalm', 'ultimate', 'cycleWeapon', 'deployFleet',
+  'stun', 'napalm', 'ultimate', 'cycleWeapon', 'deployFleet', 'synergy',
   'rotateLeft', 'rotateRight',
 ];
 
@@ -35,6 +36,7 @@ export const P2_DEFAULT_BINDS = {
   ultimate: ['KeyM'],
   cycleWeapon: ['KeyZ'],
   deployFleet: ['Numpad0'],
+  synergy: ['Comma'],   // v3.47.0: P2 Synergy Explosion
   rotateLeft: [],   // auto-aim (CoopManager)
   rotateRight: [],  // auto-aim (CoopManager)
 };

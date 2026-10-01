@@ -38,6 +38,17 @@ const tests = [
   ['v3.45.0: shield-break shatter burst', s.includes('const shieldBefore = this.shield') && s.includes('#ffd54f')],
   ['v3.45.0: Nova meter (superCharge + ultimateCooldown + nova-ready)', s.includes('p.superCharge') && s.includes('p.ultimateCooldown') && s.includes('nova-ready')],
   ['v3.45.0: purple Nova CSS (#7c4dff)', s.includes('#7c4dff')],
+  // ── v3.47.0 key-triggered Synergy Explosion (T / - P1, , P2) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes, so every pattern below is quote-tolerant (['"]). KeyT stays in
+  // the bundle legitimately (synergy's default bind) — only the old
+  // TestAimbot `e.code !== 'KeyT'` hotkey must be gone.
+  ['v3.47.0: synergy key gate in PlayerFleet (wasPressedAction)', /input\.wasPressedAction\(['"]synergy['"]\)/.test(s)],
+  ['v3.47.0: no 10s auto-fire (in-charge superWeapon removed)', !/superCharge\s*>=\s*1\s*\)\s*\{\s*player\.superCharge\s*=\s*0;\s*player\.superWeapon\(\);/.test(s)],
+  ['v3.47.0: Keybinds synergy action (KeyT / Minus)', /synergy:\s*\[\s*['"]KeyT['"]\s*,\s*['"]Minus['"]\s*\]/.test(s)],
+  ['v3.47.0: P2 synergy default (Comma)', /synergy:\s*\[\s*['"]Comma['"]\s*\]/.test(s)],
+  ['v3.47.0: TestAimbot on F8 (KeyT hotkey gone)', /e\.code\s*!==\s*['"]F8['"]/.test(s) && !/e\.code\s*!==\s*['"]KeyT['"]/.test(s) && s.includes('F8 to disengage')],
+  ['v3.47.0: NOVA slot key label tracks synergy', /this\._slotLabel\(e\.novaSlot,\s*['"]synergy['"]\)/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 

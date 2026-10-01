@@ -1,5 +1,5 @@
 // Filename: net/CoopManager.js
-// Kitty Vs Everything — v3.20.0
+// Kitty Vs Everything — v3.47.0
 // LAN co-op orchestration (host + local co-op). Spawns the second Cat Ship
 // (P2) via the existing CatShipFactory and drives it from either the local P2
 // keyboard (Player2Controls.js) or the remote P2's input stream
@@ -144,6 +144,7 @@ class CoopManager {
           ultimate: !!ri.ultimate,
           cycleWeapon: !!ri.cycleWeapon,
           deployFleet: !!ri.deployFleet,
+          synergy: !!ri.synergy, // v3.47.0: P2 Synergy Explosion
         };
       }
       const edge = this._edge;

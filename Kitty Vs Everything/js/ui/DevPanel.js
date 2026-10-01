@@ -16,7 +16,7 @@
 //          is handled by ViewScaler.js; the label syncs on fullscreenchange).
 // v3.14.0: The spin slider moved to the Settings screen (split into
 //          keyboard/mouse sensitivities) — replaced here with a TEST
-//          AIMBOT button (weapon-testing toggle, shared with the T key).
+//          AIMBOT button (weapon-testing toggle, shared with the F8 key).
 // v3.34.0: REDESIGNED (bug fix: the panel was taller than the 720px stage
 //          on 16:9, so the bottom sections rendered off-screen and were
 //          unreachable). The panel is now a flex column — pinned header,

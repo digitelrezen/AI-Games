@@ -1,6 +1,10 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.43.0
+// Kitty Vs Everything — v3.47.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.47.0: Synergy Explosion is key-triggered — the 'synergy' action
+// (T / - default, P2 co-op ,) fires PlayerFleet.superWeapon when the
+// color-match meter is full, replacing the old 10s auto-fire. TestAimbot
+// hotkey moved T → F8 (TestAimbot.js).
 // v3.43.0: alien UFO pixel-art sprite swap — AlienEnemy.js draws one of two
 // shared UFO PNGs (asset keys ufo1/ufo2) with a random per-instance skin.
 // v3.42.0: crate destruction spills one drop from the shared POWERUP_DROPS
@@ -40,7 +44,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.46.0';
+export const VERSION = 'v3.47.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

@@ -1,5 +1,5 @@
 // Filename: net/NetProtocol.js
-// Kitty Vs Everything — v3.20.0
+// Kitty Vs Everything — v3.47.0
 // LAN wire protocol. The WebSocket envelope is a small JSON message; the
 // STATE COLLECTIONS (players, enemies, boss) are serialized as E6 flat-file
 // record rows (consistent schema mapping + standardized '|' delimiters) so the
@@ -9,7 +9,8 @@
 //   hello   client -> host  { type, role, profile:{theme,callsign} }
 //   welcome host  -> client { type, yourId, host:{theme,callsign}, config }
 //   input   client -> host  { type, seq, thrust,brake,boost,fire,stun,napalm,
-//                                            ultimate,cycleWeapon,deployFleet }
+//                                            ultimate,cycleWeapon,deployFleet,
+//                                            synergy }
 //   state   host  -> client { type, seq, time, score, multiplier, wave,
 //                                            players:<E6>, enemies:<E6>, boss:<E6> }
 //   event   host  -> client { type, kind, ... }   (explosion / banner / powerup)
@@ -132,6 +133,7 @@ export function encodeInput(input, seq) {
     ultimate: p('ultimate') ? 1 : 0,
     cycleWeapon: p('cycleWeapon') ? 1 : 0,
     deployFleet: p('deployFleet') ? 1 : 0,
+    synergy: p('synergy') ? 1 : 0, // v3.47.0: P2 Synergy Explosion
   };
 }
 

@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.46.0
+// Kitty Vs Everything — v3.47.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.1.0: Replaced 8-element system with 3-weapon system (Vulkan / Plasma / Rail).
@@ -90,7 +90,10 @@
 //          (single long charge barrel). SHIP_GEOMETRY.barrelLen remains the
 //          fallback. Plasma now fires a 3-bolt fan from BOTH front paws
 //          (no alternation) — see PlayerWeapons.js / MiniShip.js.
-export const VERSION = 'v3.46.0';
+// v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
+//          now charges the meter to 100% (it holds), and the 'synergy' key
+//          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
+export const VERSION = 'v3.47.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -168,7 +171,7 @@ export const MINI_SHIP = {
   maxDocked: 2,            // max mini-ships docked to the fleet
   radius: 11,              // collision radius (docked, ~0.6× the main hull)
   damageBonusPerMini: 0.5, // +50% weapon damage per docked mini (PlayerWeapons)
-  synergyChargeTime: 10,   // seconds of color-match synergy per super-weapon
+  synergyChargeTime: 10,   // seconds of color-match synergy to charge the meter to 100% (v3.47.0: key-triggered fire)
   fireRateMult: 1,         // v3.10.0: mini fires on the hull's cadence (weapon.rate × 1) — full clone
   damageMul: 0.5,          // v3.9.0: mini bullets deal 50% of the weapon's base damage
   // v3.16.0: combat orbit (deployed fleet) — radius from hull center and

@@ -1,5 +1,5 @@
 // Filename: PlayerFleet.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.47.0
 // Docked mini-ship fleet: spawn (strict same-color clone via
 // CatShipFactory.createMiniShip), per-frame update, independent mini death
 // handling, color-match synergy charging, and fleet clearing on hull loss.
@@ -7,7 +7,12 @@
 //         player's theme, have their own HP pool, and die with the hull.
 // v3.16.0: fleet deploy state (player.fleetDeployed) is reset when the
 //         fleet is cleared (MiniDeploy.js owns the deploy/recall logic).
-export const VERSION = 'v3.16.0';
+// v3.47.0: Synergy Explosion is now KEY-TRIGGERED — the meter charges
+//         while the fleet is color-matched and HOLDS at 100%; the
+//         'synergy' action (P1: T / -, P2 co-op: , — see Keybinds.js /
+//         Player2Controls.js) fires superWeapon() when ready. The old
+//         10s auto-fire is gone.
+export const VERSION = 'v3.47.0';
 import { createMiniShip } from '../core/CatShipFactory.js';
 import { MINI_SHIP } from '../core/config.js';
 import { bus } from '../core/EventBus.js';
@@ -34,7 +39,9 @@ export function addMini(player) {
 
 /**
  * Update docked minis, handle their independent deaths, and charge the
- * color-match synergy (superCharge → superWeapon at 100%).
+ * color-match synergy meter (superCharge). v3.47.0: the meter HOLDS at
+ * 100% — the 'synergy' key (T / - P1, , P2) fires superWeapon() when the
+ * fleet is color-matched and the meter is full.
  */
 export function updateFleet(player, dt, input) {
   const g = player.game;
@@ -61,10 +68,16 @@ export function updateFleet(player, dt, input) {
   // ─── COLOR-MATCH SYNERGY (strict rule ⇒ all minis always match) ───
   if (player.minis.length > 0 && player.minis.every(m => m.theme === player.theme)) {
     player.superCharge = Math.min(1, player.superCharge + dt / MINI_SHIP.synergyChargeTime);
-    if (player.superCharge >= 1) {
-      player.superCharge = 0;
-      player.superWeapon();
-    }
+  }
+  // ─── v3.47.0: SYNERGY EXPLOSION (key-triggered — 'synergy' action) ───
+  // The meter holds at 100% once charged; the player fires it with the
+  // synergy key (P1 keyboard T / -, P2 co-op , — local or remote).
+  if (player.minis.length > 0
+      && player.minis.every(m => m.theme === player.theme)
+      && player.superCharge >= 1
+      && input.wasPressedAction('synergy')) {
+    player.superCharge = 0;
+    player.superWeapon();
   }
 }
 

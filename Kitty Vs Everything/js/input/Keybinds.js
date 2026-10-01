@@ -1,5 +1,5 @@
 // Filename: Keybinds.js
-// Kitty Vs Everything — v3.16.0
+// Kitty Vs Everything — v3.47.0
 // Remappable keybinds for keyboard keys AND mouse buttons (LMB/MMB/RMB +
 // mouse 3/4). Every gameplay action maps to a list of codes — any of them
 // triggering counts (defaults pair a main hand with a lefty alternate,
@@ -12,7 +12,10 @@
 // other action (reported as a banner by SettingsScreen).
 // v3.16.0: new 'deployFleet' action (default B / N) — undocks the mini-ship
 //          fleet into a combat orbit (MiniDeploy.js) and recalls it.
-export const VERSION = 'v3.16.0';
+// v3.47.0: new 'synergy' action (default T / -) — fires the Synergy
+//          Explosion (PlayerFleet.superWeapon) when the color-match meter
+//          (superCharge) is full; replaces the old 10s auto-fire.
+export const VERSION = 'v3.47.0';
 import { bus } from '../core/EventBus.js';
 
 const STORAGE_KEY = 'kve-keybinds-v1';
@@ -27,6 +30,7 @@ export const ACTIONS = [
   { id: 'stun',        label: 'Stun Rockets' },
   { id: 'napalm',      label: 'Napalm Rockets' },
   { id: 'ultimate',    label: 'Ultimate' },
+  { id: 'synergy',     label: 'Synergy Explosion' },
   { id: 'cycleWeapon', label: 'Cycle Weapon' },
   { id: 'deployFleet', label: 'Deploy / Recall Fleet' },
 ];
@@ -43,6 +47,7 @@ export const DEFAULT_BINDS = {
   stun:        ['KeyQ', 'KeyH'],
   napalm:      ['KeyE', 'KeyJ'],
   ultimate:    ['KeyF', 'KeyC'],
+  synergy:     ['KeyT', 'Minus'],
   cycleWeapon: ['KeyR', 'KeyG'],
   deployFleet: ['KeyB', 'KeyN'],
 };

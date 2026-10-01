@@ -1,5 +1,5 @@
 // Filename: Player.js
-// Kitty Vs Everything — v3.45.0
+// Kitty Vs Everything — v3.47.0
 // Core player controller: hull state (health/shield/lives/invulnerability),
 // per-frame orchestration of the extracted modules, and fleet-level damage
 // routing (docked minis intercept damage BEFORE the main hull).
@@ -25,7 +25,11 @@
 // v3.45.0: shield-break shatter — hit() plays a one-shot yellow particle
 //          burst when the hull shield drops from >0 to 0 (the yellow bubble
 //          in PlayerRenderer vanishes the same frame; this makes it read).
-export const VERSION = 'v3.45.0';
+// v3.47.0: Synergy Explosion is key-triggered — PlayerFleet.js fires
+//          superWeapon on the 'synergy' action (T / - default) instead of
+//          the old 10s auto-fire. Release version bump, no Player.js logic
+//          changes.
+export const VERSION = 'v3.47.0';
 import Entity from '../core/Entity.js';
 import Bullet from '../combat/Bullet.js';
 import { PLAYER, PLAYER_THEMES } from '../core/config.js';

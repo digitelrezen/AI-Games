@@ -1,5 +1,5 @@
 // Filename: MenuKeybinds.js
-// Kitty Vs Everything — v3.23.0
+// Kitty Vs Everything — v3.47.0
 // Select-screen keybind footer (#menu-keybinds — the old hardcoded
 // .controls-help block in index.html). Renders the player's ACTIVE
 // keybinds from the live KEYBINDS table (Keybinds.js) — the same source
@@ -10,7 +10,7 @@
 //
 // Display rules:
 //   • An action still on its factory DEFAULT_BINDS set shows the
-//     standard default label (WSAD / Q / E / R / F / Left Click /
+//     standard default label (WSAD / Q / E / R / F / T / Left Click /
 //     Right Click) — the standard default set.
 //   • A customized action shows its real bound keys (LMB / MMB / RMB
 //     for mouse buttons, codeLabel for everything else).
@@ -18,7 +18,9 @@
 //     (Admin Panel) are fixed system keys — they live in PauseMenu /
 //     HUDFireControl / ViewScaler / DevPanel, not in the remappable
 //     table, so they always show their standard labels.
-export const VERSION = 'v3.23.0';
+// v3.47.0: new 'T: Synergy Explosion' row (after 'F: Super') — the
+//          key-triggered Synergy Explosion ('synergy' action, T / -).
+export const VERSION = 'v3.47.0';
 import { bus } from '../core/EventBus.js';
 import { getBinds, codeLabel, DEFAULT_BINDS, MOUSE_BUTTON_NAMES } from './Keybinds.js';
 
@@ -33,6 +35,7 @@ const STANDARD = {
   napalm: 'E',
   cycleWeapon: 'R',
   ultimate: 'F',
+  synergy: 'T',
   fire: 'Left Click',
   boost: 'Right Click',
 };
@@ -44,6 +47,7 @@ const ROWS = [
   { kind: 'action', action: 'napalm', label: 'Napalm' },
   { kind: 'action', action: 'cycleWeapon', label: 'Weapon Switch' },
   { kind: 'action', action: 'ultimate', label: 'Super' },
+  { kind: 'action', action: 'synergy', label: 'Synergy Explosion' },
   { kind: 'action', action: 'fire', label: 'Fire Weapon' },
   { kind: 'action', action: 'boost', label: 'Boost' },
   { kind: 'static', keys: ['Esc'], label: 'Menu' },

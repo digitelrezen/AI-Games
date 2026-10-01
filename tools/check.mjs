@@ -86,7 +86,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.45.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.45.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.42.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.36.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.42.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -326,6 +326,52 @@ console.log('\n[6b] v3.45.0 clean catship (source gates)');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6c] v3.47.0 KEY-TRIGGERED SYNERGY EXPLOSION — the meter
+//       (superCharge) holds at 100% and the 'synergy' action fires
+//       superWeapon (P1: T / -, P2 co-op: ,); TestAimbot moved T → F8
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6c] v3.47.0 key-triggered synergy explosion (source gates)');
+{
+  const fleetSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerFleet.js'), 'utf8');
+  check('PlayerFleet: synergy key gate (input.wasPressedAction("synergy"))',
+    fleetSrc.includes("input.wasPressedAction('synergy')"));
+  check('PlayerFleet: fire gated on minis + theme match + superCharge >= 1',
+    fleetSrc.includes('player.minis.length > 0') &&
+    fleetSrc.includes('m.theme === player.theme') &&
+    fleetSrc.includes('player.superCharge >= 1'));
+  check('PlayerFleet: old 10s auto-fire removed (no in-charge superWeapon)',
+    !/superCharge\s*>=\s*1\s*\)\s*\{\s*player\.superCharge\s*=\s*0;\s*player\.superWeapon\(\);/.test(fleetSrc));
+  const kbSrc = fs.readFileSync(path.join(ROOT, 'js/input/Keybinds.js'), 'utf8');
+  check('Keybinds: synergy action registered (label "Synergy Explosion")',
+    kbSrc.includes("{ id: 'synergy',     label: 'Synergy Explosion' }"));
+  check('Keybinds: synergy defaults KeyT / Minus',
+    /synergy:\s*\[\s*'KeyT'\s*,\s*'Minus'\s*\]/.test(kbSrc));
+  const mkSrc = fs.readFileSync(path.join(ROOT, 'js/input/MenuKeybinds.js'), 'utf8');
+  check('MenuKeybinds: synergy row after ultimate (12 rows total)',
+    mkSrc.includes("action: 'ultimate', label: 'Super'") &&
+    mkSrc.includes("action: 'synergy', label: 'Synergy Explosion'") &&
+    (mkSrc.match(/\{ kind: '(wsad|action|static)'/g) || []).length === 12);
+  const aimSrc = fs.readFileSync(path.join(ROOT, 'js/combat/TestAimbot.js'), 'utf8');
+  check('TestAimbot: hotkey moved T → F8 (no KeyT left)',
+    aimSrc.includes("e.code !== 'F8'") && !aimSrc.includes('KeyT'));
+  const hudSrc2 = fs.readFileSync(path.join(ROOT, 'js/ui/HUDFireControl.js'), 'utf8');
+  check('HUDFireControl: NOVA slot key label tracks the synergy action',
+    hudSrc2.includes("this._slotLabel(e.novaSlot, 'synergy')"));
+  const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  check('index.html: static NOVA slot key is T (was F)',
+    /nova-slot[\s\S]*?fc-slot-key">T</.test(htmlSrc));
+  const p2Src = fs.readFileSync(path.join(ROOT, 'net/Player2Controls.js'), 'utf8');
+  check('Player2Controls: synergy in P2_ACTIONS + default Comma',
+    p2Src.includes("'deployFleet', 'synergy'") && /synergy:\s*\[\s*'Comma'\s*\]/.test(p2Src));
+  const netSrc = fs.readFileSync(path.join(ROOT, 'net/NetProtocol.js'), 'utf8');
+  check('NetProtocol: encodeInput sends the synergy edge',
+    netSrc.includes("synergy: p('synergy') ? 1 : 0"));
+  const coopSrc = fs.readFileSync(path.join(ROOT, 'net/CoopManager.js'), 'utf8');
+  check('CoopManager: remote P2 synergy edge applied host-side',
+    coopSrc.includes('synergy: !!ri.synergy'));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -335,6 +381,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.45.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.47.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

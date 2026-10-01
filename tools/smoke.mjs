@@ -1,7 +1,12 @@
 #!/usr/bin/env node
-// ../tools/smoke.mjs — Kitty Vs Everything v3.14.0 (tools/ moved up to AI-GAMES root)
-// Headless smoke test for the pure-logic v3.14.0 modules (Settings, Keybinds,
-// MessageLog, EventBus, DebugBridge) using minimal DOM shims. Run: node ../tools/smoke.mjs
+// ../tools/smoke.mjs — Kitty Vs Everything v3.47.0 (tools/ moved up to AI-GAMES root)
+// Headless smoke test for the pure-logic v3.47.0 modules (Settings, Keybinds,
+// MessageLog, EventBus, DebugBridge, MenuKeybinds) using minimal DOM shims.
+// Run: node ../tools/smoke.mjs
+//
+// v3.47.0: key-triggered Synergy Explosion — the 'synergy' action joins the
+//          12-row menu keybind footer (T default, - lefty, , P2 co-op) and
+//          TestAimbot moved T → F8.
 
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -135,22 +140,24 @@ console.log('\n[6] MenuKeybinds.js — dynamic select-screen footer (v3.23.0)');
     return keys.children.map((k) => k.textContent).join(' / ') + ': ' + label.textContent;
   };
 
-  check('renders 11 rows', rows().length === 11);
+  check('renders 12 rows', rows().length === 12);
   check('WSAD: Forward, Back/stop, Spin Left, Spin Right', rowText(rows()[0]) === 'WSAD: Forward, Back/stop, Spin Left, Spin Right');
   check('Q: Stun Rockets', rowText(rows()[1]) === 'Q: Stun Rockets');
   check('E: Napalm', rowText(rows()[2]) === 'E: Napalm');
   check('R: Weapon Switch', rowText(rows()[3]) === 'R: Weapon Switch');
   check('F: Super', rowText(rows()[4]) === 'F: Super');
-  check('Left Click: Fire Weapon', rowText(rows()[5]) === 'Left Click: Fire Weapon');
-  check('Right Click: Boost', rowText(rows()[6]) === 'Right Click: Boost');
-  check('Esc: Menu', rowText(rows()[7]) === 'Esc: Menu');
-  check('M: Minimize Fire Control Panel (Toggle)', rowText(rows()[8]) === 'M: Minimize Fire Control Panel (Toggle)');
-  check('U: Fullscreen Toggle', rowText(rows()[9]) === 'U: Fullscreen Toggle');
-  check('F9: Admin Panel', rowText(rows()[10]) === 'F9: Admin Panel');
+  check('T: Synergy Explosion', rowText(rows()[5]) === 'T: Synergy Explosion');
+  check('Left Click: Fire Weapon', rowText(rows()[6]) === 'Left Click: Fire Weapon');
+  check('Right Click: Boost', rowText(rows()[7]) === 'Right Click: Boost');
+  check('Esc: Menu', rowText(rows()[8]) === 'Esc: Menu');
+  check('M: Minimize Fire Control Panel (Toggle)', rowText(rows()[9]) === 'M: Minimize Fire Control Panel (Toggle)');
+  check('U: Fullscreen Toggle', rowText(rows()[10]) === 'U: Fullscreen Toggle');
+  check('F9: Admin Panel', rowText(rows()[11]) === 'F9: Admin Panel');
 
   // Live update: rebind from "settings" → footer re-renders instantly
   setBind('stun', 'KeyT');
   check('rebind stun → T: Stun Rockets', rowText(rows()[1]) === 'T: Stun Rockets');
+  check('synergy row drops to Minus after KeyT steal', rowText(rows()[5]) === '-: Synergy Explosion');
   // WSAD primary changed → group row shows the real keys (W S A D order)
   removeBind('thrust', 'KeyW');
   removeBind('thrust', 'ArrowUp');
@@ -172,5 +179,5 @@ if (failures) {
   console.log(`\x1b[31mFAILED\x1b[0m — ${failures} check(s) failed`);
   process.exit(1);
 } else {
-  console.log('\x1b[32mPASSED\x1b[0m — v3.23.0 module smoke tests clean');
+  console.log('\x1b[32mPASSED\x1b[0m — v3.47.0 module smoke tests clean');
 }
