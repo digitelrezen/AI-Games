@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.56.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.57.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -88,6 +88,7 @@ for (const [tag, rel] of [
   ['BeetleEnemy', 'js/enemies/BeetleEnemy.js'],     // v3.53.0
   ['BonusLevel', 'js/levels/BonusLevel.js'],        // v3.54.0
   ['BoneFragment', 'js/levels/BoneFragment.js'],    // v3.54.0
+  ['SpiderEnemy', 'js/enemies/SpiderEnemy.js'],     // v3.57.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -95,7 +96,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0', SpiderEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -168,7 +169,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.52.0: + moth (moth enemy, 18th species).
 // v3.53.0: + beetle (beetle enemy pixel-art sprite swap).
 // v3.54.0: + femur / profile_bone / skeleton / skull (boneyard environment).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull'];
+// v3.57.0: + spider (spider enemy pixel-art sprite swap).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -539,6 +541,24 @@ console.log('\n[6i] v3.55.0 crosshair offset range (140–340 px)');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6j] v3.57.0 SPIDER PIXEL-ART SPRITE — web-spinner now draws
+//       the shared PNG (key "spider") with crawler gait + a bright
+//       red hourglass dorsal mark; procedural fallback kept
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6j] v3.57.0 spider pixel-art sprite + red hourglass mark');
+{
+  const spSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/SpiderEnemy.js'), 'utf8');
+  check('SpiderEnemy: VERSION = v1.2.0', spSrc.includes("VERSION = 'v1.2.0'"));
+  check('SpiderEnemy: sprite key "spider" via AssetManager', spSrc.includes("SPIDER_SPRITE_KEY = 'spider'") && spSrc.includes('getSprite(SPIDER_SPRITE_KEY)'));
+  check('SpiderEnemy: null-sprite → procedural fallback branch', spSrc.includes('this._drawProcedural(ctx, r)'));
+  check('SpiderEnemy: crawler gait (bob/sway/tilt) in sprite draw', spSrc.includes('const bob = Math.sin(this.t * 5)') && spSrc.includes('const sway = Math.sin(this.t * 2.5)') && spSrc.includes('const tilt = Math.sin(this.t * 2.5)'));
+  check('SpiderEnemy: aspect-preserving nearest-neighbor draw', spSrc.includes('(targetW * dims.h) / dims.w') && spSrc.includes('ctx.imageSmoothingEnabled = false'));
+  check('SpiderEnemy: bright red hourglass dorsal mark', spSrc.includes('_drawHourglassMark(ctx, targetW, targetH)') && spSrc.includes('rgba(255, 34, 34,') && spSrc.includes('-targetH * 0.09'));
+  check('SpiderEnemy: procedural fallback keeps red hourglass marking', spSrc.includes('BRIGHT RED HOURGLASS marking (dorsal/back section)'));
+  check('AssetSprites: spider sprite dims 94×128 registered', /spider:\s*\{\s*w:\s*94,\s*h:\s*128\s*\}/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -548,6 +568,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.56.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.57.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

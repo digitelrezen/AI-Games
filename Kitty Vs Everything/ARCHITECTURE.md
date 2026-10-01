@@ -1,7 +1,7 @@
 # Kitty Vs Everything — Architecture Roadmap / File Index
 
 > **Workspace:** `c:\AI-Games\Kitty Vs Everything`
-> **Generated:** 2026-10-01 (v3.56.0 shield ring resized to clear the guns + Fire Control Panel / minimized bar theme blue→yellow)
+> **Generated:** 2026-10-01 (v3.57.0 spider pixel-art sprite swap + bright red hourglass dorsal mark)
 > **Layout:** ~80 files, flat in the root folder + a `net/` subfolder for multiplayer; `npm run build` (build.mjs) inlines every module into a single self-contained `Kitty Vs Everything <version>.html` in `C:\AI-Games\Builds\`
 > **Stack:** Native ES modules, Canvas 2D, WebAudio, plain DOM, `ws` (LAN relay, Node-only)
 > **Run:** `python -m http.server 8000` → http://localhost:8000  ·  LAN: `npm run lan`
@@ -85,7 +85,7 @@ wobble) — no face-the-player mirror (art is a top-down view), classic procedur
 - **HumanSprite.js** — v3.13.0 procedural humanoid art: front-facing chibi person holding a rifle (4 shirt variants, 6 hair colors, 3 hair styles, 4 skin tones via `randomOutfit()`), walk-cycle leg/arm swing + body bob (`drawHuman(ctx, { r, outfit, walkPhase, flash, aim })`).
 - **AlienEnemy.js** — Pulsing UFO disc, phase-shift alpha, sine sweeps.
 - **SnakeEnemy.js** — Undulating serpent, smooth sine wave.
-- **SpiderEnemy.js** — Slow web-spinner, slow web projectiles.
+- **SpiderEnemy.js** — v1.2.0: slow web-spinner, slow web projectiles. Pixel-art sprite from `.assets/Spider-pixel_art.png` via the AssetManager pipeline (key `spider`, 390×532 → 94×128) — full pixel-art shading/depth/charcoal texture, aspect-preserving nearest-neighbor draw centered on the hitbox, crawler bob/sway/tilt gait + ground shadow, and a BRIGHT RED HOURGLASS mark painted on the dorsal (back) section of the abdomen (pulsing glow + core highlight); classic procedural spider kept as null-sprite fallback (brown/charcoal shading + red hourglass marking).
 - **PinkCatEnemy.js** — "Internet" boss (InternetBonus), aggressive fire patterns. v3.13.0: small cute FEMALE chibi boss (radius 18 — trash/crate scale); all boss HP/shield/damage/movement/attack behavior unchanged.
 - **PinkCatBossArt.js** — v3.13.0 boss art: `drawPinkCatBoss(ctx, { r, t, flash, hpFrac })` — hair bow, long lower lashes, blushing cheeks, tiny "w" mouth, fluffy tail + drifting hearts, "enraged" wide eyes below 35% HP.
 - **ShuttleEnemy.js** — v3.50.0: 17th species (REGULAR WAVES ONLY): a crewed space shuttle that glides in from the top, holds a hover band (y 80–180), and strafes left/right with a BANKED TILT (sprite rotates toward travel direction, eased at 4/s). Fires telegraphed aimed cannon shots — a red sight ring on the aim line before each shot (same telegraph contract as HumanEnemy: `attack()` arms the 0.4s aim, `move()` counts down and fires). Pixel-art sprite from `.assets/Human-SpaceShuttle-pixel-art.png` via the AssetManager pipeline (key `shuttle`, 699×329 → 128×60), classic procedural shuttle kept as null-sprite fallback.

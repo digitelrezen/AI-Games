@@ -91,6 +91,13 @@ const tests = [
   ['v3.53.0: beetle sprite dims 123×128', /beetle:\s*\{\s*w:\s*123,\s*h:\s*128\s*\}/.test(s)],
   ['v3.53.0: beetle sprite key in AssetSprites registry', s.includes('beetle: "iVBORw0KGgo')],
   ['v3.53.0: BeetleEnemy sprite + procedural fallback', /BEETLE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  // ── v3.57.0 spider pixel-art sprite (web-spinner) + red hourglass mark ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.57.0: spider sprite dims 94×128', /spider:\s*\{\s*w:\s*94,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.57.0: spider sprite key in AssetSprites registry', s.includes('spider: "iVBORw0KGgo')],
+  ['v3.57.0: SpiderEnemy sprite + procedural fallback', /SPIDER_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  ['v3.57.0: bright red hourglass dorsal mark', s.includes('_drawHourglassMark') && /rgba\(255,\s*34,\s*34/.test(s)],
   // ── v3.54.0 boneyard pixel-art environment (skeleton/skull/femur/profile bone) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -110,5 +117,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard + crosshair 140–340 range).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard + crosshair 140–340 range + spider sprite w/ red hourglass).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
