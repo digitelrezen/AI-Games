@@ -55,6 +55,15 @@ const tests = [
   ['v3.48.0: reticle drawn in Game render', s.includes('this.crosshair.draw(ctx)')],
   ['v3.48.0: settings toggle + dev slider wired', s.includes('set-crosshair') && s.includes('dev-crosshair-offset')],
   ['v3.49.0: butterfly top-down sprite registered (asset dims 128×83)', /butterfly:\s*\{\s*w:\s*128,\s*h:\s*83\s*\}/.test(s)],
+  // ── v3.50.0 space shuttle enemy (17th species, regular waves only) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.50.0: shuttle sprite dims 128×60', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(s)],
+  ['v3.50.0: shuttle in ENEMY_TYPES (Space Shuttle, glide pattern)', /shuttle:\s*\{\s*name:\s*["']Space Shuttle["']/.test(s)],
+  ['v3.50.0: WAVE.SPECIES_COUNT = 17', /SPECIES_COUNT:\s*17/.test(s)],
+  ['v3.50.0: shuttle registered in EnemyFactory REGISTRY', /shuttle:\s*ShuttleEnemy/.test(s)],
+  ['v3.50.0: WaveManager species pool = ENEMY_TYPES keys', s.includes('this.species = Object.keys(ENEMY_TYPES)')],
+  ['v3.50.0: Bone Yard humanoid allowlist (["human"] only)', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 
@@ -63,5 +72,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle species).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

@@ -10,13 +10,22 @@
 //          (HumanSprite.js) created through EnemyFactory — marchMode gives
 //          the original straight-down march (replaces the inline move()
 //          override) and the walk cycle animates as they advance.
-export const VERSION = 'v3.13.0';
+// v3.14.0 (v3.50.0 release): Phase 2/3 spawning is locked to an EXPLICIT
+//          humanoid allowlist (BONE_YARD_HUMANOID_TYPES) — new species added
+//          to ENEMY_TYPES (e.g. 'shuttle') can never leak into the march.
+export const VERSION = 'v3.14.0';
 import { BONUS } from '../core/config.js';
 import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
 import BoneFragment from './BoneFragment.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
+
+// v3.14.0: Phase 2/3 humanoid line — EXPLICIT allowlist. The Bone Yard march
+// is standard humanoids only; new species added to ENEMY_TYPES (e.g. the
+// v3.50.0 'shuttle') must never leak into it. Extend this list deliberately
+// if a future phase should march something else.
+const BONE_YARD_HUMANOID_TYPES = ['human'];
 
 export default class BoneYardBonus {
   constructor(game) {
@@ -94,8 +103,10 @@ export default class BoneYardBonus {
         // Tight single-file line: all at same X, staggered Y
         this.humanSpawnTimer = this.phase === 2 ? rand(0.4, 0.8) : rand(0.3, 0.6);
         const y = -40 - (this.humanCount % 5) * 10;
+        // v3.14.0: type comes from the explicit humanoid allowlist — the
+        // Bone Yard line is standard humanoids only (never 'shuttle').
         const human = createEnemy({
-          type: 'human',
+          type: BONE_YARD_HUMANOID_TYPES[0],
           tier: 'mob',
           x: this.humanX + rand(-8, 8),
           y,

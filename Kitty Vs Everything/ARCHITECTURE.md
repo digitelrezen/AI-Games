@@ -12,7 +12,7 @@
 index.html ─▶ main.js ─▶ Game.js (orchestrator)
 Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
         ─▶ PlayerFleet / MiniDeploy / WeaponAnim (v3.16.0 fleet deploy + weapon anim)
-        ─▶ WaveManager ─▶ EnemyFactory ─▶ EnemyBase ─▶ 15 species
+        ─▶ WaveManager ─▶ EnemyFactory ─▶ EnemyBase ─▶ 17 species
         ─▶ Combat / Bullet / PowerUp / MiniShip
         ─▶ BonusLevel ─▶ BoneYardBonus / InternetBonus
         ─▶ InternetBonus ─▶ BlackCatEntourage / RealTimeClock
@@ -59,7 +59,7 @@ Game.js ─▶ CatShipFactory ─▶ Player ─▶ 5 cat variants
 - **Combat.js** — `applyWeaponHit`: per-weapon damage rules (incl. plasma-pulse shield melt), hit-flash, `onEnemyDeath`.
 - **PowerUp.js** — Falling drops: extra life, shield, mini-ship, bonus crate, rare Bender (easter egg). v3.36.0: bonus crate draws the shared `.assets` PNG (key `crate`, `Crate-pixel-art.png`, 620×574 → 128×119) via the AssetManager pipeline, procedural crate kept as null-sprite fallback.
 
-## 5. Enemies (25 files)
+## 5. Enemies (28 files)
 
 - **EnemyBase.js** — Base enemy: descend, `move(dt, slowMul)` hook, fire logic, stun/slow state, flash decay, death bookkeeping.
 - **EnemyFactory.js** — Type-ID → class registry; `createEnemy({type, tier, x, y, game})` with tier-scaled stats.
@@ -88,11 +88,12 @@ wobble) — no face-the-player mirror (art is a top-down view), classic procedur
 - **SpiderEnemy.js** — Slow web-spinner, slow web projectiles.
 - **PinkCatEnemy.js** — "Internet" boss (InternetBonus), aggressive fire patterns. v3.13.0: small cute FEMALE chibi boss (radius 18 — trash/crate scale); all boss HP/shield/damage/movement/attack behavior unchanged.
 - **PinkCatBossArt.js** — v3.13.0 boss art: `drawPinkCatBoss(ctx, { r, t, flash, hpFrac })` — hair bow, long lower lashes, blushing cheeks, tiny "w" mouth, fluffy tail + drifting hearts, "enraged" wide eyes below 35% HP.
+- **ShuttleEnemy.js** — v3.50.0: 17th species (REGULAR WAVES ONLY): a crewed space shuttle that glides in from the top, holds a hover band (y 80–180), and strafes left/right with a BANKED TILT (sprite rotates toward travel direction, eased at 4/s). Fires telegraphed aimed cannon shots — a red sight ring on the aim line before each shot (same telegraph contract as HumanEnemy: `attack()` arms the 0.4s aim, `move()` counts down and fires). Pixel-art sprite from `.assets/Human-SpaceShuttle-pixel-art.png` via the AssetManager pipeline (key `shuttle`, 699×329 → 128×60), classic procedural shuttle kept as null-sprite fallback.
 
 ## 6. Bonus Levels / Special Sequences (10 files)
 
 - **BonusLevel.js** — Randomly dispatches Bone Yard vs Internet Classic.
-- **BoneYardBonus.js** — 3-phase comedic round: floating bones → human line march → "win by NOT making it" timer.
+- **BoneYardBonus.js** — 3-phase comedic round: floating bones → human line march → "win by NOT making it" timer. v3.50.0: Phase 2/3 spawning is locked to standard humanoids by an EXPLICIT allowlist (`BONE_YARD_HUMANOID_TYPES = ['human']`, spawn sites use `BONE_YARD_HUMANOID_TYPES[0]`) so new species (e.g. shuttle) can never leak into the march.
 - **AsteroidBonus.js** — Destructible asteroid chain power-up (lives in `game.powerups`, `destructible=true`): a Large rock shatters into 2 Medium + 2 smaller Small shards, each Medium into 4 Small, and every destroyed Small rolls a 40% regular power-up drop. Routed via `Game.destroyAsteroid` (`isAsteroid` flag).
 - **AsteroidSprite.js** — v3.22.0 asteroid sprite pipeline: base64-embedded PNG from `../.assets/Asteroid pixel_art_small.png` (241×217, transparent), tight-cropped → downscaled to a 128-px sprite → clipped into 8 seeded jagged shard sub-sprites. Large draws the full rock; Medium/Small fragments draw a jagged shard (a broken chunk of the rock) scaled to tier size. Falls back to the procedural jittered rock if the pipeline hasn't finished.
 - **BoneFragment.js** — Shootable bone: shatter shrapnel, 500-pt score.

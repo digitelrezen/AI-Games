@@ -3,7 +3,10 @@
 // Factory pattern: single entry point for spawning any enemy by type ID.
 // v2.1.0: Added PinkCatEnemy registration.
 // v2.2.0: Added Wasp2Enemy registration (wireframe wasp — see Wasp2Sprite.js).
-export const VERSION = 'v3.30.0';
+// v3.31.0 (v3.50.0 release): Added ShuttleEnemy registration — the space
+//          shuttle is the 17th species (regular waves only; Bone Yard Phase 2
+//          stays humanoid via its explicit allowlist).
+export const VERSION = 'v3.31.0';
 import { ENEMY_TYPES } from '../core/config.js';
 import WaspEnemy from './WaspEnemy.js';
 import Wasp2Enemy from './Wasp2Enemy.js';
@@ -21,6 +24,7 @@ import AlienEnemy from './AlienEnemy.js';
 import SnakeEnemy from './SnakeEnemy.js';
 import SpiderEnemy from './SpiderEnemy.js';
 import PinkCatEnemy from './PinkCatEnemy.js';
+import ShuttleEnemy from './ShuttleEnemy.js';
 
 // ─── REGISTRY: type ID → class ───
 const REGISTRY = {
@@ -40,6 +44,7 @@ const REGISTRY = {
   snake:     SnakeEnemy,
   spider:    SpiderEnemy,
   pinkcat:   PinkCatEnemy,
+  shuttle:   ShuttleEnemy,
 };
 
 /**

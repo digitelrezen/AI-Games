@@ -1,7 +1,11 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.49.0
+// Kitty Vs Everything — v3.50.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.50.0: space shuttle enemy — 17th species (key "shuttle", asset sprite
+// Human-SpaceShuttle-pixel-art.png 699×329 → 128×60) with banked-strafe glide
+// behavior (ShuttleEnemy.js). Regular waves only: Bone Yard Phase 2 stays
+// standard-humanoid via an explicit allowlist (BoneYardBonus.js).
 // v3.49.0: butterfly enemy now uses the shared top-down pixel-art sprite
 // (key "butterfly") — see ButterflyEnemy.js v1.2.0 for the overhead animation.
 // v3.1.0: Replaced 8-element system with 3-weapon system (Vulkan / Plasma / Rail).
@@ -95,7 +99,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.49.0';
+export const VERSION = 'v3.50.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -343,6 +347,7 @@ export const ENEMY_TYPES = {
   snake:    { name: 'Snake',        color: '#66bb6a', speed: 2.0, hp: 30, damage: 12, fireRate: 1.1, pattern: 'sine' },
   spider:   { name: 'Spider',       color: '#4a4a4a', speed: 1.8, hp: 38, damage: 10, fireRate: 0.9, pattern: 'web' },
   pinkcat:  { name: 'Pink Cat',     color: '#ff69b4', speed: 1.8, hp: 60, damage: 18, fireRate: 1.2, pattern: 'fierce' },
+  shuttle:  { name: 'Space Shuttle', color: '#cfd8dc', speed: 2.0, hp: 60, damage: 16, fireRate: 1.4, pattern: 'glide' },
 };
 
 export const TIERS = {
@@ -354,7 +359,8 @@ export const TIERS = {
 };
 
 // ─── v3.30.0: 16-species sequential wave system ───
-// One species per wave (wraps after 16, order = ENEMY_TYPES insertion order).
+// v3.50.0: roster grew to 17 species (shuttle) — SPECIES_COUNT tracks it.
+// One species per wave (wraps after 17, order = ENEMY_TYPES insertion order).
 // Active enemy count sawtooth-ramps COUNT_MIN→COUNT_MAX over COUNT_RAMP_WAVES
 // then resets. Wave difficulty scales enemy HP + damage only, +DIFF_PER_WAVE
 // per wave, capped after DIFF_CAP_CYCLES full species cycles (hard cap
@@ -362,7 +368,7 @@ export const TIERS = {
 // 10 waves) + lower-tier same-species fill (TIER_MIX). spawnOverride > 0
 // (dev-panel slider / `count <n>` debug command) pins the active count.
 export const WAVE = {
-  SPECIES_COUNT: 16,
+  SPECIES_COUNT: 17,
   COUNT_MIN: 20,
   COUNT_MAX: 300,
   COUNT_RAMP_WAVES: 12,

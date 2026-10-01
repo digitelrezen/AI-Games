@@ -1,6 +1,9 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.49.0
+// Kitty Vs Everything — v3.50.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.50.0: space shuttle enemy — 17th species (regular waves only,
+// ShuttleEnemy.js). Bone Yard Phase 2 stays standard-humanoid via an
+// explicit allowlist (BoneYardBonus.js). Release version bump only.
 // v3.49.0: butterfly enemy now draws the shared top-down pixel-art PNG
 // (Butteryfly pixel_art.png, 530×343 → 128×83, key "butterfly") with a
 // smooth overhead wing-beat (sinusoidal scaleY + subtle wing-fold + slow
@@ -54,7 +57,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.49.0';
+export const VERSION = 'v3.50.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
