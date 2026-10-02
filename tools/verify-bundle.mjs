@@ -120,6 +120,18 @@ const tests = [
   ['v3.58.0: POWERUP_ASSETS.mini → "wanted" (bounty poster)', /mini:\s*['"]wanted['"]/.test(s)],
   ['v3.58.0: wanted base64 sprite present in bundle', s.includes('wanted: "iVBORw0KGgo')],
   ['v3.58.1: mini drop draws the "wanted" sprite (old 28×28 poster is fallback only)', /drawSpriteIcon\(c,\s*['"]mini['"]\s*,\s*JEWEL_BOX\)/.test(s)],
+  // ── v3.59.0 double-sized power-up icons (2× the v3.58.x geometry) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.59.0: JEWEL_BOX doubled 28 → 56', /JEWEL_BOX\s*=\s*56/.test(s)],
+  ['v3.59.0: JEWEL_BUF doubled 40 → 80', /JEWEL_BUF\s*=\s*80/.test(s)],
+  ['v3.59.0: pickup hitbox doubled (crate 36 / drop 28)', /this\.radius\s*=\s*type\s*===\s*['"]crate['"]\s*\?\s*36\s*:\s*28/.test(s)],
+  ['v3.59.0: jewel aura radius doubled 22 → 44', /arc\(0,\s*0,\s*44,\s*0/.test(s)],
+  ['v3.59.0: shimmer perimeter radius doubled 13.5 → 27', /arc\(0,\s*0,\s*27,\s*a0/.test(s)],
+  ['v3.59.0: sparkle orbit doubled 10–18 → 20–36 px', /orbit\s*=\s*20\s*\+\s*16\s*\*\s*h1/.test(s)],
+  ['v3.59.0: robot drop height doubled 28 → 56', /const h = 56;[\s\S]{0,80}BENDER_BODY_W/.test(s)],
+  ['v3.59.0: crate sprite box doubled 28 → 56', /drawSpriteIcon\(ctx,\s*['"]crate['"]\s*,\s*56\)/.test(s)],
+  ['v3.59.0: mini fallback poster doubled 28×28 → 56×56', /drawImage\(poster,\s*-28,\s*-28,\s*56,\s*56\)/.test(s)],
   ['v3.58.0: 5-type jewel aura palette (blue/green/red/gold/bounty)',
     /aura:\s*['"]64, 140, 255['"]/.test(s) &&
     /aura:\s*['"]64, 220, 110['"]/.test(s) &&

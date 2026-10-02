@@ -1,8 +1,19 @@
 // Filename: PowerUp.js
-// Kitty Vs Everything — v3.58.1
+// Kitty Vs Everything — v3.59.0
 // Falling drops: extra life, shield, mini-ship, destructible bonus crate,
 // the rare Bender (easter egg, v3.24.0), hull health (v3.33.0) and FRENZY
 // (v3.33.0 — 30s all-cooldowns-off, Vulcan overheat neutralized).
+// v3.59.0: DOUBLE-SIZED ICONS — every drop icon renders at 2× the v3.58.x
+//          size: JEWEL_BOX 28 → 56 (sprite fit box), JEWEL_BUF 40 → 80
+//          (offscreen buffer), and every jewel-pipeline geometry constant
+//          is doubled (bevel, vignette, glint, rim, twinkle, aura 22 → 44,
+//          shimmer 13.5 → 27, sparkle orbit 10–18 → 20–36, sparkle size).
+//          The robot drop (28 → 56 tall), the crate sprite box (28 → 56) +
+//          HP bar + procedural crate, the mini fallback poster (28×28 →
+//          56×56) and all procedural glyph fallbacks (heart / shield /
+//          health cross / frenzy bolt / cat head / robot silhouette)
+//          double with them, and the pickup hitbox doubles too (drop
+//          14 → 28, crate 18 → 36) so the catch radius tracks the art.
 // v3.58.0: batch power-up pixel-art integration — ALL FIVE drop types now
 //          draw the shared pill/poster pixel art through drawJewelDrop():
 //   life    blue pill   (.assets/Powerup-BluePill-ExtraLife.png 256×92 → 128×46)
@@ -44,7 +55,7 @@
 //          as the fallback while the sprite decodes (or if the asset is
 //          missing/corrupt).
 
-export const VERSION = 'v3.58.1';
+export const VERSION = 'v3.59.0';
 import { TAU } from '../core/utils.js';
 import { getMiniPosterSprite } from '../levels/MiniPosterSprite.js';
 import { getBenderFull, BENDER_BODY_W, BENDER_BODY_H } from '../core/BenderSprite.js'; // v3.28.0: tiny full-body Bender icon for the 'robot' drop
@@ -97,8 +108,8 @@ const JEWEL = {
   shield: { aura: '255, 205, 40',  glint: '255, 248, 224' },  // yellow pill
   mini:   { aura: '255, 220, 120', glint: '255, 255, 255' },  // bounty white-gold
 };
-const JEWEL_BOX = 28;   // icon fit box (same sizing as the v3.33.0 sprites)
-const JEWEL_BUF = 40;   // offscreen buffer (icon 28 + headroom)
+const JEWEL_BOX = 56;   // v3.59.0: icon fit box — 2× the v3.58.x 28 (double-sized icons)
+const JEWEL_BUF = 80;   // v3.59.0: offscreen buffer — icon 56 + headroom (2× the v3.58.x 40)
 
 const jewelBuffers = new Map(); // type → { c: canvas, ctx: 2d } (lazy)
 
@@ -177,16 +188,16 @@ function drawSparkles(ctx, type, t) {
     const h2 = sparkleSeed(k + 2);   // orbit + twinkle speed
     const h3 = sparkleSeed(k + 3);   // phase + size
     const h4 = sparkleSeed(k + 4);   // rise speed
-    const orbit = 10 + 8 * h1;                            // 10–18 px ring
+    const orbit = 20 + 16 * h1;                           // 20–36 px ring (v3.59.0: 2×)
     const speed = 0.5 + 0.9 * h2;                         // 0.5–1.4 rad/s
     const phase = h3 * TAU;
-    const rise = (t * (6 + 6 * h4) + h1 * 26) % 26;       // 0–26 px cycle
+    const rise = (t * (6 + 6 * h4) + h1 * 52) % 52;       // 0–52 px cycle (v3.59.0: 2×)
     const x = Math.cos(phase + t * speed) * orbit;
-    const y = Math.sin(phase + t * speed) * orbit * 0.55 + 10 - rise;
+    const y = Math.sin(phase + t * speed) * orbit * 0.55 + 20 - rise;
     const twinkle = 0.35 + 0.65 * Math.abs(Math.sin(t * (2.4 + 2.2 * h2) + phase * 3));
-    const alpha = (0.2 + 0.55 * twinkle) * (1 - 0.55 * (rise / 26));
+    const alpha = (0.2 + 0.55 * twinkle) * (1 - 0.55 * (rise / 52));
     ctx.fillStyle = 'rgba(' + sp.rgb + ',' + alpha.toFixed(3) + ')';
-    sparkleStar(ctx, x, y, 1.1 + 1.5 * h3);
+    sparkleStar(ctx, x, y, 2.2 + 3 * h3);
   }
   ctx.restore();
 }
@@ -214,14 +225,14 @@ function drawJewelDrop(ctx, type, t, drawBase) {
   // ── PASS 1: DEPTH — bevel + inset vignette on opaque pixels only ────
   b.save();
   b.globalCompositeOperation = 'source-atop';
-  const bevel = b.createLinearGradient(-14, -14, 14, 14);
+  const bevel = b.createLinearGradient(-28, -28, 28, 28);
   bevel.addColorStop(0, 'rgba(255, 255, 255, 0.40)');
   bevel.addColorStop(0.38, 'rgba(255, 255, 255, 0.10)');
   bevel.addColorStop(0.55, 'rgba(0, 0, 0, 0.00)');
   bevel.addColorStop(1, 'rgba(0, 0, 0, 0.42)');
   b.fillStyle = bevel;
   b.fillRect(0, 0, JEWEL_BUF, JEWEL_BUF);
-  const vig = b.createRadialGradient(JEWEL_BUF / 2, JEWEL_BUF / 2, 8, JEWEL_BUF / 2, JEWEL_BUF / 2, 20);
+  const vig = b.createRadialGradient(JEWEL_BUF / 2, JEWEL_BUF / 2, 16, JEWEL_BUF / 2, JEWEL_BUF / 2, 40);
   vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
   vig.addColorStop(0.72, 'rgba(0, 0, 0, 0)');
   vig.addColorStop(1, 'rgba(0, 0, 0, 0.30)');
@@ -230,19 +241,19 @@ function drawJewelDrop(ctx, type, t, drawBase) {
 
   // ── PASS 2: SHINE — specular glint, rim arc + twinkling 4-pt star ───
   b.globalCompositeOperation = 'source-atop';
-  const glint = b.createRadialGradient(6, -6, 0, 6, -6, 13);
+  const glint = b.createRadialGradient(12, -12, 0, 12, -12, 26);
   glint.addColorStop(0, 'rgba(' + j.glint + ', 0.85)');
   glint.addColorStop(0.35, 'rgba(255, 255, 255, 0.30)');
   glint.addColorStop(1, 'rgba(255, 255, 255, 0)');
   b.fillStyle = glint;
-  b.beginPath(); b.arc(6, -6, 13, 0, TAU); b.fill();
+  b.beginPath(); b.arc(12, -12, 26, 0, TAU); b.fill();
   b.globalCompositeOperation = 'lighter';
   b.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-  b.lineWidth = 1.5;
-  b.beginPath(); b.arc(0, 0, 11, -2.4, -0.55); b.stroke();
+  b.lineWidth = 3;
+  b.beginPath(); b.arc(0, 0, 22, -2.4, -0.55); b.stroke();
   const tw = 0.5 + 0.5 * Math.sin(t * 5.1 + 1.3);
   if (tw > 0.25) {
-    const sx = 5, sy = -7, s = 2.6 * tw;
+    const sx = 10, sy = -14, s = 5.2 * tw;
     b.fillStyle = 'rgba(255, 255, 255, ' + (0.9 * tw).toFixed(3) + ')';
     b.beginPath();
     b.moveTo(sx, sy - s); b.lineTo(sx + s * 0.3, sy - s * 0.3);
@@ -257,12 +268,12 @@ function drawJewelDrop(ctx, type, t, drawBase) {
   const pulse = 0.55 + 0.45 * Math.sin(t * 3.2);
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
-  const aura = ctx.createRadialGradient(0, 0, 5, 0, 0, 22);
+  const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 44);
   aura.addColorStop(0, 'rgba(' + j.aura + ', ' + (0.38 * pulse).toFixed(3) + ')');
   aura.addColorStop(0.55, 'rgba(' + j.aura + ', ' + (0.14 * pulse).toFixed(3) + ')');
   aura.addColorStop(1, 'rgba(' + j.aura + ', 0)');
   ctx.fillStyle = aura;
-  ctx.beginPath(); ctx.arc(0, 0, 22, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, 44, 0, TAU); ctx.fill();
   ctx.restore();
 
   // ── PASS 4: BASE — blit the buffered icon (1:1, crisp pixel art) ────
@@ -274,10 +285,10 @@ function drawJewelDrop(ctx, type, t, drawBase) {
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   ctx.strokeStyle = 'rgba(' + j.glint + ', 0.5)';
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 3;
   const a0 = t * 2.2;
-  ctx.beginPath(); ctx.arc(0, 0, 13.5, a0, a0 + 1.1); ctx.stroke();
-  ctx.beginPath(); ctx.arc(0, 0, 13.5, a0 + Math.PI, a0 + Math.PI + 0.7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, 27, a0, a0 + 1.1); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, 27, a0 + Math.PI, a0 + Math.PI + 0.7); ctx.stroke();
   ctx.restore();
 
   // ── PASS 6: SPARKLES — floating theme-colored twinkles (v3.58.0) ─────
@@ -292,7 +303,7 @@ export default class PowerUp {
     this.game = game;
     this.alive = true;
     this.t = 0;
-    this.radius = type === 'crate' ? 18 : 14;
+    this.radius = type === 'crate' ? 36 : 28; // v3.59.0: 2× hitbox (drop 28, crate 36)
     this.vy = type === 'crate' ? 90 : 70;
     this.destructible = type === 'crate'; // crates must be SHOT, not caught
     this.hp = this.destructible ? 30 : 0;
@@ -317,9 +328,9 @@ export default class PowerUp {
           if (!drawSpriteIcon(c, 'life', JEWEL_BOX)) {
             c.fillStyle = '#ff5252';
             c.beginPath();
-            c.moveTo(0, 8);
-            c.bezierCurveTo(-14, -4, -8, -16, 0, -8);
-            c.bezierCurveTo(8, -16, 14, -4, 0, 8);
+            c.moveTo(0, 16);
+            c.bezierCurveTo(-28, -8, -16, -32, 0, -16);
+            c.bezierCurveTo(16, -32, 28, -8, 0, 16);
             c.fill();
           }
         });
@@ -334,11 +345,11 @@ export default class PowerUp {
         drawJewelDrop(ctx, 'shield', this.t, (c) => {
           if (!drawSpriteIcon(c, 'shield', JEWEL_BOX)) {
             c.strokeStyle = '#4fc3f7';
-            c.lineWidth = 3;
+            c.lineWidth = 6;
             c.beginPath();
             for (let i = 0; i < 6; i++) {
               const a = (i / 6) * TAU - Math.PI / 2;
-              const px = Math.cos(a) * 14, py = Math.sin(a) * 14;
+              const px = Math.cos(a) * 28, py = Math.sin(a) * 28;
               if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
             }
             c.closePath();
@@ -356,8 +367,8 @@ export default class PowerUp {
         drawJewelDrop(ctx, 'health', this.t, (c) => {
           if (!drawSpriteIcon(c, 'health', JEWEL_BOX)) {
             c.fillStyle = '#66bb6a';
-            c.fillRect(-4, -12, 8, 24);
-            c.fillRect(-12, -4, 24, 8);
+            c.fillRect(-8, -24, 16, 48);
+            c.fillRect(-24, -8, 48, 16);
           }
         });
         break;
@@ -372,8 +383,8 @@ export default class PowerUp {
           if (!drawSpriteIcon(c, 'frenzy', JEWEL_BOX)) {
             c.fillStyle = '#ffd600';
             c.beginPath();
-            c.moveTo(3, -14); c.lineTo(-7, 2); c.lineTo(-1, 2);
-            c.lineTo(-3, 14); c.lineTo(7, -2); c.lineTo(1, -2);
+            c.moveTo(6, -28); c.lineTo(-14, 4); c.lineTo(-2, 4);
+            c.lineTo(-6, 28); c.lineTo(14, -4); c.lineTo(2, -4);
             c.closePath();
             c.fill();
           }
@@ -394,64 +405,64 @@ export default class PowerUp {
             const poster = getMiniPosterSprite();
             if (poster) {
               c.imageSmoothingEnabled = false;
-              c.drawImage(poster, -14, -14, 28, 28);
+              c.drawImage(poster, -28, -28, 56, 56);
             } else {
               c.fillStyle = '#ff9d3b';
-              c.beginPath(); c.arc(0, 2, 9, 0, TAU); c.fill();
-              c.beginPath(); c.moveTo(-6, -4); c.lineTo(-9, -13); c.lineTo(-1, -6); c.closePath(); c.fill();
-              c.beginPath(); c.moveTo(6, -4); c.lineTo(9, -13); c.lineTo(1, -6); c.closePath(); c.fill();
+              c.beginPath(); c.arc(0, 4, 18, 0, TAU); c.fill();
+              c.beginPath(); c.moveTo(-12, -8); c.lineTo(-18, -26); c.lineTo(-2, -12); c.closePath(); c.fill();
+              c.beginPath(); c.moveTo(12, -8); c.lineTo(18, -26); c.lineTo(2, -12); c.closePath(); c.fill();
               c.fillStyle = '#fff';
-              c.beginPath(); c.arc(-3, 0, 1.6, 0, TAU); c.arc(3, 0, 1.6, 0, TAU); c.fill();
+              c.beginPath(); c.arc(-6, 0, 3.2, 0, TAU); c.arc(6, 0, 3.2, 0, TAU); c.fill();
             }
           }
         });
         break;
       }
       case 'robot': {
-        // v3.28.0: tiny FULL-BODY Bender (293×441 art → 19×28) — the whole
-        // robot, not just the head (v3.24.0–v3.27.0).
+        // v3.28.0: FULL-BODY Bender (293×441 art → 38×56, v3.59.0: 2×) —
+        // the whole robot, not just the head (v3.24.0–v3.27.0).
         const full = getBenderFull();
         if (full) {
           ctx.imageSmoothingEnabled = false;
-          const h = 28;
+          const h = 56;
           const w = h * (BENDER_BODY_W / BENDER_BODY_H);
           ctx.drawImage(full, -w / 2, -h / 2, w, h);
         } else {
           // Fallback glyph while the sprite decodes: tiny robot silhouette
           ctx.fillStyle = '#90a4ae';
-          ctx.fillRect(-6, -13, 12, 7);   // head
-          ctx.fillRect(-8, -5, 16, 11);   // torso
-          ctx.fillRect(-7, 6, 5, 8);      // left leg
-          ctx.fillRect(2, 6, 5, 8);       // right leg
+          ctx.fillRect(-12, -26, 24, 14);   // head
+          ctx.fillRect(-16, -10, 32, 22);   // torso
+          ctx.fillRect(-14, 12, 10, 16);    // left leg
+          ctx.fillRect(4, 12, 10, 16);      // right leg
           ctx.strokeStyle = '#cfd8dc';
-          ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(0, -13); ctx.lineTo(0, -19); ctx.stroke(); // antenna
+          ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(0, -38); ctx.stroke(); // antenna
           ctx.fillStyle = '#00e5ff';
-          ctx.beginPath(); ctx.arc(0, -19, 2, 0, TAU); ctx.fill();
+          ctx.beginPath(); ctx.arc(0, -38, 4, 0, TAU); ctx.fill();
         }
         break;
       }
       case 'crate': {
         // v3.36.0: shared crate pixel-art (.assets/Crate-pixel-art.png via
         // AssetManager) — fallback: classic wooden crate with $.
-        if (!drawSpriteIcon(ctx, 'crate', 28)) {
+        if (!drawSpriteIcon(ctx, 'crate', 56)) {
           ctx.fillStyle = '#8d6e63';
-          ctx.fillRect(-14, -14, 28, 28);
+          ctx.fillRect(-28, -28, 56, 56);
           ctx.strokeStyle = '#5d4037';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(-14, -14, 28, 28);
-          ctx.beginPath(); ctx.moveTo(-14, -14); ctx.lineTo(14, 14); ctx.moveTo(14, -14); ctx.lineTo(-14, 14); ctx.stroke();
+          ctx.lineWidth = 6;
+          ctx.strokeRect(-28, -28, 56, 56);
+          ctx.beginPath(); ctx.moveTo(-28, -28); ctx.lineTo(28, 28); ctx.moveTo(28, -28); ctx.lineTo(-28, 28); ctx.stroke();
           ctx.fillStyle = '#ffd54f';
-          ctx.font = 'bold 16px monospace';
+          ctx.font = 'bold 32px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('$', 0, 6);
+          ctx.fillText('$', 0, 12);
           ctx.textAlign = 'left';
         }
         if (this.hp < this.maxHp) {
           ctx.fillStyle = 'rgba(0,0,0,0.5)';
-          ctx.fillRect(-14, -22, 28, 4);
+          ctx.fillRect(-28, -44, 56, 8);
           ctx.fillStyle = '#4caf50';
-          ctx.fillRect(-14, -22, 28 * (this.hp / this.maxHp), 4);
+          ctx.fillRect(-28, -44, 56 * (this.hp / this.maxHp), 8);
         }
         break;
       }

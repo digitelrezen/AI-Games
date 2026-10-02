@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.58.1 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.59.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -96,7 +96,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.58.1', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0', SpiderEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0', SpiderEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -427,7 +427,7 @@ check('AssetSprites: shuttle sprite dims 128×60 registered', /shuttle:\s*\{\s*w
 // ═══════════════════════════════════════════════════════════
 console.log('\n[6e] v3.58.0 jewel shading (all five pill/poster drops)');
 const pwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PowerUp.js'), 'utf8');
-check('PowerUp: VERSION = v3.58.1', pwSrc.includes("VERSION = 'v3.58.1'"));
+check('PowerUp: VERSION = v3.59.0', pwSrc.includes("VERSION = 'v3.59.0'"));
 check('PowerUp: drawJewelDrop() gem pipeline (source-atop depth + lighter glow)',
   pwSrc.includes('function drawJewelDrop(') &&
   pwSrc.includes("globalCompositeOperation = 'source-atop'") &&
@@ -605,6 +605,23 @@ check('PowerUp: sparkle determinism (sparkleSeed sin-hash + per-type hash)',
   pwSrc.includes('function sparkleTypeHash(type)'));
 
 // ═══════════════════════════════════════════════════════════
+//  [6l] v3.59.0 DOUBLE-SIZED POWER-UP ICONS — every drop icon
+//       (jewel box, buffer, aura, shimmer, sparkles, robot,
+//       crate, fallbacks) and the pickup hitbox are 2× the
+//       v3.58.x size
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6l] v3.59.0 double-sized power-up icons');
+check('PowerUp: JEWEL_BOX doubled 28 → 56', pwSrc.includes('const JEWEL_BOX = 56'));
+check('PowerUp: JEWEL_BUF doubled 40 → 80', pwSrc.includes('const JEWEL_BUF = 80'));
+check('PowerUp: pickup hitbox doubled (crate 36 / drop 28)', pwSrc.includes("this.radius = type === 'crate' ? 36 : 28"));
+check('PowerUp: jewel aura radius doubled 22 → 44', pwSrc.includes('ctx.arc(0, 0, 44, 0, TAU)'));
+check('PowerUp: shimmer perimeter radius doubled 13.5 → 27', pwSrc.includes('ctx.arc(0, 0, 27, a0, a0 + 1.1)'));
+check('PowerUp: sparkle orbit doubled 10–18 → 20–36 px', pwSrc.includes('const orbit = 20 + 16 * h1'));
+check('PowerUp: robot drop height doubled 28 → 56', pwSrc.includes('const h = 56'));
+check('PowerUp: crate sprite box doubled 28 → 56', pwSrc.includes("drawSpriteIcon(ctx, 'crate', 56)"));
+check('PowerUp: mini fallback poster doubled 28×28 → 56×56', pwSrc.includes('c.drawImage(poster, -28, -28, 56, 56)'));
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -614,6 +631,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.58.1 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.59.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

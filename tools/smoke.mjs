@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/smoke.mjs — Kitty Vs Everything v3.58.1 (tools/ moved up to AI-GAMES root)
+// ../tools/smoke.mjs — Kitty Vs Everything v3.59.0 (tools/ moved up to AI-GAMES root)
 // Headless smoke test for the pure-logic v3.47.0 modules (Settings, Keybinds,
 // MessageLog, EventBus, DebugBridge, MenuKeybinds) using minimal DOM shims.
 // Run: node ../tools/smoke.mjs
@@ -185,5 +185,5 @@ if (failures) {
   console.log(`\x1b[31mFAILED\x1b[0m — ${failures} check(s) failed`);
   process.exit(1);
 } else {
-  console.log('\x1b[32mPASSED\x1b[0m — v3.58.1 module smoke tests clean');
+  console.log('\x1b[32mPASSED\x1b[0m — v3.59.0 module smoke tests clean');
 }

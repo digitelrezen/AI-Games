@@ -1,7 +1,12 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.58.1
+// Kitty Vs Everything — v3.59.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.59.0: double-sized power-up icons — PowerUp.js v3.59.0 renders every
+// drop icon at 2× the v3.58.x size (JEWEL_BOX 28 → 56, JEWEL_BUF 40 → 80,
+// jewel aura/shimmer/sparkle geometry doubled, robot 28 → 56, crate box
+// 28 → 56, all procedural fallbacks doubled) and doubles the pickup
+// hitbox (drop 14 → 28, crate 18 → 36). No config changes.
 // v3.58.1: release version bump — PowerUp.js v3.58.1 fixes the mini drop,
 // which was still drawing the old embedded 28×28 MiniPosterSprite instead
 // of the imported "wanted" pixel art (.assets/Wanted-Cat-pixel-art.png,
@@ -136,7 +141,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.58.1';
+export const VERSION = 'v3.59.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
