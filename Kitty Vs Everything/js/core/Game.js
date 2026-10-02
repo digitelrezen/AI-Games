@@ -1,6 +1,14 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.61.0
+// Kitty Vs Everything — v3.62.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.62.0: Wolf pixel-art sprite swap — WolfEnemy.js v1.2.0 renders the
+// pixel-art wolf from `.assets/Wolf-pixel-art.png` via the AssetManager
+// pipeline (key `wolf`, 675×708 → 122×128) — full pixel-art shading/depth/
+// fur texture, aspect-preserving nearest-neighbor draw centered on the
+// hitbox with a pack-sine gait (sway/bob/tilt, phase-locked to the
+// movement sine), ground shadow, and a type-color accent glow pass;
+// classic procedural wolf kept as null-sprite fallback. Movement (pack
+// sines) and the aimed shot attack are unchanged.
 // v3.61.0: Snake pixel-art sprite swap — SnakeEnemy.js v1.2.0 renders the
 // pixel-art snake from `.assets/snake pixel_art.png` via the AssetManager
 // pipeline (key `snake`, 714×713 → 128×128) — dark charcoal scales with
@@ -107,7 +115,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.61.0';
+export const VERSION = 'v3.62.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

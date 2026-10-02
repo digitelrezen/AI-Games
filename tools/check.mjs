@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.61.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.62.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -90,6 +90,7 @@ for (const [tag, rel] of [
   ['BoneFragment', 'js/levels/BoneFragment.js'],    // v3.54.0
   ['SpiderEnemy', 'js/enemies/SpiderEnemy.js'],     // v3.57.0
   ['SnakeEnemy', 'js/enemies/SnakeEnemy.js'],       // v3.61.0
+  ['WolfEnemy', 'js/enemies/WolfEnemy.js'],         // v3.62.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -97,7 +98,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -173,7 +174,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.57.0: + spider (spider enemy pixel-art sprite swap).
 // v3.58.0: + wanted ("Adopt Me!" wanted poster for the mini drop).
 // v3.61.0: + snake (snake enemy pixel-art sprite swap).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted'];
+// v3.62.0: + wolf (wolf enemy pixel-art sprite swap).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -703,6 +705,24 @@ console.log('\n[6n] v3.61.0 snake pixel-art sprite');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6o] v3.62.0 WOLF PIXEL-ART SPRITE — pack hunter now draws
+//       the shared PNG (key "wolf") with a pack-sine gait
+//       (sway/bob/tilt phase-locked to the movement sine) +
+//       type-color accent glow; procedural fallback retained
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6o] v3.62.0 wolf pixel-art sprite');
+{
+  const wfSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/WolfEnemy.js'), 'utf8');
+  check('WolfEnemy: VERSION = v1.2.0', wfSrc.includes("VERSION = 'v1.2.0'"));
+  check('WolfEnemy: sprite key "wolf" via AssetManager', wfSrc.includes("WOLF_SPRITE_KEY = 'wolf'") && wfSrc.includes('getSprite(WOLF_SPRITE_KEY)'));
+  check('WolfEnemy: null-sprite → procedural fallback branch', wfSrc.includes('this._drawProcedural(ctx, r)'));
+  check('WolfEnemy: pack-sine gait (sway/bob/tilt) phase-locked to the movement sine', wfSrc.includes('const phase = this.t * 1.2 + this.baseX * 0.01') && wfSrc.includes('const sway = Math.sin(phase)') && wfSrc.includes('const tilt = Math.sin(phase + 0.6)'));
+  check('WolfEnemy: aspect-preserving nearest-neighbor draw', wfSrc.includes('(targetW * dims.h) / dims.w') && wfSrc.includes('ctx.imageSmoothingEnabled = false'));
+  check('WolfEnemy: type-color accent glow pass', wfSrc.includes('ctx.shadowColor = this.color') && wfSrc.includes('ctx.shadowBlur = r * 0.8'));
+  check('AssetSprites: wolf sprite dims 122×128 registered', /wolf:\s*\{\s*w:\s*122,\s*h:\s*128\s*\}/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -712,6 +732,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.61.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.62.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

@@ -1,10 +1,24 @@
 // Filename: WolfEnemy.js
-// Kitty Vs Everything — v1.1.0
+// Kitty Vs Everything — v1.2.0
 // Wolf: mid-speed pack hunter with angular wolf-head silhouette, pointed ears,
 // glowing red eyes, and a fur-textured body. Moves in coordinated pack sine.
-export const VERSION = 'v1.1.0';
+// v1.2.0: sprite swap — now renders the shared pixel-art PNG
+//         (.assets/Wolf-pixel-art.png, 675×708) through the AssetManager
+//         pipeline (tools/import-assets.mjs → js/core/AssetSprites.js, key
+//         "wolf", normalized to 122×128). Full pixel-art shading, depth and
+//         fur texture replace the flat gray gradient: aspect-preserving,
+//         centered on the hitbox, nearest-neighbor, with a ground shadow, a
+//         pack-sine gait (lateral sway + bob + tilt, phase-locked to the
+//         movement sine) and a type-color accent glow pass. The classic
+//         procedural wolf is kept as the null-sprite fallback per the
+//         AssetManager contract (angular body, pointed ears, glowing red
+//         eyes, teeth, legs, fluffy tail).
+export const VERSION = 'v1.2.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
+
+const WOLF_SPRITE_KEY = 'wolf';
 
 export default class WolfEnemy extends EnemyBase {
   move(dt, slowMul) {
@@ -25,6 +39,61 @@ export default class WolfEnemy extends EnemyBase {
     ctx.translate(this.x, this.y);
     if (this.flash > 0) ctx.globalAlpha = 0.55;
 
+    const sprite = getSprite(WOLF_SPRITE_KEY);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+
+  // v1.2.0 — pixel-art wolf sprite. Aspect-preserving, centered on the
+  // hitbox, nearest-neighbor. The full pixel-art shading / depth / fur
+  // texture comes from the PNG itself (head up, body below — same
+  // orientation as the procedural art); the pack gait is a gentle lateral
+  // sway + vertical bob + slight tilt (phase-locked to the movement sine,
+  // this.t * 1.2 + this.baseX * 0.01) plus subtle idle breathing. A soft
+  // ground shadow grounds the sprite, and a type-color accent glow pass
+  // adds depth under the crisp blit.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(WOLF_SPRITE_KEY);
+    const targetW = r * 3.0;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    // Pack gait (phase-locked to the movement sine, this.t * 1.2 + this.baseX * 0.01)
+    const phase = this.t * 1.2 + this.baseX * 0.01;
+    const sway = Math.sin(phase) * r * 0.08;
+    const bob = Math.sin(phase * 2) * r * 0.05;
+    const tilt = Math.sin(phase + 0.6) * 0.06;
+    const breathe = 1 + 0.02 * Math.sin(phase * 2);
+    ctx.save();
+    // Ground shadow (depth cue under the body)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(0, targetH * 0.41, targetW * 0.30, targetW * 0.07, 0, 0, TAU);
+    ctx.fill();
+    ctx.translate(sway, bob);
+    ctx.rotate(tilt);
+    ctx.scale(breathe, 1);
+    ctx.imageSmoothingEnabled = false;
+    const dx = -targetW / 2, dy = -targetH / 2;
+    // Accent glow pass (type color) under the crisp sprite
+    ctx.globalAlpha = 0.30;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = r * 0.8;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.restore();
+  }
+
+  // Classic procedural wolf (null-sprite fallback) — angular body, pointed
+  // ears, glowing red eyes, teeth, legs, fluffy tail.
+  _drawProcedural(ctx, r) {
     // ─── BODY (angular, tapered toward tail) ───
     const bodyGrad = ctx.createLinearGradient(0, -r * 0.5, 0, r * 0.8);
     bodyGrad.addColorStop(0, '#b0b8c4');
@@ -159,9 +228,5 @@ export default class WolfEnemy extends EnemyBase {
     ctx.beginPath();
     ctx.arc(r * 0.1, r * 1.3, r * 0.12, 0, TAU);
     ctx.fill();
-
-    ctx.restore();
-    this.drawShieldRing(ctx);
-    this.drawBossBar(ctx);
   }
 }

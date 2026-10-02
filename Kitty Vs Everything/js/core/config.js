@@ -1,7 +1,15 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.61.0
+// Kitty Vs Everything — v3.62.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.62.0: Wolf pixel-art sprite — the wolf enemy (ENEMY_TYPES.wolf,
+//   unchanged stats: speed 2.4 / hp 34 / damage 14 / pack pattern) now
+//   renders the pixel-art wolf from `.assets/Wolf-pixel-art.png` via the
+//   AssetManager pipeline (key `wolf`, 675×708 → 122×128) with a pack-sine
+//   gait + ground shadow + accent glow; classic procedural wolf kept as
+//   null-sprite fallback. No config changes — movement and aimed shots
+//   are unchanged.
+//
 // v3.61.0: Snake pixel-art sprite — the snake enemy (ENEMY_TYPES.snake,
 //   unchanged stats: r 20 / hp 14 / speed 140 / 100 pts) now renders the
 //   pixel-art snake from `.assets/snake pixel_art.png` via the AssetManager
@@ -154,7 +162,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.61.0';
+export const VERSION = 'v3.62.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

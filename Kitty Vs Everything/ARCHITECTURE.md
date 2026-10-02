@@ -1,7 +1,7 @@
 # Kitty Vs Everything — Architecture Roadmap / File Index
 
 > **Workspace:** `c:\AI-Games\Kitty Vs Everything`
-> **Generated:** 2026-10-02 (v3.61.0 snake pixel-art sprite — SnakeEnemy v1.2.0 renders the imported snake PNG (key `snake`, 714×713 → 128×128) with a slither gait + type-color glow, procedural fallback kept; v3.60.0 fully destructible Bone Yard — the yard opens on a seeded field of 29 shootable bones (10 femur / 10 profile_bone / 6 skull / 3 skeleton), per-key score bands 500/1000/2000, weighted spawn pool 40/40/15/5; v3.59.0 double-sized power-up icons)
+> **Generated:** 2026-10-02 (v3.62.0 wolf pixel-art sprite — WolfEnemy v1.2.0 renders the imported wolf PNG (key `wolf`, 675×708 → 122×128) with a pack-sine gait + type-color glow, procedural fallback kept; v3.61.0 snake pixel-art sprite — SnakeEnemy v1.2.0 renders the imported snake PNG (key `snake`, 714×713 → 128×128) with a slither gait + type-color glow, procedural fallback kept; v3.60.0 fully destructible Bone Yard — the yard opens on a seeded field of 29 shootable bones (10 femur / 10 profile_bone / 6 skull / 3 skeleton), per-key score bands 500/1000/2000, weighted spawn pool 40/40/15/5; v3.59.0 double-sized power-up icons)
 > **Layout:** ~80 files, flat in the root folder + a `net/` subfolder for multiplayer; `npm run build` (build.mjs) inlines every module into a single self-contained `Kitty Vs Everything <version>.html` in `C:\AI-Games\Builds\`
 > **Stack:** Native ES modules, Canvas 2D, WebAudio, plain DOM, `ws` (LAN relay, Node-only)
 > **Run:** `python -m http.server 8000` → http://localhost:8000  ·  LAN: `npm run lan`
@@ -75,7 +75,7 @@ mirrored to face the player (left-facing art), classic procedural wasp kept as n
 drawn overhead with a procedural wing-beat (sinusoidal scaleY + subtle wing-fold scaleX + slow rotation
 wobble) — no face-the-player mirror (art is a top-down view), classic procedural butterfly kept as null-sprite fallback.
 - **RatEnemy.js** — Fast dashing scavenger with lateral jitter.
-- **WolfEnemy.js** — Mid-speed pack hunter, offset pack sines.
+- **WolfEnemy.js** — Mid-speed pack hunter, offset pack sines. v1.2.0 (v3.62.0): pixel-art sprite from `.assets/Wolf-pixel-art.png` via the AssetManager pipeline (key `wolf`, 675×708 → 122×128) — full pixel-art shading/depth/fur texture, aspect-preserving nearest-neighbor draw centered on the hitbox, pack-sine gait (sway/bob/tilt phase-locked to the movement sine) + ground shadow + type-color accent glow; classic procedural wolf kept as null-sprite fallback (angular body, pointed ears, glowing red eyes, teeth, legs, fluffy tail).
 - **FalconEnemy.js** — Hovers high, then dives straight at the player.
 - **BatEnemy.js** — Erratic random-jitter flutterer.
 - **BlackCatEnemy.js** — Teleporting phantom, phases every ~1.8s. Drawn skinny & tall (Internet Bonus look).

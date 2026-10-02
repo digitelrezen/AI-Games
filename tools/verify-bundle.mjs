@@ -117,6 +117,12 @@ const tests = [
   ['v3.61.0: snake sprite dims 128×128', /snake:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.61.0: snake sprite key in AssetSprites registry', s.includes('snake: "iVBORw0KGgo')],
   ['v3.61.0: SnakeEnemy sprite + procedural fallback', /SNAKE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  // ── v3.62.0 wolf pixel-art sprite (pack hunter) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.62.0: wolf sprite dims 122×128', /wolf:\s*\{\s*w:\s*122,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.62.0: wolf sprite key in AssetSprites registry', s.includes('wolf: "iVBORw0KGgo')],
+  ['v3.62.0: WolfEnemy sprite + procedural fallback', /WOLF_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -156,5 +162,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
