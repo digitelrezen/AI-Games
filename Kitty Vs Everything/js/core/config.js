@@ -1,7 +1,16 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.57.0
+// Kitty Vs Everything — v3.58.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.58.0: batch power-up pixel-art integration — all five drop types (life /
+// health / frenzy / shield / mini) now draw the new pill/poster pixel art
+// (Powerup-BluePill-ExtraLife, Powerup-GreanPill-health, Powerup-RedPill-Frenzy,
+// Powerup-YellowPill-Shield, Wanted-Cat) through PowerUp.js's 6-pass
+// drawJewelDrop() with color-matched additive glows (blue / green / red /
+// gold / bounty white-gold) + floating theme-colored sparkle fields; health
+// and mini route through the jewel pass, and the buffered-icon blit now runs
+// AFTER the depth/shine passes (v3.51.0 pass-order bug fixed). No config
+// changes.
 // v3.57.0: spider pixel-art sprite swap — SpiderEnemy.js v1.2.0 draws the
 // shared PNG (key "spider", 390×532 → 94×128) with crawler gait + a bright
 // red hourglass dorsal mark; procedural fallback kept. No config changes.
@@ -123,7 +132,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.57.0';
+export const VERSION = 'v3.58.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

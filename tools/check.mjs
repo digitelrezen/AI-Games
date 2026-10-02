@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.57.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.58.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -96,12 +96,12 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.51.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0', SpiderEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.58.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.15.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.2.0', SpiderEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
 check('AssetManager exports loadAssets/getSprite/getDims', typeof loadAssets === 'function' && typeof getSprite === 'function' && typeof getDims === 'function');
-check('AssetManager POWERUP_ASSETS maps 5 drop types', Object.keys(POWERUP_ASSETS || {}).length === 5, `got ${Object.keys(POWERUP_ASSETS || {}).join(', ')}`);
+check('AssetManager POWERUP_ASSETS maps 6 drop types', Object.keys(POWERUP_ASSETS || {}).length === 6, `got ${Object.keys(POWERUP_ASSETS || {}).join(', ')}`);
 
 // ═══════════════════════════════════════════════════════════
 //  [2] v3.42.0 MODULE SURFACE — config values + APIs the new
@@ -170,7 +170,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.53.0: + beetle (beetle enemy pixel-art sprite swap).
 // v3.54.0: + femur / profile_bone / skeleton / skull (boneyard environment).
 // v3.57.0: + spider (spider enemy pixel-art sprite swap).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider'];
+// v3.58.0: + wanted ("Adopt Me!" wanted poster for the mini drop).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'wanted'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -418,30 +419,42 @@ const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), '
 check('AssetSprites: shuttle sprite dims 128×60 registered', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(spritesSrc));
 
 // ═══════════════════════════════════════════════════════════
-//  [6e] v3.51.0 JEWEL SHADING — frenzy / extra-life / shield
-//      drops render through the programmatic drawJewelDrop()
-//      gem pass (aura → base → bevel depth → specular shine →
-//      shimmer); headless-safe (no DOM → base fallback only)
+//  [6e] v3.58.0 JEWEL SHADING — all FIVE pill/poster drops
+//      (life / health / frenzy / shield / mini) render through
+//      the programmatic drawJewelDrop() 6-pass gem pipeline
+//      (depth → shine → aura → base blit → shimmer → sparkles);
+//      headless-safe (no DOM → base fallback only)
 // ═══════════════════════════════════════════════════════════
-console.log('\n[6e] v3.51.0 jewel shading (frenzy / life / shield)');
+console.log('\n[6e] v3.58.0 jewel shading (all five pill/poster drops)');
 const pwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PowerUp.js'), 'utf8');
-check('PowerUp: VERSION = v3.51.0', pwSrc.includes("VERSION = 'v3.51.0'"));
+check('PowerUp: VERSION = v3.58.0', pwSrc.includes("VERSION = 'v3.58.0'"));
 check('PowerUp: drawJewelDrop() gem pipeline (source-atop depth + lighter glow)',
   pwSrc.includes('function drawJewelDrop(') &&
   pwSrc.includes("globalCompositeOperation = 'source-atop'") &&
   pwSrc.includes("globalCompositeOperation = 'lighter'"));
-check('PowerUp: per-type jewel palette (golden / emerald / azure)',
-  pwSrc.includes("frenzy: { aura: '255, 200, 40'") &&
-  pwSrc.includes("life:   { aura: '0, 230, 118'") &&
-  pwSrc.includes("shield: { aura: '64, 196, 255'"));
+check('PowerUp: 5-type jewel aura palette (blue/green/red/gold/bounty)',
+  pwSrc.includes("life:   { aura: '64, 140, 255'") &&
+  pwSrc.includes("health: { aura: '64, 220, 110'") &&
+  pwSrc.includes("frenzy: { aura: '255, 64, 54'") &&
+  pwSrc.includes("shield: { aura: '255, 205, 40'") &&
+  pwSrc.includes("mini:   { aura: '255, 220, 120'"));
+check('PowerUp: 5-type sparkle palette in pill theme colors',
+  pwSrc.includes("life:   { rgb: '110, 180, 255', count: 7 }") &&
+  pwSrc.includes("health: { rgb: '110, 240, 150', count: 7 }") &&
+  pwSrc.includes("frenzy: { rgb: '255, 100, 90',  count: 7 }") &&
+  pwSrc.includes("shield: { rgb: '255, 214, 90',  count: 7 }") &&
+  pwSrc.includes("mini:   { rgb: '255, 236, 170', count: 8 }"));
 check('PowerUp: life drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'life', this.t,"));
-check('PowerUp: shield drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'shield', this.t,"));
+check('PowerUp: health drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'health', this.t,"));
 check('PowerUp: frenzy drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'frenzy', this.t,"));
+check('PowerUp: shield drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'shield', this.t,"));
+check('PowerUp: mini drop routes through the jewel pass', pwSrc.includes("drawJewelDrop(ctx, 'mini', this.t,"));
 check('PowerUp: jewel buffer is headless-guarded (no DOM → base only)',
   pwSrc.includes("typeof document === 'undefined'") &&
   pwSrc.includes('if (!buf) { drawBase(ctx); return; }'));
-check('PowerUp: procedural fallbacks preserved (red heart / cyan hex / gold bolt)',
-  pwSrc.includes('#ff5252') && pwSrc.includes('#4fc3f7') && pwSrc.includes('#ffd600'));
+check('PowerUp: procedural fallbacks preserved (heart/cross/bolt/hexagon/cat)',
+  pwSrc.includes('#ff5252') && pwSrc.includes('#66bb6a') && pwSrc.includes('#ffd600') &&
+  pwSrc.includes('#4fc3f7') && pwSrc.includes('#ff9d3b'));
 // Headless draw smoke: all three jewel drops must draw with a bare mock
 // ctx (no DOM canvas) — the jewel pass falls back to the base glyph.
 {
@@ -453,7 +466,7 @@ check('PowerUp: procedural fallbacks preserved (red heart / cyan hex / gold bolt
     createRadialGradient() { return { addColorStop() {} }; },
     createLinearGradient() { return { addColorStop() {} }; },
   };
-  for (const type of ['life', 'shield', 'frenzy']) {
+  for (const type of ['life', 'health', 'frenzy', 'shield', 'mini']) {
     const pw = new PowerUp({ x: 100, y: 100, type, game });
     let ok = true;
     try { pw.draw(mockCtx); } catch { ok = false; }
@@ -559,6 +572,35 @@ console.log('\n[6j] v3.57.0 spider pixel-art sprite + red hourglass mark');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6k] v3.58.0 POWER-UP PIXEL ART — all five pill/poster drops
+//       carry the shared PNG art (extralife/health/frenzy/shield/
+//       wanted); mini routes to the "wanted" poster; the jewel
+//       pass-order fix (icon blit after depth+shine) and the
+//       deterministic sparkle field are verified here
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6k] v3.58.0 power-up pixel art (5 pill/poster assets)');
+check('AssetSprites: extralife sprite dims 128×46 registered', /extralife:\s*\{\s*w:\s*128,\s*h:\s*46\s*\}/.test(spritesSrc));
+check('AssetSprites: health sprite dims 128×50 registered', /health:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(spritesSrc));
+check('AssetSprites: frenzy sprite dims 128×41 registered', /frenzy:\s*\{\s*w:\s*128,\s*h:\s*41\s*\}/.test(spritesSrc));
+check('AssetSprites: shield sprite dims 128×50 registered', /shield:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(spritesSrc));
+check('AssetSprites: wanted sprite dims 78×128 registered', /wanted:\s*\{\s*w:\s*78,\s*h:\s*128\s*\}/.test(spritesSrc));
+check('AssetManager: POWERUP_ASSETS.mini === "wanted" (v3.58.0)', !!POWERUP_ASSETS && POWERUP_ASSETS.mini === 'wanted');
+// v3.58.0 pass-order fix: the buffered icon blit (PASS 4) runs AFTER
+// the source-atop DEPTH (PASS 1) + SHINE (PASS 2) passes.
+{
+  const blitIdx = pwSrc.indexOf('ctx.drawImage(buf.c, -JEWEL_BUF / 2, -JEWEL_BUF / 2)');
+  const shineIdx = pwSrc.indexOf('PASS 2: SHINE');
+  const baseIdx = pwSrc.indexOf('PASS 4: BASE');
+  check('PowerUp: pass-order fix — icon blit (PASS 4) after depth+shine (PASS 1–2)',
+    blitIdx !== -1 && shineIdx !== -1 && baseIdx !== -1 && shineIdx < baseIdx && baseIdx < blitIdx);
+}
+// v3.58.0: the sparkle field is deterministic (sin-hash seed, no per-instance state).
+check('PowerUp: sparkle determinism (sparkleSeed sin-hash + per-type hash)',
+  pwSrc.includes('function sparkleSeed(n)') &&
+  pwSrc.includes('Math.sin(n * 127.1 + 311.7) * 43758.5453') &&
+  pwSrc.includes('function sparkleTypeHash(type)'));
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -568,6 +610,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.57.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.58.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

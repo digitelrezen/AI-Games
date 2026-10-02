@@ -78,7 +78,7 @@ const tests = [
     new RegExp(`VERSION\\d*\\s*=\\s*['"]v${VER.replace(/\./g, '\\.')}['"]`).test(s)],
   ['v3.51.0: drawJewelDrop gem pipeline (source-atop depth + lighter glow)', /function drawJewelDrop\(/.test(s) && s.includes('source-atop') && s.includes('lighter')],
   ['v3.51.0: jewel buffer is headless-guarded (no DOM → base only)', /typeof document\s*===\s*['"]undefined['"]/.test(s)],
-  ['v3.51.0: life/shield/frenzy route through the jewel pass (def + 3 call sites)', (s.match(/drawJewelDrop\(/g) || []).length >= 4],
+  ['v3.58.0: all five drops route through the jewel pass (def + 5 call sites)', (s.match(/drawJewelDrop\(/g) || []).length >= 6],
   // ── v3.52.0 moth enemy (18th species, regular waves only) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -109,6 +109,24 @@ const tests = [
   ['v3.54.0: BonusLevel draw() delegates to the active bonus', s.includes('this.currentBonus.draw(ctx)')],
   ['v3.54.0: Game render draws the bonus backdrop', s.includes('this.bonus.draw(ctx)')],
   ['v3.54.0: BoneFragment femur/profile-bone sprite + procedural fallback', /BONE_FRAGMENT_SPRITE_KEYS/.test(s) && s.includes('getSprite(this.spriteKey)')],
+  // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.58.0: extralife sprite dims 128×46', /extralife:\s*\{\s*w:\s*128,\s*h:\s*46\s*\}/.test(s)],
+  ['v3.58.0: health sprite dims 128×50', /health:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(s)],
+  ['v3.58.0: frenzy sprite dims 128×41', /frenzy:\s*\{\s*w:\s*128,\s*h:\s*41\s*\}/.test(s)],
+  ['v3.58.0: shield sprite dims 128×50', /shield:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(s)],
+  ['v3.58.0: wanted sprite dims 78×128', /wanted:\s*\{\s*w:\s*78,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.58.0: POWERUP_ASSETS.mini → "wanted" (bounty poster)', /mini:\s*['"]wanted['"]/.test(s)],
+  ['v3.58.0: wanted base64 sprite present in bundle', s.includes('wanted: "iVBORw0KGgo')],
+  ['v3.58.0: 5-type jewel aura palette (blue/green/red/gold/bounty)',
+    /aura:\s*['"]64, 140, 255['"]/.test(s) &&
+    /aura:\s*['"]64, 220, 110['"]/.test(s) &&
+    /aura:\s*['"]255, 64, 54['"]/.test(s) &&
+    /aura:\s*['"]255, 205, 40['"]/.test(s) &&
+    /aura:\s*['"]255, 220, 120['"]/.test(s)],
+  ['v3.58.0: deterministic sparkle field (sparkleSeed sin-hash)', s.includes('sparkleSeed') && s.includes('43758.5453')],
+  ['v3.58.0: pass-order fix — icon blit + depth + shine passes present', s.includes('drawImage(buf.c') && s.includes('source-atop') && s.includes('lighter')],
   [`version ${VER}`, s.includes(VER)],
 ];
 
@@ -117,5 +135,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard + crosshair 140–340 range + spider sprite w/ red hourglass).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard + crosshair 140–340 range + spider sprite w/ red hourglass + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

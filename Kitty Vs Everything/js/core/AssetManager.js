@@ -105,14 +105,15 @@ export function allReady(keys = assetKeys()) {
 }
 
 /**
- * Power-up drop type → asset key map (v3.33.0 power-up art).
- * PowerUp.js draws through this map; the five keys are imported from
+ * Power-up drop type → asset key map (v3.33.0 power-up art, v3.58.0 pill
+ * batch). PowerUp.js draws through this map; the keys are imported from
  * .assets by tools/import-assets.mjs (see tools/asset-manifest.json):
- *   health    ← Health-pixel-art.png          (hull repair)
- *   extralife ← Extra-life-pink-pixel_art.png (extra life)
- *   shield    ← Shield-pixel-art.png          (shield refill)
- *   frenzy    ← Frenzy-pixel-art.png          (30s all-cooldowns-off)
- *   crate     ← Crate-pixel-art.png           (bonus crate, shot to open)
+ *   health    ← Powerup-GreanPill-health.png    (hull repair, green pill)
+ *   extralife ← Powerup-BluePill-ExtraLife.png  (extra life, blue pill)
+ *   shield    ← Powerup-YellowPill-Shield.png   (shield, yellow pill)
+ *   frenzy    ← Powerup-RedPill-Frenzy.png      (30s all-cooldowns-off, red pill)
+ *   crate     ← Crate-pixel-art.png             (bonus crate, shot to open)
+ *   wanted    ← Wanted-Cat-pixel-art.png        (v3.58.0: mini-ship bounty poster)
  */
 export const POWERUP_ASSETS = {
   health: 'health',
@@ -120,4 +121,5 @@ export const POWERUP_ASSETS = {
   shield: 'shield',
   frenzy: 'frenzy',
   crate: 'crate',
+  mini: 'wanted', // v3.58.0: "Adopt Me!" WANTED poster (cat behind bars)
 };

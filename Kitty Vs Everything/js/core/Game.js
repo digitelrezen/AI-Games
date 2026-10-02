@@ -1,6 +1,11 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.57.0
+// Kitty Vs Everything — v3.58.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.58.0: batch power-up pixel-art integration — PowerUp.js v3.58.0 draws
+// all five drop types (life / health / frenzy / shield / mini) from the new
+// pill/poster pixel art with color-matched glows + sparkle fields (6-pass
+// drawJewelDrop, pass-order fix); AssetManager.js POWERUP_ASSETS gains
+// mini→"wanted". Release version bump only; no orchestrator changes.
 // v3.57.0: spider pixel-art sprite swap — SpiderEnemy.js v1.2.0 draws the
 // shared PNG (.assets/Spider-pixel_art.png, 390×532 → 94×128, key "spider")
 // with full pixel-art shading/depth/charcoal texture, a crawler
@@ -86,7 +91,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.57.0';
+export const VERSION = 'v3.58.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
