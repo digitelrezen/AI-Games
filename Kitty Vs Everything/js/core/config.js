@@ -1,7 +1,17 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.64.0
+// Kitty Vs Everything — v3.65.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.65.0: Falcon pixel-art sprite — the falcon enemy (ENEMY_TYPES.falcon,
+//   unchanged stats: speed 3.2 / hp 22 / damage 12 / dive pattern) now
+//   renders the pixel-art falcon from `.assets/Falcon pixel_art.png` via
+//   the AssetManager pipeline (key `falcon`, 718×718 → 128×128) with a
+//   beak-lead dive rotation (heading eased toward the dive vector, blit
+//   rotated by heading + PI/2), wing-beat + hover bob, and a type-color
+//   accent glow; classic procedural falcon kept as null-sprite fallback.
+//   No config changes — hover/dive movement and the aimed shot are
+//   unchanged.
+//
 // v3.64.0: Dragon pixel-art sprite — the dragon enemy (ENEMY_TYPES.dragon,
 //   unchanged stats: speed 1.6 / hp 70 / damage 20 / breath pattern) now
 //   renders the pixel-art dragon from `.assets/Dragon-pixel-art.png` via
@@ -178,7 +188,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.64.0';
+export const VERSION = 'v3.65.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

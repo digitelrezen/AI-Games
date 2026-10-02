@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.64.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.65.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -93,6 +93,7 @@ for (const [tag, rel] of [
   ['WolfEnemy', 'js/enemies/WolfEnemy.js'],         // v3.62.0
   ['LizardEnemy', 'js/enemies/LizardEnemy.js'],     // v3.63.0
   ['DragonEnemy', 'js/enemies/DragonEnemy.js'],     // v3.64.0
+  ['FalconEnemy', 'js/enemies/FalconEnemy.js'],     // v3.65.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -100,7 +101,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -179,7 +180,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.62.0: + wolf (wolf enemy pixel-art sprite swap).
 // v3.63.0: + lizard (lizard enemy pixel-art sprite swap).
 // v3.64.0: + dragon (dragon enemy pixel-art sprite swap).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon'];
+// v3.65.0: + falcon (falcon enemy pixel-art sprite swap).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -775,6 +777,36 @@ console.log('\n[6q] v3.64.0 dragon pixel-art sprite');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6r] v3.65.0 FALCON PIXEL-ART SPRITE — diving raptor now draws
+//       the shared PNG (key "falcon", 718×718 → 128×128) with a
+//       beak-lead dive rotation (heading eases toward the dive
+//       vector, blit rotated by heading + PI/2 since the art faces
+//       up) + wing-beat (t*6) + hover bob + type-color accent glow;
+//       procedural fallback retained
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6r] v3.65.0 falcon pixel-art sprite');
+{
+  const faSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/FalconEnemy.js'), 'utf8');
+  check('FalconEnemy: VERSION = v1.2.0', faSrc.includes("VERSION = 'v1.2.0'"));
+  check('FalconEnemy: sprite key "falcon" via AssetManager', faSrc.includes("FALCON_SPRITE_KEY = 'falcon'") && faSrc.includes('getSprite(FALCON_SPRITE_KEY)'));
+  check('FalconEnemy: null-sprite → procedural fallback branch', faSrc.includes('this._drawProcedural(ctx, r)'));
+  check('FalconEnemy: beak-lead dive heading eases toward the dive vector (dh * 0.18)', faSrc.includes('this._heading += dh * 0.18'));
+  check('FalconEnemy: blit rotated by heading + PI/2 (art faces up)', faSrc.includes('this._heading + Math.PI / 2'));
+  check('FalconEnemy: wing-beat (t*6) + hover bob phase-locked to the procedural flap', faSrc.includes('const flap = Math.sin(this.t * 6)') && faSrc.includes('const bob = Math.sin(this.t * 3)'));
+  check('FalconEnemy: aspect-preserving nearest-neighbor draw', faSrc.includes('(targetW * dims.h) / dims.w') && faSrc.includes('ctx.imageSmoothingEnabled = false'));
+  check('FalconEnemy: type-color accent glow pass', faSrc.includes('ctx.shadowColor = this.color') && faSrc.includes('ctx.shadowBlur = r * 0.8'));
+  check('FalconEnemy: procedural fallback art intact (wings/tail fan/talons)', faSrc.includes('tailSpread') && faSrc.includes('lwGrad') && faSrc.includes('bodyGrad'));
+  check('FalconEnemy: dive multiplier * 1.5 + attack fireAtPlayer(a, 280, 1) unchanged', faSrc.includes('s * dt * 1.5') && faSrc.includes('fireAtPlayer(a, 280, 1)'));
+  check('config: ENEMY_TYPES.falcon intact (color/speed/hp/damage/fireRate/pattern)',
+    ENEMY_TYPES.falcon && ENEMY_TYPES.falcon.color === '#b0713a' && ENEMY_TYPES.falcon.speed === 3.2 &&
+    ENEMY_TYPES.falcon.hp === 22 && ENEMY_TYPES.falcon.damage === 12 && ENEMY_TYPES.falcon.fireRate === 1.0 &&
+    ENEMY_TYPES.falcon.pattern === 'dive',
+    `got ${JSON.stringify(ENEMY_TYPES.falcon)}`);
+  check('AssetSprites: falcon sprite dims 128×128 registered', /falcon:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: falcon source 718×718 → 128×128', /falcon: "Falcon pixel_art\.png \(718×718 → 128×128,/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -784,6 +816,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.64.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.65.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

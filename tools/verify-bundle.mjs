@@ -136,6 +136,15 @@ const tests = [
   ['v3.64.0: DragonEnemy sprite + procedural fallback', /DRAGON_SPRITE_KEY/.test(s)],
   ['v3.64.0: dragon flight gait phase-locked to weave + wing-beat', /weave\s*=\s*Math\.sin\(this\.t\s*\*\s*0\.8\)/.test(s) && /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*5\)/.test(s)],
   ['v3.64.0: dragon config entry intact', /dragon:\s*\{\s*name:\s*['"]Dragon['"]/.test(s) && s.includes('#d64545')],
+  // ── v3.65.0 falcon pixel-art sprite (diving raptor) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['\"]).
+  ['v3.65.0: falcon sprite dims 128×128', /falcon:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.65.0: falcon sprite key in AssetSprites registry', s.includes('falcon: "iVBORw0KGgo')],
+  ['v3.65.0: FalconEnemy sprite + procedural fallback', /FALCON_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  ['v3.65.0: falcon beak-lead dive heading + PI/2 blit rotation', /this\._heading\s*\+\s*Math\.PI\s*\/\s*2/.test(s)],
+  ['v3.65.0: falcon wing-beat (t*6) + hover bob (t*3) phase-locked', /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*6\)/.test(s) && /bob\s*=\s*Math\.sin\(this\.t\s*\*\s*3\)/.test(s)],
+  ['v3.65.0: falcon config entry intact', /falcon:\s*\{\s*name:\s*['"]Falcon['"]/.test(s) && s.includes('#b0713a')],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -175,5 +184,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
