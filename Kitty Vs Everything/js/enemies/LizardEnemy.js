@@ -1,10 +1,25 @@
 // Filename: LizardEnemy.js
-// Kitty Vs Everything — v1.1.0
+// Kitty Vs Everything — v1.2.0
 // Lizard: slow tank that spits acid in 3-way spread. Segmented body with
 // a scaly gradient, a flicking tongue, and a long coiled tail.
-export const VERSION = 'v1.1.0';
+// v1.2.0: sprite swap — now draws the shared pixel-art PNG
+//         (.assets/Lizard pixel_art.png, 507×656) through the AssetManager
+//         pipeline (tools/import-assets.mjs → js/core/AssetSprites.js, key
+//         "lizard", normalized to 99×128). The full pixel-art shading,
+//         depth, and charcoal-scale texture replace the flat green gradient:
+//         aspect-preserving, centered on the hitbox, nearest-neighbor, with
+//         a ground shadow, a tank gait (sway/bob/tilt phase-locked to the
+//         fixed-altitude hover bob, this.t), and a type-color accent glow
+//         pass. The classic procedural lizard is kept as the null-sprite
+//         fallback per the AssetManager contract (segmented scaly body,
+//         broad flat head, slit yellow-green eyes, flicking forked tongue,
+//         splayed legs, coiled tail, pale belly).
+export const VERSION = 'v1.2.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
+
+const LIZARD_SPRITE_KEY = 'lizard';
 
 export default class LizardEnemy extends EnemyBase {
   move(dt, slowMul) {
@@ -28,6 +43,62 @@ export default class LizardEnemy extends EnemyBase {
     ctx.translate(this.x, this.y);
     if (this.flash > 0) ctx.globalAlpha = 0.55;
 
+    const sprite = getSprite(LIZARD_SPRITE_KEY);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+
+  // v1.2.0 — pixel-art lizard sprite. Aspect-preserving, centered on the
+  // hitbox, nearest-neighbor. The full pixel-art shading / depth /
+  // charcoal-scale texture comes from the PNG itself (head up top, body
+  // and coiled tail filling the lower frame — same orientation as the
+  // procedural art); the tank gait is a gentle lateral sway + vertical
+  // bob + slight body tilt (phase-locked to the fixed-altitude hover bob,
+  // this.t — move() pins the tank at y 160 + sin(this.t) * 4) plus a
+  // subtle idle breathe. A soft ground shadow grounds the sprite, and a
+  // type-color accent glow pass adds depth under the crisp blit.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(LIZARD_SPRITE_KEY);
+    const targetW = r * 3.0;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    // Tank gait (phase-locked to the fixed-altitude hover bob, this.t)
+    const sway = Math.sin(this.t) * r * 0.07;
+    const bob = Math.sin(this.t * 2) * r * 0.05;
+    const tilt = Math.sin(this.t + 0.6) * 0.06;
+    const breathe = 1 + 0.02 * Math.sin(this.t * 2);
+    ctx.save();
+    // Ground shadow (depth cue under the body)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(0, targetH * 0.41, targetW * 0.30, targetW * 0.07, 0, 0, TAU);
+    ctx.fill();
+    ctx.translate(sway, bob);
+    ctx.rotate(tilt);
+    ctx.scale(breathe, 1);
+    ctx.imageSmoothingEnabled = false;
+    const dx = -targetW / 2, dy = -targetH / 2;
+    // Accent glow pass (type color) under the crisp sprite
+    ctx.globalAlpha = 0.30;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = r * 0.8;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.restore();
+  }
+
+  // Classic procedural lizard (null-sprite fallback) — segmented scaly
+  // body, broad flat head, slit yellow-green eyes, flicking forked
+  // tongue, splayed legs, coiled tail, pale belly.
+  _drawProcedural(ctx, r) {
     // ─── TAIL (long, coiled segments) ───
     ctx.strokeStyle = '#3a8a3a';
     ctx.lineWidth = 5;
@@ -135,9 +206,5 @@ export default class LizardEnemy extends EnemyBase {
     ctx.beginPath();
     ctx.ellipse(0, r * 0.2, r * 0.25, r * 0.5, 0, 0, TAU);
     ctx.fill();
-
-    ctx.restore();
-    this.drawShieldRing(ctx);
-    this.drawBossBar(ctx);
   }
 }

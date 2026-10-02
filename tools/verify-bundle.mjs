@@ -123,6 +123,13 @@ const tests = [
   ['v3.62.0: wolf sprite dims 122×128', /wolf:\s*\{\s*w:\s*122,\s*h:\s*128\s*\}/.test(s)],
   ['v3.62.0: wolf sprite key in AssetSprites registry', s.includes('wolf: "iVBORw0KGgo')],
   ['v3.62.0: WolfEnemy sprite + procedural fallback', /WOLF_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  // ── v3.63.0 lizard pixel-art sprite (slow acid tank) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.63.0: lizard sprite dims 99×128', /lizard:\s*\{\s*w:\s*99,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.63.0: lizard sprite key in AssetSprites registry', s.includes('lizard: "iVBORw0KGgo')],
+  ['v3.63.0: LizardEnemy sprite + procedural fallback', /LIZARD_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  ['v3.63.0: tank gait phase-locked to hover bob', /sway\s*=\s*Math\.sin\(this\.t\)/.test(s)],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -162,5 +169,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
