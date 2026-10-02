@@ -1,7 +1,11 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.58.0
+// Kitty Vs Everything — v3.58.1
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.58.1: release version bump — PowerUp.js v3.58.1 fixes the mini drop,
+// which was still drawing the old embedded 28×28 MiniPosterSprite instead
+// of the imported "wanted" pixel art (.assets/Wanted-Cat-pixel-art.png,
+// 78×128). No config changes.
 // v3.58.0: batch power-up pixel-art integration — all five drop types (life /
 // health / frenzy / shield / mini) now draw the new pill/poster pixel art
 // (Powerup-BluePill-ExtraLife, Powerup-GreanPill-health, Powerup-RedPill-Frenzy,
@@ -132,7 +136,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.58.0';
+export const VERSION = 'v3.58.1';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

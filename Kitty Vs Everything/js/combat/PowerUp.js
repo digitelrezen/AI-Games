@@ -1,5 +1,5 @@
 // Filename: PowerUp.js
-// Kitty Vs Everything — v3.58.0
+// Kitty Vs Everything — v3.58.1
 // Falling drops: extra life, shield, mini-ship, destructible bonus crate,
 // the rare Bender (easter egg, v3.24.0), hull health (v3.33.0) and FRENZY
 // (v3.33.0 — 30s all-cooldowns-off, Vulcan overheat neutralized).
@@ -26,6 +26,13 @@
 //            PASS 5  SHIMMER   (canvas) rotating perimeter shimmer (additive)
 //            PASS 6  SPARKLES  (canvas) floating theme-colored 4-pt twinkles
 //          Procedural fallbacks unchanged; headless smoke path draws base only.
+// v3.58.1: BUG FIX — the 'mini' drop was still drawing the OLD embedded
+//          28×28 MiniPosterSprite (base64 in MiniPosterSprite.js) instead
+//          of the imported "wanted" pixel art. The mini case now draws
+//          drawSpriteIcon(c, 'mini', JEWEL_BOX) → AssetManager key
+//          "wanted" (.assets/Wanted-Cat-pixel-art.png 369×602 → 78×128);
+//          the old 28×28 poster stays the null-sprite fallback, then the
+//          classic cat head.
 // v3.36.0: bonus crate drop joins the PNG pipeline (key "crate",
 //          .assets/Crate-pixel-art.png, 620×574 → 128×119) — nearest-neighbor,
 //          aspect-preserving; the procedural wooden crate is the null-sprite
@@ -37,7 +44,7 @@
 //          as the fallback while the sprite decodes (or if the asset is
 //          missing/corrupt).
 
-export const VERSION = 'v3.58.0';
+export const VERSION = 'v3.58.1';
 import { TAU } from '../core/utils.js';
 import { getMiniPosterSprite } from '../levels/MiniPosterSprite.js';
 import { getBenderFull, BENDER_BODY_W, BENDER_BODY_H } from '../core/BenderSprite.js'; // v3.28.0: tiny full-body Bender icon for the 'robot' drop
@@ -374,23 +381,28 @@ export default class PowerUp {
         break;
       }
       case 'mini': {
-        // v3.58.0: "Adopt Me!" WANTED poster (cat behind bars) —
-        // .assets/Wanted-Cat-pixel-art.png via AssetManager — through the
-        // 6-pass jewel pipeline (depth → shine → bounty white-gold aura →
-        // blit → shimmer → gold sparkles). Falls back to the classic cat
-        // head if the sprite isn't ready.
+        // v3.58.1: "Adopt Me!" WANTED poster — the NEW pixel art
+        // (.assets/Wanted-Cat-pixel-art.png 369×602 → 78×128, AssetManager
+        // key "wanted") through the 6-pass jewel pipeline (depth → shine →
+        // bounty white-gold aura → blit → shimmer → gold sparkles).
+        // v3.58.0 bug fix: this case used to blit the OLD embedded 28×28
+        // MiniPosterSprite instead of the imported "wanted" asset. Fallback
+        // chain: old 28×28 poster (null-sprite safety net) → classic cat
+        // head.
         drawJewelDrop(ctx, 'mini', this.t, (c) => {
-          const poster = getMiniPosterSprite();
-          if (poster) {
-            c.imageSmoothingEnabled = false;
-            c.drawImage(poster, -14, -14, 28, 28);
-          } else {
-            c.fillStyle = '#ff9d3b';
-            c.beginPath(); c.arc(0, 2, 9, 0, TAU); c.fill();
-            c.beginPath(); c.moveTo(-6, -4); c.lineTo(-9, -13); c.lineTo(-1, -6); c.closePath(); c.fill();
-            c.beginPath(); c.moveTo(6, -4); c.lineTo(9, -13); c.lineTo(1, -6); c.closePath(); c.fill();
-            c.fillStyle = '#fff';
-            c.beginPath(); c.arc(-3, 0, 1.6, 0, TAU); c.arc(3, 0, 1.6, 0, TAU); c.fill();
+          if (!drawSpriteIcon(c, 'mini', JEWEL_BOX)) {
+            const poster = getMiniPosterSprite();
+            if (poster) {
+              c.imageSmoothingEnabled = false;
+              c.drawImage(poster, -14, -14, 28, 28);
+            } else {
+              c.fillStyle = '#ff9d3b';
+              c.beginPath(); c.arc(0, 2, 9, 0, TAU); c.fill();
+              c.beginPath(); c.moveTo(-6, -4); c.lineTo(-9, -13); c.lineTo(-1, -6); c.closePath(); c.fill();
+              c.beginPath(); c.moveTo(6, -4); c.lineTo(9, -13); c.lineTo(1, -6); c.closePath(); c.fill();
+              c.fillStyle = '#fff';
+              c.beginPath(); c.arc(-3, 0, 1.6, 0, TAU); c.arc(3, 0, 1.6, 0, TAU); c.fill();
+            }
           }
         });
         break;

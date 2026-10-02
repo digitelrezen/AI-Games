@@ -119,6 +119,7 @@ const tests = [
   ['v3.58.0: wanted sprite dims 78×128', /wanted:\s*\{\s*w:\s*78,\s*h:\s*128\s*\}/.test(s)],
   ['v3.58.0: POWERUP_ASSETS.mini → "wanted" (bounty poster)', /mini:\s*['"]wanted['"]/.test(s)],
   ['v3.58.0: wanted base64 sprite present in bundle', s.includes('wanted: "iVBORw0KGgo')],
+  ['v3.58.1: mini drop draws the "wanted" sprite (old 28×28 poster is fallback only)', /drawSpriteIcon\(c,\s*['"]mini['"]\s*,\s*JEWEL_BOX\)/.test(s)],
   ['v3.58.0: 5-type jewel aura palette (blue/green/red/gold/bounty)',
     /aura:\s*['"]64, 140, 255['"]/.test(s) &&
     /aura:\s*['"]64, 220, 110['"]/.test(s) &&
