@@ -3,3 +3,5 @@ Builds/
 node_modules/
 *.png
 Thumbs.db
+# temp debug dumps (tools/)
+tools/.*.txt
