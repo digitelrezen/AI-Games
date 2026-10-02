@@ -1,7 +1,13 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.59.0
+// Kitty Vs Everything — v3.60.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.60.0: fully destructible Bone Yard — BONUS.BONE_YARD_FIELD seeds the
+// stage with 29 destructible bones (10 femur / 10 profile_bone / 6 skull /
+// 3 skeleton); BoneFragment.js v2.3.0 adds per-key radius/HP/score bands
+// (regular 500 / skull 1000 / skeleton 2000) + a weighted spawn pool
+// (40/40/15/5); BoneYardBonus.js v3.16.0 removes the non-shootable
+// backdrop (draw() is a no-op hook).
 // v3.59.0: double-sized power-up icons — PowerUp.js v3.59.0 renders every
 // drop icon at 2× the v3.58.x size (JEWEL_BOX 28 → 56, JEWEL_BUF 40 → 80,
 // jewel aura/shimmer/sparkle geometry doubled, robot 28 → 56, crate box
@@ -141,7 +147,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.59.0';
+export const VERSION = 'v3.60.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -431,6 +437,10 @@ export const BONUS = {
   BONE_YARD_DURATION: 30,
   BONE_YARD_PHASE1: 10,
   BONE_YARD_PHASE2: 5,
+  // v3.60.0: the destructible yard field — 29 bones seeded at stage start
+  // (BoneYardBonus._seedYardField). Regular bones dominate; the skeleton
+  // sentinels hug the left/right margins.
+  BONE_YARD_FIELD: { femur: 10, profile_bone: 10, skull: 6, skeleton: 3 },
   INTERNET_DURATION: 30,
 };
 export const LIFE_SCORE_INTERVAL = 30000;

@@ -105,10 +105,12 @@ const tests = [
   ['v3.54.0: skull sprite dims 104×128', /skull:\s*\{\s*w:\s*104,\s*h:\s*128\s*\}/.test(s)],
   ['v3.54.0: femur sprite dims 126×128', /femur:\s*\{\s*w:\s*126,\s*h:\s*128\s*\}/.test(s)],
   ['v3.54.0: profile_bone sprite dims 128×56', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*56\s*\}/.test(s)],
-  ['v3.54.0: BoneYardBonus seeded backdrop (keys + mulberry32)', /BONEYARD_BG_KEYS/.test(s) && /mulberry32/.test(s)],
+  ['v3.60.0: BoneYardBonus no-op draw hook (backdrop gone)', /draw\(ctx\)\s*\{\s*\}/.test(s) && !s.includes('BONEYARD_BG_KEYS')],
   ['v3.54.0: BonusLevel draw() delegates to the active bonus', s.includes('this.currentBonus.draw(ctx)')],
   ['v3.54.0: Game render draws the bonus backdrop', s.includes('this.bonus.draw(ctx)')],
-  ['v3.54.0: BoneFragment femur/profile-bone sprite + procedural fallback', /BONE_FRAGMENT_SPRITE_KEYS/.test(s) && s.includes('getSprite(this.spriteKey)')],
+  ['v3.60.0: BoneFragment per-key stats + weighted pool', /BONE_FRAGMENT_STATS/.test(s) && /BONE_FRAGMENT_POOL/.test(s) && /rollBoneFragmentKey/.test(s)],
+  ['v3.60.0: BONUS.BONE_YARD_FIELD 10/10/6/3 seeded field', /BONE_YARD_FIELD:\s*\{\s*femur:\s*10,\s*profile_bone:\s*10,\s*skull:\s*6,\s*skeleton:\s*3\s*\}/.test(s) && /_seedYardField/.test(s)],
+  ['v3.60.0: BoneFragment per-key score bands (500/1000/2000)', /score:\s*500/.test(s) && /score:\s*(?:1000|1e3)/.test(s) && /score:\s*(?:2000|2e3)/.test(s)],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -148,5 +150,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + boneyard yard + crosshair 140–340 range + spider sprite w/ red hourglass + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

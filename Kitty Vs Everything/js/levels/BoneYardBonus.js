@@ -1,10 +1,20 @@
 // Filename: BoneYardBonus.js
-// Kitty Vs Everything — v3.13.0
+// Kitty Vs Everything — v3.16.0
 // "The Bone Yard" — 3-phase comedic bonus stage (original flow, restored):
 //   Phase 1: Infinite Boneyard (floating bones drift down, shoot for shrapnel)
 //   Phase 2: The Human Line (tight single-file line of Humans marches down)
 //   Phase 3: Comedic Victory (line never ends, timer expires, you "win" by
 //             NOT making it — returns to gameplay via waveManager.startNext())
+// v3.16.0 (v3.60.0 release): fully DESTRUCTIBLE yard — the v3.15.0
+//          non-shootable pixel-art backdrop is gone. The stage now opens on
+//          a SEEDED field of 29 destructible BoneFragment bonus targets
+//          (BONUS.BONE_YARD_FIELD: 10 femur / 10 profile_bone / 6 skull /
+//          3 skeleton) drifting at the old backdrop parallax speed
+//          (6–18 px/s), with the skeleton sentinels hugging the left/right
+//          margins; Phase 1 rains more bones from the weighted
+//          BONE_FRAGMENT_POOL. draw() is a no-op hook — the bones render
+//          through Game's bonusTargets pass, so every bone is a live,
+//          damageable, shatterable target.
 // v3.13.0: Lane/centering math uses the LIVE viewport (game.viewW/viewH)
 //          so the stage spans the full ultra-wide; humans are real people
 //          (HumanSprite.js) created through EnemyFactory — marchMode gives
@@ -13,17 +23,15 @@
 // v3.14.0 (v3.50.0 release): Phase 2/3 spawning is locked to an EXPLICIT
 //          humanoid allowlist (BONE_YARD_HUMANOID_TYPES) — new species added
 //          to ENEMY_TYPES (e.g. 'shuttle') can never leak into the march.
-// v3.15.0 (v3.54.0 release): pixel-art boneyard environment — draw(ctx)
-//          renders a SEEDED backdrop of the shared PNGs (skeleton / skull /
-//          femur / profile_bone) through the AssetManager pipeline,
-//          aspect-preserving with slow parallax drift + wrap; procedural
-//          fallbacks per the AssetManager contract.
-export const VERSION = 'v3.15.0';
+// v3.15.0 (v3.54.0 release): pixel-art boneyard environment — a SEEDED
+//          backdrop of the shared PNGs (skeleton / skull / femur /
+//          profile_bone). SUPERSEDED by v3.16.0: the yard is now fully
+//          destructible (see above).
+export const VERSION = 'v3.16.0';
 import { BONUS } from '../core/config.js';
-import { TAU, rand } from '../core/utils.js';
+import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
-import { getSprite, getDims } from '../core/AssetManager.js'; // v3.15.0: shared PNG pipeline
 import BoneFragment from './BoneFragment.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 
@@ -33,14 +41,8 @@ import { createEnemy } from '../enemies/EnemyFactory.js';
 // if a future phase should march something else.
 const BONE_YARD_HUMANOID_TYPES = ['human'];
 
-// v3.15.0: pixel-art yard backdrop — the four shared PNGs that dress the
-// boneyard (tools/asset-manifest.json → js/core/AssetSprites.js).
-const BONEYARD_BG_KEYS = ['skeleton', 'skull', 'femur', 'profile_bone'];
-// Logical height (px) each key occupies at scale 1.
-const BONEYARD_BG_BASE = { skeleton: 200, skull: 96, femur: 72, profile_bone: 52 };
-const BONEYARD_BG_COUNTS = { skeleton: 4, skull: 6, femur: 6, profile_bone: 8 };
-
-// Deterministic PRNG (mulberry32) — the yard layout is identical every run.
+// Deterministic PRNG (mulberry32) — the yard field layout is identical
+// every run.
 function mulberry32(seed) {
   let a = seed >>> 0;
   return () => {
@@ -63,7 +65,6 @@ export default class BoneYardBonus {
     this.humanSpawnTimer = 0;
     this.humanX = 0; // fixed X for the single-file line
     this.humanCount = 0;
-    this.bg = []; // v3.15.0: seeded pixel-art backdrop instances
   }
 
   start() {
@@ -78,8 +79,9 @@ export default class BoneYardBonus {
     this.humanCount = 0;
     // Clear any existing bonus targets
     this.game.bonusTargets = [];
-    // v3.15.0: seed the pixel-art yard backdrop for this run.
-    this._buildBackground();
+    // v3.16.0: seed the yard with a field of DESTRUCTIBLE bones (the
+    // v3.15.0 non-shootable backdrop is gone).
+    this._seedYardField();
     // Phase 1 banner
     bus.emit('banner', {
       text: "It just keeps going and and going... I'll never make it to Eridaths Mom's house.",
@@ -89,15 +91,48 @@ export default class BoneYardBonus {
     audio.banner();
   }
 
+  // v3.16.0 — seed the yard with a deterministic field of destructible
+  // bones (BONUS.BONE_YARD_FIELD). Regular bones fill the field, skulls
+  // are scattered mid-field, and the skeleton sentinels hug the
+  // left/right margins. Drift speed matches the old backdrop parallax
+  // (6–18 px/s) with no horizontal drift, so the field stays a calm
+  // graveyard until you shoot it up. Seeded (mulberry32, 20261001) so
+  // the layout is identical every run.
+  _seedYardField() {
+    const rng = mulberry32(20261001); // v3.54.0 release date — stable yard layout
+    const W = this.game.viewW;
+    const H = this.game.viewH;
+    const field = BONUS.BONE_YARD_FIELD;
+    const layout = [];
+    for (const [key, count] of Object.entries(field)) {
+      for (let i = 0; i < count; i++) layout.push(key);
+    }
+    // Deterministic Fisher–Yates shuffle on the seeded rng.
+    for (let i = layout.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [layout[i], layout[j]] = [layout[j], layout[i]];
+    }
+    for (const key of layout) {
+      const sentinel = key === 'skeleton';
+      const x = sentinel
+        ? (rng() < 0.5 ? 40 + rng() * W * 0.1 : W - 40 - rng() * W * 0.1)
+        : 30 + rng() * (W - 60);
+      const bone = new BoneFragment({
+        x,
+        y: -40 - rng() * (H + 60),
+        game: this.game,
+        spriteKey: key,
+      });
+      bone.vy = 6 + rng() * 12; // old backdrop parallax (6–18 px/s)
+      bone.vx = 0;
+      this.game.bonusTargets.push(bone);
+    }
+  }
+
   update(dt) {
     if (!this.active) return;
     this.phaseTimer += dt;
     this.timeLeft -= dt;
-    // v3.15.0: slow parallax drift of the yard backdrop (wrap at the edges).
-    for (const b of this.bg) {
-      b.y += b.drift * dt;
-      if (b.y - 240 > this.game.viewH) b.y = -240;
-    }
 
     // ─── PHASE TRANSITIONS ───
     if (this.phase === 1 && this.phaseTimer >= BONUS.BONE_YARD_PHASE1) {
@@ -125,6 +160,8 @@ export default class BoneYardBonus {
         this.boneSpawnTimer = rand(0.25, 0.6);
         // v3.13.0: live viewport width.
         const x = rand(60, this.game.viewW - 60);
+        // v3.16.0: no spriteKey → the weighted BONE_FRAGMENT_POOL decides
+        // (mostly regular bones, some skulls, rare skeletons).
         this.game.bonusTargets.push(new BoneFragment({ x, y: -30, game: this.game }));
       }
     }
@@ -185,103 +222,8 @@ export default class BoneYardBonus {
     }
   }
 
-  // v3.15.0 — seed the yard layout: skeletons hugging the left/right
-  // margins, skulls / femurs / profile bones scattered across the yard.
-  // Seeded (mulberry32, 0xB0NE) so the placement is stable, aspect-
-  // preserving, and identical every run.
-  _buildBackground() {
-    const rng = mulberry32(20261001); // v3.54.0 release date — stable yard layout
-    const W = this.game.viewW;
-    const H = this.game.viewH;
-    const bg = [];
-    for (const key of BONEYARD_BG_KEYS) {
-      for (let i = 0; i < BONEYARD_BG_COUNTS[key]; i++) {
-        let x;
-        if (key === 'skeleton') {
-          // Standing sentinels on the left/right margins
-          const left = rng() < 0.5;
-          x = left ? 40 + rng() * W * 0.1 : W - 40 - rng() * W * 0.1;
-        } else {
-          x = 30 + rng() * (W - 60);
-        }
-        const scale = key === 'skeleton' ? 0.85 + rng() * 0.4 : 0.7 + rng() * 0.6;
-        bg.push({
-          key,
-          x,
-          y: rng() * H,
-          scale,
-          base: BONEYARD_BG_BASE[key],
-          // Skeletons stand nearly upright; loose bones tumble at any angle.
-          rotation: key === 'skeleton' ? (rng() - 0.5) * 0.24 : rng() * TAU,
-          drift: 6 + rng() * 12,
-          alpha: 0.3 + rng() * 0.25,
-        });
-      }
-    }
-    this.bg = bg;
-  }
-
-  // v3.15.0 — render the pixel-art yard backdrop (called from
-  // BonusLevel.draw → Game.render, under the bonus targets).
-  draw(ctx) {
-    if (!this.active || !this.bg.length) return;
-    ctx.save();
-    ctx.imageSmoothingEnabled = false;
-    for (const b of this.bg) {
-      const dims = getDims(b.key);
-      const h = b.base * b.scale;
-      const w = dims ? (h * dims.w) / dims.h : h; // aspect-preserving
-      ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.rotate(b.rotation);
-      ctx.globalAlpha = b.alpha;
-      const sprite = getSprite(b.key);
-      if (sprite) {
-        ctx.drawImage(sprite, -w / 2, -h / 2, w, h);
-      } else {
-        this._drawProceduralBg(ctx, b, w, h);
-      }
-      ctx.restore();
-    }
-    ctx.restore();
-  }
-
-  // v3.15.0 — procedural yard backdrop, kept as the null-sprite fallback
-  // per the AssetManager contract (headless / pre-load frames).
-  _drawProceduralBg(ctx, b, w, h) {
-    ctx.strokeStyle = 'rgba(232, 220, 200, 0.9)';
-    ctx.lineWidth = Math.max(1.5, h * 0.03);
-    if (b.key === 'skeleton') {
-      // Stick skeleton: skull, spine, ribcage, limbs
-      ctx.beginPath(); ctx.arc(0, -h * 0.38, h * 0.09, 0, TAU); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, -h * 0.29); ctx.lineTo(0, h * 0.12); ctx.stroke();
-      for (let i = 0; i < 3; i++) {
-        const ry = -h * 0.24 + i * h * 0.07;
-        ctx.beginPath(); ctx.ellipse(0, ry, h * 0.12, h * 0.035, 0, 0, TAU); ctx.stroke();
-      }
-      ctx.beginPath();
-      ctx.moveTo(-h * 0.14, -h * 0.22); ctx.lineTo(0, -h * 0.18); ctx.lineTo(h * 0.14, -h * 0.22);
-      ctx.moveTo(0, h * 0.12); ctx.lineTo(-h * 0.1, h * 0.38);
-      ctx.moveTo(0, h * 0.12); ctx.lineTo(h * 0.1, h * 0.38);
-      ctx.stroke();
-    } else if (b.key === 'skull') {
-      // Cranium + jaw + eye sockets
-      ctx.beginPath(); ctx.ellipse(0, -h * 0.06, h * 0.2, h * 0.24, 0, 0, TAU); ctx.stroke();
-      ctx.beginPath(); ctx.rect(-h * 0.11, h * 0.14, h * 0.22, h * 0.11); ctx.stroke();
-      ctx.beginPath(); ctx.arc(-h * 0.08, -h * 0.08, h * 0.055, 0, TAU); ctx.stroke();
-      ctx.beginPath(); ctx.arc(h * 0.08, -h * 0.08, h * 0.055, 0, TAU); ctx.stroke();
-    } else {
-      // femur / profile_bone: classic bone — shaft + four knobs
-      const sh = w * 0.66;
-      const kw = Math.min(w * 0.18, h * 0.5);
-      ctx.beginPath();
-      ctx.moveTo(-sh / 2, -kw / 2); ctx.lineTo(sh / 2, -kw / 2);
-      ctx.lineTo(sh / 2, kw / 2); ctx.lineTo(-sh / 2, kw / 2);
-      ctx.closePath(); ctx.stroke();
-      for (const sx of [-1, 1]) {
-        ctx.beginPath(); ctx.arc(sx * sh / 2, -kw * 0.75, kw * 0.65, 0, TAU); ctx.stroke();
-        ctx.beginPath(); ctx.arc(sx * sh / 2, kw * 0.75, kw * 0.65, 0, TAU); ctx.stroke();
-      }
-    }
-  }
+  // v3.16.0 — no-op hook kept for BonusLevel's render delegation. The
+  // yard's bones are bonusTargets and render through Game's bonusTargets
+  // pass (the v3.15.0 non-destructible backdrop is gone).
+  draw(ctx) {}
 }

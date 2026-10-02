@@ -1,27 +1,68 @@
 // Filename: BoneFragment.js
-// Kitty Vs Everything — v2.2.0
+// Kitty Vs Everything — v2.3.0
 // Bone that drifts downward in the Bone Yard bonus. When shot, shatters
 // into sharp bone shrapnel particles.
+// v2.3.0 (v3.60.0 release): every bone is fully DESTRUCTIBLE — the two
+// regular bones (femur / profile_bone), skulls, and full skeletons.
+// Each sprite key carries its own size / HP / score band
+// (BONE_FRAGMENT_STATS), and random spawns roll a weighted pool
+// (BONE_FRAGMENT_POOL) so the yard stays mostly regular bones with
+// occasional skulls and rare skeletons. Skeletons shatter with a
+// bigger shake + extra shrapnel.
 // v2.2.0 (v3.54.0 release): sprite swap — each fragment now draws the
 // shared pixel-art PNG "femur" (126×128) or "profile_bone" (128×56)
 // through the AssetManager pipeline, aspect-preserving, rotated with the
 // fragment, with an ethereal glow pass. The classic procedural bone is
 // kept as the null-sprite fallback per the AssetManager contract.
-export const VERSION = 'v2.2.0';
+export const VERSION = 'v2.3.0';
 import Entity from '../core/Entity.js';
 import { TAU, rand } from '../core/utils.js';
 import { audio } from '../core/AudioSystem.js';
 import { getSprite, getDims } from '../core/AssetManager.js'; // v2.2.0: shared PNG pipeline
 
-// v2.2.0: each fragment rolls one of the two bone sprites (per instance).
-const BONE_FRAGMENT_SPRITE_KEYS = ['femur', 'profile_bone'];
+// v2.3.0: per-key bands — radius (px), HP, score, sprite size
+// multiplier. Regular bones are small and pop fast; skulls are chunkier;
+// skeletons are big, tough sentinels worth the most.
+export const BONE_FRAGMENT_STATS = {
+  femur:        { radius: [14, 26], hp: [15, 35],  score: 500,  sizeMul: 2.4 },
+  profile_bone: { radius: [14, 26], hp: [15, 35],  score: 500,  sizeMul: 2.4 },
+  skull:        { radius: [20, 32], hp: [35, 60],  score: 1000, sizeMul: 2.0 },
+  skeleton:     { radius: [28, 42], hp: [70, 110], score: 2000, sizeMul: 1.8 },
+};
+
+// v2.3.0: weighted spawn pool — mostly the two regular bones, some
+// skulls, rare full skeletons. Weights are relative (normalized on roll).
+export const BONE_FRAGMENT_POOL = [
+  { key: 'femur',        weight: 40 },
+  { key: 'profile_bone', weight: 40 },
+  { key: 'skull',        weight: 15 },
+  { key: 'skeleton',     weight: 5 },
+];
+
+// v2.3.0: weighted roll — returns a sprite key for random spawns.
+let _poolWeights = null;
+function rollBoneFragmentKey() {
+  if (!_poolWeights) {
+    const total = BONE_FRAGMENT_POOL.reduce((a, e) => a + e.weight, 0);
+    _poolWeights = BONE_FRAGMENT_POOL.map((e) => e.weight / total);
+  }
+  let r = Math.random();
+  for (let i = 0; i < BONE_FRAGMENT_POOL.length; i++) {
+    r -= _poolWeights[i];
+    if (r <= 0) return BONE_FRAGMENT_POOL[i].key;
+  }
+  return BONE_FRAGMENT_POOL[BONE_FRAGMENT_POOL.length - 1].key;
+}
 
 export default class BoneFragment extends Entity {
-  constructor({ x, y, game }) {
+  constructor({ x, y, game, spriteKey = null }) {
+    // v2.3.0: per-key size/HP/score bands (BONE_FRAGMENT_STATS).
+    const key = spriteKey || rollBoneFragmentKey();
+    const stats = BONE_FRAGMENT_STATS[key];
     super({
       x, y,
-      radius: rand(14, 26),
-      hp: rand(15, 35),
+      radius: rand(stats.radius[0], stats.radius[1]),
+      hp: Math.round(rand(stats.hp[0], stats.hp[1])),
       shield: 0,
       color: '#f5f0e0',
     });
@@ -37,9 +78,12 @@ export default class BoneFragment extends Entity {
     this.knobSize = rand(0.35, 0.55);
     this.knobOffset = rand(0.8, 1.1);
     this.bent = rand(-0.15, 0.15); // slight curve
-    this.scoreValue = 500;
-    // v2.2.0: per-instance sprite (femur or profile bone).
-    this.spriteKey = BONE_FRAGMENT_SPRITE_KEYS[Math.floor(Math.random() * BONE_FRAGMENT_SPRITE_KEYS.length)];
+    // v2.3.0: per-key score (regular 500 / skull 1000 / skeleton 2000).
+    this.scoreValue = stats.score;
+    // v2.2.0: per-instance sprite — v2.3.0: all four yard bones
+    // (femur / profile_bone / skull / skeleton).
+    this.spriteKey = key;
+    this.flash = 0;
   }
 
   update(dt) {
@@ -54,8 +98,11 @@ export default class BoneFragment extends Entity {
   /** Trigger the shatter effect when this bone is destroyed. */
   shatter(game) {
     const r = this.radius;
+    // v2.3.0: skeletons are the big sentinels — bigger shake + extra
+    // shrapnel.
+    const big = this.spriteKey === 'skeleton';
     // Sharp bone shrapnel — angular white/ivory fragments
-    const shrapnelCount = 14 + Math.floor(r / 2);
+    const shrapnelCount = 14 + Math.floor(r / 2) + (big ? 16 : 0);
     for (let i = 0; i < shrapnelCount; i++) {
       const a = rand(0, TAU);
       const speed = rand(150, 420);
@@ -79,7 +126,7 @@ export default class BoneFragment extends Entity {
         size: rand(2, 4),
       });
     }
-    game.shake = Math.max(game.shake, 3);
+    game.shake = Math.max(game.shake, big ? 6 : 3);
     audio.hit();
   }
 
@@ -100,12 +147,15 @@ export default class BoneFragment extends Entity {
     ctx.restore();
   }
 
-  // v2.2.0 — pixel-art bone sprite (femur or profile bone, per instance).
+  // v2.2.0 — pixel-art bone sprite (per-instance key).
   // Aspect-preserving, centered on the hitbox, nearest-neighbor, with the
   // ethereal glow pass the procedural bone had.
+  // v2.3.0: per-key size multiplier (BONE_FRAGMENT_STATS.sizeMul) —
+  // skulls/skeletons read chunkier than loose regular bones.
   _drawSprite(ctx, sprite, r) {
     const dims = getDims(this.spriteKey);
-    const targetW = r * 2.4;
+    const sizeMul = BONE_FRAGMENT_STATS[this.spriteKey].sizeMul;
+    const targetW = r * sizeMul;
     const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
     ctx.imageSmoothingEnabled = false;
     // Ethereal glow pass

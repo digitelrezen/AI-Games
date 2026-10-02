@@ -1,5 +1,5 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.59.0
+// Kitty Vs Everything — v3.60.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
 // v3.59.0: double-sized power-up icons — PowerUp.js v3.59.0 renders every
 // drop at 2× the v3.58.x icon size and doubles the pickup hitbox (drop
@@ -98,7 +98,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.59.0';
+export const VERSION = 'v3.60.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -502,7 +502,7 @@ export default class Game {
       return;
     }
     for (const z of this.fireZones) z.draw(ctx); // v3.11.0: napalm pools under everything
-    this.bonus.draw(ctx); // v3.54.0: bonus stage backdrop (Bone Yard pixel-art yard)
+    this.bonus.draw(ctx); // v3.54.0 → v3.60.0: bonus stage draw hook (Bone Yard bones are destructible bonusTargets)
     for (const pw of this.powerups) pw.draw(ctx);
     for (const bt of this.bonusTargets) bt.draw(ctx);
     for (const e of this.enemies) e.draw(ctx);
