@@ -1,6 +1,15 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.60.0
+// Kitty Vs Everything — v3.61.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.61.0: Snake pixel-art sprite swap — SnakeEnemy.js v1.2.0 renders the
+// pixel-art snake from `.assets/snake pixel_art.png` via the AssetManager
+// pipeline (key `snake`, 714×713 → 128×128) — dark charcoal scales with
+// gold-amber highlights and red accents, aspect-preserving nearest-neighbor
+// draw centered on the hitbox with a slither gait (sway/ripple/tilt/
+// breathing, phase-locked to the movement sine), ground shadow, and a
+// type-color accent glow pass; classic procedural serpent kept as
+// null-sprite fallback. Movement (sine slither + baseX weave) and the
+// strike attack are unchanged.
 // v3.59.0: double-sized power-up icons — PowerUp.js v3.59.0 renders every
 // drop at 2× the v3.58.x icon size and doubles the pickup hitbox (drop
 // 14 → 28, crate 18 → 36); Collisions.js reads pw.radius dynamically, so
@@ -98,7 +107,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.60.0';
+export const VERSION = 'v3.61.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

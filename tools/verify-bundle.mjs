@@ -111,6 +111,12 @@ const tests = [
   ['v3.60.0: BoneFragment per-key stats + weighted pool', /BONE_FRAGMENT_STATS/.test(s) && /BONE_FRAGMENT_POOL/.test(s) && /rollBoneFragmentKey/.test(s)],
   ['v3.60.0: BONUS.BONE_YARD_FIELD 10/10/6/3 seeded field', /BONE_YARD_FIELD:\s*\{\s*femur:\s*10,\s*profile_bone:\s*10,\s*skull:\s*6,\s*skeleton:\s*3\s*\}/.test(s) && /_seedYardField/.test(s)],
   ['v3.60.0: BoneFragment per-key score bands (500/1000/2000)', /score:\s*500/.test(s) && /score:\s*(?:1000|1e3)/.test(s) && /score:\s*(?:2000|2e3)/.test(s)],
+  // ── v3.61.0 snake pixel-art sprite (slithering serpent) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['"]).
+  ['v3.61.0: snake sprite dims 128×128', /snake:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.61.0: snake sprite key in AssetSprites registry', s.includes('snake: "iVBORw0KGgo')],
+  ['v3.61.0: SnakeEnemy sprite + procedural fallback', /SNAKE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -150,5 +156,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

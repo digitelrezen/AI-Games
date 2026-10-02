@@ -1,7 +1,14 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.60.0
+// Kitty Vs Everything — v3.61.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.61.0: Snake pixel-art sprite — the snake enemy (ENEMY_TYPES.snake,
+//   unchanged stats: r 20 / hp 14 / speed 140 / 100 pts) now renders the
+//   pixel-art snake from `.assets/snake pixel_art.png` via the AssetManager
+//   pipeline (key `snake`, 714×713 → 128×128) with a slither gait + ground
+//   shadow + accent glow; classic procedural serpent kept as null-sprite
+//   fallback. No config changes — movement and strike attack are unchanged.
+//
 // v3.60.0: fully destructible Bone Yard — BONUS.BONE_YARD_FIELD seeds the
 // stage with 29 destructible bones (10 femur / 10 profile_bone / 6 skull /
 // 3 skeleton); BoneFragment.js v2.3.0 adds per-key radius/HP/score bands
@@ -147,7 +154,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.60.0';
+export const VERSION = 'v3.61.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

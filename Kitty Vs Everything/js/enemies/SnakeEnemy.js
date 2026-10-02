@@ -1,10 +1,24 @@
 // Filename: SnakeEnemy.js
-// Kitty Vs Everything — v1.1.0
+// Kitty Vs Everything — v1.2.0
 // Snake: undulating serpent with segmented coils, a flickering forked tongue,
 // and a glowing red eye. Moves in a smooth sine wave.
-export const VERSION = 'v1.1.0';
+// v1.2.0: sprite swap — now draws the shared pixel-art PNG
+//         (.assets/snake pixel_art.png, 714×713) through the AssetManager
+//         pipeline (tools/import-assets.mjs → js/core/AssetSprites.js, key
+//         "snake", normalized to 128×128). The full pixel-art shading,
+//         depth, and charcoal/gold texture replace the flat green gradient:
+//         aspect-preserving, centered on the hitbox, nearest-neighbor, with
+//         a ground shadow, a slither bob/sway/tilt gait (phase-locked to the
+//         movement sine), and a type-color accent glow pass. The classic
+//         procedural serpent is kept as the null-sprite fallback per the
+//         AssetManager contract (segmented coils, flickering forked tongue,
+//         glowing red eyes, pale belly, tail tip).
+export const VERSION = 'v1.2.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
+
+const SNAKE_SPRITE_KEY = 'snake';
 
 export default class SnakeEnemy extends EnemyBase {
   move(dt, slowMul) {
@@ -25,6 +39,60 @@ export default class SnakeEnemy extends EnemyBase {
     ctx.translate(this.x, this.y);
     if (this.flash > 0) ctx.globalAlpha = 0.55;
 
+    const sprite = getSprite(SNAKE_SPRITE_KEY);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+
+  // v1.2.0 — pixel-art snake sprite. Aspect-preserving, centered on the
+  // hitbox, nearest-neighbor. The full pixel-art shading / depth /
+  // charcoal-gold texture comes from the PNG itself (head up top, coil
+  // filling the lower frame — same orientation as the procedural art);
+  // the slither gait is a gentle lateral sway + vertical ripple + slight
+  // body tilt (phase-locked to the movement sine, this.t * 3) plus a subtle
+  // idle breathe. A soft ground shadow grounds the sprite, and a type-color
+  // accent glow pass adds depth under the crisp blit.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(SNAKE_SPRITE_KEY);
+    const targetW = r * 3.0;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    // Slither gait (phase-locked to the movement sine, this.t * 3)
+    const sway = Math.sin(this.t * 3) * r * 0.08;
+    const bob = Math.sin(this.t * 6) * r * 0.05;
+    const tilt = Math.sin(this.t * 3 + 0.6) * 0.07;
+    const breathe = 1 + 0.02 * Math.sin(this.t * 6);
+    ctx.save();
+    // Ground shadow (depth cue under the coil)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(0, targetH * 0.41, targetW * 0.30, targetW * 0.07, 0, 0, TAU);
+    ctx.fill();
+    ctx.translate(sway, bob);
+    ctx.rotate(tilt);
+    ctx.scale(breathe, 1);
+    ctx.imageSmoothingEnabled = false;
+    const dx = -targetW / 2, dy = -targetH / 2;
+    // Accent glow pass (type color) under the crisp sprite
+    ctx.globalAlpha = 0.30;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = r * 0.8;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.restore();
+  }
+
+  // Classic procedural serpent (null-sprite fallback) — segmented coils,
+  // flickering forked tongue, glowing red eyes, pale belly, tail tip.
+  _drawProcedural(ctx, r) {
     // ─── BODY SEGMENTS (undulating coils) ───
     const segCount = 7;
     for (let i = 0; i < segCount; i++) {
@@ -125,9 +193,5 @@ export default class SnakeEnemy extends EnemyBase {
     ctx.moveTo(tailX, tailY);
     ctx.lineTo(tailX + r * 0.1, tailY + r * 0.2);
     ctx.stroke();
-
-    ctx.restore();
-    this.drawShieldRing(ctx);
-    this.drawBossBar(ctx);
   }
 }

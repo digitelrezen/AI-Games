@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.60.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.61.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -89,6 +89,7 @@ for (const [tag, rel] of [
   ['BonusLevel', 'js/levels/BonusLevel.js'],        // v3.54.0
   ['BoneFragment', 'js/levels/BoneFragment.js'],    // v3.54.0
   ['SpiderEnemy', 'js/enemies/SpiderEnemy.js'],     // v3.57.0
+  ['SnakeEnemy', 'js/enemies/SnakeEnemy.js'],       // v3.61.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -96,7 +97,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -171,7 +172,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.54.0: + femur / profile_bone / skeleton / skull (boneyard environment).
 // v3.57.0: + spider (spider enemy pixel-art sprite swap).
 // v3.58.0: + wanted ("Adopt Me!" wanted poster for the mini drop).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'wanted'];
+// v3.61.0: + snake (snake enemy pixel-art sprite swap).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -683,6 +685,24 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6n] v3.61.0 SNAKE PIXEL-ART SPRITE — slithering serpent now
+//       draws the shared PNG (key "snake") with a slither gait
+//       (sway/bob/tilt phase-locked to the movement sine) + a
+//       type-color accent glow; procedural fallback kept
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6n] v3.61.0 snake pixel-art sprite');
+{
+  const snSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/SnakeEnemy.js'), 'utf8');
+  check('SnakeEnemy: VERSION = v1.2.0', snSrc.includes("VERSION = 'v1.2.0'"));
+  check('SnakeEnemy: sprite key "snake" via AssetManager', snSrc.includes("SNAKE_SPRITE_KEY = 'snake'") && snSrc.includes('getSprite(SNAKE_SPRITE_KEY)'));
+  check('SnakeEnemy: null-sprite → procedural fallback branch', snSrc.includes('this._drawProcedural(ctx, r)'));
+  check('SnakeEnemy: slither gait (sway/bob/tilt) phase-locked to the movement sine', snSrc.includes('const sway = Math.sin(this.t * 3)') && snSrc.includes('const bob = Math.sin(this.t * 6)') && snSrc.includes('const tilt = Math.sin(this.t * 3 + 0.6)'));
+  check('SnakeEnemy: aspect-preserving nearest-neighbor draw', snSrc.includes('(targetW * dims.h) / dims.w') && snSrc.includes('ctx.imageSmoothingEnabled = false'));
+  check('SnakeEnemy: type-color accent glow pass', snSrc.includes('ctx.shadowColor = this.color') && snSrc.includes('ctx.shadowBlur = r * 0.8'));
+  check('AssetSprites: snake sprite dims 128×128 registered', /snake:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -692,6 +712,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.60.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.61.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);
