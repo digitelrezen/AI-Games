@@ -1,10 +1,25 @@
 // Filename: DragonEnemy.js
-// Kitty Vs Everything — v1.1.0
+// Kitty Vs Everything — v1.2.0
 // Dragon: heavy breather that hovers high and fires a 5-shot cone. Large
 // membranous wings, horns, a fire-glowing throat, and a scaly body.
-export const VERSION = 'v1.1.0';
+// v1.2.0: sprite swap — now draws the shared pixel-art PNG
+//         (.assets/Dragon-pixel-art.png, 800×800) through the AssetManager
+//         pipeline (tools/import-assets.mjs → js/core/AssetSprites.js, key
+//         "dragon", normalized to 128×128). The full pixel-art shading,
+//         depth, and scale texture replace the flat gradients:
+//         aspect-preserving, centered on the hitbox, nearest-neighbor, with
+//         a flight gait (sway/bob/tilt phase-locked to the horizontal weave
+//         in move() and the wing-beat), a type-color accent glow pass, and
+//         a pulsing fire-throat glow while breathing. The classic procedural
+//         dragon is kept as the null-sprite fallback per the AssetManager
+//         contract (membranous wings, scaly body, snouted head, curved
+//         horns, slit eyes, fire throat, claws, spade-tipped tail).
+export const VERSION = 'v1.2.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
+
+const DRAGON_SPRITE_KEY = 'dragon';
 
 export default class DragonEnemy extends EnemyBase {
   move(dt, slowMul) {
@@ -29,6 +44,71 @@ export default class DragonEnemy extends EnemyBase {
     ctx.translate(this.x, this.y);
     if (this.flash > 0) ctx.globalAlpha = 0.55;
 
+    const sprite = getSprite(DRAGON_SPRITE_KEY);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+
+  // v1.2.0 — pixel-art dragon sprite. Aspect-preserving, centered on the
+  // hitbox, nearest-neighbor. The full pixel-art shading / depth / scale
+  // texture comes from the PNG itself (head up top, wings spread — same
+  // orientation as the procedural art); the flight gait is a lateral sway
+  // + body tilt phase-locked to the horizontal weave in move()
+  // (Math.sin(this.t * 0.8) * 200) plus a vertical bob + idle breathe
+  // phase-locked to the wing-beat (Math.sin(this.t * 5)). A type-color
+  // accent glow pass adds depth under the crisp blit, and a pulsing
+  // fire-throat glow (same fireGlow pulse as the procedural throat) marks
+  // the breath between fire cones.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(DRAGON_SPRITE_KEY);
+    const targetW = r * 3.0;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    // Flight gait — phase-locked to the weave (t * 0.8) and wing-beat (t * 5)
+    const weave = Math.sin(this.t * 0.8);
+    const flap = Math.sin(this.t * 5);
+    const sway = weave * r * 0.15;
+    const bob = flap * r * 0.08;
+    const tilt = weave * 0.08;
+    const breathe = 1 + 0.02 * flap;
+    ctx.save();
+    ctx.translate(sway, bob);
+    ctx.rotate(tilt);
+    ctx.scale(breathe, 1);
+    ctx.imageSmoothingEnabled = false;
+    const dx = -targetW / 2, dy = -targetH / 2;
+    // Accent glow pass (type color) under the crisp sprite
+    ctx.globalAlpha = 0.30;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = r * 0.8;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    // Fire-throat glow while breathing (same pulse as the procedural throat)
+    const fireGlow = 0.5 + 0.5 * Math.sin(this.t * 3);
+    ctx.globalAlpha = 0.5 * fireGlow;
+    ctx.shadowColor = '#ff6a00';
+    ctx.shadowBlur = r * 0.5;
+    ctx.fillStyle = 'rgba(255, 110, 20, 0.8)';
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.6, r * 0.22, r * 0.16, 0, 0, TAU);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  // Classic procedural dragon (null-sprite fallback) — large membranous
+  // wings, scaly body, snouted head, curved horns, slit eyes, fire throat,
+  // claws, spade-tipped tail.
+  _drawProcedural(ctx, r) {
     const wing = Math.sin(this.t * 5) * 0.4;
     const fireGlow = 0.5 + 0.5 * Math.sin(this.t * 3);
 
@@ -200,9 +280,5 @@ export default class DragonEnemy extends EnemyBase {
     ctx.lineTo(r * 0.2 + tailSway, r * 1.55);
     ctx.closePath();
     ctx.fill();
-
-    ctx.restore();
-    this.drawShieldRing(ctx);
-    this.drawBossBar(ctx);
   }
 }

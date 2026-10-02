@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.63.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.64.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -92,6 +92,7 @@ for (const [tag, rel] of [
   ['SnakeEnemy', 'js/enemies/SnakeEnemy.js'],       // v3.61.0
   ['WolfEnemy', 'js/enemies/WolfEnemy.js'],         // v3.62.0
   ['LizardEnemy', 'js/enemies/LizardEnemy.js'],     // v3.63.0
+  ['DragonEnemy', 'js/enemies/DragonEnemy.js'],     // v3.64.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -99,7 +100,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -177,7 +178,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.61.0: + snake (snake enemy pixel-art sprite swap).
 // v3.62.0: + wolf (wolf enemy pixel-art sprite swap).
 // v3.63.0: + lizard (lizard enemy pixel-art sprite swap).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard'];
+// v3.64.0: + dragon (dragon enemy pixel-art sprite swap).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -745,6 +747,34 @@ console.log('\n[6p] v3.63.0 lizard pixel-art sprite');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6q] v3.64.0 DRAGON PIXEL-ART SPRITE — fire-breather now draws
+//       the shared PNG (key "dragon", 800×800 → 128×128) with a
+//       flight gait (sway/bob/tilt phase-locked to the horizontal
+//       weave + wing-beat) + type-color accent glow + pulsing
+//       fire-throat glow; procedural fallback retained
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6q] v3.64.0 dragon pixel-art sprite');
+{
+  const deSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/DragonEnemy.js'), 'utf8');
+  check('DragonEnemy: VERSION = v1.2.0', deSrc.includes("VERSION = 'v1.2.0'"));
+  check('DragonEnemy: sprite key "dragon" via AssetManager', deSrc.includes("DRAGON_SPRITE_KEY = 'dragon'") && deSrc.includes('getSprite(DRAGON_SPRITE_KEY)'));
+  check('DragonEnemy: null-sprite → procedural fallback branch', deSrc.includes('this._drawProcedural(ctx, r)'));
+  check('DragonEnemy: flight gait phase-locked to the weave (t*0.8) + wing-beat (t*5)', deSrc.includes('const weave = Math.sin(this.t * 0.8)') && deSrc.includes('const flap = Math.sin(this.t * 5)'));
+  check('DragonEnemy: aspect-preserving nearest-neighbor draw', deSrc.includes('(targetW * dims.h) / dims.w') && deSrc.includes('ctx.imageSmoothingEnabled = false'));
+  check('DragonEnemy: type-color accent glow pass', deSrc.includes('ctx.shadowColor = this.color') && deSrc.includes('ctx.shadowBlur = r * 0.8'));
+  check('DragonEnemy: pulsing fire-throat glow while breathing', deSrc.includes('const fireGlow = 0.5 + 0.5 * Math.sin(this.t * 3)') && deSrc.includes('rgba(255, 110, 20, 0.8)'));
+  check('DragonEnemy: procedural fallback art intact (wings/scales/tail)', deSrc.includes('lwGrad') && deSrc.includes('bodyGrad') && deSrc.includes('tailSway'));
+  check('DragonEnemy: movement + attack unchanged (weave 200 / 5-shot cone 210)', deSrc.includes('Math.sin(this.t * 0.8) * 200') && deSrc.includes('fireAtPlayer(a + i * 0.14, 210, 0.7)'));
+  check('config: ENEMY_TYPES.dragon intact (color/speed/hp/damage/fireRate/pattern)',
+    ENEMY_TYPES.dragon && ENEMY_TYPES.dragon.color === '#d64545' && ENEMY_TYPES.dragon.speed === 1.6 &&
+    ENEMY_TYPES.dragon.hp === 70 && ENEMY_TYPES.dragon.damage === 20 && ENEMY_TYPES.dragon.fireRate === 1.8 &&
+    ENEMY_TYPES.dragon.pattern === 'breath',
+    `got ${JSON.stringify(ENEMY_TYPES.dragon)}`);
+  check('AssetSprites: dragon sprite dims 128×128 registered', /dragon:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: dragon source 800×800 → 128×128', /dragon: "Dragon-pixel-art\.png \(800×800 → 128×128,/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -754,6 +784,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.63.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.64.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

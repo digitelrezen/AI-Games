@@ -1,6 +1,14 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.63.0
+// Kitty Vs Everything — v3.64.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.64.0: Dragon pixel-art sprite swap — DragonEnemy.js v1.2.0 renders the
+// pixel-art dragon from `.assets/Dragon-pixel-art.png` via the AssetManager
+// pipeline (key `dragon`, 800×800 → 128×128) — aspect-preserving
+// nearest-neighbor draw centered on the hitbox with a flight gait
+// (sway/bob/bank, phase-locked to the hover weave + wing-beat) and a
+// type-color accent glow pass; classic procedural dragon kept as
+// null-sprite fallback. Movement (hover weave) and the fire-breath cone
+// attack are unchanged.
 // v3.63.0: Lizard pixel-art sprite swap — LizardEnemy.js v1.2.0 renders the
 // pixel-art lizard from `.assets/Lizard pixel_art.png` via the AssetManager
 // pipeline (key `lizard`, 507×656 → 99×128) — full pixel-art shading/depth/
@@ -123,7 +131,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.63.0';
+export const VERSION = 'v3.64.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
