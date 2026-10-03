@@ -10,7 +10,7 @@
 // Modes:
 //   'local'  — P2 is driven by the local keyboard (Player2Controls).
 //   'remote' — P2 is driven by the remote client's input (host-authoritative).
-import { createCatShip } from '../js/core/CatShipFactory.js';
+import { createCatShip } from '../js/combat/CatShipFactory.js'; // v3.71.0: modular combat
 import { PLAYER2 } from '../js/core/config.js';
 import netSettings from './NetSettings.js';
 import netSync from './NetSync.js';

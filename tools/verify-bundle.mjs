@@ -233,6 +233,19 @@ const tests = [
   ['v3.70.0: no stale launchRockets (module removed)', !/launchRockets/.test(s)],
   ['v3.70.0: no stale updateRockets (module removed)', !/updateRockets/.test(s)],
   ['v3.70.0: no js/combat/Rockets.js import (deleted)', !/combat\/Rockets\.js/.test(s)],
+  // ── v3.71.0 Phase 4 modular cat-ship combat (CatShipFactory + MiniShip + SuperNova) ──
+  // CatShipFactory + MiniShip moved js/core/ → js/combat/; the base nova /
+  // synergy super-weapon volleys extracted from Player.js into SuperNova.js.
+  // esbuild (IIFE, non-minified) emits `var X = class` / `function f(` at the
+  // IIFE top level and preserves call sites like fireNova(this).
+  ['v3.71.0: SuperNova fireNova + fireSuperWeapon in bundle', /function fireNova\(/.test(s) && /function fireSuperWeapon\(/.test(s)],
+  ['v3.71.0: Player delegates activateUltimate → fireNova(this)', s.includes('fireNova(this)')],
+  ['v3.71.0: Player delegates superWeapon → fireSuperWeapon(this)', s.includes('fireSuperWeapon(this)')],
+  ['v3.71.0: nova 16 ring + super-weapon 32 ring / 8 homing loops in bundle', /i < 16/.test(s) && /i < 32/.test(s) && /i < 8/.test(s)],
+  ['v3.71.0: COLOR SYNERGY banner string in bundle', s.includes('COLOR SYNERGY! SUPER-WEAPON FIRED!')],
+  ['v3.71.0: CatShipFactory createCatShip + createMiniShip in bundle', /function createCatShip\(/.test(s) && /function createMiniShip\(/.test(s)],
+  ['v3.71.0: MiniShip class in bundle', /var MiniShip = class/.test(s)],
+  ['v3.71.0: no stale js/core/CatShipFactory or js/core/MiniShip import path', !/core\/CatShipFactory|core\/MiniShip/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 
@@ -241,5 +254,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + bat pixel-art sprite + squirrel enemy (19th species) + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + bat pixel-art sprite + squirrel enemy (19th species) + power-up pixel art w/ 5 jewel drops + modular cat-ship combat (CatShipFactory + MiniShip + SuperNova)).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

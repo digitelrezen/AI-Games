@@ -1,5 +1,5 @@
 // Filename: MiniShip.js
-// Kitty Vs Everything — v3.46.0
+// Kitty Vs Everything — v3.71.0
 // Docked mini-ship: a shrunken clone of the player's cat ship with an
 // independent HP pool. Spawns ONLY via CatShipFactory.createMiniShip —
 // the strict same-color rule (minis always clone the player's current
@@ -47,13 +47,15 @@
 //         fallback SHIP_GEOMETRY.barrelLen) instead of the global value, and
 //         the plasma volley now fires a 3-bolt fan from BOTH front paws (no
 //         alternation), matching the hull's PlayerWeapons.firePrimary.
-export const VERSION = 'v3.46.0';
-import Entity from './Entity.js';
-import Bullet from '../combat/Bullet.js';
-import { MINI_SHIP, PLAYER_THEMES, SHIP_GEOMETRY, WEAPONS } from './config.js';
-import { rand } from './utils.js';
+// v3.71.0: MODULAR COMBAT (Phase 4) — moved from js/core/ into js/combat/
+//           alongside the rest of the combat modules; behavior unchanged.
+export const VERSION = 'v3.71.0';
+import Entity from '../core/Entity.js';
+import Bullet from './Bullet.js';
+import { MINI_SHIP, PLAYER_THEMES, SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
+import { rand } from '../core/utils.js';
 import { getDockPosition } from '../player/PlayerHardpoints.js';
-import { initWeaponAnimState, updateWeaponAnim } from '../combat/WeaponAnim.js';
+import { initWeaponAnimState, updateWeaponAnim } from './WeaponAnim.js';
 
 const MINI_SCALE = 0.6; // must match PlayerMiniArt's draw scale
 

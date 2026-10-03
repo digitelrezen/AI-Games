@@ -11,7 +11,7 @@ import netSettings from './NetSettings.js';
 import p2Controls from './Player2Controls.js';
 import playerProfile from './PlayerProfile.js';
 import NetProtocol from './NetProtocol.js';
-import { createCatShip } from '../js/core/CatShipFactory.js';
+import { createCatShip } from '../js/combat/CatShipFactory.js'; // v3.71.0: modular combat
 import { createEnemy } from '../js/enemies/EnemyFactory.js';
 import { bus } from '../js/core/EventBus.js';
 

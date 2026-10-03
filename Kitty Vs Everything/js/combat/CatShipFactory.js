@@ -1,13 +1,16 @@
 // Filename: CatShipFactory.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.71.0
 // Single factory for the player fleet:
 //   createCatShip(theme, game) — builds the main hull (per-theme variant)
 //   createMiniShip(player)     — THE SOLE mini-ship spawn path. v3.3.0 strict
 //                                same-color rule: minis always clone the
 //                                player's current theme and dock on the free
 //                                flank (SHIP_GEOMETRY.miniDockL / miniDockR).
-export const VERSION = 'v3.3.0';
-import { MINI_SHIP } from './config.js';
+// v3.71.0: MODULAR COMBAT (Phase 4) — moved from js/core/ into js/combat/
+//           alongside the rest of the combat modules; createCatShip /
+//           createMiniShip behavior unchanged.
+export const VERSION = 'v3.71.0';
+import { MINI_SHIP } from '../core/config.js';
 import MiniShip from './MiniShip.js';
 import OrangeCat from '../enemies/orangeCat.js';
 import YellowCat from '../enemies/yellowCat.js';

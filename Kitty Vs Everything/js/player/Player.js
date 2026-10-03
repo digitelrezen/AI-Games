@@ -1,5 +1,5 @@
 // Filename: Player.js
-// Kitty Vs Everything — v3.69.0
+// Kitty Vs Everything — v3.71.0
 // Core player controller: hull state (health/shield/lives/invulnerability),
 // per-frame orchestration of the extracted modules, and fleet-level damage
 // routing (docked minis intercept damage BEFORE the main hull).
@@ -37,13 +37,12 @@
 // v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — the registry now holds
 //          ALL THREE primary weapons: { vulkan: VulcanCannon, plasma:
 //          PulseCannon, rail: RailCannon }. Respawn resets all three.
-export const VERSION = 'v3.69.0';
+export const VERSION = 'v3.71.0';
 import Entity from '../core/Entity.js';
-import Bullet from '../combat/Bullet.js';
 import { PLAYER, PLAYER_THEMES } from '../core/config.js';
-import { TAU, rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
+import { fireNova, fireSuperWeapon } from '../combat/SuperNova.js'; // v3.71.0: modular combat (nova / super-weapon volleys)
 import PlayerRenderer from './PlayerRenderer.js';
 import { updateFlight } from './PlayerFlight.js';
 import { updateWeaponState, tryFire, handleActionKeys, cycleWeapon as cycleWeaponTo } from './PlayerWeapons.js';
@@ -179,19 +178,11 @@ export default class Player extends Entity {
 
   // ═══════════════════════════════════════════════════════════
   //  F KEY: ULTIMATE (ABSTRACT — overridden by each cat variant)
+  //  v3.71.0: the base nova volley lives in combat/SuperNova.js
+  //  (fireNova); this method is the delegation point.
   // ═══════════════════════════════════════════════════════════
   activateUltimate() {
-    for (let i = 0; i < 16; i++) {
-      const a = (i / 16) * TAU;
-      this.game.bullets.push(new Bullet({
-        x: this.x, y: this.y,
-        vx: Math.cos(a) * 500, vy: Math.sin(a) * 500,
-        damage: 25, color: '#ffd54f', friendly: true, life: 1.5, owner: this,
-      }));
-    }
-    this.game.particles.burst(this.x, this.y, { count: 30, color: '#ffd54f', speed: 300, life: 0.6 });
-    this.game.shake = 8;
-    audio.superWeapon();
+    fireNova(this);
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -225,29 +216,10 @@ export default class Player extends Entity {
   // ═══════════════════════════════════════════════════════════
   //  SHARED UTILITIES
   // ═══════════════════════════════════════════════════════════
+  // v3.71.0: the color-synergy super-weapon volley lives in
+  // combat/SuperNova.js (fireSuperWeapon); this method delegates.
   superWeapon() {
-    bus.emit('banner', { text: 'COLOR SYNERGY! SUPER-WEAPON FIRED!', tone: 'good', duration: 2 });
-    for (let i = 0; i < 32; i++) {
-      const a = (i / 32) * TAU;
-      this.game.bullets.push(new Bullet({
-        x: this.x, y: this.y,
-        vx: Math.cos(a) * 500, vy: Math.sin(a) * 500,
-        damage: 40, color: '#ffd54f', friendly: true, life: 2, owner: this,
-      }));
-    }
-    for (let i = 0; i < 8; i++) {
-      const a = rand(0, TAU);
-      const b = new Bullet({
-        x: this.x, y: this.y,
-        vx: Math.cos(a) * 700, vy: Math.sin(a) * 700,
-        damage: 60, color: '#ff5252', friendly: true, life: 2.5, owner: this,
-      });
-      b.homing = true;
-      this.game.bullets.push(b);
-    }
-    this.game.shake = 16;
-    this.game.particles.burst(this.x, this.y, { count: 60, color: '#ffd54f', speed: 400, life: 1 });
-    audio.superWeapon();
+    fireSuperWeapon(this);
   }
 
   cycleWeapon(dir) { cycleWeaponTo(this, dir); }

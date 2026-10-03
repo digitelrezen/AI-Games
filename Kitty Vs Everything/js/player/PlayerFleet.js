@@ -1,5 +1,5 @@
 // Filename: PlayerFleet.js
-// Kitty Vs Everything — v3.47.0
+// Kitty Vs Everything — v3.71.0
 // Docked mini-ship fleet: spawn (strict same-color clone via
 // CatShipFactory.createMiniShip), per-frame update, independent mini death
 // handling, color-match synergy charging, and fleet clearing on hull loss.
@@ -12,8 +12,8 @@
 //         'synergy' action (P1: T / -, P2 co-op: , — see Keybinds.js /
 //         Player2Controls.js) fires superWeapon() when ready. The old
 //         10s auto-fire is gone.
-export const VERSION = 'v3.47.0';
-import { createMiniShip } from '../core/CatShipFactory.js';
+export const VERSION = 'v3.71.0';
+import { createMiniShip } from '../combat/CatShipFactory.js'; // v3.71.0: modular combat
 import { MINI_SHIP } from '../core/config.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
