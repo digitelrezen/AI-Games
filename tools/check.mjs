@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.67.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.68.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -96,6 +96,8 @@ for (const [tag, rel] of [
   ['FalconEnemy', 'js/enemies/FalconEnemy.js'],     // v3.65.0
   ['BatEnemy', 'js/enemies/BatEnemy.js'],           // v3.66.0
   ['SquirrelEnemy', 'js/enemies/SquirrelEnemy.js'], // v3.67.0
+  ['BaseWeapon', 'js/combat/BaseWeapon.js'],        // v3.68.0
+  ['VulcanCannon', 'js/combat/VulcanCannon.js'],    // v3.68.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -103,7 +105,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.68.0', PlayerWeapons: 'v3.68.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -219,7 +221,7 @@ runTool(['validate.mjs'], 'tools/validate.mjs (game source validation)');
 // ═══════════════════════════════════════════════════════════
 console.log('\n[4] Power-up collection (headless)');
 const { default: PowerUp } = await mod('js/combat/PowerUp.js');
-const { fireNow, updateWeaponState } = await mod('js/player/PlayerWeapons.js');
+const { fireNow, updateWeaponState, cycleWeapon } = await mod('js/player/PlayerWeapons.js');
 
 const makeGame = () => ({
   viewW: 1280, viewH: 720, H: 720,
@@ -873,6 +875,95 @@ console.log('\n[6t] v3.67.0 squirrel enemy (19th species)');
 }
 
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  [6u] v3.68.0 MODULAR WEAPON ARCHITECTURE (Phase 1) —
+//      BaseWeapon contract (fire / update / draw / reset /
+//      canFire + owner-backed cooldown & lockout) + the
+//      VulcanCannon extraction: state stays on Player
+//      (fireTimer / thermal / thermalLockout), firing logic
+//      moves to js/combat, PlayerWeapons delegates
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6u] v3.68.0 modular weapon architecture (BaseWeapon + VulcanCannon)');
+{
+  const { default: BaseWeapon } = await mod('js/combat/BaseWeapon.js');
+  const { default: VulcanCannon } = await mod('js/combat/VulcanCannon.js');
+  const bwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/BaseWeapon.js'), 'utf8');
+  const vcSrc = fs.readFileSync(path.join(ROOT, 'js/combat/VulcanCannon.js'), 'utf8');
+  check('BaseWeapon: VERSION = v1.0.0', bwSrc.includes("VERSION = 'v1.0.0'"));
+  check('VulcanCannon: VERSION = v1.0.0', vcSrc.includes("VERSION = 'v1.0.0'"));
+  check('VulcanCannon: extends BaseWeapon', Object.getPrototypeOf(VulcanCannon.prototype).constructor.name === 'BaseWeapon');
+  check('BaseWeapon: abstract fire() throws for unimplemented weapons', (() => {
+    const w = new BaseWeapon(makePlayer(makeGame()), 'vulkan');
+    let threw = false;
+    try { w.fire(0); } catch { threw = true; }
+    return threw;
+  })());
+  check('BaseWeapon: cooldown maps to owner.fireTimer (get + set)', (() => {
+    const p = makePlayer(makeGame());
+    const w = new BaseWeapon(p, 'vulkan');
+    w.cooldown = 0.25;
+    return p.fireTimer === 0.25 && w.cooldown === 0.25;
+  })());
+  check('BaseWeapon: lockout maps to owner.thermalLockout (get + set)', (() => {
+    const p = makePlayer(makeGame());
+    const w = new BaseWeapon(p, 'vulkan');
+    w.lockout = 0.5;
+    return p.thermalLockout === 0.5 && w.lockout === 0.5;
+  })());
+  check('BaseWeapon: canFire() gates on cooldown + lockout + ammo', (() => {
+    const p = makePlayer(makeGame());
+    const w = new BaseWeapon(p, 'vulkan');
+    if (!w.canFire()) return false;
+    p.fireTimer = 0.1;
+    const gatedByCooldown = !w.canFire();
+    p.fireTimer = 0; p.thermalLockout = 0.1;
+    const gatedByLockout = !w.canFire();
+    p.thermalLockout = 0; w.ammo = 0;
+    const gatedByAmmo = !w.canFire();
+    return gatedByCooldown && gatedByLockout && gatedByAmmo;
+  })());
+  // Player owns the registry + the canonical state fields
+  const pSrc = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
+  check('Player: imports VulcanCannon + owns the weapons registry',
+    pSrc.includes("import VulcanCannon from '../combat/VulcanCannon.js'") &&
+    pSrc.includes('this.weapons = { vulkan: new VulcanCannon(this) }'));
+  check('Player: respawn resets modular weapon state (weapons.vulkan.reset)', pSrc.includes('this.weapons.vulkan.reset()'));
+  check('Player: canonical state fields intact (fireTimer / thermal / thermalLockout)',
+    pSrc.includes('this.fireTimer = 0;') && pSrc.includes('this.thermal = 0;') && pSrc.includes('this.thermalLockout = 0;'));
+  // PlayerWeapons delegates to p.weapons[p.weapon]
+  const pwSrc2 = fs.readFileSync(path.join(ROOT, 'js/player/PlayerWeapons.js'), 'utf8');
+  check('PlayerWeapons: fireNow gate delegates to weapon.canFire()',
+    pwSrc2.includes('const weapon = p.weapons && p.weapons[p.weapon];') && pwSrc2.includes('if (!weapon.canFire()) return false;'));
+  check('PlayerWeapons: firePrimary delegates volleys to weapon.fire()',
+    pwSrc2.includes('weapon.fire(aim, { dmgMul, homing: aimAssist(p) })'));
+  check('PlayerWeapons: updateWeaponState ticks weapon.update(dt)', pwSrc2.includes('weapon.update(dt);'));
+  check('PlayerWeapons: cycleWeapon resets modular weapon state', pwSrc2.includes('weapon.reset();'));
+  check('PlayerWeapons: inline fallback kept for un-extracted weapons',
+    pwSrc2.includes("if (p.weapon === 'vulkan' && p.thermal > 0)"));
+  // Headless: the delegated vulkan keeps its exact v3.67.0 behavior
+  const game = makeGame();
+  const p = makePlayer(game);
+  p.weapon = 'vulkan';
+  check('Player: weapons.vulkan is a VulcanCannon instance', p.weapons.vulkan instanceof VulcanCannon);
+  let shots = 0;
+  for (let i = 0; i < 20; i++) { p.fireTimer = 0; if (fireNow(p)) shots++; }
+  check('v3.68.0: 20 delegated vulkan shots all fire', shots === 20, `got ${shots}`);
+  check('v3.68.0: overheat sets lockout 1.2s on shot 20 (state on Player)',
+    p.thermalLockout === WEAPONS.vulkan.thermalLockout, `got ${p.thermalLockout}`);
+  check('v3.68.0: thermal resets to 0 on overheat', p.thermal === 0, `got ${p.thermal}`);
+  check('v3.68.0: twin tips × 20 shots = 40 bullets', game.bullets.length === 40, `got ${game.bullets.length}`);
+  p.fireTimer = 0;
+  check('v3.68.0: fireNow() blocked during lockout (delegated gate)', fireNow(p) === false);
+  p.thermal = 0.5; p.thermalLockout = 0;
+  updateWeaponState(p, 1);
+  check('v3.68.0: updateWeaponState → VulcanCannon.update decays thermal 0.5 → 0.15',
+    Math.abs(p.thermal - 0.15) < 1e-9, `got ${p.thermal}`);
+  cycleWeapon(p, 1);
+  check('v3.68.0: weapon switch clears vulkan thermal/lockout',
+    p.thermal === 0 && p.thermalLockout === 0, `thermal=${p.thermal} lockout=${p.thermalLockout}`);
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -882,6 +973,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.67.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.68.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

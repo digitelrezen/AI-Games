@@ -23,7 +23,14 @@
 //          alternation; both pods fire together). Per-weapon barrelLen
 //          (WEAPONS.plasma.barrelLen = 10) places the tips at the pod
 //          mouths (PlayerHardpoints.getMuzzleTipOffsets).
-export const VERSION = 'v3.46.0';
+// v3.68.0: MODULAR WEAPON ARCHITECTURE (Phase 1) — the Vulcan Cannon moved
+//          to js/combat/VulcanCannon.js (extends js/combat/BaseWeapon.js).
+//          Player owns a weapons registry (p.weapons); fireNow / firePrimary
+//          / updateWeaponState / cycleWeapon now delegate to
+//          p.weapons[p.weapon] when the active weapon has been extracted.
+//          Un-extracted weapons (plasma / rail) keep their inline paths as a
+//          documented fallback.
+export const VERSION = 'v3.68.0';
 import Bullet from '../combat/Bullet.js';
 import { PLAYER, WEAPONS, WEAPON_ORDER, MINI_SHIP } from '../core/config.js';
 import { TAU, rand, dist2 } from '../core/utils.js';
@@ -36,7 +43,10 @@ import { getUpperPawOffsets, getMuzzlePosition, getMuzzleTipOffsets } from './Pl
 /** Thermal decay, overheat lockout smoke, rail charge-up visual.
  *  v3.33.0: while FRENZY is active (p.frenzyTime > 0) the fire cooldown and
  *  ALL thermal state are held at zero every frame — cooldowns removed,
- *  Vulcan overheat neutralized. */
+ *  Vulcan overheat neutralized.
+ *  v3.68.0: the per-weapon state tick is delegated to the modular weapon
+ *  (p.weapons[p.weapon].update(dt) — VulcanCannon for the vulkan); the
+ *  inline fallback only covers weapons that are not extracted yet. */
 export function updateWeaponState(p, dt) {
   const w = WEAPONS[p.weapon];
 
@@ -46,17 +56,25 @@ export function updateWeaponState(p, dt) {
     p.thermal = 0;
     p.thermalLockout = 0;
   } else {
-    // Thermal decay (Vulkan)
-    if (p.weapon === 'vulkan' && p.thermal > 0) {
-      p.thermal = Math.max(0, p.thermal - w.thermalDecay * dt);
-    }
-    // Thermal lockout tick
-    if (p.thermalLockout > 0) {
-      p.thermalLockout = Math.max(0, p.thermalLockout - dt);
-      // Emit smoke during lockout
-      if (Math.random() < 0.3) {
-        const muzzle = getMuzzlePosition(p);
-        p.game.particles.burst(muzzle.x, muzzle.y, { count: 2, color: '#4a4a4a', speed: 30, life: 0.6, size: 3 });
+    const weapon = p.weapons && p.weapons[p.weapon];
+    if (weapon) {
+      // v3.68.0: modular weapon owns its per-frame state (VulcanCannon:
+      // thermal decay + overheat lockout tick + lockout smoke).
+      weapon.update(dt);
+    } else {
+      // Weapons not extracted yet keep their inline state tick.
+      // Thermal decay (Vulkan)
+      if (p.weapon === 'vulkan' && p.thermal > 0) {
+        p.thermal = Math.max(0, p.thermal - w.thermalDecay * dt);
+      }
+      // Thermal lockout tick
+      if (p.thermalLockout > 0) {
+        p.thermalLockout = Math.max(0, p.thermalLockout - dt);
+        // Emit smoke during lockout
+        if (Math.random() < 0.3) {
+          const muzzle = getMuzzlePosition(p);
+          p.game.particles.burst(muzzle.x, muzzle.y, { count: 2, color: '#4a4a4a', speed: 30, life: 0.6, size: 3 });
+        }
       }
     }
   }
@@ -86,10 +104,17 @@ export function tryFire(p, dt, input) {
 }
 
 /** Fire if the cooldown + overheat gates allow. Returns true if fired.
- *  v3.14.0: shared by tryFire (manual) and TestAimbot (auto). */
+ *  v3.14.0: shared by tryFire (manual) and TestAimbot (auto).
+ *  v3.68.0: the gate delegates to the modular weapon's canFire() when the
+ *  active weapon has been extracted (p.weapons[p.weapon]). */
 export function fireNow(p) {
   const w = WEAPONS[p.weapon];
-  if (p.thermalLockout > 0 || p.fireTimer > 0) return false;
+  const weapon = p.weapons && p.weapons[p.weapon];
+  if (weapon) {
+    if (!weapon.canFire()) return false;
+  } else if (p.thermalLockout > 0 || p.fireTimer > 0) {
+    return false;
+  }
   p.fireTimer = w.rate;
   p.firedThisFrame = true; // v3.17.0: docked minis fire in sync with the hull
   firePrimary(p);
@@ -129,44 +154,15 @@ export function firePrimary(p) {
   const aim = p.angle + spread;
   const dmgMul = 1 + p.minis.length * MINI_SHIP.damageBonusPerMini;
 
-  switch (p.weapon) {
-    case 'vulkan': {
-      // Gatling: fire from both front-paw barrel TIPS (v3.17.0 oversized guns)
-      const tips = getMuzzleTipOffsets(p);
-      for (const paw of tips) {
-        const b = new Bullet({
-          x: paw.x, y: paw.y,
-          vx: Math.cos(aim) * w.speed, vy: Math.sin(aim) * w.speed,
-          damage: w.damage * dmgMul,
-          color: w.color, weapon: 'vulkan',
-          friendly: true, life: 1.5, radius: 3,
-          tracking: w.tracking, owner: p,
-        });
-        if (aimAssist(p)) b.homing = true;
-        p.game.bullets.push(b);
-      }
-      p.pawFlashL = 0.07;
-      p.pawFlashR = 0.07;
-      // v3.33.0: FRENZY — no heat buildup and no overheat while active
-      // (thermal is also held at zero by updateWeaponState each frame).
-      if (p.frenzyTime > 0) {
-        p.thermal = 0;
-      } else {
-        p.thermal = Math.min(w.thermalMax, p.thermal + w.thermalPerShot);
-        // Overheat check
-        if (p.thermal >= w.thermalMax) {
-          p.thermalLockout = w.thermalLockout;
-          p.thermal = 0;
-          bus.emit('dmg', { x: p.x, y: p.y - 30, text: 'OVERHEAT!', color: '#ff5722' });
-          if (p.game.msglog) { // v3.14.0: weapon lockout → combat console
-            p.game.msglog.log('VULKAN OVERHEAT — LOCKOUT ' + w.thermalLockout + 's', 'bad', p.game.time);
-          }
-        }
-      }
-      audio.shoot();
-      break;
-    }
+  // v3.68.0: modular weapons (p.weapons registry) own their volleys —
+  // VulcanCannon for the vulkan. Un-extracted weapons fall through.
+  const weapon = p.weapons && p.weapons[p.weapon];
+  if (weapon) {
+    weapon.fire(aim, { dmgMul, homing: aimAssist(p) });
+    return;
+  }
 
+  switch (p.weapon) {
     case 'plasma': {
       // v3.46.0: TWIN-POD BURST — fire a 3-bolt fan from BOTH front-paw
       // emitter tips on every shot (no alternation; both pods fire together).
@@ -241,13 +237,19 @@ export function fireNapalmRockets(p) {
   bus.emit('banner', { text: 'NAPALM ROCKETS AWAY!', tone: 'good', duration: 0.8 });
 }
 
-/** R / G key: cycle to next/previous weapon and reset per-weapon state. */
+/** R / G key: cycle to next/previous weapon and reset per-weapon state.
+ *  v3.68.0: modular weapons clear their own state via weapon.reset(). */
 export function cycleWeapon(p, dir) {
   const order = WEAPON_ORDER;
   const i = (order.indexOf(p.weapon) + dir + order.length) % order.length;
   p.weapon = order[i];
-  p.thermal = 0;
-  p.thermalLockout = 0;
+  const weapon = p.weapons && p.weapons[p.weapon];
+  if (weapon) {
+    weapon.reset(); // v3.68.0: e.g. VulcanCannon clears thermal + lockout
+  } else {
+    p.thermal = 0;
+    p.thermalLockout = 0;
+  }
   p.plasmaAlt = 0;
   bus.emit('banner', { text: 'WEAPON: ' + WEAPONS[p.weapon].name, tone: 'good', duration: 0.8 });
 }

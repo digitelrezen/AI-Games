@@ -161,6 +161,19 @@ const tests = [
   ['v3.67.0: squirrel erratic hop + lateral sprints', s.includes('this._hopVy') && s.includes('this._sprintVx') && s.includes('this._sprintT')],
   ['v3.67.0: squirrel config entry intact', /squirrel:\s*\{\s*name:\s*['"]Squirrel['"]/.test(s) && s.includes('#a5622d')],
   ['v3.67.0: EnemyFactory registers squirrel', /squirrel:\s*SquirrelEnemy/.test(s)],
+  // ── v3.68.0 modular weapon architecture (BaseWeapon + VulcanCannon) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes and default-exported classes as `var Name = class` — every
+  // pattern below is quote-tolerant and name-suffix-tolerant. Note:
+  // MiniShip.js keeps its OWN `case 'vulkan'` (mini volleys, no heat) —
+  // the removed path is specifically firePrimary's inline heat buildup.
+  ['v3.68.0: BaseWeapon class in bundle (shared weapon contract)', /BaseWeapon\d*\s*=\s*class/.test(s)],
+  ['v3.68.0: VulcanCannon class in bundle (extends BaseWeapon, key "vulkan")', /VulcanCannon\d*\s*=\s*class/.test(s) && /super\(owner,\s*['"]vulkan['"]\)/.test(s)],
+  ['v3.68.0: Player owns the weapons registry (vulkan → VulcanCannon)', /this\.weapons\s*=\s*\{\s*vulkan:\s*new\s+VulcanCannon\d*\s*\(this\)\s*\}/.test(s)],
+  ['v3.68.0: PlayerWeapons delegates volleys to p.weapons[p.weapon]', s.includes('p.weapons[p.weapon]') && /weapon\.fire\(aim,/.test(s)],
+  ['v3.68.0: Vulcan thermal state stays on Player (owner-backed, FRENZY gate)', /this\.owner\.thermal/.test(s) && /this\.owner\.frenzyTime\s*>\s*0/.test(s)],
+  ['v3.68.0: overheat floater + msglog live in VulcanCannon', s.includes('OVERHEAT!') && /VULKAN OVERHEAT (\u2014|\\u2014) LOCKOUT/.test(s)],
+  ['v3.68.0: inline firePrimary vulkan heat path removed (now VulcanCannon)', !/p\.thermal\s*=\s*Math\.min\(w\.thermalMax,\s*p\.thermal\s*\+\s*w\.thermalPerShot\)/.test(s)],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).

@@ -1,7 +1,13 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.67.0
+// Kitty Vs Everything — v3.68.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.68.0: MODULAR WEAPON ARCHITECTURE (Phase 1) — new js/combat/BaseWeapon.js
+//   (abstract base: fire/update/draw/reset + cooldown/ammo/damage/active) and
+//   js/combat/VulcanCannon.js (Vulcan Cannon extracted from
+//   PlayerWeapons.firePrimary — twin-tip Gatling volley + thermal/overheat).
+//   Player owns the p.weapons registry; PlayerWeapons.js delegates to it.
+//   WEAPONS.vulkan balance unchanged.
 // v3.67.0: Squirrel enemy (19th species) — ENEMY_TYPES.squirrel: a fast,
 //   erratic tree-dweller (speed 3.4 / hp 12 / damage 7 / fireRate 0.7 /
 //   scurry pattern) rendered from the pixel-art squirrel
@@ -206,7 +212,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.67.0';
+export const VERSION = 'v3.68.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

@@ -29,7 +29,12 @@
 //          superWeapon on the 'synergy' action (T / - default) instead of
 //          the old 10s auto-fire. Release version bump, no Player.js logic
 //          changes.
-export const VERSION = 'v3.47.0';
+// v3.68.0: MODULAR WEAPON ARCHITECTURE (Phase 1) — Player owns a weapons
+//          registry (this.weapons) of js/combat weapon classes:
+//          { vulkan: VulcanCannon }. PlayerWeapons.js delegates fire /
+//          state tick / reset to the registry; thermal + lockout stay on
+//          the player (canonical fields for HUDFireControl / FRENZY).
+export const VERSION = 'v3.68.0';
 import Entity from '../core/Entity.js';
 import Bullet from '../combat/Bullet.js';
 import { PLAYER, PLAYER_THEMES } from '../core/config.js';
@@ -43,6 +48,7 @@ import { addMini as dockMini, updateFleet, clearFleet } from './PlayerFleet.js';
 import { getUpperPawOffsets, getMuzzlePosition, localToWorld } from './PlayerHardpoints.js';
 import { toggleFleetDeploy, updateFleetDeploy } from '../levels/MiniDeploy.js';
 import { initWeaponAnimState, updateWeaponAnim } from '../combat/WeaponAnim.js';
+import VulcanCannon from '../combat/VulcanCannon.js'; // v3.68.0: modular weapon
 
 export default class Player extends Entity {
   constructor(game, theme = 'yellow') {
@@ -76,6 +82,11 @@ export default class Player extends Entity {
     this.thermal = 0;
     this.thermalLockout = 0;
     this.plasmaAlt = 0;
+    // ─── v3.68.0: MODULAR WEAPON REGISTRY (js/combat weapon classes) ───
+    // PlayerWeapons.js delegates to p.weapons[p.weapon] when the active
+    // weapon has been extracted (vulkan → VulcanCannon); un-extracted
+    // weapons (plasma / rail) still run inline in PlayerWeapons.js.
+    this.weapons = { vulkan: new VulcanCannon(this) };
     // ─── v3.33.0: FRENZY (30s all-cooldowns-off — activateFrenzy) ───
     this.frenzyTime = 0;
     // ─── WEAPON ANIMATION (front-paw hardpoint flashes, decayed in update) ───
@@ -282,8 +293,7 @@ export default class Player extends Entity {
         this.ultimateCooldown = 0;
         this.frenzyTime = 0; // v3.33.0: FRENZY does not survive the hull loss
         this.tailSway = 0;
-        this.thermal = 0;
-        this.thermalLockout = 0;
+        this.weapons.vulkan.reset(); // v3.68.0: modular weapon state (thermal/lockout)
         this.plasmaAlt = 0;
         this.pawFlashL = 0;
         this.pawFlashR = 0;

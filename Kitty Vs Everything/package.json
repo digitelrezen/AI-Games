@@ -1,6 +1,6 @@
 {
   "name": "kitty-vs-everything",
-  "version": "3.67.0",
+  "version": "3.68.0",
   "description": "Kitty Vs Everything — the cat defends the galaxy. `npm run build` produces a single self-contained `Kitty Vs Everything <version>.html` in C:\\AI-Games\\Builds\\",
   "private": true,
   "type": "module",
