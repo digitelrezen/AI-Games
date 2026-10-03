@@ -1,6 +1,7 @@
 {
   "$doc": "Kitty Vs Everything — asset manifest for tools/import-assets.mjs. Maps canonical asset KEYS to PNG file names inside the shared art folder (Z:\\Dev\\AI-GAMES\\.assets). Add a line here and re-run `node tools/import-assets.mjs` to import new art — no game code changes needed for the registry. Resolution order per key: (1) exact file name, (2) normalized fuzzy match (lowercase, spaces/-/_ stripped) against the folder listing, (3) hard error listing the available PNGs. The importer validates each PNG (signature, IHDR, 8-bit RGBA, non-transparent content), normalizes art larger than 128px (box-filter downscale + re-encode) and generates 'Kitty Vs Everything/js/core/AssetSprites.js' (embedded base64 + dimensions).",
   "assets": {
+    "bat": "Bat-pixel-art.png",
     "beetle": "Beetle-new-pixel-art.png",
     "butterfly": "Butteryfly pixel_art.png",
     "crate": "Crate-pixel-art.png",

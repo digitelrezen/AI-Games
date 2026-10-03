@@ -145,6 +145,14 @@ const tests = [
   ['v3.65.0: falcon beak-lead dive heading + PI/2 blit rotation', /this\._heading\s*\+\s*Math\.PI\s*\/\s*2/.test(s)],
   ['v3.65.0: falcon wing-beat (t*6) + hover bob (t*3) phase-locked', /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*6\)/.test(s) && /bob\s*=\s*Math\.sin\(this\.t\s*\*\s*3\)/.test(s)],
   ['v3.65.0: falcon config entry intact', /falcon:\s*\{\s*name:\s*['"]Falcon['"]/.test(s) && s.includes('#b0713a')],
+  // ── v3.66.0 bat pixel-art sprite (erratic flutterer) ──
+  // esbuild (IIFE, non-minified) re-emits string literals with double
+  // quotes — every pattern below is quote-tolerant (['\"]).
+  ['v3.66.0: bat sprite dims 128×69', /bat:\s*\{\s*w:\s*128,\s*h:\s*69\s*\}/.test(s)],
+  ['v3.66.0: bat sprite key in AssetSprites registry', s.includes('bat: "iVBORw0KGgo')],
+  ['v3.66.0: BatEnemy sprite + procedural fallback', /BAT_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  ['v3.66.0: bat wing-beat (t*14) + hover bob (t*3) phase-locked', /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*14\)/.test(s) && /bob\s*=\s*Math\.sin\(this\.t\s*\*\s*3\)/.test(s)],
+  ['v3.66.0: bat config entry intact', /bat:\s*\{\s*name:\s*['"]Bat['"]/.test(s) && s.includes('#5d5d7a')],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).

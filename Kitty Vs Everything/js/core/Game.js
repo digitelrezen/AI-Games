@@ -1,6 +1,13 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.65.0
+// Kitty Vs Everything — v3.66.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.66.0: Bat pixel-art sprite swap — BatEnemy.js v1.2.0 renders the
+// pixel-art bat from `.assets/Bat-pixel-art.png` via the AssetManager
+// pipeline (key `bat`, 679×367 → 128×69) upright (head/ears up, wings
+// spread) with a wing-beat squash + flutter wobble + hover bob
+// (phase-locked to the procedural flap) and a type-color accent glow;
+// classic procedural bat kept as null-sprite fallback. Erratic jitter
+// movement and the aimed single-shot attack are unchanged.
 // v3.65.0: Falcon pixel-art sprite swap — FalconEnemy.js v1.2.0 renders the
 // pixel-art falcon from `.assets/Falcon pixel_art.png` via the AssetManager
 // pipeline (key `falcon`, 718×718 → 128×128) with a beak-lead dive rotation
@@ -137,7 +144,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.65.0';
+export const VERSION = 'v3.66.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

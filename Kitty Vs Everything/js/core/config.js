@@ -1,7 +1,17 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.65.0
+// Kitty Vs Everything — v3.66.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.66.0: Bat pixel-art sprite — the bat enemy (ENEMY_TYPES.bat,
+//   unchanged stats: speed 2.8 / hp 16 / damage 8 / erratic pattern) now
+//   renders the pixel-art bat from `.assets/Bat-pixel-art.png` via the
+//   AssetManager pipeline (key `bat`, 679×367 → 128×69) upright
+//   (head/ears up, wings spread) with a wing-beat squash + flutter
+//   wobble + hover bob (phase-locked to the procedural flap) and a
+//   type-color accent glow; classic procedural bat kept as null-sprite
+//   fallback. No config changes — erratic jitter movement and the aimed
+//   shot are unchanged.
+//
 // v3.65.0: Falcon pixel-art sprite — the falcon enemy (ENEMY_TYPES.falcon,
 //   unchanged stats: speed 3.2 / hp 22 / damage 12 / dive pattern) now
 //   renders the pixel-art falcon from `.assets/Falcon pixel_art.png` via

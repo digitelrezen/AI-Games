@@ -1,10 +1,27 @@
 // Filename: BatEnemy.js
-// Kitty Vs Everything — v1.1.0
+// Kitty Vs Everything — v1.2.0
 // Bat: erratic flutterer with membrane wings (scalloped edges), fangs,
 // and a small body. Moves in unpredictable random jitter.
-export const VERSION = 'v1.1.0';
+// v1.2.0: sprite swap — now draws the shared pixel-art PNG
+//         (.assets/Bat-pixel-art.png, 679×367) through the AssetManager
+//         pipeline (tools/import-assets.mjs → js/core/AssetSprites.js, key
+//         "bat", normalized to 128×69). The full pixel-art charcoal wing
+//         shading, membrane texture, fanged head, and claw feet replace the
+//         flat gradients: aspect-preserving, centered on the hitbox,
+//         nearest-neighbor, with the art upright (head/ears at the top,
+//         wings spread wide, feet below — the same front-view orientation
+//         as the procedural bat), a wing-beat squash phase-locked to the
+//         procedural flap (t * 14), a flutter wobble + hover bob, and a
+//         type-color accent glow pass. The classic procedural bat is kept
+//         as the null-sprite fallback per the AssetManager contract
+//         (scalloped membrane wings + wing bones, red glowing eyes, fangs,
+//         tiny claw feet).
+export const VERSION = 'v1.2.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
+
+const BAT_SPRITE_KEY = 'bat';
 
 export default class BatEnemy extends EnemyBase {
   move(dt, slowMul) {
@@ -25,6 +42,56 @@ export default class BatEnemy extends EnemyBase {
     ctx.translate(this.x, this.y);
     if (this.flash > 0) ctx.globalAlpha = 0.55;
 
+    const sprite = getSprite(BAT_SPRITE_KEY);
+    if (sprite) {
+      this._drawSprite(ctx, sprite, r);
+    } else {
+      this._drawProcedural(ctx, r);
+    }
+
+    ctx.restore();
+    this.drawShieldRing(ctx);
+    this.drawBossBar(ctx);
+  }
+
+  // v1.2.0 — pixel-art bat sprite. Aspect-preserving, centered on the
+  // hitbox, nearest-neighbor. The PNG is a front-view bat (head/ears at
+  // the top, wings spread wide, claw feet below — the same upright
+  // orientation as the procedural bat), so it stays head-up while the
+  // erratic jitter carries it: a wing-beat squash (t * 14, the
+  // procedural flap's phase) compresses/stretches the blit vertically
+  // like the membrane wings flapping, a small flutter wobble + hover bob
+  // keep the blit alive between jitters, and a type-color accent glow
+  // pass adds depth under the crisp draw.
+  _drawSprite(ctx, sprite, r) {
+    const dims = getDims(BAT_SPRITE_KEY);
+    const targetW = r * 2.6;
+    const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
+    const dx = -targetW / 2, dy = -targetH / 2;
+    // Wing-beat (t * 14 = procedural flap phase) + hover bob
+    const flap = Math.sin(this.t * 14);
+    const bob = Math.sin(this.t * 3);
+    const wing = 1 + flap * 0.10;
+    ctx.save();
+    ctx.translate(0, bob * r * 0.05);
+    ctx.rotate(flap * 0.06);
+    ctx.scale(1, wing);
+    ctx.imageSmoothingEnabled = false;
+    // Accent glow pass (type color) under the crisp sprite
+    ctx.globalAlpha = 0.30;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = r * 0.8;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sprite, dx, dy, targetW, targetH);
+    ctx.restore();
+  }
+
+  // Classic procedural bat (null-sprite fallback) — scalloped membrane
+  // wings with wing bones, small round body, head with pointed ears, red
+  // glowing eyes, fangs, tiny claw feet.
+  _drawProcedural(ctx, r) {
     const flap = Math.sin(this.t * 14) * 0.5;
 
     // ─── WINGS (membrane with scalloped edges) ───
@@ -134,9 +201,5 @@ export default class BatEnemy extends EnemyBase {
     ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(-r * 0.15, r * 0.3); ctx.lineTo(-r * 0.2, r * 0.45); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(r * 0.15, r * 0.3); ctx.lineTo(r * 0.2, r * 0.45); ctx.stroke();
-
-    ctx.restore();
-    this.drawShieldRing(ctx);
-    this.drawBossBar(ctx);
   }
 }
