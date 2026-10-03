@@ -1,5 +1,5 @@
 // Filename: Player.js
-// Kitty Vs Everything — v3.47.0
+// Kitty Vs Everything — v3.69.0
 // Core player controller: hull state (health/shield/lives/invulnerability),
 // per-frame orchestration of the extracted modules, and fleet-level damage
 // routing (docked minis intercept damage BEFORE the main hull).
@@ -34,7 +34,10 @@
 //          { vulkan: VulcanCannon }. PlayerWeapons.js delegates fire /
 //          state tick / reset to the registry; thermal + lockout stay on
 //          the player (canonical fields for HUDFireControl / FRENZY).
-export const VERSION = 'v3.68.0';
+// v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — the registry now holds
+//          ALL THREE primary weapons: { vulkan: VulcanCannon, plasma:
+//          PulseCannon, rail: RailCannon }. Respawn resets all three.
+export const VERSION = 'v3.69.0';
 import Entity from '../core/Entity.js';
 import Bullet from '../combat/Bullet.js';
 import { PLAYER, PLAYER_THEMES } from '../core/config.js';
@@ -49,6 +52,8 @@ import { getUpperPawOffsets, getMuzzlePosition, localToWorld } from './PlayerHar
 import { toggleFleetDeploy, updateFleetDeploy } from '../levels/MiniDeploy.js';
 import { initWeaponAnimState, updateWeaponAnim } from '../combat/WeaponAnim.js';
 import VulcanCannon from '../combat/VulcanCannon.js'; // v3.68.0: modular weapon
+import PulseCannon from '../combat/PulseCannon.js';   // v3.69.0: modular weapon
+import RailCannon from '../combat/RailCannon.js';     // v3.69.0: modular weapon
 
 export default class Player extends Entity {
   constructor(game, theme = 'yellow') {
@@ -82,11 +87,13 @@ export default class Player extends Entity {
     this.thermal = 0;
     this.thermalLockout = 0;
     this.plasmaAlt = 0;
-    // ─── v3.68.0: MODULAR WEAPON REGISTRY (js/combat weapon classes) ───
-    // PlayerWeapons.js delegates to p.weapons[p.weapon] when the active
-    // weapon has been extracted (vulkan → VulcanCannon); un-extracted
-    // weapons (plasma / rail) still run inline in PlayerWeapons.js.
-    this.weapons = { vulkan: new VulcanCannon(this) };
+    // ─── v3.69.0: MODULAR WEAPON REGISTRY (js/combat weapon classes) ───
+    // PlayerWeapons.js delegates fire / state tick / reset to
+    // p.weapons[p.weapon]. As of v3.69.0 all three primary weapons are
+    // modular (vulkan → VulcanCannon, plasma → PulseCannon, rail →
+    // RailCannon); thermal + lockout stay on the player (canonical fields
+    // for HUDFireControl / FRENZY).
+    this.weapons = { vulkan: new VulcanCannon(this), plasma: new PulseCannon(this), rail: new RailCannon(this) };
     // ─── v3.33.0: FRENZY (30s all-cooldowns-off — activateFrenzy) ───
     this.frenzyTime = 0;
     // ─── WEAPON ANIMATION (front-paw hardpoint flashes, decayed in update) ───
@@ -293,7 +300,10 @@ export default class Player extends Entity {
         this.ultimateCooldown = 0;
         this.frenzyTime = 0; // v3.33.0: FRENZY does not survive the hull loss
         this.tailSway = 0;
-        this.weapons.vulkan.reset(); // v3.68.0: modular weapon state (thermal/lockout)
+        // v3.69.0: modular weapon state (thermal/lockout) — all 3 primary weapons
+        this.weapons.vulkan.reset();
+        this.weapons.plasma.reset();
+        this.weapons.rail.reset();
         this.plasmaAlt = 0;
         this.pawFlashL = 0;
         this.pawFlashR = 0;

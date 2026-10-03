@@ -1,7 +1,12 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.68.0
+// Kitty Vs Everything — v3.69.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — new js/combat/PulseCannon.js
+//   (Plasma Pulse: twin-pod 3-bolt fan + shieldMelt) and js/combat/RailCannon.js
+//   (Rail Cannon: piercing beam + charge-up visual); all three primary
+//   weapons now live in js/combat via the Player.weapons registry.
+//   WEAPONS.plasma / WEAPONS.rail balance unchanged.
 // v3.68.0: MODULAR WEAPON ARCHITECTURE (Phase 1) — new js/combat/BaseWeapon.js
 //   (abstract base: fire/update/draw/reset + cooldown/ammo/damage/active) and
 //   js/combat/VulcanCannon.js (Vulcan Cannon extracted from
@@ -212,7 +217,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.68.0';
+export const VERSION = 'v3.69.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

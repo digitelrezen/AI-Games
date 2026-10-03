@@ -1,6 +1,10 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.68.0
+// Kitty Vs Everything — v3.69.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — js/combat/PulseCannon.js
+// (Plasma Pulse) + js/combat/RailCannon.js (Rail Cannon) extracted; all
+// three primary weapons are modular (Player.weapons registry). No
+// orchestrator logic changes (weapons live in the player + combat modules).
 // v3.68.0: MODULAR WEAPON ARCHITECTURE (Phase 1) — new js/combat/BaseWeapon.js
 // abstract base class + js/combat/VulcanCannon.js (Vulcan Cannon extracted
 // from PlayerWeapons.firePrimary); Player.js owns the p.weapons registry and
@@ -156,7 +160,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.68.0';
+export const VERSION = 'v3.69.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.68.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.69.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -98,6 +98,8 @@ for (const [tag, rel] of [
   ['SquirrelEnemy', 'js/enemies/SquirrelEnemy.js'], // v3.67.0
   ['BaseWeapon', 'js/combat/BaseWeapon.js'],        // v3.68.0
   ['VulcanCannon', 'js/combat/VulcanCannon.js'],    // v3.68.0
+  ['PulseCannon', 'js/combat/PulseCannon.js'],      // v3.69.0
+  ['RailCannon', 'js/combat/RailCannon.js'],        // v3.69.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -105,7 +107,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.68.0', PlayerWeapons: 'v3.68.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.69.0', PlayerWeapons: 'v3.69.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0', PulseCannon: 'v1.0.0', RailCannon: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -926,7 +928,7 @@ console.log('\n[6u] v3.68.0 modular weapon architecture (BaseWeapon + VulcanCann
   const pSrc = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
   check('Player: imports VulcanCannon + owns the weapons registry',
     pSrc.includes("import VulcanCannon from '../combat/VulcanCannon.js'") &&
-    pSrc.includes('this.weapons = { vulkan: new VulcanCannon(this) }'));
+    pSrc.includes('new VulcanCannon(this)'));
   check('Player: respawn resets modular weapon state (weapons.vulkan.reset)', pSrc.includes('this.weapons.vulkan.reset()'));
   check('Player: canonical state fields intact (fireTimer / thermal / thermalLockout)',
     pSrc.includes('this.fireTimer = 0;') && pSrc.includes('this.thermal = 0;') && pSrc.includes('this.thermalLockout = 0;'));
@@ -964,6 +966,81 @@ console.log('\n[6u] v3.68.0 modular weapon architecture (BaseWeapon + VulcanCann
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6v] v3.69.0 MODULAR WEAPON ARCHITECTURE (Phase 2) —
+//      PulseCannon (plasma twin-pod 3-bolt fan) + RailCannon
+//      (piercing beam + charge-up visual) extracted; the inline
+//      plasma/rail volleys + rail charge visual are gone from
+//      PlayerWeapons, and all 3 primary weapons are modular
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6v] v3.69.0 modular weapon architecture (PulseCannon + RailCannon)');
+{
+  const { default: PulseCannon } = await mod('js/combat/PulseCannon.js');
+  const { default: RailCannon } = await mod('js/combat/RailCannon.js');
+  const pcSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PulseCannon.js'), 'utf8');
+  const rcSrc = fs.readFileSync(path.join(ROOT, 'js/combat/RailCannon.js'), 'utf8');
+  check('PulseCannon: VERSION = v1.0.0', pcSrc.includes("VERSION = 'v1.0.0'"));
+  check('RailCannon: VERSION = v1.0.0', rcSrc.includes("VERSION = 'v1.0.0'"));
+  check('PulseCannon: extends BaseWeapon', Object.getPrototypeOf(PulseCannon.prototype).constructor.name === 'BaseWeapon');
+  check('RailCannon: extends BaseWeapon', Object.getPrototypeOf(RailCannon.prototype).constructor.name === 'BaseWeapon');
+  // Player owns the full registry + respawn resets all three
+  const pSrc2 = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
+  check('Player: imports PulseCannon + RailCannon',
+    pSrc2.includes("import PulseCannon from '../combat/PulseCannon.js'") &&
+    pSrc2.includes("import RailCannon from '../combat/RailCannon.js'"));
+  check('Player: registry owns all 3 primary weapons (vulkan/plasma/rail)',
+    pSrc2.includes('new VulcanCannon(this)') && pSrc2.includes('new PulseCannon(this)') && pSrc2.includes('new RailCannon(this)'));
+  check('Player: respawn resets plasma + rail modular state',
+    pSrc2.includes('this.weapons.plasma.reset()') && pSrc2.includes('this.weapons.rail.reset()'));
+  // PlayerWeapons: inline plasma/rail volleys + rail charge visual removed
+  const pwSrc3 = fs.readFileSync(path.join(ROOT, 'js/player/PlayerWeapons.js'), 'utf8');
+  check('PlayerWeapons: inline plasma volley removed (no case left)', !pwSrc3.includes("case 'plasma'"));
+  check('PlayerWeapons: inline rail volley removed (no case left)', !pwSrc3.includes("case 'rail'"));
+  check('PlayerWeapons: rail charge visual moved out (no chargeTime left)', !pwSrc3.includes('chargeTime'));
+  check('RailCannon: charge visual reads the shared cooldown window', rcSrc.includes('this.cooldown > 0 && this.cooldown < w.chargeTime'));
+  // Headless: delegated plasma keeps its exact v3.67.0 twin-pod behavior
+  const game = makeGame();
+  const p = makePlayer(game);
+  check('Player: weapons.plasma is a PulseCannon instance', p.weapons.plasma instanceof PulseCannon);
+  check('Player: weapons.rail is a RailCannon instance', p.weapons.rail instanceof RailCannon);
+  p.weapon = 'plasma';
+  let shots = 0;
+  for (let i = 0; i < 5; i++) { p.fireTimer = 0; if (fireNow(p)) shots++; }
+  check('v3.69.0: 5 delegated plasma shots all fire', shots === 5, `got ${shots}`);
+  check('v3.69.0: twin pods × 3-bolt fan × 5 shots = 30 bullets', game.bullets.length === 30, `got ${game.bullets.length}`);
+  check('v3.69.0: plasma bolts carry shieldMelt 15', game.bullets.every(b => b.shieldMelt === WEAPONS.plasma.shieldMelt));
+  check('v3.69.0: plasma never builds thermal (no heat state)', p.thermal === 0, `got ${p.thermal}`);
+  // Headless: delegated rail keeps its exact v3.67.0 piercing behavior
+  p.weapon = 'rail';
+  p.fireTimer = 0;
+  check('v3.69.0: fireNow() fires the delegated rail', fireNow(p) === true);
+  check('v3.69.0: rail sets the shared cooldown to rate 1.0s', p.fireTimer === WEAPONS.rail.rate, `got ${p.fireTimer}`);
+  check('v3.69.0: fireNow() blocked while the rail cooldown ticks', fireNow(p) === false);
+  const railBolts = game.bullets.filter(b => b.weapon === 'rail');
+  check('v3.69.0: one piercing rail bolt per shot', railBolts.length === 1, `got ${railBolts.length}`);
+  check('v3.69.0: rail bolt pierces 999 at 1500 px/s',
+    railBolts[0].pierce === 999 && Math.abs(Math.hypot(railBolts[0].vx, railBolts[0].vy) - WEAPONS.rail.speed) < 1e-6);
+  check('v3.69.0: rail impact FX (muzzleFlash 0.18 + shake ≥ 5)',
+    p.muzzleFlash === 0.18 && game.shake >= 5, `flash=${p.muzzleFlash} shake=${game.shake}`);
+  // Rail charge-up visual: RailCannon.update ticks without error mid-charge
+  p.fireTimer = WEAPONS.rail.chargeTime / 2;
+  updateWeaponState(p, 0.016);
+  check('v3.69.0: RailCannon.update ticks mid-charge without error', p.fireTimer > 0);
+  // Weapon-switch invariant: switching away from an overheated Vulcan
+  // clears the lockout for the next (modular) weapon — v3.67.0 behavior
+  p.weapon = 'vulkan';
+  p.thermal = 0.8;
+  p.thermalLockout = WEAPONS.vulkan.thermalLockout;
+  cycleWeapon(p, 1);
+  check('v3.69.0: switch vulkan→plasma clears thermal/lockout (PulseCannon.reset)',
+    p.weapon === 'plasma' && p.thermal === 0 && p.thermalLockout === 0,
+    `weapon=${p.weapon} thermal=${p.thermal} lockout=${p.thermalLockout}`);
+  cycleWeapon(p, 1);
+  check('v3.69.0: switch plasma→rail clears thermal/lockout (RailCannon.reset)',
+    p.weapon === 'rail' && p.thermal === 0 && p.thermalLockout === 0,
+    `weapon=${p.weapon} thermal=${p.thermal} lockout=${p.thermalLockout}`);
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -973,6 +1050,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.68.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.69.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

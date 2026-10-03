@@ -1,5 +1,5 @@
 // Filename: PlayerWeapons.js
-// Kitty Vs Everything — v3.46.0
+// Kitty Vs Everything — v3.69.0
 // 3-weapon primary fire system (Vulkan / Plasma / Rail), thermal management,
 // Q/H stun rockets, E/J napalm rockets, R/G weapon cycling. Pure logic —
 // mutates Player weapon state and pushes bullets via player.game.
@@ -28,25 +28,30 @@
 //          Player owns a weapons registry (p.weapons); fireNow / firePrimary
 //          / updateWeaponState / cycleWeapon now delegate to
 //          p.weapons[p.weapon] when the active weapon has been extracted.
-//          Un-extracted weapons (plasma / rail) keep their inline paths as a
-//          documented fallback.
-export const VERSION = 'v3.68.0';
-import Bullet from '../combat/Bullet.js';
+// v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — the Plasma Pulse moved
+//          to js/combat/PulseCannon.js and the Rail Cannon to
+//          js/combat/RailCannon.js (both extend BaseWeapon). ALL THREE
+//          primary weapons are now modular: firePrimary has no inline
+//          volleys left, the rail charge-up visual lives in
+//          RailCannon.update(dt), and the inline state-tick fallback only
+//          remains as a documented defensive path.
+export const VERSION = 'v3.69.0';
 import { PLAYER, WEAPONS, WEAPON_ORDER, MINI_SHIP } from '../core/config.js';
-import { TAU, rand, dist2 } from '../core/utils.js';
+import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
-import { audio } from '../core/AudioSystem.js';
-import { onEnemyDeath } from '../combat/Combat.js';
 import { launchRockets } from '../combat/Rockets.js'; // v3.11.0: real flying rockets
-import { getUpperPawOffsets, getMuzzlePosition, getMuzzleTipOffsets } from './PlayerHardpoints.js';
+import { getMuzzlePosition } from './PlayerHardpoints.js';
 
-/** Thermal decay, overheat lockout smoke, rail charge-up visual.
+/** Per-weapon state tick (thermal decay, lockout smoke, charge visuals).
  *  v3.33.0: while FRENZY is active (p.frenzyTime > 0) the fire cooldown and
  *  ALL thermal state are held at zero every frame — cooldowns removed,
  *  Vulcan overheat neutralized.
  *  v3.68.0: the per-weapon state tick is delegated to the modular weapon
- *  (p.weapons[p.weapon].update(dt) — VulcanCannon for the vulkan); the
- *  inline fallback only covers weapons that are not extracted yet. */
+ *  (p.weapons[p.weapon].update(dt) — VulcanCannon for the vulkan).
+ *  v3.69.0: all three primary weapons are modular (VulcanCannon /
+ *  PulseCannon / RailCannon — the rail charge-up visual now lives in
+ *  RailCannon.update); the inline fallback only remains as a documented
+ *  defensive path for a future un-extracted weapon. */
 export function updateWeaponState(p, dt) {
   const w = WEAPONS[p.weapon];
 
@@ -62,7 +67,9 @@ export function updateWeaponState(p, dt) {
       // thermal decay + overheat lockout tick + lockout smoke).
       weapon.update(dt);
     } else {
-      // Weapons not extracted yet keep their inline state tick.
+      // Defensive fallback: every WEAPON_ORDER weapon is modular as of
+      // v3.69.0, so this path is unreachable today — kept so a future
+      // un-extracted weapon has a documented inline state tick.
       // Thermal decay (Vulkan)
       if (p.weapon === 'vulkan' && p.thermal > 0) {
         p.thermal = Math.max(0, p.thermal - w.thermalDecay * dt);
@@ -78,19 +85,9 @@ export function updateWeaponState(p, dt) {
       }
     }
   }
-
-  // Rail Cannon charge visual
-  if (p.weapon === 'rail' && p.fireTimer > 0 && p.fireTimer < w.chargeTime) {
-    const muzzle = getMuzzlePosition(p);
-    const chargeProgress = 1 - (p.fireTimer / w.chargeTime);
-    if (Math.random() < 0.6) {
-      p.game.particles.burst(muzzle.x, muzzle.y, {
-        count: 2,
-        color: chargeProgress > 0.7 ? '#ffffff' : '#b388ff',
-        speed: 50, life: 0.2, size: 2,
-      });
-    }
-  }
+  // v3.69.0: the rail charge-up visual moved to RailCannon.update(dt) —
+  // it reads the same canonical fields (owner.fireTimer + the rail
+  // charge window from WEAPONS.rail).
 }
 
 /** L / LMB: primary fire with rate-of-fire + overheat lockout gating.
@@ -149,66 +146,20 @@ function aimAssist(p) {
 }
 
 export function firePrimary(p) {
-  const w = WEAPONS[p.weapon];
   const spread = aimAssist(p) ? 0 : rand(-0.04, 0.04);
   const aim = p.angle + spread;
   const dmgMul = 1 + p.minis.length * MINI_SHIP.damageBonusPerMini;
 
-  // v3.68.0: modular weapons (p.weapons registry) own their volleys —
-  // VulcanCannon for the vulkan. Un-extracted weapons fall through.
+  // v3.69.0: all three primary weapons are modular (p.weapons registry —
+  // VulcanCannon / PulseCannon / RailCannon). The fireNow() gate already
+  // ran canFire(); each weapon class owns its volley shape, FX and audio.
   const weapon = p.weapons && p.weapons[p.weapon];
   if (weapon) {
     weapon.fire(aim, { dmgMul, homing: aimAssist(p) });
     return;
   }
-
-  switch (p.weapon) {
-    case 'plasma': {
-      // v3.46.0: TWIN-POD BURST — fire a 3-bolt fan from BOTH front-paw
-      // emitter tips on every shot (no alternation; both pods fire together).
-      // Per-weapon barrelLen (WEAPONS.plasma.barrelLen = 10) places the tips
-      // at the pod mouths (PlayerHardpoints.getMuzzleTipOffsets).
-      const tips = getMuzzleTipOffsets(p);
-      for (const paw of tips) {
-        for (let i = -1; i <= 1; i++) {
-          const spread = aim + i * 0.14;
-          const b = new Bullet({
-            x: paw.x, y: paw.y,
-            vx: Math.cos(spread) * w.speed, vy: Math.sin(spread) * w.speed,
-            damage: w.damage * dmgMul,
-            color: w.color, weapon: 'plasma',
-            friendly: true, life: 2.0, radius: 6,
-            shieldMelt: w.shieldMelt, owner: p,
-          });
-          if (aimAssist(p)) b.homing = true;
-          p.game.bullets.push(b);
-        }
-      }
-      p.pawFlashL = 0.12;
-      p.pawFlashR = 0.12;
-      audio.shoot();
-      break;
-    }
-    case 'rail': {
-      // Piercing beam from center muzzle
-      const muzzle = getMuzzlePosition(p);
-      const b = new Bullet({
-        x: muzzle.x, y: muzzle.y,
-        vx: Math.cos(aim) * w.speed, vy: Math.sin(aim) * w.speed,
-        damage: w.damage * dmgMul,
-        color: w.color, weapon: 'rail',
-        friendly: true, life: 1.0, radius: 8,
-        pierce: w.pierce, owner: p,
-      });
-      if (aimAssist(p)) b.homing = true;
-      p.game.bullets.push(b);
-      p.game.particles.burst(muzzle.x, muzzle.y, { count: 12, color: '#d1c4e9', speed: 200, life: 0.3, size: 3 });
-      p.game.shake = Math.max(p.game.shake, 5);
-      p.muzzleFlash = 0.18;
-      audio.tone(200, 0.15, 'sawtooth', 0.08, 800);
-      break;
-    }
-  }
+  // Defensive: every WEAPON_ORDER weapon has a modular class, so no inline
+  // volleys remain. A future un-extracted weapon would get a case here.
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -245,7 +196,7 @@ export function cycleWeapon(p, dir) {
   p.weapon = order[i];
   const weapon = p.weapons && p.weapons[p.weapon];
   if (weapon) {
-    weapon.reset(); // v3.68.0: e.g. VulcanCannon clears thermal + lockout
+    weapon.reset(); // v3.69.0: all 3 primary weapons clear thermal + lockout
   } else {
     p.thermal = 0;
     p.thermalLockout = 0;

@@ -169,11 +169,24 @@ const tests = [
   // the removed path is specifically firePrimary's inline heat buildup.
   ['v3.68.0: BaseWeapon class in bundle (shared weapon contract)', /BaseWeapon\d*\s*=\s*class/.test(s)],
   ['v3.68.0: VulcanCannon class in bundle (extends BaseWeapon, key "vulkan")', /VulcanCannon\d*\s*=\s*class/.test(s) && /super\(owner,\s*['"]vulkan['"]\)/.test(s)],
-  ['v3.68.0: Player owns the weapons registry (vulkan → VulcanCannon)', /this\.weapons\s*=\s*\{\s*vulkan:\s*new\s+VulcanCannon\d*\s*\(this\)\s*\}/.test(s)],
+  ['v3.68.0: Player owns the weapons registry (vulkan → VulcanCannon)', /this\.weapons\s*=\s*\{\s*vulkan:\s*new\s+VulcanCannon\d*\s*\(this\)/.test(s)],
   ['v3.68.0: PlayerWeapons delegates volleys to p.weapons[p.weapon]', s.includes('p.weapons[p.weapon]') && /weapon\.fire\(aim,/.test(s)],
   ['v3.68.0: Vulcan thermal state stays on Player (owner-backed, FRENZY gate)', /this\.owner\.thermal/.test(s) && /this\.owner\.frenzyTime\s*>\s*0/.test(s)],
   ['v3.68.0: overheat floater + msglog live in VulcanCannon', s.includes('OVERHEAT!') && /VULKAN OVERHEAT (\u2014|\\u2014) LOCKOUT/.test(s)],
   ['v3.68.0: inline firePrimary vulkan heat path removed (now VulcanCannon)', !/p\.thermal\s*=\s*Math\.min\(w\.thermalMax,\s*p\.thermal\s*\+\s*w\.thermalPerShot\)/.test(s)],
+  // ── v3.69.0 modular weapon architecture (Phase 2: PulseCannon + RailCannon) ──
+  // All three primary weapons are now modular. MiniShip.js keeps its OWN
+  // inline mini volleys (case 'plasma'/'rail', no heat) — the removed
+  // paths are firePrimary's inline HULL volleys, identified by their
+  // exact `p.`-prefixed statements (PulseCannon/RailCannon use
+  // `this.owner.` / `this.game.` instead).
+  ['v3.69.0: PulseCannon class in bundle (extends BaseWeapon, key "plasma")', /PulseCannon\d*\s*=\s*class/.test(s) && /super\(owner,\s*['"]plasma['"]\)/.test(s)],
+  ['v3.69.0: RailCannon class in bundle (extends BaseWeapon, key "rail")', /RailCannon\d*\s*=\s*class/.test(s) && /super\(owner,\s*['"]rail['"]\)/.test(s)],
+  ['v3.69.0: Player owns the full 3-weapon registry (vulkan/plasma/rail)', /this\.weapons\s*=\s*\{\s*vulkan:\s*new\s+VulcanCannon\d*\s*\(this\),\s*plasma:\s*new\s+PulseCannon\d*\s*\(this\),\s*rail:\s*new\s+RailCannon\d*\s*\(this\)\s*\}/.test(s)],
+  ['v3.69.0: plasma twin-pod 3-bolt fan lives in PulseCannon (paw tips + 0.14 fan)', /for\s*\(const\s+paw\s+of\s+tips\)/.test(s) && /i\s*\*\s*0\.14/.test(s)],
+  ['v3.69.0: rail charge-up visual lives in RailCannon.update (cooldown window)', /this\.cooldown\s*>\s*0\s*&&\s*this\.cooldown\s*<\s*w\.chargeTime/.test(s)],
+  ['v3.69.0: inline firePrimary plasma flash path removed (now PulseCannon)', !/p\.pawFlashL\s*=\s*0\.12/.test(s)],
+  ['v3.69.0: inline firePrimary rail shake path removed (now RailCannon)', !/p\.game\.shake\s*=\s*Math\.max\(p\.game\.shake,\s*5\)/.test(s)],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
