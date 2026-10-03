@@ -1,7 +1,13 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.69.0
+// Kitty Vs Everything — v3.70.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — the specialized rockets
+//   extracted from js/combat/Rockets.js (now deleted) into
+//   js/combat/BaseRocket.js (shared twin-salvo base projectile),
+//   js/combat/StunRockets.js (Q/H homing stun rockets) and
+//   js/combat/NapalmRockets.js (E/J napalm rockets). ROCKETS / PLAYER
+//   cooldown balance unchanged.
 // v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — new js/combat/PulseCannon.js
 //   (Plasma Pulse: twin-pod 3-bolt fan + shieldMelt) and js/combat/RailCannon.js
 //   (Rail Cannon: piercing beam + charge-up visual); all three primary
@@ -217,7 +223,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.69.0';
+export const VERSION = 'v3.70.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -306,7 +312,9 @@ export const MINI_SHIP = {
   deployOrbitSpeed: 1.8,
 };
 
-// ─── v3.11.0: ROCKETS (Q/H stun + E/J napalm — real projectiles, Rockets.js) ───
+// ─── v3.11.0: ROCKETS (Q/H stun + E/J napalm — real projectiles) ───
+// v3.70.0: the rocket logic now lives in js/combat/StunRockets.js +
+// js/combat/NapalmRockets.js (both extend js/combat/BaseRocket.js).
 // Twin salvo from the front-paw hardpoints. Stun rockets home with a zig-zag
 // weave + smoke trail and burst into the classic 200px shield-strip/stun
 // field (no direct damage). Napalm rockets fly straight with a fire trail;

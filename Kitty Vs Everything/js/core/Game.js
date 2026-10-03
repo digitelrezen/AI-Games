@@ -1,6 +1,13 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.69.0
+// Kitty Vs Everything — v3.70.0
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
+// v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — js/combat/Rockets.js
+// (v3.11.0 shared stun/napalm rocket system) fully extracted into
+// js/combat/BaseRocket.js (shared twin-salvo base) +
+// js/combat/StunRockets.js (Q/H homing stun rockets) +
+// js/combat/NapalmRockets.js (E/J napalm rockets); the update hook now
+// ticks both module singletons (stunRockets.update + napalmRockets.update)
+// before the bullet position integration, same ordering as before.
 // v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — js/combat/PulseCannon.js
 // (Plasma Pulse) + js/combat/RailCannon.js (Rail Cannon) extracted; all
 // three primary weapons are modular (Player.weapons registry). No
@@ -160,7 +167,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.69.0';
+export const VERSION = 'v3.70.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -177,7 +184,8 @@ import Leaderboard from '../ui/Leaderboard.js';
 import DevPanel from '../ui/DevPanel.js';
 import { runCollisions } from '../combat/Collisions.js';
 import { updateHoming } from '../combat/Homing.js';
-import { updateRockets } from '../combat/Rockets.js'; // v3.11.0: stun/napalm rockets
+import { stunRockets } from '../combat/StunRockets.js'; // v3.70.0: modular stun rockets (Q/H)
+import { napalmRockets } from '../combat/NapalmRockets.js'; // v3.70.0: modular napalm rockets (E/J)
 import { destroyAsteroid as breakAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0
 import { initStars, updateStars, drawStars } from './Starfield.js';
 import { bus } from './EventBus.js';
@@ -443,7 +451,8 @@ export default class Game {
       if (coopManager.active) coopManager.update(dt); // v3.20.0: P2 (local / remote)
       this.testAimbot.update(dt); // v3.14.0: dev test aimbot (aim + fireNow)
       updateHoming(this, dt);
-      updateRockets(this, dt); // v3.11.0: rocket steering/detonation before movement
+      stunRockets.update(this, dt); // v3.70.0: modular rocket steering/detonation before movement
+      napalmRockets.update(this, dt); // v3.70.0: each singleton filters its own carriers
       for (const b of this.bullets) b.update(dt);
       for (const e of this.enemies) e.update(dt);
       for (const p of this.powerups) p.update(dt);

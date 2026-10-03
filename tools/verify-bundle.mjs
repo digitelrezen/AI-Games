@@ -218,6 +218,21 @@ const tests = [
     /aura:\s*['"]255, 220, 120['"]/.test(s)],
   ['v3.58.0: deterministic sparkle field (sparkleSeed sin-hash)', s.includes('sparkleSeed') && s.includes('43758.5453')],
   ['v3.58.0: pass-order fix — icon blit + depth + shine passes present', s.includes('drawImage(buf.c') && s.includes('source-atop') && s.includes('lighter')],
+  // ── v3.70.0 modular specialized rockets (BaseRocket + StunRockets + NapalmRockets) ──
+  // esbuild (IIFE, non-minified) emits `var X = class ...` for class decls and
+  // preserves the singleton var names (stunRockets / napalmRockets).
+  ['v3.70.0: BaseRocket abstract base class present', /var BaseRocket = class \{/.test(s)],
+  ['v3.70.0: StunRockets extends BaseRocket', /var StunRockets = class extends BaseRocket/.test(s)],
+  ['v3.70.0: NapalmRockets extends BaseRocket', /var NapalmRockets = class extends BaseRocket/.test(s)],
+  ['v3.70.0: stunRockets singleton instantiated', /var stunRockets = new StunRockets\(\)/.test(s)],
+  ['v3.70.0: napalmRockets singleton instantiated', /var napalmRockets = new NapalmRockets\(\)/.test(s)],
+  ['v3.70.0: Game ticks stunRockets.update', /stunRockets\.update\(this, dt\)/.test(s)],
+  ['v3.70.0: Game ticks napalmRockets.update', /napalmRockets\.update\(this, dt\)/.test(s)],
+  ['v3.70.0: PlayerWeapons delegates stunRockets.launch', /stunRockets\.launch\(p\.game, p\)/.test(s)],
+  ['v3.70.0: PlayerWeapons delegates napalmRockets.launch', /napalmRockets\.launch\(p\.game, p\)/.test(s)],
+  ['v3.70.0: no stale launchRockets (module removed)', !/launchRockets/.test(s)],
+  ['v3.70.0: no stale updateRockets (module removed)', !/updateRockets/.test(s)],
+  ['v3.70.0: no js/combat/Rockets.js import (deleted)', !/combat\/Rockets\.js/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 

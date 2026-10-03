@@ -1,5 +1,5 @@
 // Filename: PlayerWeapons.js
-// Kitty Vs Everything — v3.69.0
+// Kitty Vs Everything — v3.70.0
 // 3-weapon primary fire system (Vulkan / Plasma / Rail), thermal management,
 // Q/H stun rockets, E/J napalm rockets, R/G weapon cycling. Pure logic —
 // mutates Player weapon state and pushes bullets via player.game.
@@ -35,11 +35,21 @@
 //          volleys left, the rail charge-up visual lives in
 //          RailCannon.update(dt), and the inline state-tick fallback only
 //          remains as a documented defensive path.
-export const VERSION = 'v3.69.0';
+// v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — the specialized
+//          rockets moved out of js/combat/Rockets.js (now deleted):
+//          js/combat/BaseRocket.js (shared twin-salvo base projectile) +
+//          js/combat/StunRockets.js (Q/H: homing tracking, smoke trail,
+//          shield-strip/stun AoE) + js/combat/NapalmRockets.js (E/J:
+//          fire trail, clip-hit chip + ignite, AoE damage + FireZone).
+//          fireStunRockets / fireNapalmRockets now delegate the launch to
+//          the module singletons; the paw flash + banner stay in the
+//          secondary firing loop here.
+export const VERSION = 'v3.70.0';
 import { PLAYER, WEAPONS, WEAPON_ORDER, MINI_SHIP } from '../core/config.js';
 import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
-import { launchRockets } from '../combat/Rockets.js'; // v3.11.0: real flying rockets
+import { stunRockets } from '../combat/StunRockets.js'; // v3.70.0: modular stun rockets (Q/H)
+import { napalmRockets } from '../combat/NapalmRockets.js'; // v3.70.0: modular napalm rockets (E/J)
 import { getMuzzlePosition } from './PlayerHardpoints.js';
 
 /** Per-weapon state tick (thermal decay, lockout smoke, charge visuals).
@@ -164,12 +174,13 @@ export function firePrimary(p) {
 
 // ═══════════════════════════════════════════════════════════
 //  Q/H KEY: STUN ROCKETS (v3.11.0 — real homing rockets)
-//  Twin rockets home in with a zig-zag weave + smoke trail (Rockets.js)
-//  and burst into the classic 200px shield-strip/stun field on impact
-//  (no direct damage).
+//  v3.70.0: the tracking + payload + stun AoE live in
+//  js/combat/StunRockets.js (extends BaseRocket) — twin rockets home in
+//  with a zig-zag weave + smoke trail and burst into the classic 200px
+//  shield-strip/stun field on impact (no direct damage).
 // ═══════════════════════════════════════════════════════════
 export function fireStunRockets(p) {
-  launchRockets(p.game, p, 'stun');
+  stunRockets.launch(p.game, p);
   p.pawFlashL = 0.1;
   p.pawFlashR = 0.1;
   bus.emit('banner', { text: 'STUN ROCKETS AWAY!', tone: 'good', duration: 0.8 });
@@ -177,12 +188,14 @@ export function fireStunRockets(p) {
 
 // ═══════════════════════════════════════════════════════════
 //  E / J KEY: NAPALM ROCKETS (v3.11.0 — real straight-flying rockets)
-//  Twin rockets fly straight with a fire trail (Rockets.js). Impact:
-//  200px AoE damage burst (mini-scaled) + a lingering fire zone; enemies
-//  clipped in flight take chip damage and ignite a pool at their spot.
+//  v3.70.0: the AoE burn zones + persistent flame + fire trail live in
+//  js/combat/NapalmRockets.js (extends BaseRocket) — twin rockets fly
+//  straight; impact: 200px AoE damage burst (mini-scaled) + a lingering
+//  fire zone; enemies clipped in flight take chip damage and ignite a
+//  pool at their spot.
 // ═══════════════════════════════════════════════════════════
 export function fireNapalmRockets(p) {
-  launchRockets(p.game, p, 'napalm');
+  napalmRockets.launch(p.game, p);
   p.pawFlashL = 0.1;
   p.pawFlashR = 0.1;
   bus.emit('banner', { text: 'NAPALM ROCKETS AWAY!', tone: 'good', duration: 0.8 });
