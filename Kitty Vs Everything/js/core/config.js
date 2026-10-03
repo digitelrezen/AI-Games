@@ -1,7 +1,15 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.66.0
+// Kitty Vs Everything — v3.67.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.67.0: Squirrel enemy (19th species) — ENEMY_TYPES.squirrel: a fast,
+//   erratic tree-dweller (speed 3.4 / hp 12 / damage 7 / fireRate 0.7 /
+//   scurry pattern) rendered from the pixel-art squirrel
+//   (`.assets/Squirel pixel_art.png`, key `squirrel`, 580×476 → 128×105)
+//   upright (head up, centered mass, bushy tail) with a scurry bounce +
+//   twitchy wobble + sprint stretch and a type-color accent glow; classic
+//   procedural squirrel kept as null-sprite fallback. WAVE.SPECIES_COUNT
+//   18 → 19 (waves wrap after 19 species).
 // v3.66.0: Bat pixel-art sprite — the bat enemy (ENEMY_TYPES.bat,
 //   unchanged stats: speed 2.8 / hp 16 / damage 8 / erratic pattern) now
 //   renders the pixel-art bat from `.assets/Bat-pixel-art.png` via the
@@ -198,7 +206,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.65.0';
+export const VERSION = 'v3.67.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -448,6 +456,7 @@ export const ENEMY_TYPES = {
   pinkcat:  { name: 'Pink Cat',     color: '#ff69b4', speed: 1.8, hp: 60, damage: 18, fireRate: 1.2, pattern: 'fierce' },
   shuttle:  { name: 'Space Shuttle', color: '#cfd8dc', speed: 2.0, hp: 60, damage: 16, fireRate: 1.4, pattern: 'glide' },
   moth:     { name: 'Moth',           color: '#d8c8a0', speed: 2.4, hp: 16, damage: 8,  fireRate: 1.0, pattern: 'erratic' },
+  squirrel: { name: 'Squirrel',       color: '#a5622d', speed: 3.4, hp: 12, damage: 7,  fireRate: 0.7, pattern: 'scurry' },
 };
 
 export const TIERS = {
@@ -461,7 +470,8 @@ export const TIERS = {
 // ─── v3.30.0: 16-species sequential wave system ───
 // v3.50.0: roster grew to 17 species (shuttle) — SPECIES_COUNT tracks it.
 // v3.52.0: roster grew to 18 species (moth).
-// One species per wave (wraps after 18, order = ENEMY_TYPES insertion order).
+// v3.67.0: roster grew to 19 species (squirrel).
+// One species per wave (wraps after 19, order = ENEMY_TYPES insertion order).
 // Active enemy count sawtooth-ramps COUNT_MIN→COUNT_MAX over COUNT_RAMP_WAVES
 // then resets. Wave difficulty scales enemy HP + damage only, +DIFF_PER_WAVE
 // per wave, capped after DIFF_CAP_CYCLES full species cycles (hard cap
@@ -469,7 +479,7 @@ export const TIERS = {
 // 10 waves) + lower-tier same-species fill (TIER_MIX). spawnOverride > 0
 // (dev-panel slider / `count <n>` debug command) pins the active count.
 export const WAVE = {
-  SPECIES_COUNT: 18,
+  SPECIES_COUNT: 19,
   COUNT_MIN: 20,
   COUNT_MAX: 300,
   COUNT_RAMP_WAVES: 12,

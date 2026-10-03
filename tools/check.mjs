@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.66.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.67.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -95,6 +95,7 @@ for (const [tag, rel] of [
   ['DragonEnemy', 'js/enemies/DragonEnemy.js'],     // v3.64.0
   ['FalconEnemy', 'js/enemies/FalconEnemy.js'],     // v3.65.0
   ['BatEnemy', 'js/enemies/BatEnemy.js'],           // v3.66.0
+  ['SquirrelEnemy', 'js/enemies/SquirrelEnemy.js'], // v3.67.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
 }
@@ -102,7 +103,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.32.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.47.0', PlayerWeapons: 'v3.46.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -183,7 +184,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.64.0: + dragon (dragon enemy pixel-art sprite swap).
 // v3.65.0: + falcon (falcon enemy pixel-art sprite swap).
 // v3.66.0: + bat (bat enemy pixel-art sprite swap).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat'];
+// v3.67.0: + squirrel (squirrel enemy — 19th species).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -406,9 +408,9 @@ console.log('\n[6c] v3.47.0 key-triggered synergy explosion (source gates)');
 // ═══════════════════════════════════════════════════════════
 console.log('\n[6d] v3.50.0 shuttle enemy (17th species)');
 const { ENEMY_TYPES, WAVE } = await mod('js/core/config.js');
-check('config: ENEMY_TYPES has 18 species (shuttle + moth)', Object.keys(ENEMY_TYPES).length === 18, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
+check('config: ENEMY_TYPES has 19 species (shuttle + moth + squirrel)', Object.keys(ENEMY_TYPES).length === 19, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
 check('config: shuttle entry (Space Shuttle, glide pattern)', ENEMY_TYPES.shuttle && ENEMY_TYPES.shuttle.name === 'Space Shuttle' && ENEMY_TYPES.shuttle.pattern === 'glide', `got ${JSON.stringify(ENEMY_TYPES.shuttle)}`);
-check('config: WAVE.SPECIES_COUNT = 18', WAVE.SPECIES_COUNT === 18, `got ${WAVE.SPECIES_COUNT}`);
+check('config: WAVE.SPECIES_COUNT = 19', WAVE.SPECIES_COUNT === 19, `got ${WAVE.SPECIES_COUNT}`);
 const { isValidEnemyType, getEnemyClass, getEnemyTypeIds } = await mod('js/enemies/EnemyFactory.js');
 check('EnemyFactory: shuttle registered in REGISTRY', isValidEnemyType('shuttle') && getEnemyTypeIds().includes('shuttle'));
 check('EnemyFactory: getEnemyClass("shuttle") is the ShuttleEnemy class', typeof getEnemyClass('shuttle') === 'function' && getEnemyClass('shuttle').name === 'ShuttleEnemy', `got ${getEnemyClass('shuttle') && getEnemyClass('shuttle').name}`);
@@ -416,10 +418,10 @@ const { default: ShuttleEnemy } = await mod('js/enemies/ShuttleEnemy.js');
 const seSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/ShuttleEnemy.js'), 'utf8');
 check('ShuttleEnemy: extends EnemyBase, sprite key "shuttle", banked-strafe + telegraph', Object.getPrototypeOf(ShuttleEnemy.prototype).constructor.name === 'EnemyBase' && seSrc.includes("SHUTTLE_SPRITE_KEY = 'shuttle'") && seSrc.includes('this.bank') && seSrc.includes('this.telegraph'));
 // Regular waves: WaveManager's species pool is Object.keys(ENEMY_TYPES) —
-// a headless instance must list shuttle + moth among its 18 species.
+// a headless instance must list shuttle + moth + squirrel among its 19 species.
 const { default: WaveManager } = await mod('js/core/WaveManager.js');
 const wm = new WaveManager({});
-check('WaveManager: regular-wave species pool includes shuttle + moth (18 total)', wm.species.includes('shuttle') && wm.species.includes('moth') && wm.species.length === 18, `got ${wm.species.length}: ${wm.species.join(', ')}`);
+check('WaveManager: regular-wave species pool includes shuttle + moth + squirrel (19 total)', wm.species.includes('shuttle') && wm.species.includes('moth') && wm.species.includes('squirrel') && wm.species.length === 19, `got ${wm.species.length}: ${wm.species.join(', ')}`);
 check('WaveManager: species pool comes from ENEMY_TYPES (source gate)', wmSrc.includes('this.species = Object.keys(ENEMY_TYPES)'));
 // Bone Yard Phase 2/3: explicit humanoid allowlist — a new species can
 // never leak into the march.
@@ -837,6 +839,40 @@ console.log('\n[6s] v3.66.0 bat pixel-art sprite');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6t] v3.67.0 SQUIRREL ENEMY (19th species) — fast, erratic
+//       tree-dweller with a bushy tail; draws the shared PNG
+//       (key "squirrel", 580×476 → 128×105) upright (head up,
+//       centered mass) with a scurry bounce (t*16) + twitchy
+//       wobble (t*4.2) + sprint stretch + type-color accent
+//       glow; procedural fallback retained; scurry + hop
+//       movement, light aimed shot
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6t] v3.67.0 squirrel enemy (19th species)');
+{
+  const sqSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/SquirrelEnemy.js'), 'utf8');
+  check('SquirrelEnemy: VERSION = v1.0.0', sqSrc.includes("VERSION = 'v1.0.0'"));
+  check('SquirrelEnemy: sprite key "squirrel" via AssetManager', sqSrc.includes("SQUIRREL_SPRITE_KEY = 'squirrel'") && sqSrc.includes('getSprite(SQUIRREL_SPRITE_KEY)'));
+  check('SquirrelEnemy: null-sprite → procedural fallback branch', sqSrc.includes('this._drawProcedural(ctx, r)'));
+  check('SquirrelEnemy: scurry bounce (t*16) + twitchy wobble (t*4.2)', sqSrc.includes('const bounce = Math.sin(this.t * 16)') && sqSrc.includes('const wobble = Math.sin(this.t * 4.2) * 0.07'));
+  check('SquirrelEnemy: aspect-preserving nearest-neighbor draw', sqSrc.includes('(targetW * dims.h) / dims.w') && sqSrc.includes('ctx.imageSmoothingEnabled = false'));
+  check('SquirrelEnemy: type-color accent glow pass', sqSrc.includes('ctx.shadowColor = this.color') && sqSrc.includes('ctx.shadowBlur = r * 0.8'));
+  check('SquirrelEnemy: procedural fallback art intact (bushy tail/body/perked ears)', sqSrc.includes('tailGrad') && sqSrc.includes('bodyGrad') && sqSrc.includes('#ffd54f'));
+  check('SquirrelEnemy: fast scurry descent + erratic hop + lateral sprints', sqSrc.includes('s * dt * 0.95') && sqSrc.includes('this._hopVy') && sqSrc.includes('this._sprintVx') && sqSrc.includes('this._sprintT'));
+  check('SquirrelEnemy: light aimed shot fireAtPlayer(a, 260, 0.85)', sqSrc.includes('fireAtPlayer(this.angleToPlayer(), 260, 0.85)'));
+  check('config: ENEMY_TYPES.squirrel registered (speed 3.4 / hp 12 / damage 7 / scurry)',
+    ENEMY_TYPES.squirrel && ENEMY_TYPES.squirrel.name === 'Squirrel' && ENEMY_TYPES.squirrel.color === '#a5622d' &&
+    ENEMY_TYPES.squirrel.speed === 3.4 && ENEMY_TYPES.squirrel.hp === 12 && ENEMY_TYPES.squirrel.damage === 7 &&
+    ENEMY_TYPES.squirrel.fireRate === 0.7 && ENEMY_TYPES.squirrel.pattern === 'scurry',
+    `got ${JSON.stringify(ENEMY_TYPES.squirrel)}`);
+  check('EnemyFactory: squirrel registered in REGISTRY', isValidEnemyType('squirrel') && getEnemyTypeIds().includes('squirrel'));
+  check('EnemyFactory: getEnemyClass("squirrel") is the SquirrelEnemy class', typeof getEnemyClass('squirrel') === 'function' && getEnemyClass('squirrel').name === 'SquirrelEnemy', `got ${getEnemyClass('squirrel') && getEnemyClass('squirrel').name}`);
+  const { default: SquirrelEnemy } = await mod('js/enemies/SquirrelEnemy.js');
+  check('SquirrelEnemy: extends EnemyBase', Object.getPrototypeOf(SquirrelEnemy.prototype).constructor.name === 'EnemyBase');
+  check('AssetSprites: squirrel sprite dims 128×105 registered', /squirrel:\s*\{\s*w:\s*128,\s*h:\s*105\s*\}/.test(spritesSrc));
+  check('AssetSprites: squirrel source 580×476 → 128×105', /squirrel: "Squirel pixel_art\.png \(580×476 → 128×105,/.test(spritesSrc));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -846,6 +882,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.66.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.67.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

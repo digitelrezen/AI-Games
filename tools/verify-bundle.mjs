@@ -63,7 +63,7 @@ const tests = [
   // quotes — every pattern below is quote-tolerant (['"]).
   ['v3.50.0: shuttle sprite dims 128×60', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(s)],
   ['v3.50.0: shuttle in ENEMY_TYPES (Space Shuttle, glide pattern)', /shuttle:\s*\{\s*name:\s*["']Space Shuttle["']/.test(s)],
-  ['v3.52.0: WAVE.SPECIES_COUNT = 18', /SPECIES_COUNT:\s*18/.test(s)],
+  ['v3.67.0: WAVE.SPECIES_COUNT = 19', /SPECIES_COUNT:\s*19/.test(s)],
   ['v3.50.0: shuttle registered in EnemyFactory REGISTRY', /shuttle:\s*ShuttleEnemy/.test(s)],
   ['v3.50.0: WaveManager species pool = ENEMY_TYPES keys', s.includes('this.species = Object.keys(ENEMY_TYPES)')],
   ['v3.50.0: Bone Yard humanoid allowlist (["human"] only)', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
@@ -153,6 +153,14 @@ const tests = [
   ['v3.66.0: BatEnemy sprite + procedural fallback', /BAT_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   ['v3.66.0: bat wing-beat (t*14) + hover bob (t*3) phase-locked', /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*14\)/.test(s) && /bob\s*=\s*Math\.sin\(this\.t\s*\*\s*3\)/.test(s)],
   ['v3.66.0: bat config entry intact', /bat:\s*\{\s*name:\s*['"]Bat['"]/.test(s) && s.includes('#5d5d7a')],
+  // ── v3.67.0 squirrel enemy (19th species, fast erratic scurry) ──
+  ['v3.67.0: squirrel sprite dims 128×105', /squirrel:\s*\{\s*w:\s*128,\s*h:\s*105\s*\}/.test(s)],
+  ['v3.67.0: squirrel sprite key in AssetSprites registry', s.includes('squirrel: "iVBORw0KGgo')],
+  ['v3.67.0: SquirrelEnemy sprite + procedural fallback', /SQUIRREL_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
+  ['v3.67.0: squirrel scurry bounce (t*16) + twitchy wobble (t*4.2)', /bounce\s*=\s*Math\.sin\(this\.t\s*\*\s*16\)/.test(s) && /wobble\s*=\s*Math\.sin\(this\.t\s*\*\s*4\.2\)/.test(s)],
+  ['v3.67.0: squirrel erratic hop + lateral sprints', s.includes('this._hopVy') && s.includes('this._sprintVx') && s.includes('this._sprintT')],
+  ['v3.67.0: squirrel config entry intact', /squirrel:\s*\{\s*name:\s*['"]Squirrel['"]/.test(s) && s.includes('#a5622d')],
+  ['v3.67.0: EnemyFactory registers squirrel', /squirrel:\s*SquirrelEnemy/.test(s)],
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -192,5 +200,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + bat pixel-art sprite + squirrel enemy (19th species) + power-up pixel art w/ 5 jewel drops).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);

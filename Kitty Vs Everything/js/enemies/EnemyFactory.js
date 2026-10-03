@@ -9,7 +9,10 @@
 // v3.32.0 (v3.52.0 release): Added MothEnemy registration — the moth is the
 //          18th species (regular waves only; Bone Yard Phase 2 stays
 //          humanoid via its explicit allowlist).
-export const VERSION = 'v3.32.0';
+// v3.33.0 (v3.67.0 release): Added SquirrelEnemy registration — the squirrel
+//          is the 19th species (regular waves only; Bone Yard Phase 2 stays
+//          humanoid via its explicit allowlist).
+export const VERSION = 'v3.33.0';
 import { ENEMY_TYPES } from '../core/config.js';
 import WaspEnemy from './WaspEnemy.js';
 import Wasp2Enemy from './Wasp2Enemy.js';
@@ -29,6 +32,7 @@ import SpiderEnemy from './SpiderEnemy.js';
 import PinkCatEnemy from './PinkCatEnemy.js';
 import ShuttleEnemy from './ShuttleEnemy.js';
 import MothEnemy from './MothEnemy.js';
+import SquirrelEnemy from './SquirrelEnemy.js';
 
 // ─── REGISTRY: type ID → class ───
 const REGISTRY = {
@@ -50,6 +54,7 @@ const REGISTRY = {
   pinkcat:   PinkCatEnemy,
   shuttle:   ShuttleEnemy,
   moth:      MothEnemy,
+  squirrel:  SquirrelEnemy,
 };
 
 /**
