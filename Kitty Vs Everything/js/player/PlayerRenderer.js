@@ -16,17 +16,29 @@
 //          shield is now a yellow outer bubble (SHIELD_BUBBLE_RADIUS) drawn
 //          under the hull while shield > 0; Nova charge/cooldown moved to the
 //          HUDFireControl purple meter. Player.hit plays the shatter burst.
-export const VERSION = 'v3.56.0';
-import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES } from '../core/config.js';
+// v3.72.1: SPRITE BRANCH TRANSFORM FIX — the v3.72.0 sprite blit drew at raw
+//          (0,0) (no translate/rotate), so the hull rendered at the world
+//          origin (off-screen corner: the "floating circle") while weapons
+//          fired from the real position. The sprite now blits in the ship's
+//          local frame (translate p.x/p.y + rotate angle+PI/2, same as the
+//          procedural path), the hard accent-ellipse underlay is replaced
+//          with a soft theme shadow-glow, and the weapon paws / thruster
+//          pods / muzzle flash are re-layered at the SHIP_GEOMETRY
+//          hardpoints so the sprite keeps its firing/thrusting read.
+export const VERSION = 'v3.72.1';
+import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES, SHIP_GEOMETRY, WEAPONS, MAIN_SHIP_SCALE } from '../core/config.js';
 import { getSprite } from '../core/AssetManager.js';
 import { drawCatShip as drawMainShip } from './PlayerShipArt.js';
 import { drawMiniPod, drawDockArc } from './PlayerMiniArt.js';
+import { drawWeaponPaw, drawThrusterPaw, drawThrusterFlame, drawMuzzleFlash } from './PlayerShipFx.js';
 
 // v3.45.0: yellow shield-bubble radius (px). Sized to cover the hull AND both
 // docked minis (they dock within ~40px of the hull center).
 // v3.56.0: 48 → 60 — the ring must clear the railgun barrel tips (±16, -50,
 // ≈ 52.5 px from center) while still covering the docked minis.
-const SHIELD_BUBBLE_RADIUS = 60;
+// v3.47.0: 60 → 100 — the 2x hull (±70px nose/tail, muzzle tips ≈ ±92px) and
+// the outboard minis (±77px) need a larger glow radius.
+const SHIELD_BUBBLE_RADIUS = 100;
 
 export default class PlayerRenderer {
   constructor(player) {
@@ -63,27 +75,18 @@ export default class PlayerRenderer {
       const shPct = p.maxShield > 0 ? p.shield / p.maxShield : 1;
       const R = SHIELD_BUBBLE_RADIUS;
       ctx.save();
-      // Soft yellow fill (fades with shield HP)
-      ctx.fillStyle = `rgba(255, 213, 79, ${0.04 + 0.07 * shPct})`;
+      // v3.47.0: shield is now a soft yellow GLOW (radial gradient, no hard
+      // rim line) — the crisp circle read as a harsh bubble. The glow is a
+      // gentle yellow halo that fades from the hull out to transparent at the
+      // edge; its intensity scales with shield HP.
+      const g = ctx.createRadialGradient(p.x, p.y, R * 0.45, p.x, p.y, R);
+      g.addColorStop(0, `rgba(255, 213, 79, ${0.03 + 0.04 * shPct})`);
+      g.addColorStop(0.55, `rgba(255, 213, 79, ${0.10 + 0.16 * shPct})`);
+      g.addColorStop(1, 'rgba(255, 213, 79, 0)');
+      ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(p.x, p.y, R, 0, TAU);
       ctx.fill();
-      // Outer rim — bright yellow, glow scales with shield HP
-      // (v3.56.0: thinner rim 2.5 → 1.5, glow 10 → 6 for a sharper ring)
-      ctx.strokeStyle = `rgba(255, 213, 79, ${0.55 + 0.45 * shPct})`;
-      ctx.lineWidth = 1.5;
-      ctx.shadowColor = '#ffd54f';
-      ctx.shadowBlur = 6 * shPct;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, R, 0, TAU);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      // Inner highlight (glassy bubble edge; v3.56.0: 1 → 0.75 at R-2.5)
-      ctx.strokeStyle = `rgba(255, 244, 194, ${0.2 + 0.3 * shPct})`;
-      ctx.lineWidth = 0.75;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, R - 2.5, 0, TAU);
-      ctx.stroke();
       ctx.restore();
     }
 
@@ -91,24 +94,45 @@ export default class PlayerRenderer {
     // imported (a cat on its back: head/ears at center, the two upper
     // extensions = weapon arms, the two lower = thruster legs); otherwise
     // fall back to the procedural top-down "Superman H" hull.
+    // v3.72.1: the blit happens in the ship's LOCAL frame (translate to
+    // p.x/p.y + rotate by heading, exactly like the procedural path) — the
+    // v3.72.0 build drew at raw (0,0) and the hull vanished off-screen.
     const spriteKey = PLAYER_THEME_SPRITES[p.theme];
     const sprite = spriteKey ? getSprite(spriteKey) : null;
-    if (sprite) {
+    if (sprite && sprite.width && sprite.height) {
       const drawH = 70; // sprite height (px) — matches the procedural hull scale
       const s = drawH / sprite.height;
       const dw = sprite.width * s;
       const dh = sprite.height * s;
       ctx.save();
-      ctx.globalAlpha = (blink ? 0.35 : 1) * 0.55;
-      ctx.fillStyle = th.accent;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, dw * 0.62, dh * 0.62, 0, 0, TAU);
-      ctx.fill();
-      ctx.restore();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle + Math.PI / 2);
+      ctx.scale(MAIN_SHIP_SCALE, MAIN_SHIP_SCALE); // v3.47.0: 2x main ship
       ctx.globalAlpha = blink ? 0.35 : 1;
+      // v3.72.1: soft theme glow behind the sprite (replaces the hard
+      // accent-ellipse underlay that read as a circle behind the cat).
+      ctx.shadowColor = th.accent;
+      ctx.shadowBlur = 14;
       ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh);
+      ctx.shadowBlur = 0;
+      // v3.72.1: re-layer the hardpoint FX on top of the sprite so the
+      // thrusters flame and the muzzles flash exactly where bullets spawn.
+      const flicker = 0.7 + 0.3 * Math.sin(p.engineFlicker);
+      const thrustOn = p.thrusterActive || p.boostActive;
+      const flameFlicker = thrustOn ? (0.7 + 0.3 * Math.sin(p.engineFlicker * 2)) : 0;
+      const boostGlow = p.boostActive ? 1.6 : 1;
+      const weaponColor = (p.weapon && WEAPONS[p.weapon]) ? WEAPONS[p.weapon].color : '#ffffff';
+      drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x, SHIP_GEOMETRY.thrusterL.y, flicker, flameFlicker, boostGlow);
+      drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterR.x, SHIP_GEOMETRY.thrusterR.y, flicker, flameFlicker, boostGlow);
+      drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x, SHIP_GEOMETRY.frontPawL.y, th.color, th.accent, p.pawFlashL || 0, weaponColor, p);
+      drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawR.x, SHIP_GEOMETRY.frontPawR.y, th.color, th.accent, p.pawFlashR || 0, weaponColor, p);
+      if (p.muzzleFlash > 0) {
+        drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x, SHIP_GEOMETRY.muzzle.y,
+          Math.min(1, p.muzzleFlash / 0.18), weaponColor);
+      }
+      ctx.restore();
     } else {
-      drawMainShip(ctx, p, th.color, th.accent, th.pattern);
+      drawMainShip(ctx, p, th.color, th.accent, th.pattern, { scale: MAIN_SHIP_SCALE });
     }
 
     ctx.globalAlpha = 1;

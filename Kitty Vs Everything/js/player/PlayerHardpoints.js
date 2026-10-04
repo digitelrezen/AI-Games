@@ -6,7 +6,7 @@
 // SHIP_GEOMETRY (config.js) is the single source of truth for all of these
 // positions — shared by this module and the art (PlayerShipArt.js).
 export const VERSION = 'v3.46.0';
-import { SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
+import { SHIP_GEOMETRY, WEAPONS, MAIN_SHIP_SCALE } from '../core/config.js';
 
 /**
  * Transform a ship-local point (nose = -Y, tail = +Y, flanks = ±X) to world.
@@ -18,9 +18,12 @@ import { SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
 export function localToWorld(player, lx, ly) {
   const cosA = Math.cos(player.angle);
   const sinA = Math.sin(player.angle);
+  // v3.47.0: scale by MAIN_SHIP_SCALE so gameplay hardpoints (bullet spawn,
+  // mini docks) track the 2x-drawn main hull (PlayerRenderer ctx.scale).
+  const s = MAIN_SHIP_SCALE;
   return {
-    x: player.x - lx * sinA - ly * cosA,
-    y: player.y + lx * cosA - ly * sinA,
+    x: player.x - (lx * sinA + ly * cosA) * s,
+    y: player.y + (lx * cosA - ly * sinA) * s,
   };
 }
 

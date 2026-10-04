@@ -163,7 +163,8 @@ body {
   margin-bottom: 8px;
 }
 .tagline { color: #888; margin-bottom: 24px; font-size: 14px; }
-.menu-ship-select { display: flex; gap: 12px; margin-bottom: 20px; }
+/* v3.72.1: 9 generated ship cards — wrap + center so they fit narrow windows */
+.menu-ship-select { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 20px; }
 .ship-option {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 8px 12px; border: 2px solid #333; border-radius: 6px;

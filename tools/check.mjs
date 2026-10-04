@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.72.0 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.72.1 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -349,9 +349,9 @@ console.log('\n[6] Power-up drop lifecycle (headless)');
 console.log('\n[6b] v3.45.0 clean catship (source gates)');
 {
   const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
-  check('PlayerRenderer: SHIELD_BUBBLE_RADIUS = 60 (v3.56.0: ring clears the guns)', /SHIELD_BUBBLE_RADIUS\s*=\s*60/.test(prSrc));
-  check('PlayerRenderer: yellow bubble drawn only while shield > 0',
-    prSrc.includes('if (p.shield > 0)') && prSrc.includes('rgba(255, 213, 79'));
+  check('PlayerRenderer: SHIELD_BUBBLE_RADIUS = 100 (v3.47.0: glow covers the 2x hull + minis)', /SHIELD_BUBBLE_RADIUS\s*=\s*100/.test(prSrc));
+  check('PlayerRenderer: yellow shield GLOW (radial gradient, no hard rim) while shield > 0',
+    prSrc.includes('if (p.shield > 0)') && prSrc.includes('createRadialGradient') && prSrc.includes('rgba(255, 213, 79'));
   check('PlayerRenderer: ship no longer reads superCharge (gold ring gone)',
     !prSrc.includes('p.superCharge'));
   const plSrc = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
@@ -1331,8 +1331,13 @@ console.log('\n[6x] v3.71.0 Phase 4 modular cat-ship combat (CatShipFactory + Mi
 //        sprite key; the theme color/accent still drive the cockpit,
 //        weapons, thrusters, shields and HUD; themes without a sprite
 //        fall back to the procedural hull.
+//        v3.72.1: + transform fix gate (sprite blit must translate/rotate
+//        to the ship — v3.72.0 drew at raw (0,0): hull off-screen, "floating
+//        circle"), hardpoint FX re-layer gate, and the ship-select menu
+//        gates (index.html no longer hardcodes 5 cards; main.js generates
+//        all 9 from PLAYER_THEMES + re-renders icons after loadAssets()).
 // ═══════════════════════════════════════════════════════════
-console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs)');
+console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1 render/menu fixes');
 {
   const { PLAYER_THEMES, PLAYER_THEME_SPRITES } = await mod('js/core/config.js');
   const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
@@ -1353,9 +1358,22 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs)');
   // PlayerRenderer: sprite blit path + procedural fallback
   check('PlayerRenderer: resolves the theme sprite (PLAYER_THEME_SPRITES + getSprite)', prSrc.includes('PLAYER_THEME_SPRITES[p.theme]') && prSrc.includes('getSprite('));
   check('PlayerRenderer: blits the sprite at a fixed 70px height', prSrc.includes('const drawH = 70') && prSrc.includes('ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh)'));
-  check('PlayerRenderer: accent glow + blink alpha around the sprite', prSrc.includes('ctx.fillStyle = th.accent') && prSrc.includes('blink ? 0.35 : 1'));
-  check('PlayerRenderer: procedural fallback when no sprite', prSrc.includes('drawMainShip(ctx, p, th.color, th.accent, th.pattern)'));
+  // v3.72.1: the blit must happen in the ship's LOCAL frame — the v3.72.0
+  // build drew at raw (0,0) and the hull vanished off-screen while weapons
+  // kept firing (the reported "circle floating in space" bug).
+  check('PlayerRenderer: sprite blit translated + rotated to the ship (v3.72.1 transform fix)', prSrc.includes('ctx.translate(p.x, p.y)') && prSrc.includes('ctx.rotate(p.angle + Math.PI / 2)'));
+  check('PlayerRenderer: soft theme shadow-glow + blink alpha, no hard ellipse underlay (v3.72.1)', prSrc.includes('ctx.shadowColor = th.accent') && prSrc.includes('blink ? 0.35 : 1') && !prSrc.includes('ctx.ellipse(0, 0, dw * 0.62'));
+  check('PlayerRenderer: hardpoint FX re-layered on the sprite (paws/thrusters/muzzle at SHIP_GEOMETRY)', prSrc.includes('drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x') && prSrc.includes('drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x') && prSrc.includes('drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x'));
+  check('PlayerRenderer: procedural fallback when no sprite (2x scale)', prSrc.includes('drawMainShip(ctx, p, th.color, th.accent, th.pattern, { scale: MAIN_SHIP_SCALE })'));
   check('PlayerRenderer: menu-icon compat path passes the theme sprite', prSrc.includes('drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s }, sprite)'));
+
+  // v3.72.1: ship-select menu — all 9 themes, generated from config.js
+  const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const mainSrc = fs.readFileSync(path.join(ROOT, 'js/core/main.js'), 'utf8');
+  check('index.html: no hardcoded ship-option cards (menu generated from PLAYER_THEMES)', !htmlSrc.includes('data-theme=') && htmlSrc.includes('class="menu-ship-select"'));
+  check('main.js: generates one ship-option per PLAYER_THEMES key (all 9 cards)', mainSrc.includes('for (const key of Object.keys(PLAYER_THEMES))') && mainSrc.includes('btn.dataset.theme = key'));
+  check('main.js: mock player carries the theme (menu-icon sprite lookup works)', mainSrc.includes('const mockPlayer = {') && mainSrc.includes('theme,'));
+  check('main.js: re-renders menu icons after loadAssets() resolves', mainSrc.includes('loadAssets().then(renderAllShipIcons)'));
 
   // PlayerShipArt: optional sprite parameter blits before the procedural hull
   check('PlayerShipArt: drawCatShip accepts an optional sprite parameter', psaSrc.includes('export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null)'));
@@ -1372,6 +1390,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.72.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.72.1 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

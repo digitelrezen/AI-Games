@@ -322,3 +322,68 @@ export function drawThrusterPaw(ctx, fx, fy, flicker, flameFlicker, boostGlow, c
   drawPawPads(ctx, fx, fy, 1);
 }
 
+// ═══════════════════════════════════════════════════════════
+//  THRUSTER FLAME (v3.47.0: simplified rear thruster — no paw art)
+//  The rear legs + short tail sit close together on the centerline; the
+//  harsh paw-pad pods read poorly at that spacing, so the main hull now
+//  draws a clean rocket flame + small nozzle instead of the full paw pod.
+//  The flame only shows while thrusting (flameFlicker > 0); a faint idle
+//  ember keeps the engine reading as hot at rest.
+// ═══════════════════════════════════════════════════════════
+export function drawThrusterFlame(ctx, fx, fy, flicker, flameFlicker, boostGlow) {
+  const thrustOn = flameFlicker > 0;
+  // Rocket flame (from the nozzle, pointing back +Y)
+  if (thrustOn) {
+    const flameLen = (10 + 8 * flameFlicker) * boostGlow;
+    const flameW = 3.5 * (boostGlow > 1 ? 1.25 : 1);
+    const base = fy + 4;
+    const fg = ctx.createLinearGradient(0, base, 0, base + flameLen);
+    fg.addColorStop(0, 'rgba(255, 255, 220, 0.95)');
+    fg.addColorStop(0.3, 'rgba(255, 180, 50, 0.85)');
+    fg.addColorStop(0.7, 'rgba(255, 90, 10, 0.55)');
+    fg.addColorStop(1, 'rgba(255, 30, 0, 0)');
+    ctx.fillStyle = fg;
+    ctx.beginPath();
+    ctx.moveTo(fx - flameW, base);
+    ctx.lineTo(fx, base + flameLen);
+    ctx.lineTo(fx + flameW, base);
+    ctx.closePath();
+    ctx.fill();
+    // Hot core
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.55 * flameFlicker})`;
+    ctx.beginPath();
+    ctx.moveTo(fx - flameW * 0.4, base);
+    ctx.lineTo(fx, base + flameLen * 0.55);
+    ctx.lineTo(fx + flameW * 0.4, base);
+    ctx.closePath();
+    ctx.fill();
+    // Boost halo
+    if (boostGlow > 1) {
+      const bg = ctx.createRadialGradient(fx, base + 4, 0, fx, base + 4, 12);
+      bg.addColorStop(0, 'rgba(255,190,60,0.5)');
+      bg.addColorStop(1, 'rgba(255,90,0,0)');
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      ctx.arc(fx, base + 4, 12, 0, TAU);
+      ctx.fill();
+    }
+  }
+  // Nozzle (small dark ellipse — anchors the flame, no paw / mount ring)
+  ctx.fillStyle = '#39415c';
+  ctx.beginPath();
+  ctx.ellipse(fx, fy + 3.5, 3.5, 2.8, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = '#121623';
+  ctx.beginPath();
+  ctx.ellipse(fx, fy + 4, 2.2, 1.8, 0, 0, TAU);
+  ctx.fill();
+  // Idle ember glow (engine always hot)
+  const eg = ctx.createRadialGradient(fx, fy + 4, 0, fx, fy + 4, 5 * flicker);
+  eg.addColorStop(0, `rgba(255, 200, 70, ${0.45 * flicker})`);
+  eg.addColorStop(1, 'rgba(255, 80, 0, 0)');
+  ctx.fillStyle = eg;
+  ctx.beginPath();
+  ctx.ellipse(fx, fy + 4, 4 * flicker, 5 * flicker, 0, 0, TAU);
+  ctx.fill();
+}
+

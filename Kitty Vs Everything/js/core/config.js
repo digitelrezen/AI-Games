@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.72.0
+// Kitty Vs Everything — v3.72.1
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — the specialized rockets
@@ -223,7 +223,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.72.0';
+export const VERSION = 'v3.72.1';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -260,18 +260,32 @@ export const PLAYER2 = {
   weaponDamageMul: 1.0,    // P2 weapon damage scaling
 };
 
-// ─── CATSHIP GEOMETRY (local space, nose = -Y) ───
+// ─── MAIN SHIP SCALE (v3.47.0) ───
+// The main cat ship is drawn at 2x the 70px sprite frame. The sprite and the
+// hardpoint FX (weapon paws, thruster flames, muzzle) are all scaled together
+// via ctx.scale(MAIN_SHIP_SCALE) in PlayerRenderer.draw(), and the gameplay
+// hardpoints (bullet spawn, mini docks) are scaled by the same factor in
+// PlayerHardpoints.localToWorld — so bullets/docks stay exactly on the art.
+// Mini ships are NOT affected: they use their own MINI_SCALE (0.6) via
+// _miniPoint, so they stay the same size while docking further outboard.
+export const MAIN_SHIP_SCALE = 2;
+
+// ─── CATSHIP GEOMETRY (local space, nose = -Y, 70px sprite frame) ───
 // Single source of truth shared by Player.js (weapon hardpoint math) and
-// PlayerRenderer.js (art). Front paws = weapon hardpoints; back paws =
-// thruster rockets (drawn in the renderer, no bullets spawn from them).
+// PlayerRenderer.js (art). Front paws = weapon hardpoints; rear thrusters =
+// rocket flames (drawn in the renderer, no bullets spawn from them).
+// v3.47.0: rear thrusters recentered onto the rear legs (x≈±4, y≈31 — the two
+// legs and the short tail sit close together on the centerline pointing
+// straight back); mini docks moved out to ±32 so the 2x hull and the 0.6x
+// minis stay clearly separated (no overlap) while remaining locked to the hull.
 export const SHIP_GEOMETRY = {
   frontPawL: { x: -16, y: -28 }, // left front paw  — vulkan / plasma / stun hardpoint
   frontPawR: { x: 16,  y: -28 }, // right front paw — vulkan / plasma / stun hardpoint
   muzzle:    { x: 0,   y: -20 }, // nose muzzle     — rail cannon (snout tip)
-  thrusterL: { x: -15, y: 28 },  // left back paw   — thruster rocket pod at the rear-leg ankle (no bullets)
-  thrusterR: { x: 15,  y: 28 },  // right back paw  — thruster rocket pod at the rear-leg ankle (no bullets)
-  miniDockL: { x: -26, y: 2 },   // left mini dock  — docked mini-ship slot
-  miniDockR: { x: 26,  y: 2 },   // right mini dock — docked mini-ship slot
+  thrusterL: { x: -4,  y: 31 },  // left rear leg   — thruster flame at the rear-leg ankle (no bullets)
+  thrusterR: { x: 4,   y: 31 },  // right rear leg  — thruster flame at the rear-leg ankle (no bullets)
+  miniDockL: { x: -32, y: 2 },   // left mini dock  — docked mini-ship slot (outboard of the 2x hull)
+  miniDockR: { x: 32,  y: 2 },   // right mini dock — docked mini-ship slot (outboard of the 2x hull)
   // v3.17.0: OVERSIZED weapon barrels — DEFAULT barrel length (local -Y) from
   // the paw hardpoint to the muzzle tip. The art (PlayerShipFx.drawWeaponPaw)
   // draws the barrels this long and bullets spawn at the tip (PlayerHardpoints

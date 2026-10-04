@@ -16,10 +16,17 @@
 //          RealTimeClock.js).
 // v3.27.0: EasterEgg.js is now the easter-egg manager (Bender + ship slots);
 //          "Drop Ship" dev button spawns the Planet Express flyby.
-export const VERSION = 'v3.27.0';
+// v3.72.1: Ship-select row is now GENERATED from PLAYER_THEMES (all 9
+//          themes) — the 5 hardcoded index.html cards are gone, config.js
+//          is the single source of truth. Menu icons re-render once
+//          loadAssets() resolves so they show the cat_* sprite art (the
+//          first draw happens before the base64 decode lands), and the
+//          mock player now carries `theme` so the sprite lookup works.
+export const VERSION = 'v3.72.1';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
+import { loadAssets } from './AssetManager.js'; // v3.72.1: re-render icons when sprites land
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer
 import MenuKeybinds from '../input/MenuKeybinds.js'; // v3.23.0: dynamic keybind footer
 
@@ -34,6 +41,9 @@ new MenuKeybinds();
 netSettingsUI.showHud(document.getElementById('net-hud'));
 
 // ─── Cat ship theme selection (v3.1.0 menu: .ship-option buttons) ───
+// v3.72.1: the .ship-option cards are GENERATED here from PLAYER_THEMES
+// (all 9 themes) — index.html only provides the empty .menu-ship-select
+// container, so a new theme in config.js automatically gets a menu card.
 let selectedTheme = 'yellow';
 
 // Draw the actual cat ship (same PlayerRenderer used in-game) into a
@@ -49,7 +59,10 @@ function renderShipIcon(icon, theme) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, size, size);
   // Static pose: nose up, idle thruster flame, tail straight, eyes open
+  // v3.72.1: `theme` is REQUIRED — PlayerRenderer.drawCatShip resolves the
+  // cat_* sprite key from this.player.theme (undefined → procedural icon).
   const mockPlayer = {
+    theme,
     angle: -Math.PI / 2,
     engineFlicker: 0.8,
     thrusterActive: true,
@@ -69,14 +82,35 @@ function renderShipIcon(icon, theme) {
   );
 }
 
-document.querySelectorAll('.ship-option').forEach(btn => {
-  renderShipIcon(btn.querySelector('.ship-icon'), btn.dataset.theme);
+const shipSelect = document.querySelector('.menu-ship-select');
+const shipIcons = [];
+for (const key of Object.keys(PLAYER_THEMES)) {
+  const btn = document.createElement('div');
+  btn.className = 'ship-option' + (key === selectedTheme ? ' selected' : '');
+  btn.dataset.theme = key;
+  const icon = document.createElement('canvas');
+  icon.className = 'ship-icon';
+  const label = document.createElement('span');
+  label.textContent = PLAYER_THEMES[key].name.split(' ')[0];
+  btn.appendChild(icon);
+  btn.appendChild(label);
   btn.addEventListener('click', () => {
     document.querySelectorAll('.ship-option').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    selectedTheme = btn.dataset.theme;
+    selectedTheme = key;
   });
-});
+  shipSelect.appendChild(btn);
+  shipIcons.push({ icon, theme: key });
+}
+const renderAllShipIcons = () => {
+  for (const { icon, theme } of shipIcons) renderShipIcon(icon, theme);
+};
+renderAllShipIcons();
+// v3.72.1: re-render every icon once the AssetManager sprites are decoded —
+// the first draw above runs before the base64 cat_* decode (kicked off in
+// the Game constructor) has landed, so without this the menu would show
+// the procedural hull until the user clicked a card.
+loadAssets().then(renderAllShipIcons);
 
 // Start / restart
 document.getElementById('start-btn').addEventListener('click', () => game.start(selectedTheme));
