@@ -22,7 +22,14 @@
 //         charge barrel with coil bands + charge glow. Barrel length is
 //         per-weapon (WEAPONS[weapon].barrelLen; vulkan 15 / plasma 10 /
 //         rail 22), matching PlayerHardpoints.getMuzzleTipOffsets.
-export const VERSION = 'v3.46.0';
+// v3.72.2: PAW ART REMOVED from the weapon hardpoint (drawWeaponPaw) — the
+//         front paws now show ONLY the weapon-specific barrel/pods (vulkan
+//         twin Gatling / plasma emitters / rail charge barrel) on a clean
+//         metal mount. The paw fur + paw pads (drawPawPads) are gone per
+//         player request ("just hate the paw print/pods"). The weapon
+//         barrels themselves are UNCHANGED — they still switch per weapon
+//         via anim.weapon.
+export const VERSION = 'v3.72.3';
 import { TAU } from '../core/utils.js';
 import { hexA } from '../core/utils.js';
 import { SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
@@ -65,7 +72,7 @@ function drawPawPads(ctx, px, py, dir) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  FRONT PAW (weapon hardpoint: twin barrels + real cat paw)
+//  FRONT WEAPON HARDPOINT (v3.72.2: weapon barrels only — paw art removed)
 // ═══════════════════════════════════════════════════════════
 export function drawWeaponPaw(ctx, px, py, c, a, flash, weaponColor, anim = {}) {
   // v3.17.0: weapon animation state (WeaponAnim.js) — vulkanSpin /
@@ -88,21 +95,19 @@ export function drawWeaponPaw(ctx, px, py, c, a, flash, weaponColor, anim = {}) 
   } else {
     drawVulkanBarrels(ctx, px, py, BL, spin);
   }
-  // Mount ring (dark metal gauntlet) — bigger to cradle the oversized barrels
+  // v3.72.3: TINY mount collar at the paw tip — the barrels emerge straight
+  // out of the cat artwork; no big disc covering the paw.
   ctx.fillStyle = '#232a3d';
-  ctx.strokeStyle = hexA(a, 0.7);
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = hexA(a, 0.45);
+  ctx.lineWidth = 0.8;
   ctx.beginPath();
-  ctx.ellipse(px, py, 7.8, 7.1, 0, 0, TAU);
+  ctx.ellipse(px, py, 3.2, 2.8, 0, 0, TAU);
   ctx.fill();
   ctx.stroke();
-  // Paw fur (theme color, cradles the pads)
-  ctx.fillStyle = c;
-  ctx.beginPath();
-  ctx.ellipse(px, py + 0.3, 6.3, 5.5, 0, 0, TAU);
-  ctx.fill();
-  // Cat paw: main pad + toe beans + claws (toes forward, -Y)
-  drawPawPads(ctx, px, py, -1);
+  // v3.72.2: PAW ART REMOVED — the front hardpoint shows ONLY the
+  // weapon-specific barrel/pods (drawn above) on the metal mount ring.
+  // No paw fur / paw pads here. Barrels still switch per weapon via
+  // anim.weapon (no changes to the weapon art itself).
   // ─── RAIL CHARGE GLOW (charge-up visual at the barrel tip, drawn on top) ───
   if (weapon === 'rail' && charge > 0.02) {
     const cy = py - BL;
@@ -305,12 +310,12 @@ export function drawThrusterPaw(ctx, fx, fy, flicker, flameFlicker, boostGlow, c
   ctx.beginPath();
   ctx.ellipse(fx, fy + 5, 5 * flicker, 6 * flicker, 0, 0, TAU);
   ctx.fill();
-  // Mount ring
+  // v3.72.3: TINY mount collar at the paw tip (no big disc over the paw art)
   ctx.fillStyle = '#232a3d';
-  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  ctx.lineWidth = 0.8;
   ctx.beginPath();
-  ctx.arc(fx, fy, 6.2, 0, TAU);
+  ctx.arc(fx, fy, 3.2, 0, TAU);
   ctx.fill();
   ctx.stroke();
   // Paw fur (theme color, cradles the pads — overlaps the nozzle lip)

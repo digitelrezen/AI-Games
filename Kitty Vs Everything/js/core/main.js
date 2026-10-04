@@ -16,13 +16,13 @@
 //          RealTimeClock.js).
 // v3.27.0: EasterEgg.js is now the easter-egg manager (Bender + ship slots);
 //          "Drop Ship" dev button spawns the Planet Express flyby.
-// v3.72.1: Ship-select row is now GENERATED from PLAYER_THEMES (all 9
+// v3.72.2: Ship-select row is now GENERATED from PLAYER_THEMES (all 9
 //          themes) — the 5 hardcoded index.html cards are gone, config.js
 //          is the single source of truth. Menu icons re-render once
 //          loadAssets() resolves so they show the cat_* sprite art (the
 //          first draw happens before the base64 decode lands), and the
 //          mock player now carries `theme` so the sprite lookup works.
-export const VERSION = 'v3.72.1';
+export const VERSION = 'v3.72.3';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';

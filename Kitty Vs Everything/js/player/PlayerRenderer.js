@@ -25,7 +25,7 @@
 //          with a soft theme shadow-glow, and the weapon paws / thruster
 //          pods / muzzle flash are re-layered at the SHIP_GEOMETRY
 //          hardpoints so the sprite keeps its firing/thrusting read.
-export const VERSION = 'v3.72.1';
+export const VERSION = 'v3.72.3';
 import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES, SHIP_GEOMETRY, WEAPONS, MAIN_SHIP_SCALE } from '../core/config.js';
 import { getSprite } from '../core/AssetManager.js';
 import { drawCatShip as drawMainShip } from './PlayerShipArt.js';
@@ -75,13 +75,13 @@ export default class PlayerRenderer {
       const shPct = p.maxShield > 0 ? p.shield / p.maxShield : 1;
       const R = SHIELD_BUBBLE_RADIUS;
       ctx.save();
-      // v3.47.0: shield is now a soft yellow GLOW (radial gradient, no hard
-      // rim line) — the crisp circle read as a harsh bubble. The glow is a
-      // gentle yellow halo that fades from the hull out to transparent at the
-      // edge; its intensity scales with shield HP.
+      // v3.72.3: shield glow is now BARELY visible — the HUD shield meter is
+      // the primary read; the on-ship halo is a faint hint only. Intensity
+      // scales with shield HP but stays near-invisible so it never dims or
+      // blocks the cat artwork.
       const g = ctx.createRadialGradient(p.x, p.y, R * 0.45, p.x, p.y, R);
-      g.addColorStop(0, `rgba(255, 213, 79, ${0.03 + 0.04 * shPct})`);
-      g.addColorStop(0.55, `rgba(255, 213, 79, ${0.10 + 0.16 * shPct})`);
+      g.addColorStop(0, `rgba(255, 213, 79, ${0.004 + 0.008 * shPct})`);
+      g.addColorStop(0.55, `rgba(255, 213, 79, ${0.008 + 0.016 * shPct})`);
       g.addColorStop(1, 'rgba(255, 213, 79, 0)');
       ctx.fillStyle = g;
       ctx.beginPath();
