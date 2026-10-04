@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.71.1 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.72.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -196,7 +196,9 @@ const keys = Object.keys(manifest.assets || {});
 // v3.65.0: + falcon (falcon enemy pixel-art sprite swap).
 // v3.66.0: + bat (bat enemy pixel-art sprite swap).
 // v3.67.0: + squirrel (squirrel enemy — 19th species).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel'];
+// v3.72.0: + cat_black / cat_blue / cat_brown / cat_gray / cat_green /
+//          cat_orange / cat_red / cat_white / cat_yellow (9 catship theme sprites).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_black', 'cat_blue', 'cat_brown', 'cat_gray', 'cat_green', 'cat_orange', 'cat_red', 'cat_white', 'cat_yellow'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);
@@ -1322,6 +1324,45 @@ console.log('\n[6x] v3.71.0 Phase 4 modular cat-ship combat (CatShipFactory + Mi
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6y] v3.72.0 CATSHIP SPRITE THEMES — the player ship blits
+//        one of nine cat-on-its-back PNGs (tools/asset-manifest.json
+//        → js/core/AssetSprites.js) in place of the procedural hull.
+//        PLAYER_THEME_SPRITES maps every PLAYER_THEMES key to a cat_*
+//        sprite key; the theme color/accent still drive the cockpit,
+//        weapons, thrusters, shields and HUD; themes without a sprite
+//        fall back to the procedural hull.
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs)');
+{
+  const { PLAYER_THEMES, PLAYER_THEME_SPRITES } = await mod('js/core/config.js');
+  const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
+  const psaSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerShipArt.js'), 'utf8');
+  const themeNames = Object.keys(PLAYER_THEMES);
+
+  check('config: PLAYER_THEMES has all 9 themes', themeNames.length === 9, `got ${themeNames.length}: ${themeNames.join(', ')}`);
+  check('config: PLAYER_THEME_SPRITES maps every theme to a cat_* sprite key',
+    Object.keys(PLAYER_THEME_SPRITES).length === 9 && themeNames.every(t => typeof PLAYER_THEME_SPRITES[t] === 'string' && PLAYER_THEME_SPRITES[t].startsWith('cat_')),
+    `got ${JSON.stringify(PLAYER_THEME_SPRITES)}`);
+  for (const key of Object.values(PLAYER_THEME_SPRITES)) {
+    check(`AssetSprites: ${key} registered with dims`, new RegExp(`${key}:\\s*\\{\\s*w:\\s*\\d+,\\s*h:\\s*\\d+\\s*\\}`).test(spritesSrc));
+  }
+  check('manifest: all 9 cat_* keys map to existing PNGs in .assets',
+    Object.values(PLAYER_THEME_SPRITES).every(k => manifest.assets[k] && fs.existsSync(path.join(ASSET_DIR, manifest.assets[k]))),
+    `missing: ${Object.values(PLAYER_THEME_SPRITES).filter(k => !manifest.assets[k] || !fs.existsSync(path.join(ASSET_DIR, manifest.assets[k]))).join(', ')}`);
+
+  // PlayerRenderer: sprite blit path + procedural fallback
+  check('PlayerRenderer: resolves the theme sprite (PLAYER_THEME_SPRITES + getSprite)', prSrc.includes('PLAYER_THEME_SPRITES[p.theme]') && prSrc.includes('getSprite('));
+  check('PlayerRenderer: blits the sprite at a fixed 70px height', prSrc.includes('const drawH = 70') && prSrc.includes('ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh)'));
+  check('PlayerRenderer: accent glow + blink alpha around the sprite', prSrc.includes('ctx.fillStyle = th.accent') && prSrc.includes('blink ? 0.35 : 1'));
+  check('PlayerRenderer: procedural fallback when no sprite', prSrc.includes('drawMainShip(ctx, p, th.color, th.accent, th.pattern)'));
+  check('PlayerRenderer: menu-icon compat path passes the theme sprite', prSrc.includes('drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s }, sprite)'));
+
+  // PlayerShipArt: optional sprite parameter blits before the procedural hull
+  check('PlayerShipArt: drawCatShip accepts an optional sprite parameter', psaSrc.includes('export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null)'));
+  check('PlayerShipArt: sprite blit at 70px height, early return skips the procedural hull', psaSrc.includes('const dh = 70') && psaSrc.includes('ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh)'));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -1331,6 +1372,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.71.1 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.72.0 surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

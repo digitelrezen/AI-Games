@@ -44,7 +44,7 @@ import { drawWeaponPaw, drawThrusterPaw, drawMuzzleFlash } from './PlayerShipFx.
  * In-game: uses p.x / p.y / scale 1. Menu icons pass explicit
  * { x, y, scale } via opts.
  */
-export function drawCatShip(ctx, p, c, a, pattern, opts = {}) {
+export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null) {
   const x = opts.x !== undefined ? opts.x : p.x;
   const y = opts.y !== undefined ? opts.y : p.y;
   const s = opts.scale || 1;
@@ -52,6 +52,19 @@ export function drawCatShip(ctx, p, c, a, pattern, opts = {}) {
   ctx.translate(x, y);
   ctx.rotate(p.angle + Math.PI / 2);
   ctx.scale(s, s);
+
+  // v3.72.0 — Catship sprite art: when a decoded sprite canvas is supplied
+  // (theme's cat-on-its-back PNG), blit it in place of the procedural hull.
+  // The sprite is drawn at a fixed 70px height (matching the procedural hull)
+  // so weapon/thruster hardpoints (drawn by the caller) still line up.
+  if (sprite && sprite.width && sprite.height) {
+    const dh = 70;
+    const ss = dh / sprite.height;
+    const dw = sprite.width * ss;
+    ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh);
+    ctx.restore();
+    return;
+  }
 
   const flicker = 0.7 + 0.3 * Math.sin(p.engineFlicker);
   const thrustOn = p.thrusterActive || p.boostActive;

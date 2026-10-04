@@ -1,5 +1,5 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.71.1
+// Kitty Vs Everything — v3.72.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
 // v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — the specialized rockets
@@ -223,7 +223,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.71.1';
+export const VERSION = 'v3.72.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -403,6 +403,28 @@ export const PLAYER_THEMES = {
   white:  { name: 'White Cat',     color: '#f2f2f2', accent: '#ffffff', pattern: 'solid' },
   gray:   { name: 'Gray Cat',      color: '#9e9e9e', accent: '#cfd8dc', pattern: 'spotted' },
   brown:  { name: 'Brown Cat',     color: '#8d6e63', accent: '#bcaaa4', pattern: 'striped' },
+  blue:   { name: 'Blue Cat',      color: '#4fc3f7', accent: '#e1f5fe', pattern: 'solid' },
+  red:    { name: 'Red Cat',       color: '#ef5350', accent: '#ffcdd2', pattern: 'solid' },
+  green:  { name: 'Green Cat',     color: '#66bb6a', accent: '#c8e6c9', pattern: 'solid' },
+  black:  { name: 'Black Cat',     color: '#37474f', accent: '#90a4ae', pattern: 'solid' },
+};
+
+// v3.72.0 — Catship sprite art (tools/asset-manifest.json → js/core/AssetSprites.js).
+// Each theme maps to a transparent PNG of a cat lying on its back (head + ears at
+// the center/top, the two long upper extensions = the weapon arms, the two lower
+// extensions = the thruster legs). PlayerRenderer blits the sprite in place of the
+// procedural hull; the theme's color/accent still drive the cockpit, weapons,
+// thrusters, shields and HUD. Themes without a sprite keep the procedural hull.
+export const PLAYER_THEME_SPRITES = {
+  yellow: 'cat_yellow',
+  orange: 'cat_orange',
+  white:  'cat_white',
+  gray:   'cat_gray',
+  brown:  'cat_brown',
+  blue:   'cat_blue',
+  red:    'cat_red',
+  green:  'cat_green',
+  black:  'cat_black',
 };
 
 // ═══════════════════════════════════════════════════════════

@@ -17,7 +17,8 @@
 //          under the hull while shield > 0; Nova charge/cooldown moved to the
 //          HUDFireControl purple meter. Player.hit plays the shatter burst.
 export const VERSION = 'v3.56.0';
-import { TAU, PLAYER_THEMES } from '../core/config.js';
+import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES } from '../core/config.js';
+import { getSprite } from '../core/AssetManager.js';
 import { drawCatShip as drawMainShip } from './PlayerShipArt.js';
 import { drawMiniPod, drawDockArc } from './PlayerMiniArt.js';
 
@@ -86,8 +87,29 @@ export default class PlayerRenderer {
       ctx.restore();
     }
 
-    // Main cat ship (top-down "Superman H")
-    drawMainShip(ctx, p, th.color, th.accent, th.pattern);
+    // Main cat ship — v3.72.0: blit the theme's Catship sprite art when
+    // imported (a cat on its back: head/ears at center, the two upper
+    // extensions = weapon arms, the two lower = thruster legs); otherwise
+    // fall back to the procedural top-down "Superman H" hull.
+    const spriteKey = PLAYER_THEME_SPRITES[p.theme];
+    const sprite = spriteKey ? getSprite(spriteKey) : null;
+    if (sprite) {
+      const drawH = 70; // sprite height (px) — matches the procedural hull scale
+      const s = drawH / sprite.height;
+      const dw = sprite.width * s;
+      const dh = sprite.height * s;
+      ctx.save();
+      ctx.globalAlpha = (blink ? 0.35 : 1) * 0.55;
+      ctx.fillStyle = th.accent;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, dw * 0.62, dh * 0.62, 0, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+      ctx.globalAlpha = blink ? 0.35 : 1;
+      ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh);
+    } else {
+      drawMainShip(ctx, p, th.color, th.accent, th.pattern);
+    }
 
     ctx.globalAlpha = 1;
   }
@@ -97,6 +119,9 @@ export default class PlayerRenderer {
    * ship icons. Delegates to the H-pose art with an explicit position/scale.
    */
   drawCatShip(ctx, x, y, s, c, a, pattern) {
-    drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s });
+    // v3.72.0 — pass the theme's Catship sprite so menu icons match the in-game art.
+    const spriteKey = PLAYER_THEME_SPRITES[this.player.theme];
+    const sprite = spriteKey ? getSprite(spriteKey) : null;
+    drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s }, sprite);
   }
 }
