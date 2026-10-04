@@ -1,7 +1,13 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.72.2
+// Kitty Vs Everything — v3.73.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.73.0: MINI SHIP SPRITE CLONES — minis now blit the theme's Catship sprite
+//          at MINI_SCALE (0.6 × MAIN_SHIP_SCALE = 84px world-tall, up from the
+//          old 42px): new MINI_SCALE export (single source of truth for
+//          PlayerMiniArt + MiniShip bullet hardpoints), mini docks out to ±36,
+//          MINI_SHIP.radius 11 → 24 and deployRadius 70 → 120 to match the
+//          bigger clone.
 // v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — the specialized rockets
 //   extracted from js/combat/Rockets.js (now deleted) into
 //   js/combat/BaseRocket.js (shared twin-salvo base projectile),
@@ -223,7 +229,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.72.3';
+export const VERSION = 'v3.73.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -266,9 +272,13 @@ export const PLAYER2 = {
 // via ctx.scale(MAIN_SHIP_SCALE) in PlayerRenderer.draw(), and the gameplay
 // hardpoints (bullet spawn, mini docks) are scaled by the same factor in
 // PlayerHardpoints.localToWorld — so bullets/docks stay exactly on the art.
-// Mini ships are NOT affected: they use their own MINI_SCALE (0.6) via
-// _miniPoint, so they stay the same size while docking further outboard.
 export const MAIN_SHIP_SCALE = 2;
+// v3.73.0: mini ships render as 0.6× clones of the main ship's RENDERED size:
+// 0.6 × MAIN_SHIP_SCALE in the 70px local frame → 84px world-tall (up from the
+// old 42px capsule era). Single source of truth shared by PlayerMiniArt (the
+// sprite blit) and MiniShip._miniPoint (bullet hardpoints), so the mini's
+// drawn guns and its bullet spawns always stay on the art.
+export const MINI_SCALE = 0.6 * MAIN_SHIP_SCALE;
 
 // ─── CATSHIP GEOMETRY (local space, nose = -Y, 70px sprite frame) ───
 // Single source of truth shared by Player.js (weapon hardpoint math) and
@@ -278,14 +288,16 @@ export const MAIN_SHIP_SCALE = 2;
 // legs and the short tail sit close together on the centerline pointing
 // straight back); mini docks moved out to ±32 so the 2x hull and the 0.6x
 // minis stay clearly separated (no overlap) while remaining locked to the hull.
+// v3.73.0: mini docks out to ±36 — the sprite-clone minis are now 52.5px wide
+// (world), so the flanks latch just outside the hull body without swallowing it.
 export const SHIP_GEOMETRY = {
   frontPawL: { x: -16, y: -28 }, // left front paw  — vulkan / plasma / stun hardpoint
   frontPawR: { x: 16,  y: -28 }, // right front paw — vulkan / plasma / stun hardpoint
   muzzle:    { x: 0,   y: -20 }, // nose muzzle     — rail cannon (snout tip)
   thrusterL: { x: -4,  y: 31 },  // left rear leg   — thruster flame at the rear-leg ankle (no bullets)
   thrusterR: { x: 4,   y: 31 },  // right rear leg  — thruster flame at the rear-leg ankle (no bullets)
-  miniDockL: { x: -32, y: 2 },   // left mini dock  — docked mini-ship slot (outboard of the 2x hull)
-  miniDockR: { x: 32,  y: 2 },   // right mini dock — docked mini-ship slot (outboard of the 2x hull)
+  miniDockL: { x: -36, y: 2 },   // left mini dock  — docked mini-ship slot (v3.73.0: ±36 for the 84px sprite clone)
+  miniDockR: { x: 36,  y: 2 },   // right mini dock — docked mini-ship slot (v3.73.0: ±36 for the 84px sprite clone)
   // v3.17.0: OVERSIZED weapon barrels — DEFAULT barrel length (local -Y) from
   // the paw hardpoint to the muzzle tip. The art (PlayerShipFx.drawWeaponPaw)
   // draws the barrels this long and bullets spawn at the tip (PlayerHardpoints
@@ -313,7 +325,7 @@ export const SHIP_GEOMETRY = {
 export const MINI_SHIP = {
   hp: 60,                  // independent mini HP pool
   maxDocked: 2,            // max mini-ships docked to the fleet
-  radius: 11,              // collision radius (docked, ~0.6× the main hull)
+  radius: 24,              // v3.73.0: collision radius (was 11 for the 42px capsule; the 84px sprite clone is 52.5px wide)
   damageBonusPerMini: 0.5, // +50% weapon damage per docked mini (PlayerWeapons)
   synergyChargeTime: 10,   // seconds of color-match synergy to charge the meter to 100% (v3.47.0: key-triggered fire)
   fireRateMult: 1,         // v3.10.0: mini fires on the hull's cadence (weapon.rate × 1) — full clone
@@ -322,7 +334,7 @@ export const MINI_SHIP = {
   // orbit angular speed (rad/s).
   // v3.17.0: DOCKED minis fire IN SYNC with the hull (Player.firedThisFrame)
   // and mirror its weapon animation; DEPLOYED minis orbit + fire on cadence.
-  deployRadius: 70,
+  deployRadius: 120,       // v3.73.0: combat-orbit radius (was 70) — clears the 2x hull (70px half-length) + the 84px mini (42px half-length)
   deployOrbitSpeed: 1.8,
 };
 

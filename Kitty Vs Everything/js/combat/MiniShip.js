@@ -49,15 +49,18 @@
 //         alternation), matching the hull's PlayerWeapons.firePrimary.
 // v3.71.0: MODULAR COMBAT (Phase 4) — moved from js/core/ into js/combat/
 //           alongside the rest of the combat modules; behavior unchanged.
-export const VERSION = 'v3.71.0';
+// v3.73.0: SPRITE CLONE SCALE — MINI_SCALE is now imported from config.js
+//           (0.6 × MAIN_SHIP_SCALE = 1.2 in the 70px local frame → 84px
+//           world-tall sprite clone), replacing the local 0.6 constant. The
+//           _miniPoint hardpoint math is unchanged — it now tracks the
+//           bigger drawn mini so bullets still spawn on the drawn paws.
+export const VERSION = 'v3.73.0';
 import Entity from '../core/Entity.js';
 import Bullet from './Bullet.js';
-import { MINI_SHIP, PLAYER_THEMES, SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
+import { MINI_SHIP, PLAYER_THEMES, SHIP_GEOMETRY, WEAPONS, MINI_SCALE } from '../core/config.js';
 import { rand } from '../core/utils.js';
 import { getDockPosition } from '../player/PlayerHardpoints.js';
 import { initWeaponAnimState, updateWeaponAnim } from './WeaponAnim.js';
-
-const MINI_SCALE = 0.6; // must match PlayerMiniArt's draw scale
 
 export default class MiniShip extends Entity {
   /**

@@ -25,7 +25,10 @@
 //          with a soft theme shadow-glow, and the weapon paws / thruster
 //          pods / muzzle flash are re-layered at the SHIP_GEOMETRY
 //          hardpoints so the sprite keeps its firing/thrusting read.
-export const VERSION = 'v3.72.3';
+// v3.73.0: SHIELD_BUBBLE_RADIUS 100 → 110 — the v3.73.0 sprite-clone minis
+//          (84px tall, docked at ±36 local) reach ~98px from the hull
+//          center, so the bubble grows to keep covering both flanks.
+export const VERSION = 'v3.73.0';
 import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES, SHIP_GEOMETRY, WEAPONS, MAIN_SHIP_SCALE } from '../core/config.js';
 import { getSprite } from '../core/AssetManager.js';
 import { drawCatShip as drawMainShip } from './PlayerShipArt.js';
@@ -38,7 +41,9 @@ import { drawWeaponPaw, drawThrusterPaw, drawThrusterFlame, drawMuzzleFlash } fr
 // ≈ 52.5 px from center) while still covering the docked minis.
 // v3.47.0: 60 → 100 — the 2x hull (±70px nose/tail, muzzle tips ≈ ±92px) and
 // the outboard minis (±77px) need a larger glow radius.
-const SHIELD_BUBBLE_RADIUS = 100;
+// v3.73.0: 100 → 110 — the sprite-clone minis (±36 dock + 26.25px half-width
+// ≈ ±98px outer edge) need a bit more margin to stay fully covered.
+const SHIELD_BUBBLE_RADIUS = 110;
 
 export default class PlayerRenderer {
   constructor(player) {

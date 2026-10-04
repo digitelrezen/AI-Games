@@ -1,5 +1,5 @@
 // Filename: PlayerMiniArt.js
-// Kitty Vs Everything — v3.8.0
+// Kitty Vs Everything — v3.73.0
 // Docked mini-ship art: an EXACT 0.6× clone of the main cat ship.
 // v3.3.0: Shrunken top-down H-pose capsule clone + independent HP bar and
 //         hit-flash (white hull on impact).
@@ -22,20 +22,34 @@
 // v3.16.0: The synthetic state now carries the mini's OWN weapon animation
 //          (vulkanSpin / railCharge / plasmaPulse) — inert while docked,
 //          active while deployed (MiniDeploy.js + WeaponAnim.js).
-export const VERSION = 'v3.17.0';
+// v3.73.0: SPRITE CLONE — when the theme's Catship sprite is imported the
+//          mini blits the SAME PNG as the main hull (PlayerRenderer's
+//          sprite branch, mirrored 1:1): local-frame translate/rotate,
+//          ctx.scale(MINI_SCALE) with MINI_SCALE = 0.6 × MAIN_SHIP_SCALE
+//          (84px world-tall — a true 0.6× clone of the RENDERED main ship,
+//          up from the old 42px), soft accent glow, and the hardpoint FX
+//          re-layered on top (drawThrusterFlame ×2, drawWeaponPaw ×2,
+//          drawMuzzleFlash) driven by the mini's own paw/muzzle flashes +
+//          weapon animation. The white hit-flash becomes a
+//          brightness/saturate filter on the blit; the world-space HP bar
+//          grows (36×6) and lifts to -50px to clear the bigger clone.
+//          Themes without a sprite keep the procedural drawCatShip clone.
+export const VERSION = 'v3.73.0';
 import { drawCatShip } from './PlayerShipArt.js';
 import { TAU } from '../core/utils.js';
-
-// Mini scale vs the main hull (docked clone)
-const MINI_SCALE = 0.6;
+import { PLAYER_THEME_SPRITES, SHIP_GEOMETRY, WEAPONS, MINI_SCALE } from '../core/config.js';
+import { getSprite } from '../core/AssetManager.js';
+import { drawWeaponPaw, drawThrusterFlame, drawMuzzleFlash } from './PlayerShipFx.js';
 
 /**
  * Draw a docked mini (world coords, local nose = -Y like the main hull).
- * Renders the main-hull art at 0.6× — a strict visual clone of the player.
+ * v3.73.0: renders the theme's Catship SPRITE at MINI_SCALE (0.6× the main
+ * ship's rendered size) with the same hardpoint FX layer as the main hull's
+ * sprite branch — a strict visual clone of the player. Themes without a
+ * sprite fall back to the procedural drawCatShip clone.
  */
 export function drawMiniPod(ctx, mini, player, th) {
   const hit = mini.hitFlash > 0;
-  const c = hit ? '#ffffff' : th.color;   // hit-flash: white hull
   // Synthetic "player" state for the shared art: player's heading/boost/
   // tail drive the clone, per-side offsets keep the fleet lively.
   const state = {
@@ -57,8 +71,45 @@ export function drawMiniPod(ctx, mini, player, th) {
     railCharge: mini.railCharge || 0,
     plasmaPulse: mini.plasmaPulse || 0,
   };
-  drawCatShip(ctx, state, c, th.accent, th.pattern,
-    { x: mini.x, y: mini.y, scale: MINI_SCALE, mini: true });
+  const spriteKey = PLAYER_THEME_SPRITES[mini.theme];
+  const sprite = spriteKey ? getSprite(spriteKey) : null;
+  if (sprite && sprite.width && sprite.height) {
+    // ─── v3.73.0: SPRITE CLONE — mirrors PlayerRenderer's main-hull branch ───
+    const drawH = 70; // sprite height (px) — matches the procedural hull frame
+    const s = drawH / sprite.height;
+    const dw = sprite.width * s, dh = sprite.height * s;
+    ctx.save();
+    ctx.translate(mini.x, mini.y);
+    ctx.rotate(player.angle + Math.PI / 2);
+    ctx.scale(MINI_SCALE, MINI_SCALE); // 0.6× the main ship's rendered size
+    ctx.shadowColor = th.accent;
+    ctx.shadowBlur = 14;
+    if (hit) ctx.filter = 'brightness(2.4) saturate(0.15)'; // white hit-flash
+    ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh);
+    ctx.filter = 'none';
+    ctx.shadowBlur = 0;
+    // Hardpoint FX on top (same layer as the main hull's sprite branch) so
+    // the mini's thrusters flame and muzzles flash where its bullets spawn.
+    const flicker = 0.7 + 0.3 * Math.sin(state.engineFlicker);
+    const thrustOn = player.thrusterActive || player.boostActive;
+    const flameFlicker = thrustOn ? (0.7 + 0.3 * Math.sin(state.engineFlicker * 2)) : 0;
+    const boostGlow = player.boostActive ? 1.6 : 1;
+    const weaponColor = (player.weapon && WEAPONS[player.weapon]) ? WEAPONS[player.weapon].color : '#ffffff';
+    drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x, SHIP_GEOMETRY.thrusterL.y, flicker, flameFlicker, boostGlow);
+    drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterR.x, SHIP_GEOMETRY.thrusterR.y, flicker, flameFlicker, boostGlow);
+    drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x, SHIP_GEOMETRY.frontPawL.y, th.color, th.accent, state.pawFlashL, weaponColor, state);
+    drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawR.x, SHIP_GEOMETRY.frontPawR.y, th.color, th.accent, state.pawFlashR, weaponColor, state);
+    if (mini.muzzleFlash > 0) {
+      drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x, SHIP_GEOMETRY.muzzle.y,
+        Math.min(1, mini.muzzleFlash / 0.18), weaponColor);
+    }
+    ctx.restore();
+  } else {
+    // ─── procedural fallback (themes without a sprite) ───
+    const c = hit ? '#ffffff' : th.color;   // hit-flash: white hull
+    drawCatShip(ctx, state, c, th.accent, th.pattern,
+      { x: mini.x, y: mini.y, scale: MINI_SCALE, mini: true });
+  }
 }
 
 /**
@@ -68,8 +119,10 @@ export function drawMiniPod(ctx, mini, player, th) {
  */
 export function drawMiniHpBar(ctx, mini) {
   if (mini.hp >= mini.maxHp) return;
-  const w = 30, h = 5;
-  const x = mini.x - w / 2, y = mini.y - 26;
+  // v3.73.0: 36×6 bar lifted to -50px — the sprite clone is 84px tall, so the
+  // old -26px offset sat inside the hull.
+  const w = 36, h = 6;
+  const x = mini.x - w / 2, y = mini.y - 50;
   ctx.save();
   ctx.fillStyle = 'rgba(10,14,24,0.85)';
   ctx.fillRect(x - 1.5, y - 1.5, w + 3, h + 3);
