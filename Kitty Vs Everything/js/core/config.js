@@ -1,7 +1,13 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.75.0
+// Kitty Vs Everything — v3.77.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.77.0: PHASE 4 MODULARIZATION LOCK-IN — the 4-phase modular refactor is
+//          complete (v3.74.0 player variants + bosses, v3.75.0 enemy sprite
+//          isolation, v3.76.0 LevelRegistry stage flow). Milestone version
+//          synced across package.json, config.js, main.js, HUD.js and
+//          index.html; ARCHITECTURE.md / ARCHITECTURE_INDEX.txt restructured
+//          to the modular tree; check.mjs [6aa] version-sync gate.
 // v3.75.0: ENEMY SPRITE ISOLATION (Phase 2) — standard enemy sprite/art
 //          pipelines now live in js/enemies/sprites/ (Wasp2Sprite.js moved
 //          there; Wasp2Enemy.js imports it from ./sprites/). Boss art +
@@ -237,7 +243,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.75.0';
+export const VERSION = 'v3.77.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 

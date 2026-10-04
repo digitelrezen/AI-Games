@@ -26,7 +26,9 @@
 // v3.29.0: Bender easter egg — the 10 s countdown is gone; the label now
 //          shows the kill counter "BENDER x/4" (game.aimbot.killCount /
 //          BENDER_KILLS) while the egg's aim window is open.
-export const VERSION = 'v3.76.0';
+// v3.77.0: Version label bumped with the Phase 4 modularization lock-in
+//          (4-phase modular refactor complete — see ARCHITECTURE.md).
+export const VERSION = 'v3.77.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

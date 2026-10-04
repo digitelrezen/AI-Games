@@ -1,1 +1,2 @@
 - Always keep your file searches focused exclusively on the source code and active asset directories. Ignore any build folders, compiled outputs, or temporary files.
+- Version milestones (v3.x.*.*): sync package.json (build filename source of truth), js/core/config.js, js/core/main.js, js/core/Game.js (game orchestrator), js/ui/HUD.js (in-game #version-label) and index.html (tab title) to the same version, and keep the check.mjs [6aa] version-sync gate green before committing.

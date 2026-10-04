@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.72.3 (tools/ lives at AI-GAMES root)
+// ../tools/check.mjs — Kitty Vs Everything v3.77.0 (tools/ lives at AI-GAMES root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most
@@ -1461,6 +1461,30 @@ console.log('\n[6z] v3.76.0 LevelRegistry stage flow (headless)');
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6aa] v3.77.0 PHASE 4 VERSION SYNC — the milestone version must
+//        be consistent across package.json (build filename source of
+//        truth), config.js (central config), main.js (project
+//        manifest), Game.js (game orchestrator), HUD.js (in-game
+//        #version-label) and index.html (browser tab title).
+// ═══════════════════════════════════════════════════════════
+{
+  console.log('\n[6aa] v3.77.0 Phase 4 version sync');
+  const MILESTONE = 'v3.77.0';
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  check('package.json version = 3.77.0 (build filename source of truth)', pkg.version === MILESTONE.slice(1), `got ${pkg.version}`);
+  const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');
+  check('config.js: VERSION = v3.77.0 (central config)', cfgSrc.includes(`VERSION = '${MILESTONE}'`));
+  const mainSrc = fs.readFileSync(path.join(ROOT, 'js/core/main.js'), 'utf8');
+  check('main.js: VERSION = v3.77.0 (project manifest)', mainSrc.includes(`VERSION = '${MILESTONE}'`));
+  const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
+  check('Game.js: VERSION = v3.77.0 (game orchestrator)', gameSrc.includes(`VERSION = '${MILESTONE}'`));
+  const hudSrc = fs.readFileSync(path.join(ROOT, 'js/ui/HUD.js'), 'utf8');
+  check('HUD.js: VERSION = v3.77.0 (in-game #version-label)', hudSrc.includes(`VERSION = '${MILESTONE}'`));
+  const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  check('index.html: tab title carries v3.77.0', htmlSrc.includes(`Kitty Vs Everything — ${MILESTONE}`));
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -1470,6 +1494,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.76.0 LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.77.0 Phase 4 lock-in: version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

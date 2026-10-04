@@ -22,7 +22,11 @@
 //          loadAssets() resolves so they show the cat_* sprite art (the
 //          first draw happens before the base64 decode lands), and the
 //          mock player now carries `theme` so the sprite lookup works.
-export const VERSION = 'v3.75.0';
+// v3.77.0: Phase 4 modularization lock-in — the 4-phase modular refactor is
+//          complete (v3.74.0 js/player/variants + js/bosses, v3.75.0
+//          js/enemies/sprites, v3.76.0 js/levels/LevelRegistry stage flow).
+//          Project manifest version synced with package.json (3.77.0).
+export const VERSION = 'v3.77.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
