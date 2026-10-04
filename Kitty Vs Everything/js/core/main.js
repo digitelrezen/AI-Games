@@ -22,7 +22,7 @@
 //          loadAssets() resolves so they show the cat_* sprite art (the
 //          first draw happens before the base64 decode lands), and the
 //          mock player now carries `theme` so the sprite lookup works.
-export const VERSION = 'v3.72.3';
+export const VERSION = 'v3.75.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
@@ -150,7 +150,8 @@ game.leaderboard.render(document.getElementById('menu-scores-list'));
 //   PlayerRenderer.js, PlayerShipArt.js, PlayerMiniArt.js, PlayerShipFx.js,
 //   player/variants/: orangeCat.js, yellowCat.js, greyCat.js, whiteCat.js, brownCat.js,
 //   EnemyBase.js, EnemyFactory.js,
-//   WaspEnemy.js, Wasp2Enemy.js, Wasp2Sprite.js,
+//   WaspEnemy.js, Wasp2Enemy.js,
+//   enemies/sprites/: Wasp2Sprite.js,
 //   BeetleEnemy.js, ButterflyEnemy.js, RatEnemy.js,
 //   WolfEnemy.js, FalconEnemy.js, BatEnemy.js,
 //   LizardEnemy.js, DragonEnemy.js, HumanEnemy.js, HumanSprite.js,

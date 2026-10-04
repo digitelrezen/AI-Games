@@ -1,7 +1,15 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.73.0
+// Kitty Vs Everything — v3.75.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.75.0: ENEMY SPRITE ISOLATION (Phase 2) — standard enemy sprite/art
+//          pipelines now live in js/enemies/sprites/ (Wasp2Sprite.js moved
+//          there; Wasp2Enemy.js imports it from ./sprites/). Boss art +
+//          behavior stay together in js/bosses/ (Phase 1 boundary). Enemy
+//          behavior modules in js/enemies/ remain pure AI/movement/health/
+//          combat — all tunable stats (speed, hp, damage, fireRate) come
+//          from ENEMY_TYPES below and score from TIERS, assigned once in
+//          EnemyBase (no per-species stat overrides).
 // v3.73.0: MINI SHIP SPRITE CLONES — minis now blit the theme's Catship sprite
 //          at MINI_SCALE (0.6 × MAIN_SHIP_SCALE = 84px world-tall, up from the
 //          old 42px): new MINI_SCALE export (single source of truth for
@@ -229,7 +237,7 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
-export const VERSION = 'v3.73.0';
+export const VERSION = 'v3.75.0';
 export const TAU = Math.PI * 2;
 export const GAME = { W: 1280, H: 720 };
 
@@ -503,7 +511,16 @@ export const WEAPONS = {
 };
 export const WEAPON_ORDER = ['vulkan', 'plasma', 'rail'];
 
-// Enemy roster
+// Enemy roster — the single tuning surface for every enemy species.
+// v3.75.0 (Phase 2 parameter standardization): every behavior module in
+// js/enemies/ reads these stats through EnemyBase (this.speed / this.hp /
+// this.damage / this.fireRate / this.score) and must NOT hardcode its own.
+//   speed    base movement speed (× tier speedMul × 60 in EnemyBase)
+//   hp       base health (× tier hpMul × wave difficulty)
+//   damage   per-hit damage (× tier dmgMul × wave difficulty)
+//   fireRate seconds between shots (EnemyBase jitters it 0.8–1.2×)
+//   score    per-kill value comes from TIERS below (tier, not species)
+//   pattern  AI movement style label (documented per species in js/enemies/)
 export const ENEMY_TYPES = {
   wasp:     { name: 'Wasp',         color: '#e8b62c', speed: 2.2, hp: 20, damage: 8,  fireRate: 0.9, pattern: 'weave' },
   beetle:   { name: 'Beetle',       color: '#7a4a21', speed: 1.4, hp: 40, damage: 12, fireRate: 1.4, pattern: 'charge' },

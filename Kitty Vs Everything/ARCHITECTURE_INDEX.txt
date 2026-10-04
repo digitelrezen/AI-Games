@@ -107,9 +107,9 @@
                     v1.2.0: pixel-art sprite (.assets/Wasp Update
                     pixel_art.png, key "wasp") via AssetManager;
                     faces the player, procedural fallback.
-  Wasp2Enemy.js     Black wireframe wasp (Wasp2Sprite.js PNG pipeline).
+  Wasp2Enemy.js     Black wireframe wasp (sprites/Wasp2Sprite.js PNG pipeline).
                     Tracks player X, oscillates, periodic lunges.
-  Wasp2Sprite.js    Wasp2 sprite pipeline: base64 PNG, white keyed to
+  sprites/Wasp2Sprite.js  Wasp2 sprite pipeline: base64 PNG, white keyed to
                     transparent, 882x500 -> 256x145, 1-px dilation.
   BeetleEnemy.js    Slow armored tank with periodic charge lunges
                     (v3.53.0: pixel-art sprite, key beetle, 665x693 ->
