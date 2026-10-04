@@ -12,11 +12,11 @@
 export const VERSION = 'v3.71.0';
 import { MINI_SHIP } from '../core/config.js';
 import MiniShip from './MiniShip.js';
-import OrangeCat from '../enemies/orangeCat.js';
-import YellowCat from '../enemies/yellowCat.js';
-import GreyCat from '../enemies/greyCat.js';
-import WhiteCat from '../enemies/whiteCat.js';
-import BrownCat from '../enemies/brownCat.js';
+import OrangeCat from '../player/variants/orangeCat.js';
+import YellowCat from '../player/variants/yellowCat.js';
+import GreyCat from '../player/variants/greyCat.js';
+import WhiteCat from '../player/variants/whiteCat.js';
+import BrownCat from '../player/variants/brownCat.js';
 
 const VARIANTS = {
   orange: OrangeCat,

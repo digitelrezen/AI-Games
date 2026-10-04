@@ -5,11 +5,11 @@
 // that pulls all enemies toward a point ahead of the ship, compressing them
 // into a dense cluster where they take massive damage and shield destruction.
 export const VERSION = 'v3.0.0';
-import Player from '../player/Player.js';
-import Bullet from '../combat/Bullet.js';
-import { TAU, rand, dist2, angleTo } from '../core/utils.js';
-import { bus } from '../core/EventBus.js';
-import { audio } from '../core/AudioSystem.js';
+import Player from '../Player.js';
+import Bullet from '../../combat/Bullet.js';
+import { TAU, rand, dist2, angleTo } from '../../core/utils.js';
+import { bus } from '../../core/EventBus.js';
+import { audio } from '../../core/AudioSystem.js';
 
 export default class GreyCat extends Player {
   constructor(game, theme = 'gray') {

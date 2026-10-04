@@ -9,9 +9,9 @@
 //          (EnemyBase), same hover/sine movement, same 3-way attack, same
 //          5-fan special + side bursts.
 export const VERSION = 'v3.32.0';
-import EnemyBase from './EnemyBase.js';
+import EnemyBase from '../enemies/EnemyBase.js';
 import { clamp, TAU } from '../core/utils.js';
-import { drawHeart, PINK_CAT_PALETTE } from '../ui/PinkCatBossArt.js';
+import { drawHeart, PINK_CAT_PALETTE } from './PinkCatBossArt.js';
 import { getPinkCatSprite, PINK_CAT_H } from './PinkCatSprite.js';
 
 export default class PinkCatEnemy extends EnemyBase {

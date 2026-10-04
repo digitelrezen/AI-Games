@@ -4,11 +4,11 @@
 // Ultimate (F key): ENERGY RING EXPLOSION.
 // v3.1.0: Removed element references from ultimate bullets.
 export const VERSION = 'v3.1.0';
-import Player from '../player/Player.js';
-import Bullet from '../combat/Bullet.js';
-import { TAU, rand, dist2 } from '../core/utils.js';
-import { bus } from '../core/EventBus.js';
-import { audio } from '../core/AudioSystem.js';
+import Player from '../Player.js';
+import Bullet from '../../combat/Bullet.js';
+import { TAU, rand, dist2 } from '../../core/utils.js';
+import { bus } from '../../core/EventBus.js';
+import { audio } from '../../core/AudioSystem.js';
 
 export default class YellowCat extends Player {
   constructor(game, theme = 'yellow') {

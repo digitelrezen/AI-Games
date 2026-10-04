@@ -164,10 +164,10 @@ async function runEnemyDraw(mode) {
 
   let BlackCatEnemy, PinkCatEnemy, blackSprite, pinkSprite;
   try {
-    ({ default: BlackCatEnemy } = await import(url('js/enemies/BlackCatEnemy.js')));
-    ({ default: PinkCatEnemy } = await import(url('js/enemies/PinkCatEnemy.js')));
-    blackSprite = await import(url('js/enemies/BlackCatSprite.js'));
-    pinkSprite = await import(url('js/enemies/PinkCatSprite.js'));
+    ({ default: BlackCatEnemy } = await import(url('js/bosses/BlackCatEnemy.js')));
+    ({ default: PinkCatEnemy } = await import(url('js/bosses/PinkCatEnemy.js')));
+    blackSprite = await import(url('js/bosses/BlackCatSprite.js'));
+    pinkSprite = await import(url('js/bosses/PinkCatSprite.js'));
   } catch (e) {
     check(`enemy import chain loads (${mode})`, false);
     console.log(`    ${e.stack}`);
@@ -231,8 +231,8 @@ if (mode === '--enemy-fallback' || mode === '--enemy-sprite') {
 if (mode) { console.log(`Unknown mode: ${mode}`); process.exit(2); }
 
 console.log('\n[1] Sprite modules — exports + null contract (headless Node)');
-const blackSprite = await import(url('js/enemies/BlackCatSprite.js'));
-const pinkSprite = await import(url('js/enemies/PinkCatSprite.js'));
+const blackSprite = await import(url('js/bosses/BlackCatSprite.js'));
+const pinkSprite = await import(url('js/bosses/PinkCatSprite.js'));
 check('blackcat exports (B64, W=362, H=357, getter, ready)', typeof blackSprite.BLACK_CAT_B64 === 'string' && blackSprite.BLACK_CAT_W === 362 && blackSprite.BLACK_CAT_H === 357 && typeof blackSprite.getBlackCatSprite === 'function' && typeof blackSprite.isBlackCatSpriteReady === 'function');
 check('pinkcat exports (B64, W=180, H=283, getter, ready)', typeof pinkSprite.PINK_CAT_B64 === 'string' && pinkSprite.PINK_CAT_W === 180 && pinkSprite.PINK_CAT_H === 283 && typeof pinkSprite.getPinkCatSprite === 'function' && typeof pinkSprite.isPinkCatSpriteReady === 'function');
 check('blackcat sprite is null in Node (optional — circle fallback)', blackSprite.getBlackCatSprite() === null && blackSprite.isBlackCatSpriteReady() === false);

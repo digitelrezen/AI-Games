@@ -12,7 +12,7 @@
 //          time: RealTimeClock.js). The outfit is the Internet Bonus
 //          tell now that the silhouette is square.
 export const VERSION = 'v3.32.0';
-import EnemyBase from './EnemyBase.js';
+import EnemyBase from '../enemies/EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
 import { drawEntourageOutfit } from './BlackCatEntourage.js';
 import { getBlackCatSprite, BLACK_CAT_W } from './BlackCatSprite.js';

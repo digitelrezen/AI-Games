@@ -5,11 +5,11 @@
 // the densest cluster of enemies, detonates after a 1.5s fuse, and deals
 // catastrophic AOE damage with a mushroom-cloud visual.
 export const VERSION = 'v3.0.0';
-import Player from '../player/Player.js';
-import Bullet from '../combat/Bullet.js';
-import { TAU, rand, dist2, angleTo } from '../core/utils.js';
-import { bus } from '../core/EventBus.js';
-import { audio } from '../core/AudioSystem.js';
+import Player from '../Player.js';
+import Bullet from '../../combat/Bullet.js';
+import { TAU, rand, dist2, angleTo } from '../../core/utils.js';
+import { bus } from '../../core/EventBus.js';
+import { audio } from '../../core/AudioSystem.js';
 
 export default class WhiteCat extends Player {
   constructor(game, theme = 'white') {

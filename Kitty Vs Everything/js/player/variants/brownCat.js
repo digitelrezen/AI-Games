@@ -6,11 +6,11 @@
 // swarm of nanobots that rapidly repair HP over 3 seconds. Also grants
 // brief invulnerability and pushes nearby enemies away.
 export const VERSION = 'v3.0.0';
-import Player from '../player/Player.js';
-import Bullet from '../combat/Bullet.js';
-import { TAU, rand, dist2 } from '../core/utils.js';
-import { bus } from '../core/EventBus.js';
-import { audio } from '../core/AudioSystem.js';
+import Player from '../Player.js';
+import Bullet from '../../combat/Bullet.js';
+import { TAU, rand, dist2 } from '../../core/utils.js';
+import { bus } from '../../core/EventBus.js';
+import { audio } from '../../core/AudioSystem.js';
 
 export default class BrownCat extends Player {
   constructor(game, theme = 'brown') {

@@ -1,7 +1,7 @@
 // tools/derive-cat-sprites.mjs
 // Kitty Vs Everything — v3.32.0
-// One-off generator for the cat sprite modules (js/enemies/BlackCatSprite.js,
-// js/enemies/PinkCatSprite.js). Pure Node — no browser, no npm deps:
+// One-off generator for the cat sprite modules (js/bosses/BlackCatSprite.js,
+// js/bosses/PinkCatSprite.js). Pure Node — no browser, no npm deps:
 //
 //   1. Decodes the source PNGs (8-bit, color type 2/6) with a minimal
 //      built-in PNG decoder (zlib inflate + unfilter).
@@ -26,7 +26,7 @@ import { inflateSync, deflateSync } from 'node:zlib';
 const TOOLS_DIR = dirname(fileURLToPath(import.meta.url));
 const GAME_ROOT = resolve(TOOLS_DIR, '..', 'Kitty Vs Everything');
 const ASSET_DIR = resolve(TOOLS_DIR, '..', '.assets');
-const OUT_DIR = join(GAME_ROOT, 'js', 'enemies');
+const OUT_DIR = join(GAME_ROOT, 'js', 'bosses');
 
 // ─────────────────────────────────────────────────────────────────────────
 // Minimal PNG decoder — 8-bit depth, color type 2 (RGB) or 6 (RGBA).
