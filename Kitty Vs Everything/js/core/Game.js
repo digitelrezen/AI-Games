@@ -405,6 +405,13 @@ export default class Game {
     this.activeStage = this.waveManager;
     this.state = 'playing';
     this.waveManager.startNext();
+    // v3.77.0: SHUTTLE WAVE EVENT — WaveManager.startNext() already banners
+    // "WAVE N — SHUTTLE"; the console carries the event detail: every
+    // destroyed Space Shuttle drops a guaranteed mini-ship power-up
+    // (Combat.maybeDrop / SHUTTLE_DROP in config.js).
+    if (this.waveManager.currentSpecies === 'shuttle') {
+      this.msglog.log('SHUTTLE INTERCEPT — space shuttles inbound (destroy for mini-ship drops)', 'warn', this.time);
+    }
   }
 
   /** v3.76.0: start a bonus round from a resolved manifest entry. */

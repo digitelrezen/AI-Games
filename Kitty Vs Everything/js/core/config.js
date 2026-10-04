@@ -8,6 +8,10 @@
 //          synced across package.json, config.js, main.js, HUD.js and
 //          index.html; ARCHITECTURE.md / ARCHITECTURE_INDEX.txt restructured
 //          to the modular tree; check.mjs [6aa] version-sync gate.
+//          + SHUTTLE WAVE EVENT: every destroyed Space Shuttle (species #17
+//          in ENEMY_TYPES — waves 17/36/55/...) releases a GUARANTEED
+//          mini-ship power-up at the kill point (SHUTTLE_DROP below;
+//          Combat.maybeDrop special case; check.mjs [6ab] lifecycle gate).
 // v3.75.0: ENEMY SPRITE ISOLATION (Phase 2) — standard enemy sprite/art
 //          pipelines now live in js/enemies/sprites/ (Wasp2Sprite.js moved
 //          there; Wasp2Enemy.js imports it from ./sprites/). Boss art +
@@ -435,6 +439,14 @@ export function rollPowerUpDrop() {
   }
   return 'crate';
 }
+
+// v3.77.0: SHUTTLE WAVE EVENT — the Space Shuttle is the wave's "event"
+// species (ENEMY_TYPES.shuttle, species #17: waves 17/36/55/...). Every
+// destroyed shuttle releases its "Wanted" poster: a GUARANTEED mini-ship
+// power-up at the kill point (Combat.maybeDrop). This bypasses the shared
+// POWERUP_DROPS roll for the shuttle species only — all other enemies keep
+// the weighted pool above.
+export const SHUTTLE_DROP = { type: 'mini' };
 
 // Selectable cat ship color themes
 export const PLAYER_THEMES = {

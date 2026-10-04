@@ -10,8 +10,13 @@
 //          — Health / Frenzy / Shields / Wanted (mini) / Extra Life. The
 //          on-screen asteroid drop at the kill point is gone: asteroids
 //          now spawn fully off-screen from the wave spawner only.
+// v3.77.0: SHUTTLE WAVE EVENT — a destroyed Space Shuttle (enemy.type ===
+//          'shuttle') releases a GUARANTEED mini-ship power-up at the kill
+//          point (SHUTTLE_DROP in config.js), bypassing the shared pool roll
+//          for this species only. All other enemies keep the weighted
+//          POWERUP_DROPS table (v3.42.0 behavior unchanged).
 export const VERSION = 'v3.42.0';
-import { WEAPONS, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
+import { WEAPONS, rollPowerUpDrop, SHUTTLE_DROP } from '../core/config.js'; // v3.42.0: shared drop pool
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
 import PowerUp from './PowerUp.js';
@@ -71,10 +76,17 @@ export function onEnemyDeath(game, enemy, owner) {
 }
 
 function maybeDrop(game, enemy) {
-  const chance = enemy.special ? 0.5 : 0.08;
-  if (Math.random() > chance) return;
+  // v3.77.0: SHUTTLE WAVE EVENT — every destroyed Space Shuttle releases its
+  // "Wanted" poster: a guaranteed mini-ship power-up at the kill point,
+  // bypassing the shared pool roll for this species only.
+  if (enemy.type === 'shuttle') {
+    game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type: SHUTTLE_DROP.type, game }));
+    return;
+  }
   // v3.42.0: enemy kills drop from the shared POWERUP_DROPS pool (Health /
   // Frenzy / Shields / Wanted / Extra Life / robot / crate). No on-screen
   // asteroid here — asteroids spawn fully off-screen from the wave spawner.
+  const chance = enemy.special ? 0.5 : 0.08;
+  if (Math.random() > chance) return;
   game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type: rollPowerUpDrop(), game }));
 }
