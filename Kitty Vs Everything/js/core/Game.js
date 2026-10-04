@@ -1,5 +1,12 @@
 // Filename: Game.js
-// Kitty Vs Everything — v3.72.2
+// Kitty Vs Everything — v3.76.0
+// v3.76.0 (LevelRegistry refactor): stage sequencing is data-driven —
+//          the LevelRegistry manifest (STAGE_SEQUENCE) decides what runs
+//          next; Game.advanceStage() consumes it and drives the active
+//          stage (WaveManager or a bonus stage) through the uniform
+//          init/update/isComplete/cleanup interface. The core loop has no
+//          stage-type branching; startBonusLevel()/startBonusSpecific()
+//          now force a bonus via the registry (DevPanel).
 // Orchestrator: state machine, fixed game loop, scoring, rendering.
 // v3.70.0: MODULAR WEAPON ARCHITECTURE (Phase 3) — js/combat/Rockets.js
 // (v3.11.0 shared stun/napalm rocket system) fully extracted into
@@ -167,7 +174,7 @@
 //         always dock a same-color clone (PlayerFleet.addMini).
 // v3.34.0: DevPanel.js redesign (scrollable admin panel, resolution-adaptive) —
 //          release version bump only; no Game.js logic changes.
-export const VERSION = 'v3.72.3';
+export const VERSION = 'v3.76.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -178,6 +185,7 @@ import Bullet from '../combat/Bullet.js';
 import PowerUp from '../combat/PowerUp.js'; // v3.42.0: crate destruction drops
 import WaveManager from './WaveManager.js';
 import BonusLevel from '../levels/BonusLevel.js';
+import LevelRegistry, { STAGE_SEQUENCE, BONUS_STAGES } from '../levels/LevelRegistry.js'; // v3.76.0
 import EasterEgg from './EasterEgg.js';
 import HUD from '../ui/HUD.js';
 import Leaderboard from '../ui/Leaderboard.js';
@@ -231,6 +239,12 @@ export default class Game {
     this.aimbot = new EasterEgg(this); // v3.27.0: easter-egg manager (Bender + ship slots)
     this.waveManager = new WaveManager(this);
     this.bonus = new BonusLevel(this);
+    // v3.76.0: data-driven stage sequencing — the LevelRegistry owns the
+    // run's stage manifest (combat waves + bonus rounds). advanceStage()
+    // consumes it; the core loop no longer branches on stage type.
+    this.levelRegistry = new LevelRegistry(STAGE_SEQUENCE);
+    this.waveManager.bonusEvery = this.levelRegistry.bonusInterval || 4;
+    this.activeStage = null;
     this.dev = new DevPanel(this);
     this.crosshair = new Crosshair(this); // v3.48.0: procedural aim reticle
     this.state = 'menu';
@@ -353,8 +367,10 @@ export default class Game {
     this.hudFireControl.setMinimized(false); // v3.21.0: new missions start expanded
     this.pauseMenu.close(); // v3.14.0: hides overlay + starts mission music
     this.msglog.log('MISSION START', 'info', this.time);
+    this.levelRegistry.reset(); // v3.76.0: restart the stage manifest
     this.waveManager.reset();
     this.waveManager.startNext();
+    this.activeStage = this.waveManager; // v3.76.0
     // v3.20.0: LAN / local co-op modes (netSettings.role is the source of truth;
     // opts.role / opts.coop / opts.client are honored as explicit overrides).
     const role = opts.role || (opts.client ? 'client' : (opts.coop ? 'coop' : netSettings.role));
@@ -367,21 +383,56 @@ export default class Game {
     this._syncCursor(); // v3.31.0: lock for local play, release for LAN client
   }
 
-  startBonusLevel() {
-    this.state = 'bonus';
-    this.msglog.log('BONUS LEVEL INBOUND', 'warn', this.time);
-    this.enemies = [];
-    this.bullets = this.bullets.filter(b => b.friendly);
-    this.bonusTargets = [];
-    this.bonus.start();
+  /**
+   * v3.76.0: the active stage (combat wave or bonus round) has finished —
+   * the LevelRegistry manifest decides what runs next. No stage-type
+   * branching in the core loop.
+   */
+  advanceStage() {
+    const prev = this.activeStage;
+    this.activeStage = null;
+    if (prev && typeof prev.cleanup === 'function') prev.cleanup();
+    const entry = this.levelRegistry.nextStage();
+    if (entry.type === 'bonus') this.startBonusStage(entry);
+    else this.startCombatStage();
   }
-  startBonusSpecific(type) {
+
+  /** v3.76.0: start the next standard combat wave (WaveManager). */
+  startCombatStage() {
+    this.bonus.setStage(null);
+    this.activeStage = this.waveManager;
+    this.state = 'playing';
+    this.waveManager.startNext();
+  }
+
+  /** v3.76.0: start a bonus round from a resolved manifest entry. */
+  startBonusStage(entry) {
+    entry = this.levelRegistry.resolveEntry(entry); // 'random' → concrete id
+    this.levelRegistry.currentEntry = entry;
+    const stage = this.levelRegistry.createStage(entry, this);
+    this.bonus.setStage(stage);
+    this.activeStage = stage;
     this.state = 'bonus';
-    this.msglog.log('BONUS LEVEL INBOUND (' + type.toUpperCase() + ')', 'warn', this.time);
+    this.msglog.log('BONUS LEVEL INBOUND (' + this.levelRegistry.labelFor(entry) + ')', 'warn', this.time);
     this.enemies = [];
     this.bullets = this.bullets.filter(b => b.friendly);
     this.bonusTargets = [];
-    this.bonus.startSpecific(type);
+    stage.init();
+  }
+
+  // Dev-forced bonus (DevPanel 'dev-bonus'): random bonus, no manifest slot
+  // consumed — the next registry entry is a combat wave.
+  startBonusLevel() {
+    if (this.state !== 'playing') return;
+    const entry = this.levelRegistry.forceBonus('random');
+    this.startBonusStage(entry);
+  }
+
+  // Dev-forced bonus (DevPanel 'dev-bonus-bone' / 'dev-bonus-internet').
+  startBonusSpecific(type) {
+    if (this.state !== 'playing') return;
+    const entry = this.levelRegistry.forceBonus(BONUS_STAGES[type] ? type : 'random');
+    this.startBonusStage(entry);
   }
 
   /** v3.14.0: pause menu "RESTART LEVEL" — full mission reset, keeps theme. */
@@ -458,8 +509,13 @@ export default class Game {
       for (const p of this.powerups) p.update(dt);
       for (const z of this.fireZones) z.update(dt); // v3.11.0: napalm pool DoT
       for (const bt of this.bonusTargets) bt.update(dt);
-      if (this.state === 'playing') this.waveManager.update(dt);
-      if (this.state === 'bonus') this.bonus.update(dt);
+      // v3.76.0: the active stage (combat wave or bonus round) is driven
+      // through the uniform LevelRegistry interface; completion advances
+      // the manifest (Game.advanceStage) — no stage-type branching here.
+      if (this.activeStage) {
+        this.activeStage.update(dt);
+        if (this.activeStage.isComplete()) this.advanceStage();
+      }
       runCollisions(this);
       this.cleanup();
       this.checkScoreLives();

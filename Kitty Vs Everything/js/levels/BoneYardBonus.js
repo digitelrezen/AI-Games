@@ -1,10 +1,15 @@
 // Filename: BoneYardBonus.js
-// Kitty Vs Everything — v3.16.0
+// Kitty Vs Everything — v3.76.0
+// v3.76.0 (LevelRegistry refactor): uniform stage interface — start() is
+//          now init(); the timer-expired branch no longer drives the game
+//          state itself, it sets this.complete and Game.advanceStage()
+//          (via the LevelRegistry manifest) starts the next stage.
+//          cleanup() clears any leftover bonus targets.
 // "The Bone Yard" — 3-phase comedic bonus stage (original flow, restored):
 //   Phase 1: Infinite Boneyard (floating bones drift down, shoot for shrapnel)
 //   Phase 2: The Human Line (tight single-file line of Humans marches down)
 //   Phase 3: Comedic Victory (line never ends, timer expires, you "win" by
-//             NOT making it — returns to gameplay via waveManager.startNext())
+//             NOT making it — stage complete, Game.advanceStage() resumes)
 // v3.16.0 (v3.60.0 release): fully DESTRUCTIBLE yard — the v3.15.0
 //          non-shootable pixel-art backdrop is gone. The stage now opens on
 //          a SEEDED field of 29 destructible BoneFragment bonus targets
@@ -27,7 +32,7 @@
 //          backdrop of the shared PNGs (skeleton / skull / femur /
 //          profile_bone). SUPERSEDED by v3.16.0: the yard is now fully
 //          destructible (see above).
-export const VERSION = 'v3.16.0';
+export const VERSION = 'v3.76.0';
 import { BONUS } from '../core/config.js';
 import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
@@ -58,6 +63,7 @@ export default class BoneYardBonus {
   constructor(game) {
     this.game = game;
     this.active = false;
+    this.complete = false; // v3.76.0: uniform stage interface
     this.phase = 0; // 1, 2, 3
     this.phaseTimer = 0;
     this.timeLeft = 0;
@@ -67,8 +73,9 @@ export default class BoneYardBonus {
     this.humanCount = 0;
   }
 
-  start() {
+  init() { // v3.76.0: uniform stage interface (was start())
     this.active = true;
+    this.complete = false;
     this.phase = 1;
     this.phaseTimer = 0;
     this.timeLeft = BONUS.BONE_YARD_DURATION;
@@ -216,10 +223,20 @@ export default class BoneYardBonus {
         text: '+' + bonusPts.toLocaleString() + ' SURVIVAL BONUS',
         color: '#ffd54f',
       });
-      // Return to normal gameplay
-      this.game.state = 'playing';
-      this.game.waveManager.startNext();
+      // v3.76.0: the stage is done — Game.advanceStage() (LevelRegistry
+      // manifest) returns to the next combat wave.
+      this.complete = true;
     }
+  }
+
+  /** v3.76.0: uniform stage interface — true when the round has ended. */
+  isComplete() {
+    return this.complete;
+  }
+
+  /** v3.76.0: uniform stage interface — clear any leftover yard bones. */
+  cleanup() {
+    this.game.bonusTargets = [];
   }
 
   // v3.16.0 — no-op hook kept for BonusLevel's render delegation. The

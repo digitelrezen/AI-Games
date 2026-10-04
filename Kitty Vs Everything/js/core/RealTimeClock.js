@@ -8,7 +8,7 @@
 // Architecture (kept deliberately separate from the art):
 //   - `realTimeClock` is a module-level singleton — one clock feeds every
 //     pendant in the entourage, so all 8 Black Cats show the same time.
-//   - InternetBonus.start() calls realTimeClock.start() when the round
+//   - InternetBonus.init() calls realTimeClock.start() when the round
 //     begins; phaseOutFormation() calls realTimeClock.stop() when the
 //     formation leaves.
 //   - InternetBonus.update() calls realTimeClock.update(dt) every frame.

@@ -75,19 +75,19 @@ for (const [tag, rel] of [
   ['PlayerWeapons', 'js/player/PlayerWeapons.js'],
   ['PowerUp', 'js/combat/PowerUp.js'],
   ['HUDFireControl', 'js/ui/HUDFireControl.js'],
-  ['WaveManager', 'js/core/WaveManager.js'],        // v3.42.0
+  ['WaveManager', 'js/core/WaveManager.js'],        // v3.76.0
   ['Combat', 'js/combat/Combat.js'],                // v3.42.0
   ['AsteroidBonus', 'js/levels/AsteroidBonus.js'],  // v3.42.0
-  ['InternetBonus', 'js/levels/InternetBonus.js'],  // v3.42.0
+  ['InternetBonus', 'js/levels/InternetBonus.js'],  // v3.76.0
   ['DevPanel', 'js/ui/DevPanel.js'],                // v3.48.0
   ['Settings', 'js/ui/Settings.js'],                // v3.48.0
   ['Crosshair', 'js/ui/Crosshair.js'],              // v3.48.0
   ['EnemyFactory', 'js/enemies/EnemyFactory.js'],   // v3.50.0
-  ['BoneYardBonus', 'js/levels/BoneYardBonus.js'],  // v3.50.0
+  ['BoneYardBonus', 'js/levels/BoneYardBonus.js'],  // v3.76.0
   ['ShuttleEnemy', 'js/enemies/ShuttleEnemy.js'],   // v3.50.0
   ['MothEnemy', 'js/enemies/MothEnemy.js'],         // v3.52.0
   ['BeetleEnemy', 'js/enemies/BeetleEnemy.js'],     // v3.53.0
-  ['BonusLevel', 'js/levels/BonusLevel.js'],        // v3.54.0
+  ['BonusLevel', 'js/levels/BonusLevel.js'],        // v3.76.0
   ['BoneFragment', 'js/levels/BoneFragment.js'],    // v3.54.0
   ['SpiderEnemy', 'js/enemies/SpiderEnemy.js'],     // v3.57.0
   ['SnakeEnemy', 'js/enemies/SnakeEnemy.js'],       // v3.61.0
@@ -105,7 +105,7 @@ for (const [tag, rel] of [
   ['StunRockets', 'js/combat/StunRockets.js'],      // v3.70.0
   ['NapalmRockets', 'js/combat/NapalmRockets.js'],  // v3.70.0
   ['CatShipFactory', 'js/combat/CatShipFactory.js'], // v3.71.0
-  ['MiniShip', 'js/combat/MiniShip.js'],             // v3.71.0
+  ['MiniShip', 'js/combat/MiniShip.js'],             // v3.73.0
   ['SuperNova', 'js/combat/SuperNova.js'],           // v3.71.0
 ]) {
   V[tag] = (await mod(rel)).VERSION;
@@ -114,7 +114,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.71.0', PlayerWeapons: 'v3.70.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.42.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.42.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.16.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v2.2.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0', PulseCannon: 'v1.0.0', RailCannon: 'v1.0.0', BaseRocket: 'v1.0.0', StunRockets: 'v1.0.0', NapalmRockets: 'v1.0.0', CatShipFactory: 'v3.71.0', MiniShip: 'v3.71.0', SuperNova: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.71.0', PlayerWeapons: 'v3.70.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.76.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.76.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.76.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v3.76.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0', PulseCannon: 'v1.0.0', RailCannon: 'v1.0.0', BaseRocket: 'v1.0.0', StunRockets: 'v1.0.0', NapalmRockets: 'v1.0.0', CatShipFactory: 'v3.71.0', MiniShip: 'v3.73.0', SuperNova: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }
@@ -349,7 +349,7 @@ console.log('\n[6] Power-up drop lifecycle (headless)');
 console.log('\n[6b] v3.45.0 clean catship (source gates)');
 {
   const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
-  check('PlayerRenderer: SHIELD_BUBBLE_RADIUS = 100 (v3.47.0: glow covers the 2x hull + minis)', /SHIELD_BUBBLE_RADIUS\s*=\s*100/.test(prSrc));
+  check('PlayerRenderer: SHIELD_BUBBLE_RADIUS = 110 (v3.47.0: glow covers the 2x hull + minis)', /SHIELD_BUBBLE_RADIUS\s*=\s*110/.test(prSrc));
   check('PlayerRenderer: yellow shield GLOW (radial gradient, no hard rim) while shield > 0',
     prSrc.includes('if (p.shield > 0)') && prSrc.includes('createRadialGradient') && prSrc.includes('rgba(255, 213, 79'));
   check('PlayerRenderer: ship no longer reads superCharge (gold ring gone)',
@@ -542,7 +542,7 @@ console.log('\n[6g] v3.53.0 beetle pixel-art sprite');
 console.log('\n[6h] v3.54.0 boneyard pixel-art environment');
 {
   const blSrc = fs.readFileSync(path.join(ROOT, 'js/levels/BonusLevel.js'), 'utf8');
-  check('BonusLevel: VERSION = v2.2.0', blSrc.includes("VERSION = 'v2.2.0'"));
+  check('BonusLevel: VERSION = v3.76.0', blSrc.includes("VERSION = 'v3.76.0'"));
   check('BonusLevel: draw(ctx) delegates to the active bonus', blSrc.includes('draw(ctx)') && blSrc.includes('this.currentBonus.draw(ctx)'));
   check('Game: bonus draw hook under the bonus targets', gameSrc.includes('this.bonus.draw(ctx)'));
   check('AssetSprites: skeleton dims 76×128 registered', /skeleton:\s*\{\s*w:\s*76,\s*h:\s*128\s*\}/.test(spritesSrc));
@@ -650,7 +650,7 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   const { BONUS } = await mod('js/core/config.js');
   const bfSrc = fs.readFileSync(path.join(ROOT, 'js/levels/BoneFragment.js'), 'utf8');
   check('config: BONUS.BONE_YARD_FIELD = 10 femur / 10 profile_bone / 6 skull / 3 skeleton', BONUS.BONE_YARD_FIELD && BONUS.BONE_YARD_FIELD.femur === 10 && BONUS.BONE_YARD_FIELD.profile_bone === 10 && BONUS.BONE_YARD_FIELD.skull === 6 && BONUS.BONE_YARD_FIELD.skeleton === 3);
-  check('BoneYardBonus: VERSION = v3.16.0', bySrc.includes("VERSION = 'v3.16.0'"));
+  check('BoneYardBonus: VERSION = v3.76.0', bySrc.includes("VERSION = 'v3.76.0'"));
   check('BoneYardBonus: non-destructible backdrop removed (BONEYARD_BG_* gone)', !bySrc.includes('BONEYARD_BG_KEYS') && !bySrc.includes('BONEYARD_BG_BASE') && !bySrc.includes('BONEYARD_BG_COUNTS'));
   check('BoneYardBonus: _buildBackground/_drawProceduralBg removed', !bySrc.includes('_buildBackground') && !bySrc.includes('_drawProceduralBg'));
   check('BoneYardBonus: draw() is a no-op hook', bySrc.includes('draw(ctx) {}'));
@@ -675,7 +675,7 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   });
   const game = mkGame();
   const yard = new BoneYardBonus(game);
-  yard.start();
+  yard.init(); // v3.76.0: uniform stage interface (was start())
   const field = game.bonusTargets;
   check('BoneYard: seeded field = 29 destructible bones', field.length === 29, `got ${field.length}`);
   const count = (k) => field.filter((b) => b.spriteKey === k).length;
@@ -684,7 +684,7 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   check('BoneYard: field drift 6–18 px/s, no horizontal drift', field.every((b) => b.vy >= 6 && b.vy <= 18 && b.vx === 0));
   check('BoneYard: skeleton sentinels hug the left/right margins', field.filter((b) => b.spriteKey === 'skeleton').every((b) => b.x < 240 || b.x > 1680));
   const game2 = mkGame();
-  new BoneYardBonus(game2).start();
+  new BoneYardBonus(game2).init(); // v3.76.0: uniform stage interface
   check('BoneYard: seeded layout is identical across runs', game2.bonusTargets.length === field.length && game2.bonusTargets.every((b, i) => b.spriteKey === field[i].spriteKey && Math.abs(b.x - field[i].x) < 0.001 && Math.abs(b.y - field[i].y) < 0.001));
 
   const femur = new BoneFragment({ x: 100, y: 100, game, spriteKey: 'femur' });
@@ -1257,7 +1257,7 @@ console.log('\n[6x] v3.71.0 Phase 4 modular cat-ship combat (CatShipFactory + Mi
 
   // ── Source gates ──
   check('CatShipFactory: VERSION = v3.71.0', csfSrc.includes("VERSION = 'v3.71.0'"));
-  check('MiniShip: VERSION = v3.71.0', msSrc.includes("VERSION = 'v3.71.0'"));
+  check('MiniShip: VERSION = v3.73.0', msSrc.includes("VERSION = 'v3.73.0'"));
   check('SuperNova: VERSION = v1.0.0', snSrc.includes("VERSION = 'v1.0.0'"));
   check('SuperNova: exports fireNova + fireSuperWeapon', typeof fireNova === 'function' && typeof fireSuperWeapon === 'function');
   check('SuperNova: nova ring is 16 bullets @ damage 25', snSrc.includes('i < 16') && snSrc.includes('damage: 25'));
@@ -1381,6 +1381,86 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1
 }
 
 // ═══════════════════════════════════════════════════════════
+//  [6z] v3.76.0 LevelRegistry — data-driven stage flow
+//        (combat/bonus manifest + uniform stage interface:
+//         init() / update(dt) / isComplete() / cleanup())
+// ═══════════════════════════════════════════════════════════
+console.log('\n[6z] v3.76.0 LevelRegistry stage flow (headless)');
+{
+  const { default: LevelRegistry, STAGE_SEQUENCE, BONUS_STAGES } = await mod('js/levels/LevelRegistry.js');
+  const lrSrc = fs.readFileSync(path.join(ROOT, 'js/levels/LevelRegistry.js'), 'utf8');
+  const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
+  const blSrc2 = fs.readFileSync(path.join(ROOT, 'js/levels/BonusLevel.js'), 'utf8');
+  const bySrc = fs.readFileSync(path.join(ROOT, 'js/levels/BoneYardBonus.js'), 'utf8');
+  const ibSrc = fs.readFileSync(path.join(ROOT, 'js/levels/InternetBonus.js'), 'utf8');
+  const hudSrc = fs.readFileSync(path.join(ROOT, 'js/ui/HUD.js'), 'utf8');
+
+  // ── Source gates ──
+  check('LevelRegistry: VERSION = v3.76.0', lrSrc.includes("VERSION = 'v3.76.0'"));
+  check('Game: imports LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES)',
+    gameSrc.includes("import LevelRegistry, { STAGE_SEQUENCE, BONUS_STAGES } from '../levels/LevelRegistry.js'"));
+  check('Game: core loop drives activeStage (update → isComplete → advanceStage)',
+    gameSrc.includes('this.activeStage.update(dt)') && gameSrc.includes('if (this.activeStage.isComplete()) this.advanceStage();'));
+  check('WaveManager: completion signal only (cleared flag + isComplete, no bonus choice)',
+    wmSrc.includes('this.cleared = true') && wmSrc.includes('isComplete()') && !wmSrc.includes('startBonus'));
+  check('BonusLevel: thin adapter (setStage + forward update/draw, no direct bonus imports)',
+    blSrc2.includes('setStage(stage)') && !blSrc2.includes("from './BoneYardBonus.js'") && !blSrc2.includes("from './InternetBonus.js'"));
+  check('BoneYardBonus: uniform interface (init/isComplete/cleanup, no game-state transitions)',
+    bySrc.includes('init()') && bySrc.includes('isComplete()') && bySrc.includes('cleanup()') && !bySrc.includes("game.state = 'playing'") && !bySrc.includes('waveManager.startNext('));
+  check('InternetBonus: uniform interface (init/isComplete/cleanup, no game-state transitions)',
+    ibSrc.includes('init()') && ibSrc.includes('isComplete()') && ibSrc.includes('cleanup()') && !ibSrc.includes("game.state = 'playing'") && !ibSrc.includes('waveManager.startNext('));
+  check('HUD: bonus label from levelRegistry.labelFor(currentEntry)',
+    hudSrc.includes('g.levelRegistry.labelFor(g.levelRegistry.currentEntry)'));
+
+  // ── Manifest + headless behavior ──
+  check('STAGE_SEQUENCE: 3 combat + 1 random bonus (pre-refactor cadence)',
+    STAGE_SEQUENCE.length === 4 && STAGE_SEQUENCE.filter(s => s.type === 'combat').length === 3 && STAGE_SEQUENCE[3].type === 'bonus' && STAGE_SEQUENCE[3].id === 'random');
+  check('BONUS_STAGES: boneyard + internet registered with label + create()',
+    Object.keys(BONUS_STAGES).sort().join(',') === 'boneyard,internet' &&
+    Object.values(BONUS_STAGES).every(r => typeof r.label === 'string' && typeof r.create === 'function'));
+
+  const reg = new LevelRegistry();
+  check('bonusInterval = 4 (syncs WaveManager.bonusEvery)', reg.bonusInterval === 4, `got ${reg.bonusInterval}`);
+
+  const seq = [reg.nextStage(), reg.nextStage(), reg.nextStage(), reg.nextStage(), reg.nextStage()];
+  check('nextStage(): combat×3 → bonus(random) → combat (cyclic)',
+    seq[0].type === 'combat' && seq[1].type === 'combat' && seq[2].type === 'combat' &&
+    seq[3].type === 'bonus' && seq[3].id === 'random' && seq[4].type === 'combat');
+  check('nextStage(): currentEntry tracks the last entry handed out', reg.currentEntry === seq[4]);
+
+  const resolved = reg.resolveEntry({ type: 'bonus', id: 'random' });
+  check("resolveEntry('random') → concrete registered bonus id",
+    resolved.type === 'bonus' && Object.keys(BONUS_STAGES).includes(resolved.id), `got ${resolved.id}`);
+  const passthrough = { type: 'bonus', id: 'boneyard' };
+  check('resolveEntry: non-random entries pass through unchanged', reg.resolveEntry(passthrough) === passthrough);
+
+  const g = makeGame();
+  g.waveManager = { __waveManager: true };
+  check('createStage(combat) → shared WaveManager', reg.createStage({ type: 'combat' }, g) === g.waveManager);
+  const stage1 = reg.createStage({ type: 'bonus', id: 'boneyard' }, g);
+  const stage2 = reg.createStage({ type: 'bonus', id: 'boneyard' }, g);
+  check('createStage(bonus): instance cached + reused per id', stage1 === stage2);
+  check('createStage(bonus): uniform interface (init/update/isComplete/cleanup)',
+    ['init', 'update', 'isComplete', 'cleanup'].every(m => typeof stage1[m] === 'function'));
+  check('createStage: boneyard vs internet are distinct instances', reg.createStage({ type: 'bonus', id: 'internet' }, g) !== stage1);
+
+  check("labelFor: combat → 'WAVE'", reg.labelFor({ type: 'combat' }) === 'WAVE');
+  check("labelFor: boneyard → '☠ BONE YARD ☠'", reg.labelFor({ type: 'bonus', id: 'boneyard' }) === '☠ BONE YARD ☠');
+  check("labelFor: internet → '🌐 INTERNET 🌐'", reg.labelFor({ type: 'bonus', id: 'internet' }) === '🌐 INTERNET 🌐');
+  check('labelFor: unknown id → uppercased fallback', reg.labelFor({ type: 'bonus', id: 'moonbase' }) === 'MOONBASE');
+
+  reg.reset();
+  const forced = reg.forceBonus('boneyard');
+  check("forceBonus('boneyard') → concrete entry, currentEntry set", forced.type === 'bonus' && forced.id === 'boneyard' && reg.currentEntry === forced);
+  check('forceBonus: next nextStage() is a combat wave (no back-to-back bonus)', reg.nextStage().type === 'combat');
+  reg.reset();
+  const forcedRandom = reg.forceBonus('random');
+  check("forceBonus('random') → concrete registered bonus id", forcedRandom.type === 'bonus' && Object.keys(BONUS_STAGES).includes(forcedRandom.id), `got ${forcedRandom.id}`);
+  reg.reset();
+  check('reset(): manifest restarts from the first entry', reg.index === -1 && reg.currentEntry === null && reg.nextStage() === STAGE_SEQUENCE[0]);
+}
+
+// ═══════════════════════════════════════════════════════════
 //  [7] --full: full smoke.mjs logic suite (subprocess)
 // ═══════════════════════════════════════════════════════════
 if (FULL) {
@@ -1390,6 +1470,6 @@ if (FULL) {
 
 // ─── Summary ───────────────────────────────────────────────
 console.log(failures === 0
-  ? '\n\x1b[32m[check] ALL GREEN — v3.72.3 surface, asset pipeline, and headless behavior verified.\x1b[0m'
+  ? '\n\x1b[32m[check] ALL GREEN — v3.76.0 LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
   : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
 process.exit(failures === 0 ? 0 : 1);

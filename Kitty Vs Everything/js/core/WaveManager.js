@@ -1,5 +1,11 @@
 // Filename: WaveManager.js
-// Kitty Vs Everything — v3.42.0
+// Kitty Vs Everything — v3.76.0
+// v3.76.0 (LevelRegistry refactor): the WaveManager no longer decides what
+//          follows a cleared wave. onWaveCleared() now just signals
+//          completion (this.cleared + isComplete()); Game.advanceStage()
+//          consumes the LevelRegistry manifest and either starts the next
+//          combat wave or a bonus round. bonusEvery is still synced by
+//          Game from the registry (drives the ship-egg skip cadence).
 // 16-species sequential wave system: one species per wave (wraps after 16),
 // active enemy count sawtooth-ramps 20→300 over 12 waves then resets, and
 // wave difficulty scales enemy HP + damage (capped after two full species
@@ -13,7 +19,7 @@
 //          asteroid spawns fully off-screen (ASTEROID.spawnY); the Planet
 //          Express ship flyby auto-triggers at the start of most waves
 //          (all but every 4th — the bonus-adjacent ones).
-export const VERSION = 'v3.42.0';
+export const VERSION = 'v3.76.0';
 import { ENEMY_TYPES, WAVE, ASTEROID, rollPowerUpDrop } from './config.js'; // v3.42.0: shared drop pool
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -31,7 +37,8 @@ export default class WaveManager {
     this.spawnQueue = [];
     this.spawnTimer = 0;
     this.clearedTimer = 0;
-    this.bonusEvery = 4; // goal: bonus level every 4 waves
+    this.bonusEvery = 4; // v3.76.0: synced by Game from LevelRegistry.bonusInterval
+    this.cleared = false; // v3.76.0: wave-clear signal for the LevelRegistry
     // ─── v3.30.0: 16-species sequential wave system ───
     this.species = Object.keys(ENEMY_TYPES); // insertion order = species order
     this.speciesIndex = 0;
@@ -42,6 +49,7 @@ export default class WaveManager {
   reset() {
     this.wave = 0;
     this.active = false;
+    this.cleared = false; // v3.76.0
     this.spawnQueue = [];
     this.clearedTimer = 0;
     this.speciesIndex = 0;
@@ -76,6 +84,7 @@ export default class WaveManager {
 
   startNext() {
     this.wave++;
+    this.cleared = false; // v3.76.0: a new wave is not "cleared"
     this.clearedTimer = 0;
     // v3.30.0: advance to the next species (one per wave, wraps after 16).
     // Wave 1 = first species, wave 16 = last, wave 17 wraps to first again.
@@ -144,7 +153,14 @@ export default class WaveManager {
     } else {
       this.game.powerups.push(new PowerUp({ x, y: -30, type: rollPowerUpDrop(), game: this.game }));
     }
-    if (this.wave % this.bonusEvery === 0) this.game.startBonusLevel();
-    else this.startNext();
+    // v3.76.0: the WaveManager no longer picks the next stage — it signals
+    // completion and Game.advanceStage() consults the LevelRegistry manifest
+    // (combat wave or bonus round).
+    this.cleared = true;
+  }
+
+  /** v3.76.0: uniform stage interface — true once the wave is fully cleared. */
+  isComplete() {
+    return this.cleared;
   }
 }

@@ -1,5 +1,10 @@
 // Filename: InternetBonus.js
-// Kitty Vs Everything — v3.42.0
+// Kitty Vs Everything — v3.76.0
+// v3.76.0 (LevelRegistry refactor): uniform stage interface — start() is
+//          now init(); the timer-expired branch sets this.complete instead
+//          of driving game state (Game.advanceStage() continues the run),
+//          and the orbiting cats' move() closures capture the stage
+//          instance directly instead of reaching through g.bonus.internet.
 // "The Internet Classic" — High-intensity boss survival round:
 //   8 skinny, tall Black Cat mini-bosses orbiting in a circle
 //   around 1 skinny, short Pink Cat boss,
@@ -21,7 +26,7 @@
 // v3.42.0: the 12% asteroid drop spawns fully off-screen (ASTEROID.spawnY)
 //          and the remaining drops sample the shared POWERUP_DROPS pool
 //          (config.js) — Health / Frenzy / Shields / Wanted / Extra Life.
-export const VERSION = 'v3.42.0';
+export const VERSION = 'v3.76.0';
 import { BONUS, ASTEROID, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
 import { TAU, rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
@@ -35,6 +40,7 @@ export default class InternetBonus {
   constructor(game) {
     this.game = game;
     this.active = false;
+    this.complete = false; // v3.76.0: uniform stage interface
     this.timeLeft = 0;
     this.spawned = false;
     this.dropTimer = 0;
@@ -46,8 +52,9 @@ export default class InternetBonus {
     this.formation = []; // Pink Cat + orbiting Black Cats
   }
 
-  start() {
+  init() { // v3.76.0: uniform stage interface (was start())
     this.active = true;
+    this.complete = false;
     this.timeLeft = BONUS.INTERNET_DURATION;
     this.spawned = false;
     this.dropTimer = 2;
@@ -92,6 +99,7 @@ export default class InternetBonus {
     this.formation.push(pinkCat);
 
     // 8 skinny, tall Blackcat mini-bosses orbiting the Pink Cat
+    const self = this; // v3.76.0: stage instance for the orbit closures
     for (let i = 0; i < 8; i++) {
       const a0 = this.orbitAngle + (i / 8) * TAU;
       const cat = createEnemy({
@@ -115,7 +123,7 @@ export default class InternetBonus {
       // Glide into the circle, then keep orbiting the Pink Cat
       cat.move = function (dt, slowMul) {
         const s = this.speed * slowMul;
-        const ib = g.bonus.internet;
+        const ib = self; // v3.76.0: stage instance (was g.bonus.internet)
         const a = ib.orbitAngle + this.orbitOffset;
         const cx = ib.circleCenter.x + Math.cos(a) * ib.orbitRadius;
         const cy = ib.circleCenter.y + Math.sin(a) * ib.orbitRadius;
@@ -180,9 +188,21 @@ export default class InternetBonus {
         text: '+' + bonusPts.toLocaleString() + ' INTERNET BONUS',
         color: '#ffd54f',
       });
-      this.game.state = 'playing';
-      this.game.waveManager.startNext();
+      // v3.76.0: the stage is done — Game.advanceStage() (LevelRegistry
+      // manifest) returns to the next combat wave.
+      this.complete = true;
     }
+  }
+
+  /** v3.76.0: uniform stage interface — true when the round has ended. */
+  isComplete() {
+    return this.complete;
+  }
+
+  /** v3.76.0: uniform stage interface — drop formation references. */
+  cleanup() {
+    this.formation = [];
+    this.pinkCat = null;
   }
 
   /**

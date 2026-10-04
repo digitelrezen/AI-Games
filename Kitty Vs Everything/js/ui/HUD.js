@@ -26,7 +26,7 @@
 // v3.29.0: Bender easter egg — the 10 s countdown is gone; the label now
 //          shows the kill counter "BENDER x/4" (game.aimbot.killCount /
 //          BENDER_KILLS) while the egg's aim window is open.
-export const VERSION = 'v3.31.0';
+export const VERSION = 'v3.76.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter
@@ -72,9 +72,9 @@ export default class HUD {
 
     let waveText;
     if (g.state === 'bonus') {
-      if (g.bonus.currentBonus === g.bonus.boneYard) waveText = '☠ BONE YARD ☠';
-      else if (g.bonus.currentBonus === g.bonus.internet) waveText = '🌐 INTERNET 🌐';
-      else waveText = 'BONUS LEVEL';
+      // v3.76.0: the stage label comes from the LevelRegistry manifest —
+      // new bonus stages label themselves without touching the HUD.
+      waveText = g.levelRegistry.labelFor(g.levelRegistry.currentEntry) || 'BONUS LEVEL';
     } else {
       waveText = 'WAVE ' + g.waveManager.wave;
     }
