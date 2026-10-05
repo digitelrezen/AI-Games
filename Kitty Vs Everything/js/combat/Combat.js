@@ -15,8 +15,11 @@
 //          point (SHUTTLE_DROP in config.js), bypassing the shared pool roll
 //          for this species only. All other enemies keep the weighted
 //          POWERUP_DROPS table (v3.42.0 behavior unchanged).
-export const VERSION = 'v3.42.0';
-import { WEAPONS, rollPowerUpDrop, SHUTTLE_DROP } from '../core/config.js'; // v3.42.0: shared drop pool
+// v3.80.0: DROP RARITY — the kill drop chance moved from hardcoded values to
+//          DROP_RARITY in config.js (enemy 8% / special 50%); the pool roll
+//          is the new v3.80.0 rarity ladder (robot SUPER RARE, 1%).
+export const VERSION = 'v3.80.0';
+import { WEAPONS, DROP_RARITY, rollPowerUpDrop, SHUTTLE_DROP } from '../core/config.js'; // v3.42.0: shared drop pool
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
 import PowerUp from './PowerUp.js';
@@ -86,7 +89,9 @@ function maybeDrop(game, enemy) {
   // v3.42.0: enemy kills drop from the shared POWERUP_DROPS pool (Health /
   // Frenzy / Shields / Wanted / Extra Life / robot / crate). No on-screen
   // asteroid here — asteroids spawn fully off-screen from the wave spawner.
-  const chance = enemy.special ? 0.5 : 0.08;
+  // v3.80.0: the kill drop chance comes from the DROP_RARITY table — 8%
+  // for regular enemies, 50% for champions / minibosses / bosses.
+  const chance = enemy.special ? DROP_RARITY.special : DROP_RARITY.enemy;
   if (Math.random() > chance) return;
   game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type: rollPowerUpDrop(), game }));
 }

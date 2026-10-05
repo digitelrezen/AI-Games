@@ -19,7 +19,13 @@
 //          asteroid spawns fully off-screen (ASTEROID.spawnY); the Planet
 //          Express ship flyby auto-triggers at the start of most waves
 //          (all but every 4th — the bonus-adjacent ones).
-export const VERSION = 'v3.76.0';
+// v3.80.0: SHIPS EVERY LEVEL + DROP RARITY — the flyby now enters/exits
+//          during EVERY level (the bonus-adjacent skip is gone),
+//          SHUTTLES_PER_WAVE Space Shuttle enemies are woven into every
+//          combat wave's spawn queue, asteroids stream in constantly
+//          (asteroidTimer, 2–4s) and score crates fall in occasionally
+//          (crateTimer, 12–20s) — all ambient spawns fully off-screen.
+export const VERSION = 'v3.80.0';
 import { ENEMY_TYPES, WAVE, ASTEROID, rollPowerUpDrop } from './config.js'; // v3.42.0: shared drop pool
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -28,6 +34,13 @@ import { switchEgg } from './EasterEgg.js'; // v3.42.0: ship flyby in most level
 import { rand } from './utils.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
+
+// v3.80.0: SHIPS EVERY LEVEL — Space Shuttle enemies woven into every
+// combat wave (shuttle species waves are already all shuttles).
+const SHUTTLES_PER_WAVE = 2;
+// v3.80.0: ambient spawner cadence (combat waves only, off-screen spawns).
+const ASTEROID_AMBIENT_MIN = 2, ASTEROID_AMBIENT_MAX = 4;   // asteroids: constant
+const CRATE_AMBIENT_MIN = 12, CRATE_AMBIENT_MAX = 20;       // crates: occasional
 
 export default class WaveManager {
   constructor(game) {
@@ -44,6 +57,9 @@ export default class WaveManager {
     this.speciesIndex = 0;
     this.currentSpecies = this.species[0];
     this.spawnOverride = 0; // 0 = AUTO (sawtooth ramp); >0 = fixed active count
+    // ─── v3.80.0: ambient spawners (reset per wave in startNext) ───
+    this.asteroidTimer = 0; // asteroids stream in constantly (off-screen)
+    this.crateTimer = 0;    // score crates fall in occasionally (off-screen)
   }
 
   reset() {
@@ -54,6 +70,8 @@ export default class WaveManager {
     this.clearedTimer = 0;
     this.speciesIndex = 0;
     this.currentSpecies = this.species[0];
+    this.asteroidTimer = 0; // v3.80.0
+    this.crateTimer = 0;    // v3.80.0
     // NOTE: spawnOverride intentionally preserved across resets (dev tooling).
   }
 
@@ -92,10 +110,13 @@ export default class WaveManager {
     this.currentSpecies = this.species[this.speciesIndex];
     this.buildQueue();
     this.active = true;
-    // v3.42.0: the Planet Express ship flyby appears reliably in most
-    // levels — every wave except the bonus-adjacent ones (every 4th), so
-    // ~75% of waves get the egg without any dev-panel involvement.
-    if (this.wave % this.bonusEvery !== 0) switchEgg(this.game, 'ship');
+    // v3.80.0: SHIPS EVERY LEVEL — the Planet Express flyby enters and
+    // exits during EVERY level (v3.42.0's bonus-adjacent skip is gone;
+    // bonus rounds stay ship-free because the egg only starts here).
+    switchEgg(this.game, 'ship');
+    // v3.80.0: reset the ambient spawners for the new combat wave.
+    this.asteroidTimer = rand(ASTEROID_AMBIENT_MIN, ASTEROID_AMBIENT_MAX);
+    this.crateTimer = rand(CRATE_AMBIENT_MIN, CRATE_AMBIENT_MAX);
     const isFinal = this.wave % 10 === 0;
     bus.emit('banner', {
       text: isFinal ? `WAVE ${this.wave} — FINAL BOSS INBOUND` : `WAVE ${this.wave}`,
@@ -115,6 +136,17 @@ export default class WaveManager {
     // v3.30.0: 1 boss of the active species arrives last (finalboss every 10 waves).
     const bossTier = (this.wave % 10 === 0) ? 'finalboss' : 'boss';
     q.push({ type, tier: bossTier, delay: WAVE.BOSS_DELAY });
+    // v3.80.0: SHIPS EVERY LEVEL — weave SHUTTLES_PER_WAVE Space Shuttle
+    // enemies into the queue at even intervals (shuttle species waves are
+    // already all shuttles, so they're left untouched). Every destroyed
+    // shuttle guarantees its mini-ship "Wanted" poster (SHUTTLE_DROP).
+    if (type !== 'shuttle') {
+      const step = Math.max(1, Math.floor(q.length / (SHUTTLES_PER_WAVE + 1)));
+      for (let sIdx = 0; sIdx < SHUTTLES_PER_WAVE; sIdx++) {
+        const idx = Math.min(q.length - 1, step * (sIdx + 1));
+        q.splice(idx, 0, { type: 'shuttle', tier: 'mob', delay: rand(WAVE.SPAWN_DELAY_MIN, WAVE.SPAWN_DELAY_MAX) });
+      }
+    }
     this.spawnQueue = q;
     this.spawnTimer = 1;
   }
@@ -139,6 +171,21 @@ export default class WaveManager {
         this.clearedTimer = 0;
         this.active = false;
         this.onWaveCleared();
+      }
+    }
+    // v3.80.0: ambient spawners (combat waves only — bonus rounds deactivate
+    // the WaveManager, so these pause between levels). Asteroids stream in
+    // constantly, fully off-screen; score crates fall in occasionally.
+    if (this.active) {
+      this.asteroidTimer -= dt;
+      if (this.asteroidTimer <= 0) {
+        this.asteroidTimer = rand(ASTEROID_AMBIENT_MIN, ASTEROID_AMBIENT_MAX);
+        spawnAsteroid(this.game, rand(80, this.game.viewW - 80), ASTEROID.spawnY);
+      }
+      this.crateTimer -= dt;
+      if (this.crateTimer <= 0) {
+        this.crateTimer = rand(CRATE_AMBIENT_MIN, CRATE_AMBIENT_MAX);
+        this.game.powerups.push(new PowerUp({ x: rand(80, this.game.viewW - 80), y: -30, type: 'crate', game: this.game }));
       }
     }
   }

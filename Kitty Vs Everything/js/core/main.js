@@ -33,7 +33,13 @@
 //          (drawDockArc in PlayerShipFx.js — midpoint-displacement crackle
 //          + Math.sin energy pulse + cyan shadow glow). Project manifest
 //          version synced with package.json (3.79.0).
-export const VERSION = 'v3.79.0';
+// v3.80.0: Drop rarity overhaul — POWERUP_DROPS is now a rarity ladder
+//          (robot SUPER RARE 1%), DROP_RARITY drives kill drop chances,
+//          both ships enter/exit every level, asteroids stream in
+//          constantly, crates fall in occasionally (config/drops.js +
+//          WaveManager.js). Project manifest version synced with
+//          package.json (3.80.0).
+export const VERSION = 'v3.80.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';

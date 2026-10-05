@@ -31,10 +31,10 @@ check('rollPowerUpDrop() covers every pool type (2000 rolls)', (() => {
   for (let i = 0; i < 2000; i++) seen.add(rollPowerUpDrop());
   return seen.size === Object.keys(POWERUP_DROPS).length;
 })());
-// v3.42.0 source gates: every asteroid spawn off-screen, ship egg on most waves
+// v3.42.0 source gates: every asteroid spawn off-screen, ship egg on EVERY wave (v3.80.0)
 const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
 check('WaveManager: wave-clear asteroid spawns off-screen (ASTEROID.spawnY)', wmSrc.includes('spawnAsteroid(this.game, x, ASTEROID.spawnY)'));
-check('WaveManager: ship easter egg auto-triggers on non-bonus waves', wmSrc.includes("switchEgg(this.game, 'ship')") && wmSrc.includes('this.wave % this.bonusEvery !== 0'));
+check('WaveManager: ship easter egg auto-triggers on EVERY combat wave (v3.80.0)', wmSrc.includes("switchEgg(this.game, 'ship')") && !wmSrc.includes('this.wave % this.bonusEvery !== 0'));
 const combatSrc = fs.readFileSync(path.join(ROOT, 'js/combat/Combat.js'), 'utf8');
 check('Combat: enemy kills roll the shared pool (no spawnAsteroid left)', combatSrc.includes('rollPowerUpDrop()') && !combatSrc.includes('spawnAsteroid'));
 const abSrc = fs.readFileSync(path.join(ROOT, 'js/levels/AsteroidBonus.js'), 'utf8');

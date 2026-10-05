@@ -2,6 +2,11 @@
 // Kitty Vs Everything — v3.77.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.80.0: DROP RARITY OVERHAUL — POWERUP_DROPS (config/drops.js) is now a
+//          rarity ladder (robot SUPER RARE 1%) + new DROP_RARITY per-source
+//          drop chances (enemy 8% / special 50%); both ships enter/exit
+//          every level + constant asteroids + occasional crates
+//          (WaveManager.js).
 // v3.78.0: A/D CONTROL MODE — Settings.controlMode ('strafe' default / 'spin'
 //          classic; PlayerFlight.js + config/player.js STRAFE_THRUST_MULT);
 //          the redundant fire-control pause button is removed (Esc / P / the
@@ -263,10 +268,10 @@
 //          width 1.5→3px, alpha swell) and cyan/blue canvas shadow glow.
 //          Milestone version synced across package.json, config.js, main.js,
 //          Game.js, HUD.js and index.html.
-export const VERSION = 'v3.79.0';
+export const VERSION = 'v3.80.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
 export { ENEMY_TYPES, TIERS, WAVE } from './config/enemies.js';
-export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP } from './config/drops.js';
+export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP, DROP_RARITY } from './config/drops.js';
 export { BONUS, LIFE_SCORE_INTERVAL } from './config/stages.js';

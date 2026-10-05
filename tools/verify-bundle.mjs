@@ -11,6 +11,21 @@ const VER = String(pkg.version || '');
 const bundle = join(root, 'Builds', `Kitty Vs Everything ${VER}.html`);
 const s = readFileSync(bundle, 'utf8');
 
+// ── v3.80.0: parse the drop tables numerically (esbuild may normalize
+// 0.30 → 0.3 / .3, so string matching would be brittle; the readable
+// bundle also keeps the inline // comments, so strip those first) ──
+const parseDropTable = (src, re) => {
+  const out = {};
+  const m = src.match(re);
+  if (m) for (const pair of m[1].replace(/\/\/[^\n]*/g, '').split(',')) {
+    const [k, v] = pair.split(':').map((x) => x.trim().replace(/^["']|["']$/g, ''));
+    if (k && v !== undefined) out[k] = parseFloat(v);
+  }
+  return out;
+};
+const powerupDrops = parseDropTable(s, /POWERUP_DROPS\s*=\s*\{([^}]*)\}/);
+const dropRarity = parseDropTable(s, /DROP_RARITY\s*=\s*\{([^}]*)\}/);
+
 const tests = [
   ['BENDER sprite payload (body PNG)', s.includes('iVBORw0KGgo') && s.includes('ASUAAAG5CAYAAADIwyJP')],
   ['dialogue line 0 "I\'m your Aimbot."', s.includes("I'm your Aimbot.")],
@@ -246,6 +261,39 @@ const tests = [
   ['v3.71.0: CatShipFactory createCatShip + createMiniShip in bundle', /function createCatShip\(/.test(s) && /function createMiniShip\(/.test(s)],
   ['v3.71.0: MiniShip class in bundle', /var MiniShip = class/.test(s)],
   ['v3.71.0: no stale js/core/CatShipFactory or js/core/MiniShip import path', !/core\/CatShipFactory|core\/MiniShip/.test(s)],
+  // ── v3.80.0 drop rarity ladder + ships every level + ambient spawners ──
+  // (POWERUP_DROPS / DROP_RARITY parsed numerically above — esbuild may
+  // normalize 0.30 → 0.3 / .3, so string matching would be brittle.)
+  ['v3.80.0: POWERUP_DROPS rarity ladder (health .30 / frenzy .20 / shield .22 / mini .14 / crate .07 / life .06 / robot .01)',
+    Math.abs(powerupDrops.health - 0.30) < 1e-9 && Math.abs(powerupDrops.frenzy - 0.20) < 1e-9 &&
+    Math.abs(powerupDrops.shield - 0.22) < 1e-9 && Math.abs(powerupDrops.mini - 0.14) < 1e-9 &&
+    Math.abs(powerupDrops.crate - 0.07) < 1e-9 && Math.abs(powerupDrops.life - 0.06) < 1e-9 &&
+    Math.abs(powerupDrops.robot - 0.01) < 1e-9,
+  ],
+  ['v3.80.0: POWERUP_DROPS weights sum to 1.00',
+    Math.abs(Object.values(powerupDrops).reduce((a, b) => a + b, 0) - 1) < 1e-9,
+  ],
+  ['v3.80.0: robot is super-rare (1%)', powerupDrops.robot === 0.01],
+  ['v3.80.0: DROP_RARITY kill-drop gate (enemy 8% / special 50%)',
+    dropRarity.enemy === 0.08 && dropRarity.special === 0.5,
+  ],
+  ['v3.80.0: Combat.js kill drop reads DROP_RARITY (both branches)',
+    s.includes('DROP_RARITY.special') && s.includes('DROP_RARITY.enemy'),
+  ],
+  ['v3.80.0: SHUTTLES_PER_WAVE = 2', /SHUTTLES_PER_WAVE\s*=\s*2\b/.test(s)],
+  ['v3.80.0: ship egg starts unconditionally every level (old bonus skip gone)',
+    /switchEgg\(this\.game,\s*["']ship["']\)/.test(s) && !s.includes('this.wave % this.bonusEvery !== 0'),
+  ],
+  ['v3.80.0: non-shuttle waves weave shuttles into the spawn queue',
+    /if\s*\(type\s*!==\s*["']shuttle["']\)/.test(s),
+  ],
+  ['v3.80.0: ambient asteroid cadence 2–4s',
+    /ASTEROID_AMBIENT_MIN\s*=\s*2\b/.test(s) && /ASTEROID_AMBIENT_MAX\s*=\s*4\b/.test(s),
+  ],
+  ['v3.80.0: ambient crate cadence 12–20s',
+    /CRATE_AMBIENT_MIN\s*=\s*12\b/.test(s) && /CRATE_AMBIENT_MAX\s*=\s*20\b/.test(s),
+  ],
+  ['v3.80.0: ambient crate spawn (type "crate" power-up)', /type:\s*["']crate["']/.test(s)],
   [`version ${VER}`, s.includes(VER)],
 ];
 

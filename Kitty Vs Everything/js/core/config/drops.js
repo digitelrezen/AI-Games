@@ -1,5 +1,7 @@
 // Filename: config/drops.js
-// Kitty Vs Everything — v3.77.0
+// Kitty Vs Everything — v3.80.0
+// v3.80.0: drop rarity overhaul — POWERUP_DROPS is now a rarity ladder
+// (robot SUPER RARE 1%) + new DROP_RARITY per-source drop chances.
 // E6 modularization (v3.77.0): power-up drop pool + asteroid chain +
 // shuttle drop split out of js/core/config.js (now the compatibility
 // re-export shim — the public surface is unchanged).
@@ -24,21 +26,25 @@ export const ASTEROID = {
 };
 
 // ─── v3.42.0: SHARED POWER-UP DROP POOL (every drop source samples it) ───
-// The five core drops — Health, Frenzy, Shields, Wanted (the mini "Adopt
-// Me!" poster), Extra Life — plus the rare Bender (robot) and the score
-// crate. Enemy kills (Combat.maybeDrop), wave-clear drops (WaveManager),
-// asteroid shatter (AsteroidBonus), the Internet bonus (InternetBonus) and
-// crate destruction (Game.destroyCrate) all roll this one table, so no
-// source is ever missing a core drop. Asteroids are NOT in the pool: they
-// spawn fully off-screen from the wave spawner only (ASTEROID.spawnY).
+// v3.80.0: NEW RARITY TABLE — the pool is now a rarity ladder: Health /
+// Frenzy / Shields are COMMON, the Wanted (mini) poster + score crate are
+// UNCOMMON, Extra Life is RARE, and the Bender 'robot' is SUPER RARE (1%).
+// The robot's real home is the guaranteed ship sources: the Planet Express
+// flyby drops it on destruction and every shuttle kill guarantees the mini
+// poster (SHUTTLE_DROP below). Enemy kills (Combat.maybeDrop), wave-clear
+// drops (WaveManager), asteroid shatter (AsteroidBonus), the Internet bonus
+// (InternetBonus) and crate destruction (Game.destroyCrate) all roll this
+// one table, so no source is ever missing a core drop. Asteroids are NOT in
+// the pool: they spawn fully off-screen from the wave spawner only
+// (ASTEROID.spawnY).
 export const POWERUP_DROPS = {
-  health: 0.12,  // hull repair (PLAYER.HEALTH_RESTORE)
-  frenzy: 0.08,  // 30s all-cooldowns-off
-  shield: 0.16,  // shield restore
-  mini:   0.10,  // "Wanted" poster → mini-ship
-  life:   0.08,  // extra life
-  robot:  0.04,  // Bender easter egg
-  crate:  0.42,  // score crate (destructible — drops again)
+  health: 0.30,  // COMMON — hull repair (PLAYER.HEALTH_RESTORE)
+  frenzy: 0.20,  // COMMON — 30s all-cooldowns-off
+  shield: 0.22,  // COMMON — shield restore
+  mini:   0.14,  // UNCOMMON — "Wanted" poster → mini-ship
+  crate:  0.07,  // UNCOMMON — score crate (destructible — drops again)
+  life:   0.06,  // RARE — extra life
+  robot:  0.01,  // SUPER RARE — Bender easter egg
 };
 
 /** v3.42.0: weighted roll over POWERUP_DROPS (weights sum to 1). */
@@ -51,6 +57,15 @@ export function rollPowerUpDrop() {
   }
   return 'crate';
 }
+
+// v3.80.0: DROP RARITY — the chance a NON-guaranteed source drops anything
+// at all. Guaranteed ship drops (the flyby's robot, the shuttle's mini)
+// never roll these. Regular enemy kills: 8% one-roll; champion / miniboss
+// / boss kills: 50% one-roll.
+export const DROP_RARITY = {
+  enemy: 0.08,
+  special: 0.50,
+};
 
 // v3.77.0: SHUTTLE WAVE EVENT — the Space Shuttle is the wave's "event"
 // species (ENEMY_TYPES.shuttle, species #17: waves 17/36/55/...). Every
