@@ -34,7 +34,7 @@ const tests = [
   ['no player.autoAim (dead reference removed)', !/player\.autoAim/.test(s) && !/this\.autoAim/.test(s)],
   ['BENDER_SCALE 0.5', /BENDER_SCALE\s*=\s*0\.5/.test(s)],
   // ── v3.45.0 clean catship (yellow shield bubble + purple Nova meter) ──
-  ['v3.47.0: shield is a soft yellow GLOW (SHIELD_BUBBLE_RADIUS=100, radial gradient, no hard rim)', /SHIELD_BUBBLE_RADIUS\s*=\s*100/.test(s) && s.includes('createRadialGradient') && s.includes('rgba(255, 213, 79')],
+  ['v3.47.0: shield is a soft yellow GLOW (SHIELD_BUBBLE_RADIUS=110, radial gradient, no hard rim)', /SHIELD_BUBBLE_RADIUS\s*=\s*110/.test(s) && s.includes('createRadialGradient') && s.includes('rgba(255, 213, 79')],
   ['v3.56.0: FC panel + minimized bar yellow theme (scoped amber borders)', s.includes('#fc-dashboard .fc-meter') && s.includes('#5c4a1e') && s.includes('#3d3218')],
   ['v3.45.0: shield-break shatter burst', s.includes('const shieldBefore = this.shield') && s.includes('#ffd54f')],
   ['v3.45.0: Nova meter (superCharge + ultimateCooldown + nova-ready)', s.includes('p.superCharge') && s.includes('p.ultimateCooldown') && s.includes('nova-ready')],

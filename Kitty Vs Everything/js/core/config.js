@@ -256,7 +256,14 @@
 //          enemies / drops / stages). This file is now the compatibility
 //          re-export shim: the public surface (all 24 named exports) is
 //          unchanged, so every importer keeps working untouched.
-export const VERSION = 'v3.78.0';
+// v3.79.0: DOCK ARC COUPLER UPGRADE — the docked mini's arc coupler is now a
+//          procedural pulsing plasma arc (drawDockArc moved to
+//          PlayerShipFx.js + re-exported from PlayerMiniArt.js):
+//          midpoint-displacement crackle, Math.sin energy pulse (core line
+//          width 1.5→3px, alpha swell) and cyan/blue canvas shadow glow.
+//          Milestone version synced across package.json, config.js, main.js,
+//          Game.js, HUD.js and index.html.
+export const VERSION = 'v3.79.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

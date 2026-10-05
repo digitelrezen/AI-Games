@@ -1,5 +1,5 @@
 // Filename: PlayerShipFx.js
-// Kitty Vs Everything — v3.46.0
+// Kitty Vs Everything — v3.79.0
 // Shared cat-ship art FX: front-paw weapon pods, back-paw thruster pods,
 // muzzle flashes. Used by both the main hull (PlayerShipArt) and the
 // docked minis (PlayerMiniArt).
@@ -29,7 +29,15 @@
 //         player request ("just hate the paw print/pods"). The weapon
 //         barrels themselves are UNCHANGED — they still switch per weapon
 //         via anim.weapon.
-export const VERSION = 'v3.72.3';
+// v3.79.0: DOCK ARC COUPLER UPGRADE — drawDockArc moved here from
+//         PlayerMiniArt.js (which now re-exports it) and upgraded from the
+//         flat 3-pass sine bolt to a PROCEDURAL PULSING PLASMA ARC:
+//         midpoint-displacement crackle (recursive subdivision + per-frame
+//         random jitter + sine sway, endpoints pinned to the hulls), a
+//         Math.sin energy pulse that breathes the core line width 1.5→3px
+//         and swells the stroke alpha, and a cyan/blue canvas shadow glow
+//         (shadowBlur / shadowColor) so the tether pops against deep space.
+export const VERSION = 'v3.79.0';
 import { TAU } from '../core/utils.js';
 import { hexA } from '../core/utils.js';
 import { SHIP_GEOMETRY, WEAPONS } from '../core/config.js';
@@ -390,5 +398,84 @@ export function drawThrusterFlame(ctx, fx, fy, flicker, flameFlicker, boostGlow)
   ctx.beginPath();
   ctx.ellipse(fx, fy + 4, 4 * flicker, 5 * flicker, 0, 0, TAU);
   ctx.fill();
+}
+/**
+ * v3.79.0: DOCK ARC COUPLER — procedural pulsing plasma arc from the docked
+ * mini to the main hull (moved here from PlayerMiniArt.js, which re-exports
+ * it). Pure art, no game state: driven by the game clock (mini.game.time).
+ * Drawn BEHIND the ships (PlayerRenderer) so it reads as a tether, not a
+ * projectile.
+ *
+ *  • Midpoint-displacement crackle: the straight mini→hull vector is
+ *    recursively subdivided (3 levels → 8 segments) and every inserted
+ *    midpoint is displaced along its sub-segment normal by a per-frame
+ *    random jitter (± amplitude, halved per level) plus a slow sine sway —
+ *    the bolt re-crackles every frame like real electricity. Endpoints stay
+ *    pinned to the two hulls (the "latch" points).
+ *  • Energy pulse: Math.sin(t) drives the draw — the white-hot core line
+ *    width breathes 1.5→3px while stroke alpha and the cyan shadowBlur
+ *    swell together, so the tether reads as an active energy draw. A
+ *    per-side phase (mini.side) keeps the L/R arcs out of sync.
+ *  • Glow: layered strokes (wide cyan halo → mid plasma → white-hot core)
+ *    with ctx.shadowBlur / shadowColor in cyan/blue so the connection pops
+ *    against deep space.
+ */
+export function drawDockArc(ctx, mini, player) {
+  const t = (mini.game && mini.game.time) || 0;
+  const x0 = mini.x, y0 = mini.y;
+  const x1 = player.x, y1 = player.y;
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1;
+  // ── Energy pulse (Math.sin) — width 1.5→3px, alpha + glow swell ──
+  const pulse = 0.5 + 0.5 * Math.sin(t * 7 + (mini.side || 0) * 1.3);
+  // ── Midpoint-displacement crackle (endpoints pinned to the hulls) ──
+  let pts = [{ x: x0, y: y0 }, { x: x1, y: y1 }];
+  let amp = len * 0.2;
+  for (let level = 0; level < 3; level++) {
+    const next = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const sx = b.x - a.x, sy = b.y - a.y;
+      const sl = Math.hypot(sx, sy) || 1;
+      const snx = -sy / sl, sny = sx / sl; // sub-segment unit normal
+      const off = (Math.random() * 2 - 1) * amp
+        + Math.sin(t * 13 + i * 2.1 + level) * amp * 0.3;
+      next.push(a, { x: (a.x + b.x) / 2 + snx * off, y: (a.y + b.y) / 2 + sny * off });
+    }
+    next.push(pts[pts.length - 1]);
+    pts = next;
+    amp *= 0.5;
+  }
+  const trace = () => {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  };
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // Cyan/blue canvas shadow glow so the tether pops against deep space
+  ctx.shadowColor = 'rgba(0, 229, 255, 0.9)';
+  // 1) Wide cyan halo (outer glow)
+  ctx.shadowBlur = 10 + 10 * pulse;
+  ctx.strokeStyle = `rgba(0, 170, 255, ${0.16 + 0.16 * pulse})`;
+  ctx.lineWidth = 5 + 3 * pulse;
+  trace(); ctx.stroke();
+  // 2) Mid plasma (cyan)
+  ctx.shadowBlur = 6 + 6 * pulse;
+  ctx.strokeStyle = `rgba(0, 229, 255, ${0.45 + 0.35 * pulse})`;
+  ctx.lineWidth = 2.5 + 1.5 * pulse;
+  trace(); ctx.stroke();
+  // 3) White-hot core — pulses 1.5→3px
+  ctx.shadowBlur = 3 + 3 * pulse;
+  ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 + 0.3 * pulse})`;
+  ctx.lineWidth = 1.5 + 1.5 * pulse;
+  trace(); ctx.stroke();
+  // Coupling nodes at each end (the "latch" points)
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = `rgba(180, 240, 255, ${0.75 + 0.25 * pulse})`;
+  const nr = 1.8 + 0.9 * pulse;
+  ctx.beginPath(); ctx.arc(x0, y0, nr, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(x1, y1, nr, 0, TAU); ctx.fill();
+  ctx.restore();
 }
 

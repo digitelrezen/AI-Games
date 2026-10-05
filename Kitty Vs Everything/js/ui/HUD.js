@@ -29,7 +29,9 @@
 // v3.77.0: Version label bumped with the Phase 4 modularization lock-in
 //          (4-phase modular refactor complete — see ARCHITECTURE.md).
 // v3.78.0: A/D control mode (strafe / spin) + pause-button removal.
-export const VERSION = 'v3.78.0';
+// v3.79.0: Version label bumped with the dock arc coupler plasma upgrade
+//          (no HUD changes).
+export const VERSION = 'v3.79.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

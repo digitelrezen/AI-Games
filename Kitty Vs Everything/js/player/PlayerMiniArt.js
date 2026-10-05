@@ -1,5 +1,5 @@
 // Filename: PlayerMiniArt.js
-// Kitty Vs Everything — v3.73.0
+// Kitty Vs Everything — v3.79.0
 // Docked mini-ship art: an EXACT 0.6× clone of the main cat ship.
 // v3.3.0: Shrunken top-down H-pose capsule clone + independent HP bar and
 //         hit-flash (white hull on impact).
@@ -34,9 +34,12 @@
 //          brightness/saturate filter on the blit; the world-space HP bar
 //          grows (36×6) and lifts to -50px to clear the bigger clone.
 //          Themes without a sprite keep the procedural drawCatShip clone.
-export const VERSION = 'v3.73.0';
+// v3.79.0: DOCK ARC COUPLER UPGRADE — drawDockArc moved to PlayerShipFx.js
+//          (procedural pulsing plasma arc: midpoint-displacement crackle +
+//          Math.sin energy pulse + cyan shadow glow) and re-exported here so
+//          PlayerRenderer's import path is unchanged.
+export const VERSION = 'v3.79.0';
 import { drawCatShip } from './PlayerShipArt.js';
-import { TAU } from '../core/utils.js';
 import { PLAYER_THEME_SPRITES, SHIP_GEOMETRY, WEAPONS, MINI_SCALE } from '../core/config.js';
 import { getSprite } from '../core/AssetManager.js';
 import { drawWeaponPaw, drawThrusterFlame, drawMuzzleFlash } from './PlayerShipFx.js';
@@ -136,49 +139,12 @@ export function drawMiniHpBar(ctx, mini) {
 }
 
 /**
- * v3.17.0: Arc-bolt coupling tether — an animated jagged energy bolt that
- * visually "couples" a DOCKED mini to the main hull (keeps them looking
- * latched together). Pure art, no game state: the crackle is driven by the
- * game clock (mini.game.time) so it jitters continuously. Drawn BEHIND the
+ * v3.17.0: Arc-bolt coupling tether — visually "couples" a DOCKED mini to
+ * the main hull (keeps them looking latched together). Drawn BEHIND the
  * ships (PlayerRenderer) so it reads as a tether, not a projectile.
+ * v3.79.0: implementation moved to PlayerShipFx.js — a PROCEDURAL PULSING
+ * PLASMA ARC (midpoint-displacement crackle + Math.sin energy pulse on the
+ * core line width 1.5→3px + cyan/blue canvas shadow glow). Re-exported here
+ * so PlayerRenderer's import path is unchanged.
  */
-export function drawDockArc(ctx, mini, player) {
-  const t = (mini.game && mini.game.time) || 0;
-  const x0 = mini.x, y0 = mini.y;
-  const x1 = player.x, y1 = player.y;
-  const dx = x1 - x0, dy = y1 - y0;
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = -dy / len, ny = dx / len; // unit normal (jitter direction)
-  const SEG = 6;
-  // Build the jagged path — endpoints fixed, interior segments crackle.
-  const pts = [];
-  for (let i = 0; i <= SEG; i++) {
-    const f = i / SEG;
-    const jitter = (i === 0 || i === SEG) ? 0
-      : Math.sin(t * 22 + i * 2.7) * 2.2 + Math.sin(t * 47 + i * 5.3) * 1.4;
-    pts.push({ x: x0 + dx * f + nx * jitter, y: y0 + dy * f + ny * jitter });
-  }
-  const trace = () => {
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  };
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  // Outer glow → mid → bright core (energy bolt)
-  ctx.strokeStyle = 'rgba(120, 220, 255, 0.25)';
-  ctx.lineWidth = 4;
-  trace(); ctx.stroke();
-  ctx.strokeStyle = 'rgba(160, 235, 255, 0.6)';
-  ctx.lineWidth = 2;
-  trace(); ctx.stroke();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-  ctx.lineWidth = 1;
-  trace(); ctx.stroke();
-  // Coupling nodes at each end (the "latch" points)
-  ctx.fillStyle = 'rgba(180, 240, 255, 0.9)';
-  ctx.beginPath(); ctx.arc(x0, y0, 2.2, 0, TAU); ctx.fill();
-  ctx.beginPath(); ctx.arc(x1, y1, 2.2, 0, TAU); ctx.fill();
-  ctx.restore();
-}
+export { drawDockArc } from './PlayerShipFx.js';

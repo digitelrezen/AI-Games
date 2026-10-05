@@ -29,7 +29,11 @@
 // v3.78.0: A/D control mode (strafe default / spin classic —
 //          Settings.controlMode) + the redundant fire-control pause button
 //          is gone (Esc / P / the pause overlay handle pausing).
-export const VERSION = 'v3.78.0';
+// v3.79.0: Dock arc coupler upgraded to a procedural pulsing plasma arc
+//          (drawDockArc in PlayerShipFx.js — midpoint-displacement crackle
+//          + Math.sin energy pulse + cyan shadow glow). Project manifest
+//          version synced with package.json (3.79.0).
+export const VERSION = 'v3.79.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';

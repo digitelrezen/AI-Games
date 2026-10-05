@@ -41,7 +41,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.78.0: A/D strafe/spin control mode + pause-button cleanup, version sync, LevelRegistry surface, asset pipeline, shuttle wave event, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.79.0: dock arc coupler plasma upgrade, A/D strafe/spin control mode, version sync, LevelRegistry surface, asset pipeline, shuttle wave event, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }
