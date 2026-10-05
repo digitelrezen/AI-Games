@@ -39,7 +39,13 @@
 //          constantly, crates fall in occasionally (config/drops.js +
 //          WaveManager.js). Project manifest version synced with
 //          package.json (3.80.0).
-export const VERSION = 'v3.80.0';
+// v3.81.0: Spaceballs One — the rare unstoppable easter-egg ship:
+//          per-wave spawn roll (6%, max 2 per mission) in
+//          WaveManager.startNext, diagonal sweep that obliterates
+//          everything in its path, brake-light stream at the player,
+//          treasure-chest jackpot (one of EVERY power-up) on destruction.
+//          Project manifest version synced with package.json (3.81.0).
+export const VERSION = 'v3.81.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';

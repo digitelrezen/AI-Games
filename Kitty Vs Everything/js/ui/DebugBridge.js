@@ -10,6 +10,8 @@
 //   • subscribe to game events         — debug.onEvent('banner', fn)
 // It never alters gameplay semantics: every command maps to an existing
 // public method (pauseMenu, start, msglog, testAimbot, …).
+// v3.81.0: `spaceballs` slot in the snapshot — Spaceballs One easter-egg
+//          (alive/hp/x/y/destroyed), null-guarded when not on screen.
 // v3.29.0: bender slot in the snapshot — kill-based fields
 //          (aimbotActive/killCount/dialogueStage) replace the v3.24.0
 //          timeLeft countdown (Bender's dialogue is now kill-driven).
@@ -17,7 +19,7 @@
 //          bender (active/onScreen/quip) + ship (alive/progress).
 // v3.16.0: `deploy [on|off]` command (MiniDeploy.toggleFleetDeploy) +
 //          fleetDeployed in the snapshot.
-export const VERSION = 'v3.30.0';
+export const VERSION = 'v3.81.0';
 import { bus } from '../core/EventBus.js';
 import { toggleFleetDeploy } from '../levels/MiniDeploy.js';
 import { WAVE } from '../core/config.js'; // v3.30.0: wave-system count bounds
@@ -86,6 +88,13 @@ export default class DebugBridge {
           hp: Math.max(0, Math.round(g.eggs.ship.hp)),
           pass: g.eggs.ship.pass,
           progress: Math.round(g.eggs.ship.progress * 1000) / 1000,
+        } : null,
+        spaceballs: g.eggs.spaceballs ? { // v3.81.0: Spaceballs One
+          alive: g.eggs.spaceballs.alive,
+          hp: Math.max(0, Math.round(g.eggs.spaceballs.hp)),
+          x: Math.round(g.eggs.spaceballs.x),
+          y: Math.round(g.eggs.spaceballs.y),
+          destroyed: g.eggs.spaceballs.destroyed,
         } : null,
       } : null,
       testAimbot: {

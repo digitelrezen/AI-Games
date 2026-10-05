@@ -31,7 +31,9 @@
 //          matching the v3.42.0 gameplay spawn rule.
 // v3.55.0: crosshair offset slider range widened to 140–340 logical px
 //          (Settings.js LIMITS is the source of truth; setSetting clamps).
-export const VERSION = 'v3.55.0';
+// v3.81.0: "Spaceballs One" dev button — force-spawns the rare
+//          unstoppable easter-egg ship (switchEgg(game, 'spaceballs')).
+export const VERSION = 'v3.81.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -174,6 +176,17 @@ export default class DevPanel {
       shipBtn.onclick = () => {
         switchEgg(g, 'ship'); // traversing flyby (EasterEgg manager)
         bus.emit('banner', { text: 'PLANET EXPRESS, INCOMING', tone: 'good', duration: 1.5 });
+      };
+    }
+    // ─── v3.81.0: Spaceballs One — the rare unstoppable easter-egg ship ───
+    // Force-spawns the ship (no roll): top-right → bottom-left diagonal,
+    // obliterates everything in its path, brake-light stream at the player,
+    // and a treasure-chest jackpot (one of EVERY power-up) on destruction.
+    const spaceballsBtn = document.getElementById('dev-spaceballs');
+    if (spaceballsBtn) {
+      spaceballsBtn.onclick = () => {
+        switchEgg(g, 'spaceballs'); // force-spawn (EasterEgg manager slot)
+        bus.emit('banner', { text: 'SPACEBALLS ONE INBOUND — WE BRAKE FOR NOBODY!', tone: 'warn', duration: 2.5 });
       };
     }
     // ─── v3.11.0: screen bounds toggle (classic wrap vs bounce) ───

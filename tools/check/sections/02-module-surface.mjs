@@ -81,7 +81,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.67.0: + squirrel (squirrel enemy — 19th species).
 // v3.72.0: + cat_black / cat_blue / cat_brown / cat_gray / cat_green /
 //          cat_orange / cat_red / cat_white / cat_yellow (9 catship theme sprites).
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_black', 'cat_blue', 'cat_brown', 'cat_gray', 'cat_green', 'cat_orange', 'cat_red', 'cat_white', 'cat_yellow'];
+// v3.81.0: + spaceballs_one (Spaceballs One easter-egg ship art — "We Brake For Nobody").
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_black', 'cat_blue', 'cat_brown', 'cat_gray', 'cat_green', 'cat_orange', 'cat_red', 'cat_white', 'cat_yellow', 'spaceballs_one'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);

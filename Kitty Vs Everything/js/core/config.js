@@ -268,7 +268,15 @@
 //          width 1.5→3px, alpha swell) and cyan/blue canvas shadow glow.
 //          Milestone version synced across package.json, config.js, main.js,
 //          Game.js, HUD.js and index.html.
-export const VERSION = 'v3.80.0';
+// v3.81.0: SPACEBALLS ONE — the rare unstoppable easter-egg ship
+//          (js/modes/EasterEggs/SpaceballsOne/): per-wave spawn roll in
+//          WaveManager.startNext, diagonal top-right → bottom-left sweep
+//          that obliterates everything in its path, brake-light bolt stream
+//          at the player, and a treasure-chest jackpot (one of EVERY
+//          POWERUP_DROPS type) on destruction. Milestone version synced
+//          across package.json, config.js, main.js, Game.js, HUD.js and
+//          index.html.
+export const VERSION = 'v3.81.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

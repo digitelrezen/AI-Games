@@ -1,6 +1,6 @@
 // Filename: EasterEgg.js
-// Kitty Vs Everything — v3.29.0
-// Easter egg manager: one slot per egg, both can be alive at the same time.
+// Kitty Vs Everything — v3.81.0
+// Easter egg manager: one slot per egg, all can be alive at the same time.
 //   • BenderEasterEgg (v3.24.0, resized v3.28.0, kill-based v3.29.0) —
 //     the rare 'robot' power-up (dropped by the destroyed Planet Express
 //     ship, or the rare enemy drop) summons Bender from the right edge.
@@ -25,14 +25,26 @@
 //     (HP 30); on destruction it explodes, drops a 'robot' power-up
 //     (catch → Bender's kill-based aimbot) and quips
 //     "Bite My Shiney Metal Ass!". Triggered from the dev panel (Drop Ship).
+//   • SpaceballsOne (v3.81.0) — "Spaceballs One", the rare UNSTOPPABLE
+//     easter-egg ship (js/modes/EasterEggs/SpaceballsOne/): spawns off-
+//     screen top-right on a rare per-wave roll (SPACEBALLS_ONE.spawnChance,
+//     capped at SPACEBALLS_ONE.maxPerRun per mission — maybeSpawnSpaceballs,
+//     called from WaveManager.startNext), races diagonally to bottom-left
+//     at SPACEBALLS_ONE.speed, obliterates everything in its path (enemies
+//     / asteroids / crates / all projectiles — "We brake for nobody!"),
+//     fires a brake-light bolt stream at the player, and on destruction
+//     explodes into a treasure-chest jackpot — ONE of EVERY power-up type
+//     (SpaceballsOneLoot.spawnTreasureChest).
 // API: `game.aimbot` is the manager (default export). The v3.24.0 surface
 //      is preserved — `active`/`onScreen`/`killCount`/`t`/`quip` proxy the
 //      Bender egg (MiniShip/PlayerWeapons aim-assist gate, HUD "BENDER x/4"
 //      counter, DebugBridge snapshot), `trigger()` = robot power-up
 //      (dialogue line 0 + audio on trigger), `onEnemyKilled()` = Combat.js
 //      kill hook (v3.29.0), `reset()` = Game.start(), `update()`/`draw()`
-//      run both eggs. `game.eggs = { bender, ship }` exposes the slots for
-//      the debug snapshot; `switchEgg(game, type)` spawns/replaces an egg.
+//      run all eggs. `game.eggs = { bender, ship, spaceballs }` exposes the
+//      slots for the debug snapshot; `switchEgg(game, type)` spawns/replaces
+//      an egg ('bender' | 'ship' | 'spaceballs' | null);
+//      `maybeSpawnSpaceballs(game)` is the rare per-wave roll (v3.81.0).
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
 import {
@@ -47,6 +59,7 @@ import {
   BENDER_SHOULDER_IN_ARM,
 } from './BenderSprite.js';
 import { getShip, SHIP_W, SHIP_H } from './ShipSprite.js'; // v3.27.0
+import { SpaceballsOne, SPACEBALLS_ONE } from '../modes/EasterEggs/SpaceballsOne/index.js'; // v3.81.0
 import PowerUp from '../combat/PowerUp.js'; // v3.28.0: ship destruction drops the 'robot' power-up
 import { TAU, clamp } from './utils.js';
 
@@ -352,7 +365,9 @@ export class ShipEasterEgg {
 /**
  * v3.27.0: spawn/replace an easter egg by type.
  * 'bender' — Bender (robot power-up / manager.trigger()), 'ship' —
- * Planet Express ship (dev panel Drop Ship), null — clear all eggs.
+ * Planet Express ship (dev panel Drop Ship), 'spaceballs' — Spaceballs
+ * One (v3.81.0, dev panel "Spaceballs One" — force-spawn, no roll),
+ * null — clear all eggs.
  */
 export function switchEgg(game, type) {
   const e = game.eggs;
@@ -363,12 +378,36 @@ export function switchEgg(game, type) {
   } else if (type === 'ship') {
     if (e.ship) e.ship.alive = false; // replace a ship still flying
     e.ship = new ShipEasterEgg(game);
+  } else if (type === 'spaceballs') { // v3.81.0: force-spawn (dev button)
+    if (e.spaceballs) e.spaceballs.alive = false; // replace one still racing
+    e.spaceballs = new SpaceballsOne(game);
   } else {
     if (e.bender) e.bender.reset();
     if (e.ship) e.ship.alive = false;
+    if (e.spaceballs) e.spaceballs.alive = false; // v3.81.0
     e.bender = null;
     e.ship = null;
+    e.spaceballs = null; // v3.81.0
   }
+}
+
+/**
+ * v3.81.0: the rare per-wave roll — WaveManager.startNext() calls this at
+ * the top of every combat wave. Spawns Spaceballs One when the roll hits
+ * AND the per-mission cap (SPACEBALLS_ONE.maxPerRun) hasn't been reached.
+ * (Bonus rounds never call startNext, so they stay ship-free.)
+ * @returns {boolean} true when Spaceballs One was spawned
+ */
+export function maybeSpawnSpaceballs(game) {
+  const mgr = game.aimbot;
+  if (!mgr || !game.eggs) return false;
+  if (game.eggs.spaceballs) return false; // one at a time
+  if (mgr.spaceballsCount >= SPACEBALLS_ONE.maxPerRun) return false; // per-mission cap
+  if (Math.random() >= SPACEBALLS_ONE.spawnChance) return false; // rare
+  mgr.spaceballsCount++;
+  switchEgg(game, 'spaceballs');
+  bus.emit('banner', { text: 'SPACEBALLS ONE INBOUND — WE BRAKE FOR NOBODY!', tone: 'warn', duration: 3 });
+  return true;
 }
 
 /**
@@ -381,7 +420,8 @@ export function switchEgg(game, type) {
 export default class EasterEgg {
   constructor(game) {
     this.game = game;
-    this.eggs = { bender: null, ship: null };
+    this.eggs = { bender: null, ship: null, spaceballs: null }; // v3.81.0: + spaceballs slot
+    this.spaceballsCount = 0; // v3.81.0: per-mission spawn counter (cap)
     game.eggs = this.eggs; // v3.27.0: debug snapshot + switchEgg target
   }
 
@@ -406,8 +446,11 @@ export default class EasterEgg {
   reset() {
     if (this.eggs.bender) this.eggs.bender.reset();
     if (this.eggs.ship) this.eggs.ship.alive = false;
+    if (this.eggs.spaceballs) this.eggs.spaceballs.alive = false; // v3.81.0
     this.eggs.bender = null;
     this.eggs.ship = null;
+    this.eggs.spaceballs = null; // v3.81.0
+    this.spaceballsCount = 0; // v3.81.0: per-mission cap resets
   }
 
   update(dt) {
@@ -420,11 +463,16 @@ export default class EasterEgg {
       e.ship.update(dt);
       if (!e.ship.alive) e.ship = null; // flew off — free the slot
     }
+    if (e.spaceballs) { // v3.81.0
+      e.spaceballs.update(dt);
+      if (!e.spaceballs.alive) e.spaceballs = null; // exited or destroyed — free the slot
+    }
   }
 
   draw(ctx) {
     const e = this.eggs;
     if (e.bender) e.bender.draw(ctx);
     if (e.ship) e.ship.draw(ctx);
+    if (e.spaceballs) e.spaceballs.draw(ctx); // v3.81.0
   }
 }

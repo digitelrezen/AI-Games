@@ -25,12 +25,16 @@
 //          combat wave's spawn queue, asteroids stream in constantly
 //          (asteroidTimer, 2–4s) and score crates fall in occasionally
 //          (crateTimer, 12–20s) — all ambient spawns fully off-screen.
-export const VERSION = 'v3.80.0';
+// v3.81.0: SPACEBALLS ONE — maybeSpawnSpaceballs(game) runs the rare
+//          per-wave roll at the top of startNext (SPACEBALLS_ONE.spawnChance,
+//          capped at SPACEBALLS_ONE.maxPerRun per mission via the
+//          EasterEgg manager counter).
+export const VERSION = 'v3.81.0';
 import { ENEMY_TYPES, WAVE, ASTEROID, rollPowerUpDrop } from './config.js'; // v3.42.0: shared drop pool
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
 import { spawnAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0: asteroid chain drops
-import { switchEgg } from './EasterEgg.js'; // v3.42.0: ship flyby in most levels
+import { switchEgg, maybeSpawnSpaceballs } from './EasterEgg.js'; // v3.42.0: ship flyby in most levels
 import { rand } from './utils.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
@@ -114,6 +118,9 @@ export default class WaveManager {
     // exits during EVERY level (v3.42.0's bonus-adjacent skip is gone;
     // bonus rounds stay ship-free because the egg only starts here).
     switchEgg(this.game, 'ship');
+    // v3.81.0: SPACEBALLS ONE — rare roll at the start of every combat
+    // wave (SPACEBALLS_ONE.spawnChance, capped per mission).
+    maybeSpawnSpaceballs(this.game);
     // v3.80.0: reset the ambient spawners for the new combat wave.
     this.asteroidTimer = rand(ASTEROID_AMBIENT_MIN, ASTEROID_AMBIENT_MAX);
     this.crateTimer = rand(CRATE_AMBIENT_MIN, CRATE_AMBIENT_MAX);
