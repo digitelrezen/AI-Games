@@ -182,7 +182,7 @@
 //          start, loop, update, render, collectPowerUp, destroyCrate,
 //          startCombatStage) + thin delegate methods, so the public
 //          surface and all source-level gate pins are unchanged.
-export const VERSION = 'v3.77.0';
+export const VERSION = 'v3.78.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

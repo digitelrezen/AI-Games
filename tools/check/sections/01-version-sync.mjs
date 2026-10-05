@@ -23,6 +23,11 @@ for (const [tag, rel] of [
   ['DevPanel', 'js/ui/DevPanel.js'],                // v3.48.0
   ['Settings', 'js/ui/Settings.js'],                // v3.48.0
   ['Crosshair', 'js/ui/Crosshair.js'],              // v3.48.0
+  ['Keybinds', 'js/input/Keybinds.js'],             // v3.78.0
+  ['MenuKeybinds', 'js/input/MenuKeybinds.js'],     // v3.78.0
+  ['PlayerFlight', 'js/player/PlayerFlight.js'],    // v3.78.0
+  ['PauseMenu', 'js/ui/PauseMenu.js'],              // v3.78.0
+  ['SettingsScreen', 'js/ui/SettingsScreen.js'],    // v3.78.0
   ['EnemyFactory', 'js/enemies/EnemyFactory.js'],   // v3.50.0
   ['BoneYardBonus', 'js/levels/BoneYardBonus.js'],  // v3.76.0
   ['ShuttleEnemy', 'js/enemies/ShuttleEnemy.js'],   // v3.50.0
@@ -55,7 +60,7 @@ const { loadAssets, getSprite, getDims, POWERUP_ASSETS } = await mod('js/core/As
 check(`package.json version is ${pkg.version}`, /\d+\.\d+\.\d+/.test(pkg.version || ''), `got "${pkg.version}"`);
 // Convention: JS modules use "vX.Y.Z", package.json uses "X.Y.Z" — normalize.
 check(`Game.js VERSION ${V.Game} matches package.json ${pkg.version}`, String(V.Game).replace(/^v/, '') === String(pkg.version));
-const EXPECTED_MODULE_VERSIONS = { Player: 'v3.71.0', PlayerWeapons: 'v3.70.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.76.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.76.0', DevPanel: 'v3.55.0', Settings: 'v3.55.0', Crosshair: 'v3.55.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.76.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v3.76.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0', PulseCannon: 'v1.0.0', RailCannon: 'v1.0.0', BaseRocket: 'v1.0.0', StunRockets: 'v1.0.0', NapalmRockets: 'v1.0.0', CatShipFactory: 'v3.71.0', MiniShip: 'v3.73.0', SuperNova: 'v1.0.0' };
+const EXPECTED_MODULE_VERSIONS = { Player: 'v3.71.0', PlayerWeapons: 'v3.70.0', PowerUp: 'v3.59.0', HUDFireControl: 'v3.47.0', WaveManager: 'v3.76.0', Combat: 'v3.42.0', AsteroidBonus: 'v3.42.0', InternetBonus: 'v3.76.0', DevPanel: 'v3.55.0', Settings: 'v3.78.0', Crosshair: 'v3.55.0', Keybinds: 'v3.78.0', MenuKeybinds: 'v3.78.0', PlayerFlight: 'v3.78.0', PauseMenu: 'v3.78.0', SettingsScreen: 'v3.78.0', EnemyFactory: 'v3.33.0', BoneYardBonus: 'v3.76.0', ShuttleEnemy: 'v1.0.0', MothEnemy: 'v1.0.0', BeetleEnemy: 'v1.2.0', BonusLevel: 'v3.76.0', BoneFragment: 'v2.3.0', SpiderEnemy: 'v1.2.0', SnakeEnemy: 'v1.2.0', WolfEnemy: 'v1.2.0', LizardEnemy: 'v1.2.0', DragonEnemy: 'v1.2.0', FalconEnemy: 'v1.2.0', BatEnemy: 'v1.2.0', SquirrelEnemy: 'v1.0.0', BaseWeapon: 'v1.0.0', VulcanCannon: 'v1.0.0', PulseCannon: 'v1.0.0', RailCannon: 'v1.0.0', BaseRocket: 'v1.0.0', StunRockets: 'v1.0.0', NapalmRockets: 'v1.0.0', CatShipFactory: 'v3.71.0', MiniShip: 'v3.73.0', SuperNova: 'v1.0.0' };
 for (const [tag, want] of Object.entries(EXPECTED_MODULE_VERSIONS)) {
   check(`${tag}.js VERSION is ${want}`, V[tag] === want, `got ${V[tag]}`);
 }

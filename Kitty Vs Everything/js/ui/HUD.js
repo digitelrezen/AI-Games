@@ -28,7 +28,8 @@
 //          BENDER_KILLS) while the egg's aim window is open.
 // v3.77.0: Version label bumped with the Phase 4 modularization lock-in
 //          (4-phase modular refactor complete — see ARCHITECTURE.md).
-export const VERSION = 'v3.77.0';
+// v3.78.0: A/D control mode (strafe / spin) + pause-button removal.
+export const VERSION = 'v3.78.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

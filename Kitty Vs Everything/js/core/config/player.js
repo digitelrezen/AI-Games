@@ -3,6 +3,8 @@
 // E6 modularization (v3.77.0): player ship constants (flight physics, P2,
 // hull geometry, minis, themes) split out of js/core/config.js (now the
 // compatibility re-export shim — the public surface is unchanged).
+// v3.78.0: STRAFE_THRUST_MULT — lateral thrust scaling for the 'strafe'
+//          A/D control mode (Settings.controlMode, consumed in PlayerFlight.js).
 
 // ─── PLAYER FLIGHT PHYSICS (Asteroids-style + mouse-look, v3.5.0) ───
 export const PLAYER = {
@@ -11,6 +13,7 @@ export const PLAYER = {
   THRUST: 380,
   BOOST_MULT: 2.4,
   BRAKE_MULT: 2.2,         // S-key active brake = BRAKE_MULT × THRUST while moving forward
+  STRAFE_THRUST_MULT: 1.0, // v3.78.0: 'strafe' mode — A/D lateral thrust = MULT × THRUST, perpendicular to the nose
   DRAG: 1.6,
   MAX_SPEED: 620,
   MOUSE_LOOK_TIMEOUT: 2.5, // seconds of mouse inactivity → mouse-look pauses, heading holds

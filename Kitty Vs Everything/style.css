@@ -94,14 +94,8 @@ body {
    tags are gone; the fire-control panel slots are the single source of truth. */
 #aimbot-label { font-size: 11px; color: #ff5252; font-weight: bold; }
 #version-label { font-size: 10px; opacity: 0.4; }
-/* v3.22.0: pause button lives in the fire-control console header (under TIME) */
-#pause-btn {
-  pointer-events: auto;
-  width: 100%; /* matches the TIME box width (console-right-stack) */
-  background: none; border: 1px solid #444; color: #aaa;
-  font-size: 12px; padding: 1px 8px; cursor: pointer; border-radius: 3px;
-}
-#pause-btn:hover { border-color: #888; color: #fff; }
+/* v3.78.0: the fire-control pause button is GONE (redundant — Esc / P / the
+   pause overlay handle pausing); #pause-btn styles removed. */
 
 /* ─── THERMAL INDICATOR (Vulkan) ─── */
 #thermal-indicator { font-size: 10px; margin-left: 4px; }
@@ -476,9 +470,8 @@ body {
 /* v3.19.0: TIME tucked into the console header's top-right corner */
 .console-title { display: inline-flex; align-items: center; gap: 6px; }
 .console-time { display: inline-flex; align-items: center; gap: 6px; }
-/* v3.22.0: right-side stack in the console header — TIME on top, pause button
-   below it; stretch makes the button exactly as wide as the TIME box. */
-.console-right-stack { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
+/* v3.78.0: .console-right-stack removed with the pause button — the TIME
+   readout sits directly in the console header again. */
 .cl-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cl-time { color: #556; margin-right: 6px; font-size: 10px; }
 .cl-info { color: #9fb4d8; }

@@ -15,7 +15,10 @@
 // v3.47.0: new 'synergy' action (default T / -) — fires the Synergy
 //          Explosion (PlayerFleet.superWeapon) when the color-match meter
 //          (superCharge) is full; replaces the old 10s auto-fire.
-export const VERSION = 'v3.47.0';
+// v3.78.0: rotateLeft/rotateRight labels are now mode-neutral ("Strafe /
+//          Rotate …") — in 'strafe' control mode (Settings.controlMode,
+//          default) A/D slide sideways; in 'spin' mode they rotate (classic).
+export const VERSION = 'v3.78.0';
 import { bus } from '../core/EventBus.js';
 
 const STORAGE_KEY = 'kve-keybinds-v1';
@@ -24,8 +27,8 @@ export const ACTIONS = [
   { id: 'fire',        label: 'Fire (primary)' },
   { id: 'thrust',      label: 'Thrust (forward)' },
   { id: 'brake',       label: 'Brake / Reverse' },
-  { id: 'rotateLeft',  label: 'Rotate Left' },
-  { id: 'rotateRight', label: 'Rotate Right' },
+  { id: 'rotateLeft',  label: 'Strafe / Rotate Left' },
+  { id: 'rotateRight', label: 'Strafe / Rotate Right' },
   { id: 'boost',       label: 'Boost' },
   { id: 'stun',        label: 'Stun Rockets' },
   { id: 'napalm',      label: 'Napalm Rockets' },

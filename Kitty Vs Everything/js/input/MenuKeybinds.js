@@ -20,12 +20,14 @@
 //     table, so they always show their standard labels.
 // v3.47.0: new 'T: Synergy Explosion' row (after 'F: Super') — the
 //          key-triggered Synergy Explosion ('synergy' action, T / -).
-export const VERSION = 'v3.47.0';
+// v3.78.0: WSAD row label is now mode-neutral — A/D strafe or spin depending
+//          on Settings.controlMode (strafe is the default).
+export const VERSION = 'v3.78.0';
 import { bus } from '../core/EventBus.js';
 import { getBinds, codeLabel, DEFAULT_BINDS, MOUSE_BUTTON_NAMES } from './Keybinds.js';
 
 // The four flight actions behind the standard "WSAD" row, in display
-// order: Forward / Back-stop / Spin Left / Spin Right.
+// order: Forward / Back-stop / Strafe-Spin Left / Strafe-Spin Right.
 const WSAD_ACTIONS = ['thrust', 'brake', 'rotateLeft', 'rotateRight'];
 
 // Standard default-set key labels (shown while an action is unmodified).
@@ -42,7 +44,7 @@ const STANDARD = {
 
 // Footer row spec — order + labels of the standard default set.
 const ROWS = [
-  { kind: 'wsad', label: 'Forward, Back/stop, Spin Left, Spin Right' },
+  { kind: 'wsad', label: 'Forward, Back/stop, Strafe/Spin Left, Strafe/Spin Right' },
   { kind: 'action', action: 'stun', label: 'Stun Rockets' },
   { kind: 'action', action: 'napalm', label: 'Napalm' },
   { kind: 'action', action: 'cycleWeapon', label: 'Weapon Switch' },

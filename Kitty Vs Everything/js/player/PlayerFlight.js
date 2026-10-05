@@ -20,7 +20,12 @@
 //          and the spin sensitivity SPLIT: keyboard spin ×
 //          SETTINGS.spinSpeedKeyboard, mouse spin × SETTINGS.spinSpeedMouse
 //          (the legacy shared spin-speed setting is retired).
-export const VERSION = 'v3.14.0';
+// v3.78.0: A/D CONTROL MODE (Settings.controlMode) — 'strafe' (default):
+//          A/D slide the ship sideways, perpendicular to the nose (lateral
+//          thrust × PLAYER.STRAFE_THRUST_MULT); mouse spin stays fully
+//          active. 'spin': the classic behavior (A/D rotate the nose; mouse
+//          spin only when no rotation key is held).
+export const VERSION = 'v3.78.0';
 import { PLAYER } from '../core/config.js';
 import { TAU } from '../core/utils.js';
 import { SETTINGS } from '../ui/Settings.js';
@@ -42,14 +47,18 @@ function spinWithMouse(p, input) {
 
 export function updateFlight(p, dt, input) {
   // ─── ROTATION (delta mouse spin, A/D override) ───
-  // A/D keyboard rotation takes precedence (keyboard-only players);
-  // otherwise raw mouse movement spins the ship. v3.14.0: keyboard spin
+  // v3.78.0: SETTINGS.controlMode decides what A/D do. 'spin' (classic):
+  // keyboard rotation takes precedence over the mouse. 'strafe' (default):
+  // A/D never rotate the nose — mouse spin is always active (the lateral
+  // A/D thrust lives in the STRAFE section below). v3.14.0: keyboard spin
   // scales with SETTINGS.spinSpeedKeyboard, mouse spin with
   // SETTINGS.spinSpeedMouse — the two sensitivities are fully independent.
+  const strafeMode = SETTINGS.controlMode === 'strafe';
   const keyTurn =
     (input.isDownAction('rotateRight') ? 1 : 0) -
     (input.isDownAction('rotateLeft') ? 1 : 0);
-  if (keyTurn !== 0) {
+  const keySpinning = !strafeMode && keyTurn !== 0;
+  if (keySpinning) {
     p.angle += keyTurn * PLAYER.ROTATION_SPEED * SETTINGS.spinSpeedKeyboard * dt;
   } else if (input.mouseIdleTime() < PLAYER.MOUSE_LOOK_TIMEOUT) {
     spinWithMouse(p, input);
@@ -101,6 +110,19 @@ export function updateFlight(p, dt, input) {
     }
     p.vx = latX + cosA * newFwd;
     p.vy = latY + sinA * newFwd;
+  }
+
+  // ─── STRAFE (v3.78.0: 'strafe' control mode — A/D slide sideways) ───
+  // Lateral unit vector = the nose direction rotated +90° (the ship's right
+  // side), scaled by the A/D key state: D strafe-right, A strafe-left.
+  // Runs independently of the forward/reverse thrust above (both together =
+  // diagonal motion), and is damped by the same DRAG below.
+  if (strafeMode && keyTurn !== 0) {
+    const latX = Math.cos(p.angle + Math.PI / 2) * keyTurn;
+    const latY = Math.sin(p.angle + Math.PI / 2) * keyTurn;
+    const accel = PLAYER.THRUST * PLAYER.STRAFE_THRUST_MULT * dt;
+    p.vx += latX * accel;
+    p.vy += latY * accel;
   }
 
   // ─── DRAG ───

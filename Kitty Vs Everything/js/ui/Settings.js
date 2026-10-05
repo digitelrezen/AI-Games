@@ -14,7 +14,9 @@
 // Keybind remapping lives in Keybinds.js (separate persistence, own module).
 // v3.55.0: crosshairOffset range widened to 140–340 logical px (default 140);
 // LIMITS is exported so Crosshair.js clamps the drawn offset to it.
-export const VERSION = 'v3.55.0';
+// v3.78.0: controlMode enum setting (ENUMS) — 'strafe' (default; A/D slide
+// the ship sideways, PlayerFlight.js) or 'spin' (classic keyboard rotation).
+export const VERSION = 'v3.78.0';
 
 const STORAGE_KEY = 'kve-settings-v1';
 
@@ -32,6 +34,14 @@ const BOOLEANS = {
   screenShake: true,    // default ON (classic feel) — dev toggle in the settings panel
   screenBounds: false,  // v3.11.0 dev toggle: bounce walls vs classic wrap
   crosshair: true,      // v3.48.0: procedural aim reticle (Settings → FX, default ON)
+};
+
+// v3.78.0: enum settings — a fixed value set + factory default (single
+// source of truth for load-sanitize / setSetting / resetSettings).
+// controlMode picks what A/D do in PlayerFlight.js: 'strafe' (lateral slide,
+// default) or 'spin' (classic keyboard rotation).
+const ENUMS = {
+  controlMode: { values: ['strafe', 'spin'], def: 'strafe' },
 };
 
 function loadSaved() {
@@ -78,6 +88,8 @@ export const SETTINGS = {
   screenShake:       saved.screenShake !== false,
   screenBounds:      saved.screenBounds === true,
   crosshair:         saved.crosshair !== false,
+  // v3.78.0: A/D control mode — 'strafe' (default) or 'spin' (classic rotation)
+  controlMode:       ENUMS.controlMode.values.includes(saved.controlMode) ? saved.controlMode : ENUMS.controlMode.def,
 };
 
 function persist() {
@@ -94,6 +106,9 @@ export function setSetting(key, value) {
     SETTINGS[key] = clamp(parseFloat(value) ?? LIMITS[key].def, LIMITS[key].min, LIMITS[key].max);
   } else if (key in BOOLEANS) {
     SETTINGS[key] = !!value;
+  } else if (ENUMS[key]) {
+    if (!ENUMS[key].values.includes(value)) return; // v3.78.0: unknown enum value — ignore
+    SETTINGS[key] = value;
   } else {
     return;
   }
@@ -104,5 +119,6 @@ export function setSetting(key, value) {
 export function resetSettings() {
   for (const [k, lim] of Object.entries(LIMITS)) SETTINGS[k] = lim.def;
   for (const [k, def] of Object.entries(BOOLEANS)) SETTINGS[k] = def;
+  for (const [k, e] of Object.entries(ENUMS)) SETTINGS[k] = e.def; // v3.78.0
   persist();
 }

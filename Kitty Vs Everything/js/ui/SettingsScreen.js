@@ -12,7 +12,9 @@
 // v3.31.0: cursor coordination — open() releases the pointer lock (the
 //          panel needs the cursor); close() re-locks it when the mission
 //          is still active (no-op from the menu / while paused).
-export const VERSION = 'v3.48.0';
+// v3.78.0: A/D control mode radio pair (strafe / spin) in the FLIGHT section
+//          — writes Settings.controlMode (see _buildControlMode).
+export const VERSION = 'v3.78.0';
 import { SETTINGS, setSetting, resetSettings } from './Settings.js';
 import {
   ACTIONS, ACTION_LABELS, getBinds, setBind, resetBinds,
@@ -34,6 +36,7 @@ export default class SettingsScreen {
     this._buildKeybinds();
     this._buildSliders();
     this._buildToggles();
+    this._buildControlMode(); // v3.78.0: A/D strafe / spin radio pair
     // v3.20.0: mount the LAN / multiplayer settings panel.
     const netContainer = byId('net-settings');
     if (netContainer) netSettingsUI.attach(game, netContainer);
@@ -174,6 +177,34 @@ export default class SettingsScreen {
       });
       this._syncers.push(() => { crosshair.checked = !!SETTINGS.crosshair; });
     }
+  }
+
+  // ─── v3.78.0: A/D CONTROL MODE (strafe / spin radio pair) ───
+  // 'strafe' (default): A/D slide the ship sideways (PlayerFlight.js).
+  // 'spin': classic keyboard rotation. Mouse spin works in both modes.
+  _buildControlMode() {
+    const strafe = byId('set-control-strafe');
+    const spin = byId('set-control-spin');
+    if (strafe) strafe.addEventListener('change', () => {
+      if (strafe.checked) {
+        setSetting('controlMode', 'strafe');
+        if (this.game.msglog && this.game.state === 'playing') {
+          this.game.msglog.log('A/D CONTROL: STRAFE', 'info', this.game.time);
+        }
+      }
+    });
+    if (spin) spin.addEventListener('change', () => {
+      if (spin.checked) {
+        setSetting('controlMode', 'spin');
+        if (this.game.msglog && this.game.state === 'playing') {
+          this.game.msglog.log('A/D CONTROL: SPIN', 'info', this.game.time);
+        }
+      }
+    });
+    this._syncers.push(() => {
+      if (strafe) strafe.checked = SETTINGS.controlMode === 'strafe';
+      if (spin) spin.checked = SETTINGS.controlMode === 'spin';
+    });
   }
 
   _syncAll() {

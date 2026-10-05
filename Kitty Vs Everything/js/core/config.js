@@ -2,6 +2,10 @@
 // Kitty Vs Everything — v3.77.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.78.0: A/D CONTROL MODE — Settings.controlMode ('strafe' default / 'spin'
+//          classic; PlayerFlight.js + config/player.js STRAFE_THRUST_MULT);
+//          the redundant fire-control pause button is removed (Esc / P / the
+//          pause overlay handle pausing).
 // v3.77.0: PHASE 4 MODULARIZATION LOCK-IN — the 4-phase modular refactor is
 //          complete (v3.74.0 player variants + bosses, v3.75.0 enemy sprite
 //          isolation, v3.76.0 LevelRegistry stage flow). Milestone version
@@ -252,7 +256,7 @@
 //          enemies / drops / stages). This file is now the compatibility
 //          re-export shim: the public surface (all 24 named exports) is
 //          unchanged, so every importer keeps working untouched.
-export const VERSION = 'v3.77.0';
+export const VERSION = 'v3.78.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

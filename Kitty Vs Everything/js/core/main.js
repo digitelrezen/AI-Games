@@ -26,7 +26,10 @@
 //          complete (v3.74.0 js/player/variants + js/bosses, v3.75.0
 //          js/enemies/sprites, v3.76.0 js/levels/LevelRegistry stage flow).
 //          Project manifest version synced with package.json (3.77.0).
-export const VERSION = 'v3.77.0';
+// v3.78.0: A/D control mode (strafe default / spin classic —
+//          Settings.controlMode) + the redundant fire-control pause button
+//          is gone (Esc / P / the pause overlay handle pausing).
+export const VERSION = 'v3.78.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
