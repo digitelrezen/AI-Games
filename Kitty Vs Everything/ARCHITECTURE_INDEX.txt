@@ -9,16 +9,22 @@ Modular refactor timeline (4 phases, complete as of v3.77.0):
   v3.74.0 Phase 1 - js/player/variants/ (5 cat variants) + js/bosses/ (6 boss files)
   v3.75.0 Phase 2 - js/enemies/sprites/ (Wasp2Sprite) + enemy stats via ENEMY_TYPES/TIERS
   v3.76.0 Phase 3 - js/levels/LevelRegistry.js data-driven stage flow (uniform stage interface)
-  v3.77.0 Phase 4 - milestone version sync (package.json/config.js/main.js/Game.js/HUD.js/index.html),
-                     check.mjs [6aa] version-sync gate, docs restructured, final build
+  v3.77.0 Phase 4 - E6 modularization: js/core/config/ (6 domain config submodules;
+                     config.js becomes a re-export shim) + js/core/game/ (4 Game.js
+                     submodules; Game.js becomes a thin public shell with preserved
+                     gate pins); milestone version sync (package.json/config.js/main.js/
+                     Game.js/HUD.js/index.html), check.mjs [6aa] version-sync gate,
+                     docs restructured, final build
 
-File counts: ~120 files total
-  js/   100 ES modules across 8 subfolders (core 19, player 9, player/variants 5,
-        combat 18, enemies 19, enemies/sprites 1, bosses 6, levels 9, input 3, ui 11)
+File counts: ~130 files total
+  js/   110 ES modules across 8 top-level subfolders (core 29 = 19 root + config/ 6
+        + game/ 4, player 9, player/variants 5, combat 18, enemies 19,
+        enemies/sprites 1, bosses 6, levels 9, input 3, ui 11)
   net/  14 files (11 modules + net/data/ 3 E6 data files)
   root  index.html, style.css, build.mjs, package.json, ARCHITECTURE.md, ARCHITECTURE_INDEX.txt
-  tools (AI-GAMES/tools): check.mjs, smoke.mjs, harness.mjs, import-assets.mjs,
-        derive-cat-sprites.mjs, asset-manifest.json
+  tools (shared Z:\AI-GAMES\tools): check.mjs (34 gate sections under check/sections/),
+        validate.mjs, smoke.mjs, harness.mjs, import-assets.mjs, derive-cat-sprites.mjs,
+        asset-manifest.json
 
 =====================================================================
 ROOT (app shell + build)
@@ -37,23 +43,35 @@ package.json          Project manifest + BUILD VERSION SOURCE OF TRUTH (version 
                       harness/lan. v3.77.0.
 
 =====================================================================
-js/core/ - CORE INFRASTRUCTURE & ORCHESTRATOR (19 files)
+js/core/ - CORE INFRASTRUCTURE & ORCHESTRATOR (29 files: 19 root + config/ 6 + game/ 4)
 =====================================================================
 main.js               Entry point: boots Game, wires #start-btn/#retry-btn/#save-score,
                       generates the .ship-option theme row from PLAYER_THEMES, Enter
                       shortcut. Carries project manifest comment + VERSION (v3.77.0).
-Game.js               Orchestrator: state machine, fixed update loop, collision dispatch,
-                      scoring, starfield, render dispatch. W/H mirror the live viewport
+Game.js               THIN PUBLIC SHELL / orchestrator (v3.77.0 E6): state machine, fixed
+                      update loop, collision dispatch, scoring, starfield, render
+                      dispatch, collectPowerUp, destroyCrate, startCombatStage. Delegates
+                      to js/core/game/: StageFlow (stage lifecycle), DisplayPolicy
+                      (pointer lock/cursor/settings gate), GameOver (game-over sequence),
+                      Gameplay (combat housekeeping) - submodules take `game` as first
+                      param, Game.js calls them with `this`. W/H mirror the live viewport
                       (view.viewW/H), re-sync on resize. game.eggs (one slot per egg).
                       v3.76.0: stage flow owned by game.levelRegistry - core loop ticks
                       activeStage.update(dt), advances on activeStage.isComplete();
-                      createCatShip is the single player spawn path.
+                      createCatShip is the single player spawn path. Source-level gate
+                      pins preserved in this file (gates read it directly): VERSION
+                      ([6aa]), LevelRegistry import + activeStage core-loop lines ([6z]),
+                      stunRockets/napalmRockets imports + update(this, dt) ticks ([6w]),
+                      "type: rollPowerUpDrop()" + collectPowerUp prototype ([2]),
+                      shuttle wave event currentSpecies === 'shuttle' / SHUTTLE INTERCEPT
+                      ([6ab]), this.bonus.draw(ctx) hook ([6h]).
 WaveManager.js        v3.76.0: the COMBAT STAGE. Wave definitions + spawn scheduling via
                       EnemyFactory, wave-clear detection, bonus scoring. Completion
                       signal only - bonus-stage selection moved to LevelRegistry.
-config.js             Single source of truth for tunables: GAME dims (native 1280x720
-                      REFERENCE), SHIP_GEOMETRY (catship hardpoints), WEAPONS,
-                      PLAYER_THEMES, ENEMY_TYPES/TIERS, BONUS. v3.77.0: milestone version.
+config.js             COMPATIBILITY RE-EXPORT SHIM (v3.77.0 E6): the domain tunables moved
+                      to js/core/config/ (viewport/player/weapons/enemies/drops/stages);
+                      this file re-exports the full public surface (24 named exports
+                      incl. VERSION = 'v3.77.0') so every importer stays untouched.
 Viewport.js           Dynamic viewport math: computeViewport(winW, winH, dpr) ->
                       viewW/viewH (constrained axis stays native, other stretches -
                       zero letterboxing), crisp buffer scale q (<=3),
@@ -91,6 +109,38 @@ HumanSprite.js        Procedural humanoid art: front-facing chibi person with ri
                       (waves + Bone Yard march).
 ShipSprite.js         GENERATED Planet Express ship easter-egg sprite
                       (node .cline/ship-egg/derive-ship.mjs).
+
+=====================================================================
+js/core/config/ - DOMAIN CONFIG SUBMODULES (6 files, v3.77.0 E6)
+=====================================================================
+viewport.js           TAU + GAME (native 1280x720 REFERENCE dimensions).
+player.js             PLAYER/PLAYER2 physics + HP/shield/lives, MAIN_SHIP_SCALE/
+                      MINI_SCALE, SHIP_GEOMETRY (catship hardpoints), MINI_SHIP,
+                      PLAYER_THEMES (9 themes) + PLAYER_THEME_SPRITES.
+weapons.js            WEAPONS (Vulcan/Plasma/Rail balance), WEAPON_ORDER, ROCKETS
+                      (stun/napalm), FIRE_ZONE.
+enemies.js            ENEMY_TYPES (19-species stats), TIERS (score), WAVE
+                      (16-species wave-system constants).
+drops.js              ASTEROID, POWERUP_DROPS pool + rollPowerUpDrop() shared drop
+                      roll, SHUTTLE_DROP (guaranteed mini-ship on shuttle kill).
+stages.js             BONUS (Bone Yard / Internet round constants),
+                      LIFE_SCORE_INTERVAL.
+
+=====================================================================
+js/core/game/ - GAME ORCHESTRATOR SUBMODULES (4 files, v3.77.0 E6)
+=====================================================================
+StageFlow.js          Stage lifecycle: advanceStage/startBonusStage/startBonusLevel/
+                      startBonusSpecific/restartLevel - driven by LevelRegistry
+                      (STAGE_SEQUENCE cadence + BONUS_STAGES registry).
+DisplayPolicy.js      Display gating: checkViewportChange/wantsPointerLock/syncCursor/
+                      settingsOpen/onPointerLockChange (pointer lock + cursor +
+                      settings-open state).
+GameOver.js           gameOver(game): the game-over sequence (score submission,
+                      leaderboard, DOM).
+Gameplay.js           Combat housekeeping: hitPlayer/destroyAsteroid/checkScoreLives/
+                      cleanup/spawnEnemyBullet.
+                      All submodules take `game` as first parameter; Game.js
+                      delegates with `this`.
 
 =====================================================================
 js/player/ - PLAYER SHIP (9 files) + js/player/variants/ (5 files)
@@ -428,6 +478,22 @@ KEY CROSS-FILE CONTRACTS (refactor hot spots)
   (init/update/isComplete/cleanup) - they never mutate game state directly or call
   waveManager.startNext(). The HUD bonus label comes from levelRegistry.labelFor();
   DevPanel forced bonuses go through levelRegistry.forceBonus().
+- Config split (v3.77.0 E6): js/core/config.js is a compatibility re-export shim
+  over js/core/config/ (viewport/player/weapons/enemies/drops/stages) - the public
+  surface (24 named exports) is unchanged; new tunables go into the matching
+  submodule and are re-exported from config.js.
+- Game.js thin shell (v3.77.0 E6): Game.js delegates to js/core/game/ (StageFlow/
+  DisplayPolicy/GameOver/Gameplay); submodules take `game` as first parameter and
+  Game.js calls them with `this`. Source-level gate pins stay in Game.js (gates
+  read the file directly): VERSION ([6aa]), LevelRegistry import + activeStage
+  core-loop lines ([6z]), stunRockets/napalmRockets imports + update(this, dt)
+  ticks ([6w]), "type: rollPowerUpDrop()" + collectPowerUp prototype ([2]),
+  shuttle wave event currentSpecies === 'shuttle' / SHUTTLE INTERCEPT ([6ab]),
+  this.bonus.draw(ctx) hook ([6h]).
+- Build entry + tooling: esbuild bundles js/core/main.js + the whole import graph
+  (new submodules are picked up automatically); tooling lives in the shared
+  Z:\AI-GAMES\tools (check.mjs gate sections under check/sections/, validate.mjs,
+  smoke.mjs, harness.mjs, import-assets.mjs, derive-cat-sprites.mjs).
 - DOM ids: main.js, Game.js, HUD.js, InputManager.js reference ids that must match
   index.html: #game-canvas, #start-btn, #retry-btn, #save-score, #initials,
   #menu-scores-list, #go-scores-list, #version-label, #touch-ui, #joy-base/

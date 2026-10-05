@@ -1,8 +1,8 @@
 # Kitty Vs Everything — Architecture Roadmap / File Index
 
 > **Workspace:** `Z:\AI-GAMES\Kitty Vs Everything`
-> **Generated:** 2026-10-04 (v3.77.0 Phase 4 — modularization lock-in. The 4-phase modular refactor is complete: **v3.74.0 Phase 1** moved the player cat variants to `js/player/variants/` and the bosses to `js/bosses/`; **v3.75.0 Phase 2** isolated standard enemy sprite pipelines into `js/enemies/sprites/` and standardized enemy stats through `ENEMY_TYPES`/`TIERS`; **v3.76.0 Phase 3** made stage flow data-driven via `js/levels/LevelRegistry.js` (STAGE_SEQUENCE cadence, BONUS_STAGES registry, uniform stage interface — Game.js drives `activeStage.update(dt)` / `isComplete()`, WaveManager is a completion signal only, BonusLevel is a thin adapter); **v3.77.0 Phase 4** locks it in — milestone version synced across package.json / config.js / main.js / Game.js / HUD.js / index.html, check.mjs [6aa] version-sync gate, these docs restructured to the modular tree, final single-file build.)
-> **Layout:** ~120 files — 100 ES modules in `js/` across 8 subfolders (`core`, `player` + `variants`, `combat`, `enemies` + `sprites`, `bosses`, `levels`, `input`, `ui`), 14 in `net/` (11 modules + 3 E6 data files), plus the root app shell (index.html, style.css, build.mjs, package.json); `npm run build` (build.mjs) inlines every module into a single self-contained `Kitty Vs Everything <version>.html` in `Z:\AI-GAMES\Builds\`
+> **Generated:** 2026-10-04 (v3.77.0 Phase 4 — modularization lock-in. The 4-phase modular refactor is complete: **v3.74.0 Phase 1** moved the player cat variants to `js/player/variants/` and the bosses to `js/bosses/`; **v3.75.0 Phase 2** isolated standard enemy sprite pipelines into `js/enemies/sprites/` and standardized enemy stats through `ENEMY_TYPES`/`TIERS`; **v3.76.0 Phase 3** made stage flow data-driven via `js/levels/LevelRegistry.js` (STAGE_SEQUENCE cadence, BONUS_STAGES registry, uniform stage interface — Game.js drives `activeStage.update(dt)` / `isComplete()`, WaveManager is a completion signal only, BonusLevel is a thin adapter); **v3.77.0 Phase 4** locks it in — the E6 modularization (domain config split into `js/core/config/` — 6 submodules, `config.js` becomes a compatibility re-export shim — and the Game.js orchestrator logic split into `js/core/game/` — 4 submodules, `Game.js` becomes a thin public shell with preserved source-level gate pins), milestone version synced across package.json / config.js / main.js / Game.js / HUD.js / index.html, check.mjs [6aa] version-sync gate, these docs restructured to the modular tree, final single-file build.)
+> **Layout:** ~130 files — 110 ES modules in `js/` across 8 top-level subfolders (`core` + `config/` + `game/`, `player` + `variants`, `combat`, `enemies` + `sprites`, `bosses`, `levels`, `input`, `ui`), 14 in `net/` (11 modules + 3 E6 data files), plus the root app shell (index.html, style.css, build.mjs, package.json); `npm run build` (build.mjs) inlines every module into a single self-contained `Kitty Vs Everything <version>.html` in `Z:\AI-GAMES\Builds\`
 > **Stack:** Native ES modules, Canvas 2D, WebAudio, plain DOM, `ws` (LAN relay, Node-only)
 > **Run:** `python -m http.server 8000` → http://localhost:8000  ·  LAN: `npm run lan`
 
@@ -12,7 +12,9 @@
 Kitty Vs Everything/
 ├── index.html · style.css · build.mjs · package.json   app shell + build + version
 ├── js/
-│   ├── core/         19   entry + orchestrator + infrastructure (main, Game, WaveManager, config, assets, audio, FX)
+│   ├── core/         29   entry + orchestrator + infrastructure (main, Game, WaveManager, assets, audio, FX)
+│   │   ├── config/    6   domain config submodules (viewport, player, weapons, enemies, drops, stages)
+│   │   └── game/      4   Game.js submodules (StageFlow, DisplayPolicy, GameOver, Gameplay)
 │   ├── player/        9   player ship (Player, PlayerFlight, PlayerWeapons, PlayerRenderer, art/FX)
 │   │   └── variants/  5   cat-ship variants (yellow / orange / white / grey / brown)
 │   ├── combat/       18   weapons, projectiles, collisions, fleet (CatShipFactory, MiniShip, cannons, rockets)
@@ -28,8 +30,9 @@ Kitty Vs Everything/
 ## Dependency Flow (top → bottom)
 
 ```
-index.html ─▶ js/core/main.js ─▶ js/core/Game.js (orchestrator)
-Game.js ─▶ LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES — v3.76.0)
+index.html ─▶ js/core/main.js ─▶ js/core/Game.js (thin public shell / orchestrator)
+Game.js ─▶ js/core/game/ (StageFlow / DisplayPolicy / GameOver / Gameplay — v3.77.0)
+        ─▶ LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES — v3.76.0)
         ─▶ WaveManager (combat stage: completion signal) ─▶ EnemyFactory ─▶ EnemyBase ─▶ 17 species (+ sprites/)
         ─▶ BonusLevel (adapter) ─▶ BoneYardBonus / InternetBonus
         ─▶ InternetBonus ─▶ BlackCatEntourage / RealTimeClock ─▶ js/bosses (Black Cat / Pink Cat)
@@ -39,7 +42,7 @@ Game.js ─▶ LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES — v3.76.0)
         ─▶ js/input (InputManager) · js/core (AudioSystem / ParticleSystem / Starfield)
 ```
 
-**Foundation:** `js/core/config.js`, `js/core/utils.js`, `js/core/EventBus.js`, `js/core/Entity.js` (imported by nearly every other file)
+**Foundation:** `js/core/config.js` (re-export shim over `js/core/config/` — v3.77.0), `js/core/utils.js`, `js/core/EventBus.js`, `js/core/Entity.js` (imported by nearly every other file)
 
 ## 1. Entry & App Shell (root + js/core/main.js)
 
@@ -49,11 +52,11 @@ Game.js ─▶ LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES — v3.76.0)
 - **package.json** — Project manifest + the BUILD VERSION SOURCE OF TRUTH (`version` drives the output filename). Scripts: `build` / `serve` / `validate` / `check` / `check:full` / `harness` / `lan`.
 - **js/core/main.js** — Entry point: boots Game, wires `#start-btn`/`#retry-btn`/`#save-score`, generates the `.ship-option` theme row from `PLAYER_THEMES`, Enter shortcut; carries the project manifest comment + VERSION.
 
-## 2. js/core/ — Core Infrastructure & Orchestrator (19 files)
+## 2. js/core/ — Core Infrastructure & Orchestrator (29 files: 19 root + config/ 6 + game/ 4)
 
-- **Game.js** — Orchestrator: state machine, fixed update loop, collision dispatch, scoring, starfield, render dispatch. v3.13.0: `W`/`H` mirror the LIVE viewport (`view.viewW/H`) and re-sync on resize — legacy `game.W/H` consumers track ultra-wide. v3.27.0: `game.eggs` (one slot per easter egg). v3.76.0: stage flow is owned by `game.levelRegistry` — the core loop ticks `activeStage.update(dt)` and advances when `activeStage.isComplete()`; `createCatShip` is the single player spawn path.
+- **Game.js** — THIN PUBLIC SHELL / orchestrator (v3.77.0 E6): state machine, fixed update loop, collision dispatch, scoring, starfield, render dispatch, `collectPowerUp`, `destroyCrate`, `startCombatStage`. Delegates to `js/core/game/`: StageFlow (stage lifecycle), DisplayPolicy (pointer lock / cursor / settings gate), GameOver (game-over sequence), Gameplay (combat housekeeping) — submodules take `game` as the first parameter, `Game.js` calls them with `this`. v3.13.0: `W`/`H` mirror the LIVE viewport (`view.viewW/H`) and re-sync on resize — legacy `game.W/H` consumers track ultra-wide. v3.27.0: `game.eggs` (one slot per easter egg). v3.76.0: stage flow is owned by `game.levelRegistry` — the core loop ticks `activeStage.update(dt)` and advances when `activeStage.isComplete()`; `createCatShip` is the single player spawn path. **Source-level gate pins stay in this file** (gates read it directly): `VERSION = 'v3.77.0'` ([6aa]), the `LevelRegistry` import + `activeStage.update(dt)` / `isComplete()` / `advanceStage()` core-loop lines ([6z]), the `stunRockets` / `napalmRockets` imports + `update(this, dt)` ticks ([6w]), the `type: rollPowerUpDrop()` crate-drop line + `Game.prototype.collectPowerUp` ([2]), the shuttle wave event (`currentSpecies === 'shuttle'` / `SHUTTLE INTERCEPT`, [6ab]), and the `this.bonus.draw(ctx)` hook ([6h]).
 - **WaveManager.js** — v3.76.0: the COMBAT STAGE. Wave definitions + spawn scheduling through EnemyFactory, wave-clear detection, bonus scoring. It is now a completion signal only — bonus-stage selection moved to `LevelRegistry.STAGE_SEQUENCE`.
-- **config.js** — Single source of truth for tunables: GAME dims (native 1280×720 REFERENCE since v3.13.0), SHIP_GEOMETRY (catship hardpoints), WEAPONS, PLAYER_THEMES, ENEMY_TYPES/TIERS, BONUS. v3.77.0: milestone version.
+- **config.js** — v3.77.0 (E6): now a COMPATIBILITY RE-EXPORT SHIM. The domain tunables moved into the `js/core/config/` submodules (viewport: TAU/GAME; player: PLAYER/PLAYER2/SHIP_GEOMETRY/MINI_SHIP/PLAYER_THEMES; weapons: WEAPONS/WEAPON_ORDER/ROCKETS/FIRE_ZONE; enemies: ENEMY_TYPES/TIERS/WAVE; drops: ASTEROID/POWERUP_DROPS/rollPowerUpDrop/SHUTTLE_DROP; stages: BONUS/LIFE_SCORE_INTERVAL). The public surface (24 named exports incl. `VERSION = 'v3.77.0'`) is unchanged, so every existing importer keeps working untouched.
 - **Viewport.js** — v3.13.0 dynamic viewport math: `computeViewport(winW, winH, dpr)` → `viewW/viewH` (the constrained axis stays at native GAME size, the other axis stretches to fill the window → zero letterboxing), crisp buffer scale `q` (≤ 3), and `ULTRA_WIDE_PRESETS` (exact native-pixel buffers at 3440×1440 / 5120×1440 @ DPR 1).
 - **ViewScaler.js** — Applies `computeViewport`: CSS `scale()` on `#game-root`, canvas buffer sized `viewW×q × viewH×q`, identity ctx transform (Game.js applies `ctx.scale(q)` per frame). `U` = browser fullscreen.
 - **utils.js** — Shared math helpers: TAU, rand, clamp, dist2, angleTo, pick.
@@ -69,6 +72,26 @@ Game.js ─▶ LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES — v3.76.0)
 - **BenderSprite.js** — Bender pixel-art sprites: easter-egg body + animated cigar arm, the rare 'robot' power-up drop icon (tiny full-body robot, v3.28.0), and the dev-panel robot.
 - **HumanSprite.js** — v3.13.0 procedural humanoid art: front-facing chibi person holding a rifle (4 shirt variants, 6 hair colors, 3 hair styles, 4 skin tones via `randomOutfit()`), walk-cycle leg/arm swing + body bob (`drawHuman(ctx, { r, outfit, walkPhase, flash, aim })`). Used by HumanEnemy (waves + Bone Yard march).
 - **ShipSprite.js** — GENERATED Planet Express ship easter-egg sprite (`node .cline/ship-egg/derive-ship.mjs`).
+
+### 2a. js/core/config/ — Domain Config Submodules (6 files, v3.77.0 E6)
+
+The tunable constants extracted from `config.js` (which became a re-export shim). Each submodule owns one domain; `config.js` re-exports everything so importers stay untouched.
+
+- **viewport.js** — `TAU` + `GAME` (native 1280×720 REFERENCE dimensions).
+- **player.js** — `PLAYER` / `PLAYER2` physics + HP/shield/lives, `MAIN_SHIP_SCALE` / `MINI_SCALE`, `SHIP_GEOMETRY` (catship hardpoints), `MINI_SHIP`, `PLAYER_THEMES` (9 themes) + `PLAYER_THEME_SPRITES`.
+- **weapons.js** — `WEAPONS` (Vulcan / Plasma / Rail balance), `WEAPON_ORDER`, `ROCKETS` (stun / napalm), `FIRE_ZONE`.
+- **enemies.js** — `ENEMY_TYPES` (19-species stats), `TIERS` (score), `WAVE` (16-species wave-system constants).
+- **drops.js** — `ASTEROID`, `POWERUP_DROPS` pool + `rollPowerUpDrop()` shared drop roll, `SHUTTLE_DROP` (guaranteed mini-ship on shuttle kill).
+- **stages.js** — `BONUS` (Bone Yard / Internet round constants), `LIFE_SCORE_INTERVAL`.
+
+### 2b. js/core/game/ — Game Orchestrator Submodules (4 files, v3.77.0 E6)
+
+The Game.js orchestrator logic extracted into focused modules. Every function takes `game` as its first parameter; `Game.js` delegates with `this`.
+
+- **StageFlow.js** — stage lifecycle: `advanceStage` / `startBonusStage` / `startBonusLevel` / `startBonusSpecific` / `restartLevel`, driven by `LevelRegistry` (`STAGE_SEQUENCE` cadence + `BONUS_STAGES` registry).
+- **DisplayPolicy.js** — display gating: `checkViewportChange` / `wantsPointerLock` / `syncCursor` / `settingsOpen` / `onPointerLockChange` (pointer lock + cursor + settings-open state).
+- **GameOver.js** — `gameOver(game)`: the game-over sequence (score submission, leaderboard, DOM).
+- **Gameplay.js** — combat housekeeping: `hitPlayer` / `destroyAsteroid` / `checkScoreLives` / `cleanup` / `spawnEnemyBullet`.
 
 ## 3. js/player/ — Player Ship (9 files + variants/ 5)
 
@@ -213,6 +236,8 @@ Host-authoritative LAN co-op: the **host** browser simulates the full game (P1 +
 ## Key Cross-File Contracts (refactor hot spots)
 
 - **Stage flow (v3.76.0)** — `LevelRegistry.STAGE_SEQUENCE` is the single source of truth for stage cadence; `Game.js` drives `activeStage.update(dt)` / `activeStage.isComplete()`; new bonus stages register in `BONUS_STAGES` and implement the uniform interface (`init`/`update`/`isComplete`/`cleanup`) — they never mutate game state directly or call `waveManager.startNext()`. The HUD bonus label comes from `levelRegistry.labelFor()`; DevPanel forced bonuses go through `levelRegistry.forceBonus()`.
+- **Config split (v3.77.0 E6)** — `js/core/config.js` is a compatibility re-export shim over `js/core/config/` (viewport / player / weapons / enemies / drops / stages); the public surface (24 named exports) is unchanged. New tunables go into the matching submodule and are re-exported from `config.js`.
+- **Game.js thin shell (v3.77.0 E6)** — `Game.js` delegates to `js/core/game/` (StageFlow / DisplayPolicy / GameOver / Gameplay); submodules take `game` as the first parameter and `Game.js` calls them with `this`. Source-level gate pins stay in `Game.js` (gates read the file directly): `VERSION = 'v3.77.0'` ([6aa]), the `LevelRegistry` import + `activeStage.update(dt)` / `isComplete()` / `advanceStage()` core-loop lines ([6z]), the `stunRockets` / `napalmRockets` imports + `update(this, dt)` ticks ([6w]), the `type: rollPowerUpDrop()` crate-drop line + `Game.prototype.collectPowerUp` ([2]), the shuttle wave event (`currentSpecies === 'shuttle'` / `SHUTTLE INTERCEPT`, [6ab]), and the `this.bonus.draw(ctx)` hook ([6h]).
 - **DOM ids** — `main.js`, `Game.js`, `HUD.js`, `InputManager.js` all reference ids that must match `index.html`: `#game-canvas`, `#start-btn`, `#retry-btn`, `#save-score`, `#initials`, `#menu-scores-list`, `#go-scores-list`, `#version-label`, `#touch-ui`, `#joy-base`/`#joy-knob`, `#btn-fire`/`#btn-boost`/...
 - **Theme IDs** — the generated `data-theme` cards ↔ `CatShipFactory` REGISTRY ↔ `PLAYER_THEMES` keys in `config.js` (9 themes: yellow/orange/white/gray/brown/blue/red/green/black; 5 have dedicated variant classes in `js/player/variants/`).
 - **Enemy types** — `EnemyFactory` REGISTRY keys ↔ `ENEMY_TYPES` in `config.js` ↔ `WaveManager` wave definitions ↔ `DevPanel` spawn list.

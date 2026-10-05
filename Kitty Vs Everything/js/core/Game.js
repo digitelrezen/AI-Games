@@ -176,6 +176,12 @@
 //          release version bump only; no Game.js logic changes.
 // v3.77.0: Phase 4 lock-in — milestone version sync (check.mjs [6aa] now
 //          includes Game.js as a version-sync location).
+// v3.77.0: E6 modularization — stage lifecycle / display policy / game-over
+//          sequence / combat housekeeping extracted to js/core/game/
+//          submodules; this file keeps the orchestrator (constructor,
+//          start, loop, update, render, collectPowerUp, destroyCrate,
+//          startCombatStage) + thin delegate methods, so the public
+//          surface and all source-level gate pins are unchanged.
 export const VERSION = 'v3.77.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
@@ -183,11 +189,10 @@ import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline 
 import InputManager from '../input/InputManager.js';
 import ParticleSystem from './ParticleSystem.js';
 import { createCatShip } from '../combat/CatShipFactory.js'; // v3.71.0: modular combat
-import Bullet from '../combat/Bullet.js';
 import PowerUp from '../combat/PowerUp.js'; // v3.42.0: crate destruction drops
 import WaveManager from './WaveManager.js';
 import BonusLevel from '../levels/BonusLevel.js';
-import LevelRegistry, { STAGE_SEQUENCE, BONUS_STAGES } from '../levels/LevelRegistry.js'; // v3.76.0
+import LevelRegistry, { STAGE_SEQUENCE, BONUS_STAGES } from '../levels/LevelRegistry.js'; // v3.76.0 (v3.77.0 E6: BONUS_STAGES now consumed by game/StageFlow.js — import kept for the [6z] pin)
 import EasterEgg from './EasterEgg.js';
 import HUD from '../ui/HUD.js';
 import Leaderboard from '../ui/Leaderboard.js';
@@ -196,7 +201,6 @@ import { runCollisions } from '../combat/Collisions.js';
 import { updateHoming } from '../combat/Homing.js';
 import { stunRockets } from '../combat/StunRockets.js'; // v3.70.0: modular stun rockets (Q/H)
 import { napalmRockets } from '../combat/NapalmRockets.js'; // v3.70.0: modular napalm rockets (E/J)
-import { destroyAsteroid as breakAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0
 import { initStars, updateStars, drawStars } from './Starfield.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
@@ -216,6 +220,11 @@ import DebugBridge from '../ui/DebugBridge.js';
 import coopManager from '../../net/CoopManager.js';
 import clientMirror from '../../net/ClientMirror.js';
 import netSettings from '../../net/NetSettings.js';
+// ─── v3.77.0: E6 modularization — Game.js submodules (delegates below) ───
+import { advanceStage, startBonusStage, startBonusLevel, startBonusSpecific, restartLevel } from './game/StageFlow.js';
+import { checkViewportChange, wantsPointerLock, syncCursor, settingsOpen, onPointerLockChange } from './game/DisplayPolicy.js';
+import { gameOver } from './game/GameOver.js';
+import { hitPlayer, destroyAsteroid, checkScoreLives, cleanup, spawnEnemyBullet } from './game/Gameplay.js';
 
 export default class Game {
   constructor(canvas) {
@@ -289,46 +298,29 @@ export default class Game {
   get viewW() { return this.view.viewW; }
   get viewH() { return this.view.viewH; }
 
-  /** v3.13.0: rebuild the starfield when the logical viewport resizes. */
-  _checkViewportChange() {
-    if (this.view.viewW !== this._starW || this.view.viewH !== this._starH) {
-      this._starW = this.view.viewW;
-      this._starH = this.view.viewH;
-      this.stars = initStars(this.view.viewW, this.view.viewH);
-      this.W = this._starW; // v3.13.0: keep legacy W/H live on resize
-      this.H = this._starH;
-    }
-  }
+  /** v3.13.0: rebuild the starfield when the logical viewport resizes.
+   *  v3.77.0 E6: logic lives in js/core/game/DisplayPolicy.js. */
+  _checkViewportChange() { checkViewportChange(this); }
 
   // ─── v3.31.0: POINTER LOCK POLICY (DOM mechanics live in InputManager.js) ───
+  // v3.77.0 E6: policy logic lives in js/core/game/DisplayPolicy.js —
+  // these delegates keep the public surface (PauseMenu / SettingsScreen
+  // call game._syncCursor()).
 
   /** True while the cursor should be hidden + locked: active LOCAL play
    *  (P1 owns the mouse — the LAN client's P2 never does), unpaused, and
    *  the settings screen closed. Menu / game-over / client never lock. */
-  _wantsPointerLock() {
-    return (this.state === 'playing' || this.state === 'bonus')
-      && !this.paused
-      && !this._settingsOpen();
-  }
+  _wantsPointerLock() { return wantsPointerLock(this); }
 
   /** Lock the pointer for active play / restore the cursor otherwise. */
-  _syncCursor() {
-    if (this._wantsPointerLock()) this.input.requestPointerLock();
-    else this.input.releasePointerLock();
-  }
+  _syncCursor() { syncCursor(this); }
 
-  _settingsOpen() {
-    const s = document.getElementById('settings-screen');
-    return !!(s && !s.classList.contains('hidden'));
-  }
+  _settingsOpen() { return settingsOpen(this); }
 
   /** pointerlockchange callback: an unexpected lock loss mid-mission (ESC /
    *  alt-tab) pauses the game — the browser consumes the Escape keydown
    *  while locked, so PauseMenu's own keydown handler never sees it. */
-  _onPointerLockChange(locked) {
-    if (locked) return;
-    if (this._wantsPointerLock()) this.pauseMenu.toggle();
-  }
+  _onPointerLockChange(locked) { onPointerLockChange(this, locked); }
 
   /** v3.14.0: DebugBridge alias — current wave (reads/writes WaveManager). */
   get wave() { return this.waveManager.wave; }
@@ -389,15 +381,9 @@ export default class Game {
    * v3.76.0: the active stage (combat wave or bonus round) has finished —
    * the LevelRegistry manifest decides what runs next. No stage-type
    * branching in the core loop.
+   * v3.77.0 E6: logic lives in js/core/game/StageFlow.js.
    */
-  advanceStage() {
-    const prev = this.activeStage;
-    this.activeStage = null;
-    if (prev && typeof prev.cleanup === 'function') prev.cleanup();
-    const entry = this.levelRegistry.nextStage();
-    if (entry.type === 'bonus') this.startBonusStage(entry);
-    else this.startCombatStage();
-  }
+  advanceStage() { advanceStage(this); }
 
   /** v3.76.0: start the next standard combat wave (WaveManager). */
   startCombatStage() {
@@ -414,73 +400,26 @@ export default class Game {
     }
   }
 
-  /** v3.76.0: start a bonus round from a resolved manifest entry. */
-  startBonusStage(entry) {
-    entry = this.levelRegistry.resolveEntry(entry); // 'random' → concrete id
-    this.levelRegistry.currentEntry = entry;
-    const stage = this.levelRegistry.createStage(entry, this);
-    this.bonus.setStage(stage);
-    this.activeStage = stage;
-    this.state = 'bonus';
-    this.msglog.log('BONUS LEVEL INBOUND (' + this.levelRegistry.labelFor(entry) + ')', 'warn', this.time);
-    this.enemies = [];
-    this.bullets = this.bullets.filter(b => b.friendly);
-    this.bonusTargets = [];
-    stage.init();
-  }
+  /** v3.76.0: start a bonus round from a resolved manifest entry.
+   *  v3.77.0 E6: logic lives in js/core/game/StageFlow.js. */
+  startBonusStage(entry) { startBonusStage(this, entry); }
 
   // Dev-forced bonus (DevPanel 'dev-bonus'): random bonus, no manifest slot
   // consumed — the next registry entry is a combat wave.
-  startBonusLevel() {
-    if (this.state !== 'playing') return;
-    const entry = this.levelRegistry.forceBonus('random');
-    this.startBonusStage(entry);
-  }
+  // v3.77.0 E6: logic lives in js/core/game/StageFlow.js.
+  startBonusLevel() { startBonusLevel(this); }
 
   // Dev-forced bonus (DevPanel 'dev-bonus-bone' / 'dev-bonus-internet').
-  startBonusSpecific(type) {
-    if (this.state !== 'playing') return;
-    const entry = this.levelRegistry.forceBonus(BONUS_STAGES[type] ? type : 'random');
-    this.startBonusStage(entry);
-  }
+  // v3.77.0 E6: logic lives in js/core/game/StageFlow.js.
+  startBonusSpecific(type) { startBonusSpecific(this, type); }
 
-  /** v3.14.0: pause menu "RESTART LEVEL" — full mission reset, keeps theme. */
-  restartLevel() {
-    const theme = this.player ? this.player.theme : 'yellow';
-    this.start(theme);
-    this.msglog.log('MISSION RESTARTED', 'warn', this.time);
-  }
+  /** v3.14.0: pause menu "RESTART LEVEL" — full mission reset, keeps theme.
+   *  v3.77.0 E6: logic lives in js/core/game/StageFlow.js. */
+  restartLevel() { restartLevel(this); }
 
-  gameOver() {
-    // v3.20.0: co-op — the mission only ends when ALL ships are down.
-    if (coopManager.active && this.players.some(p => !p.dead)) {
-      bus.emit('banner', { text: 'CO-OP CONTINUES', tone: 'warn', duration: 1.5 });
-      return;
-    }
-    this.state = 'gameover';
-    this.paused = false;
-    this._syncCursor(); // v3.31.0: restore the cursor for the game-over screen
-    this.msglog.log('MISSION FAILED', 'bad', this.time);
-    audio.stopMusic(); // v3.14.0: mission music ends with the mission
-    document.getElementById('hud').classList.add('hidden');
-    document.getElementById('fc-dashboard').classList.add('hidden'); // v3.14.0: hide with the HUD
-    document.getElementById('pause-overlay').classList.add('hidden');
-    document.getElementById('gameover-screen').classList.remove('hidden');
-    document.getElementById('final-score').textContent = 'FINAL SCORE: ' + this.score.toLocaleString();
-    document.getElementById('initials').value = '';
-    document.getElementById('save-score').disabled = false;
-    this.leaderboard.render(document.getElementById('go-scores-list'));
-    // v3.11.0: boss-tier (special) enemies are contained to the screen —
-    // on game over they phase out with the round instead of lingering.
-    for (const e of this.enemies) {
-      if (e.special && e.alive) {
-        this.particles.burst(e.x, e.y, { count: 24, color: e.color || '#fff', speed: 260, life: 0.6 });
-        e.escaped = true;
-        e.alive = false;
-      }
-    }
-    audio.gameOver();
-  }
+  /** v3.77.0 E6: the game-over sequence lives in js/core/game/GameOver.js
+   *  (co-op continuation guard, leaderboard, DOM overlay, pointer restore). */
+  gameOver() { gameOver(this); }
 
   loop(ts) {
     const dt = Math.min(0.05, (ts - this.lastTs) / 1000 || 0.016);
@@ -533,10 +472,8 @@ export default class Game {
     this.hud.update(dt);
   }
 
-  hitPlayer(dmg, player = this.player) {
-    if (this.godMode) return;
-    if (player) player.hit(dmg);
-  }
+  /** v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
+  hitPlayer(dmg, player = this.player) { hitPlayer(this, dmg, player); }
 
   collectPowerUp(pw, player = this.player) {
     const p = player || this.player;
@@ -591,33 +528,18 @@ export default class Game {
     audio.explosion();
   }
 
-  /** v3.11.0: destructible asteroid chain power-up (AsteroidBonus.js). */
-  destroyAsteroid(a) { breakAsteroid(this, a); }
+  /** v3.11.0: destructible asteroid chain power-up (AsteroidBonus.js).
+   *  v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
+  destroyAsteroid(a) { destroyAsteroid(this, a); }
 
-  checkScoreLives() {
-    if (this.score >= this.nextLifeAt) {
-      this.nextLifeAt += LIFE_SCORE_INTERVAL;
-      this.player.lives++;
-      bus.emit('banner', { text: 'SCORE BONUS: EXTRA LIFE!', tone: 'good', duration: 2 });
-      audio.powerup();
-    }
-  }
+  /** v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
+  checkScoreLives() { checkScoreLives(this); }
 
-  cleanup() {
-    this.enemies = this.enemies.filter(e => e.alive);
-    this.bullets = this.bullets.filter(b => b.alive);
-    this.powerups = this.powerups.filter(p => p.alive);
-    this.bonusTargets = this.bonusTargets.filter(bt => bt.alive);
-    this.fireZones = this.fireZones.filter(z => z.alive); // v3.11.0
-  }
+  /** v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
+  cleanup() { cleanup(this); }
 
-  spawnEnemyBullet(x, y, angle, speed, damage, color) {
-    this.bullets.push(new Bullet({
-      x, y,
-      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-      damage, color, friendly: false, life: 6, radius: 6,
-    }));
-  }
+  /** v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
+  spawnEnemyBullet(x, y, angle, speed, damage, color) { spawnEnemyBullet(this, x, y, angle, speed, damage, color); }
 
   render() {
     const ctx = this.ctx;
