@@ -4,7 +4,7 @@
 // Packages the whole project (index.html + style.css + the entire ES-module
 // graph starting at main.js) into ONE self-contained
 // "Kitty Vs Everything <version>.html" file in the external Builds folder
-// (C:\AI-Games\Builds with the standard layout) — no server needed.
+// (C:\Dev\AI-GAMES\Builds) — no server needed.
 //
 // Usage:
 //   node build.mjs            → Builds\Kitty Vs Everything <ver>.html (readable)
@@ -33,8 +33,8 @@ const CSS = 'style.css';
 const minify = process.argv.includes('--minify');
 
 // ── Output location: external Builds folder (kept OUT of the project) ──────
-// Resolves to C:\AI-Games\Builds with the standard layout (the project lives
-// at C:\AI-Games\Kitty Vs Everything). Created automatically if missing.
+// Resolves to C:\Dev\AI-GAMES\Builds on this machine (the project lives at
+// C:\Dev\AI-GAMES\Kitty Vs Everything). Created automatically if missing.
 const BUILD_DIR = path.resolve(ROOT, '..', 'Builds');
 // Version is pulled dynamically from package.json (the source of truth).
 const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
