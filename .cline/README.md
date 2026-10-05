@@ -1,7 +1,7 @@
-# .cline — AI Agent Sandbox (C:\AI-Games workspace)
+# .cline — AI Agent Sandbox (C:\Dev\AI-GAMES workspace)
 
 Dedicated sandbox directory for AI agent scratch work across all games in
-`C:\AI-Games`. Set as a workspace convention on 2026-09-26.
+`C:\Dev\AI-GAMES`. Set as a workspace convention on 2026-09-26.
 
 ## What goes here (and ONLY here)
 - Scratchpad prototyping and experiments
@@ -11,7 +11,7 @@ Dedicated sandbox directory for AI agent scratch work across all games in
 - Leftover / backup files (e.g. `_orig_*` file snapshots)
 
 ## Rules
-1. Never drop scratch, experimental, or leftover files into `C:\AI-Games`
+1. Never drop scratch, experimental, or leftover files into `C:\Dev\AI-GAMES`
    root or into any game's root directory (e.g. `Everything Vs Kitty\`).
 2. Organize by project/task in subfolders as needed, e.g.
    `evk-v3.16/`, `kitty-wars-art/`.

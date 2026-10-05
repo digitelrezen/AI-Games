@@ -1,4 +1,4 @@
-// C:\AI-Games\.cline\test-e6.mjs — E6 codec + NetProtocol round-trip test (Node, no DOM)
+// C:\Dev\AI-GAMES\.cline\test-e6.mjs — E6 codec + NetProtocol round-trip test (Node, no DOM)
 import E6 from '../Everything Vs Kitty/net/E6.js';
 import NetProtocol from '../Everything Vs Kitty/net/NetProtocol.js';
 import fs from 'node:fs';
@@ -21,7 +21,7 @@ console.log('[E6] round-trip (escaping)');
 
 console.log('[E6] validate shipped data files');
 {
-  const base = 'c:/AI-Games/Everything Vs Kitty/net/data/';
+  const base = 'c:/Dev/AI-GAMES/Everything Vs Kitty/net/data/';
   const mp = fs.readFileSync(base + 'multiplayer.config.e6', 'utf8');
   ok(E6.validate(mp, 'netsettings', ['role', 'hosting', 'port', 'hostIp', 'syncRate']).ok, 'multiplayer.config.e6 valid');
   const p1 = fs.readFileSync(base + 'player1.profile.e6', 'utf8');

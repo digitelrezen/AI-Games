@@ -4,7 +4,7 @@
 // a cat behind bars — rendered as 28×28 pixel art.
 //
 // The PNG is embedded below as base64 (267 bytes, generated in the
-// C:\AI-Games\.cline\adoptme-poster sandbox) so the sprite works in BOTH the
+// C:\Dev\AI-GAMES\.cline\adoptme-poster sandbox) so the sprite works in BOTH the
 // dev server (native ES modules) and the single-file standalone build
 // (game-standalone.html runs from a double-click — no server, no .assets
 // folder next to it). Same approach as Wasp2Sprite.js.
