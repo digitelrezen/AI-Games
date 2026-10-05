@@ -214,7 +214,7 @@ const js = [
   '// GENERATED FILE — regenerate with: node .cline/ship-egg/derive-ship.mjs',
   '// Planet Express ship easter-egg sprite (v3.25.0).',
   '//',
-  '// Source: Z:\\Dev\\AI-GAMES\\.assets\\Futurama Ship pixel_art_large.png (935x500)',
+  '// Source: C:\\Dev\\AI-GAMES\\.assets\\Futurama Ship pixel_art_large.png (935x500)',
   '// Pipeline: crop to content bbox (30,144) 844x319 -> downsample /2 (nearest)',
   '//           -> ' + W + 'x' + H + '. Nose faces +x (right); no rotation needed.',
   '//',

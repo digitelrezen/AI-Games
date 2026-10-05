@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-const base = 'z:/Dev/AI-GAMES/Kitty Vs Everything/';
+const base = 'C:/Dev/AI-GAMES/Kitty Vs Everything/';
 for (const f of ['config.js', 'package.json', 'index.html']) {
   const s = fs.readFileSync(base + f, 'utf8');
   const m = s.match(/VERSION\s*=\s*['"][^'"]+['"]/g);

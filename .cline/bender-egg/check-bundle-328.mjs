@@ -4,7 +4,7 @@
 // Run: node .cline/bender-egg/check-bundle-328.mjs
 import { readFileSync } from 'node:fs';
 
-const BUNDLE = 'z:/Dev/AI-GAMES/Builds/Kitty Vs Everything 3.28.0.html';
+const BUNDLE = 'C:/Dev/AI-GAMES/Builds/Kitty Vs Everything 3.28.0.html';
 const s = readFileSync(BUNDLE, 'utf8');
 let failures = 0;
 const t = (cond, msg) => {

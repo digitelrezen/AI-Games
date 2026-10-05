@@ -3,7 +3,7 @@
 // Runtime asset manager for the shared transparent-PNG pipeline.
 //
 // The heavy lifting happens at BUILD time in tools/import-assets.mjs, which
-// discovers + validates the PNGs in Z:\Dev\AI-GAMES\.assets (via
+// discovers + validates the PNGs in C:\Dev\AI-GAMES\.assets (via
 // tools/asset-manifest.json), normalizes them (≤128px, 8-bit RGBA) and
 // generates AssetSprites.js (embedded base64 + dimensions). This module
 // decodes that registry into draw-ready canvases with PER-KEY ERROR

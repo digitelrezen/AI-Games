@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import path from 'node:path';
 
-const p = path.resolve('Z:/Dev/AI-GAMES/.assets/Rat pixel_art.png');
+const p = path.resolve('C:/Dev/AI-GAMES/.assets/Rat pixel_art.png');
 const b = readFileSync(p);
 if (b.readUInt32BE(0) !== 0x89504e47 || b.readUInt32BE(4) !== 0x0d0a1a0a) throw new Error('not a PNG');
 let off = 8, w = 0, h = 0, depth = 0, ctype = 0, interlace = 0;

@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
-const ROOT = 'z:/Dev/AI-GAMES';
+const ROOT = 'C:/Dev/AI-GAMES';
 const JS = ROOT + '/Kitty Vs Everything/BenderSprite.js';
 const JSONF = ROOT + '/.cline/bender-egg/sprites-v2.json';
 

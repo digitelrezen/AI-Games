@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import path from 'node:path';
 
-const SRC = path.resolve('Z:/Dev/AI-GAMES/.assets/Robot-Bender Pixel Art.png'); // .assets moved up to AI-GAMES root
+const SRC = path.resolve('C:/Dev/AI-GAMES/.assets/Robot-Bender Pixel Art.png'); // .assets moved up to AI-GAMES root
 const buf = readFileSync(SRC);
 
 function decodePng(b) {

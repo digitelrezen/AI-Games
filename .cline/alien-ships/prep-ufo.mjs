@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 
-const ASSETS = 'Z:/Dev/AI-GAMES/.assets';
+const ASSETS = 'C:/Dev/AI-GAMES/.assets';
 const JOBS = [
   { src: 'Alien-UFO1-pixel_art.png', dst: 'Alien-UFO1-transparent.png' },
   { src: 'Alien-UFO2-pixel-art.png', dst: 'Alien-UFO2-transparent.png' },

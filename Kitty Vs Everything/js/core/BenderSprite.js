@@ -4,7 +4,7 @@
 // rare 'robot' power-up drop icon (tiny full-body robot, v3.28.0) and the
 // head (legacy, kept for the headless checks).
 //
-// Derived from Z:DevAI-GAMES.assetsRobot-Bender Pixel Art.png (moved up one level) with pure pixel math
+// Derived from C:\Dev\AI-GAMES\.assets\Robot-Bender Pixel Art.png (moved up one level) with pure pixel math
 // (derive-bender-v2.mjs):
 //   body — full body, cigar-arm region cut out (easter egg)
 //   arm  — cigar arm, pre-rotated so shoulder→hand points along +x,

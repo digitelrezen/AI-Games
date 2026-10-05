@@ -5,9 +5,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
-const ASSETS = 'z:/Dev/AI-GAMES/.assets';
+const ASSETS = 'C:/Dev/AI-GAMES/.assets';
 const FILES = ['Alien-UFO1-pixel_art.png', 'Alien-UFO2-pixel-art.png'];
-const OUT_TXT = 'z:/Dev/AI-GAMES/.cline/alien-ships/ufo-preview.txt';
+const OUT_TXT = 'C:/Dev/AI-GAMES/.cline/alien-ships/ufo-preview.txt';
 
 // ─── Minimal PNG decoder (RGBA8, filters 0-4) ─────────────────────────────
 function crc32(buf) {

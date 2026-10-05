@@ -12,10 +12,10 @@ Placeholders: `<key>` = manifest key (e.g. `shuttle`), `<NewEnemy>` = class name
 
 ## 0. Conventions & prerequisites
 
-- Workspace root (git): `Z:\Dev\AI-GAMES` → remote `origin main`
+- Workspace root (git): `C:\Dev\AI-GAMES` → remote `origin main`
   (https://github.com/digitelrezen/AI-Games.git). Run ALL git commands from the root.
-- Game folder: `Z:\Dev\AI-GAMES\Kitty Vs Everything`
-- Shared art folder: `Z:\Dev\AI-GAMES\.assets` (transparent PNGs only)
+- Game folder: `C:\Dev\AI-GAMES\Kitty Vs Everything`
+- Shared art folder: `C:\Dev\AI-GAMES\.assets` (transparent PNGs only)
 - Single-file build: `node build.mjs` (from the game folder) →
   `Builds\Kitty Vs Everything <ver>.html` (version read from `package.json`)
 - Pick the next minor version up front and sync it EVERYWHERE (Step 9).
@@ -25,7 +25,7 @@ Placeholders: `<key>` = manifest key (e.g. `shuttle`), `<NewEnemy>` = class name
 ## STEP 1 — Asset: manifest registration + import script
 
 ### 1.1 Drop the art into the shared folder
-- File: `Z:\Dev\AI-GAMES\.assets\<Your-Art-file>.png`
+- File: `C:\Dev\AI-GAMES\.assets\<Your-Art-file>.png`
 - Hard requirements enforced by the importer (exit 1 on failure):
   - valid PNG signature + parseable IHDR
   - 8-bit depth, **color type 6 (RGBA)** — transparency is mandatory
@@ -371,7 +371,7 @@ node tools/smoke.mjs                     # optional headless boot smoke test
 
 ## STEP 11 — Review, stage, commit, push
 
-From the workspace root (`Z:\Dev\AI-GAMES`):
+From the workspace root (`C:\Dev\AI-GAMES`):
 ```
 git status --porcelain                   # review: expect the files from Steps 1–9
 git add <explicit paths>                 # or git add -A after review

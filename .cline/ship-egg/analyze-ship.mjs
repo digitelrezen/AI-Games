@@ -5,8 +5,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
-const SRC = 'z:/Dev/AI-GAMES/.assets/Futurama Ship pixel_art_large.png'; // .assets moved up to AI-GAMES root
-const OUT_TXT = 'z:/Dev/AI-GAMES/.cline/ship-egg/ship-preview.txt';
+const SRC = 'C:/Dev/AI-GAMES/.assets/Futurama Ship pixel_art_large.png'; // .assets moved up to AI-GAMES root
+const OUT_TXT = 'C:/Dev/AI-GAMES/.cline/ship-egg/ship-preview.txt';
 
 // ─── Minimal PNG decoder (RGBA8, filters 0-4) ─────────────────────────────
 function crc32(buf) {

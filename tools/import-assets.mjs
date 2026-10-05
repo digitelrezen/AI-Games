@@ -2,7 +2,7 @@
 // tools/import-assets.mjs — Kitty Vs Everything v3.33.0
 // Robust asset-import & mapping utility for the shared art folder.
 //
-// Discovers, validates and maps transparent PNGs out of Z:\Dev\AI-GAMES\.assets
+// Discovers, validates and maps transparent PNGs out of C:\Dev\AI-GAMES\.assets
 // (resolved RELATIVE to this file — no hardcoded UNC paths) and generates the
 // game's embedded sprite registry:
 //   "Kitty Vs Everything/js/core/AssetSprites.js"
@@ -287,7 +287,7 @@ const lines = [];
 lines.push('// Filename: AssetSprites.js');
 lines.push('// GENERATED FILE — do not edit by hand.');
 lines.push('// Regenerate: node tools/import-assets.mjs   (tools/asset-manifest.json → this registry)');
-lines.push('// Source art: Z:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, normalized to ≤128px).');
+lines.push('// Source art: C:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, normalized to ≤128px).');
 lines.push('// The runtime manager is js/core/AssetManager.js (decode + per-key');
 lines.push('// error isolation + null → procedural fallback in the consumers).');
 lines.push('');

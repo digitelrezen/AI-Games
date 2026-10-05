@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import path from 'node:path';
 
-const p = path.resolve('Z:/Dev/AI-GAMES/.assets/Rat pixel_art.png');
+const p = path.resolve('C:/Dev/AI-GAMES/.assets/Rat pixel_art.png');
 const b = readFileSync(p);
 let off = 8, w = 0, h = 0, depth = 0, ctype = 0, interlace = 0;
 const idat = [];

@@ -14,9 +14,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 
-const SRC = 'z:/Dev/AI-GAMES/.assets/Robot-Bender Pixel Art.png'; // .assets moved up to AI-GAMES root
-const OUT_JSON = 'z:/Dev/AI-GAMES/.cline/bender-egg/sprites-v2.json';
-const OUT_TXT = 'z:/Dev/AI-GAMES/.cline/bender-egg/previews-v2.txt';
+const SRC = 'C:/Dev/AI-GAMES/.assets/Robot-Bender Pixel Art.png'; // .assets moved up to AI-GAMES root
+const OUT_JSON = 'C:/Dev/AI-GAMES/.cline/bender-egg/sprites-v2.json';
+const OUT_TXT = 'C:/Dev/AI-GAMES/.cline/bender-egg/previews-v2.txt';
 
 const DERIVE = process.argv.includes('--derive');
 

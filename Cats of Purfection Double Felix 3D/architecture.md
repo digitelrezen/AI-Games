@@ -13,7 +13,7 @@
 | **Theme** | Genetically Modified Super Cats with 9 lives |
 | **Tone** | Violent & explicit — destructible bodies, blood, gore (see §7) |
 | **Engine** | Babylon.js (WebGL) + TypeScript + Vite |
-| **Project folder** | `Z:\Dev\AI-GAMES\Cats of Purfection Double Felix 3D` |
+| **Project folder** | `C:\Dev\AI-GAMES\Cats of Purfection Double Felix 3D` |
 | **Docs sandbox** | `C:\AI-Games\.cline` |
 
 ---

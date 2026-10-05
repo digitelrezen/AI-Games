@@ -5,7 +5,7 @@
 // Run: node make-bender-sprite.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const ROOT = 'z:/Dev/AI-GAMES';
+const ROOT = 'C:/Dev/AI-GAMES';
 const SRC_JSON = ROOT + '/.cline/bender-egg/sprites-v2.json';
 const OUT_JS = ROOT + '/Kitty Vs Everything/BenderSprite.js';
 
@@ -18,7 +18,7 @@ const header = `// Filename: BenderSprite.js
 // rare 'robot' power-up drop icon (tiny full-body robot, v3.28.0) and the
 // head (legacy, kept for the headless checks).
 //
-// Derived from Z:\Dev\AI-GAMES\.assets\Robot-Bender Pixel Art.png (moved up one level) with pure pixel math
+// Derived from C:\Dev\AI-GAMES\.assets\Robot-Bender Pixel Art.png (moved up one level) with pure pixel math
 // (derive-bender-v2.mjs):
 //   body — full body, cigar-arm region cut out (easter egg)
 //   arm  — cigar arm, pre-rotated so shoulder→hand points along +x,

@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import path from 'node:path';
 
-const ASSETS = path.resolve('Z:/Dev/AI-GAMES/.assets');
+const ASSETS = path.resolve('C:/Dev/AI-GAMES/.assets');
 const FILES = [
   'Wasp Update pixel_art.png',
   'Wasp 1 Pixel Art.png',

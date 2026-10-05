@@ -3,7 +3,7 @@
 // GENERATED FILE — regenerate with:  node tools/derive-cat-sprites.mjs
 //
 // Black Cat enemy sprite (v3.32.0): the pixel-art cat from
-// `Z:\Dev\AI-GAMES\.assets\black-cat-pixel-art.png` (724×715, 8-bit RGBA, real
+// `C:\Dev\AI-GAMES\.assets\black-cat-pixel-art.png` (724×715, 8-bit RGBA, real
 // alpha channel — no white-background keying needed).
 //
 // Generation pipeline (Node, at generation time — not at runtime):

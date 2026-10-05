@@ -12,8 +12,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 import path from 'node:path';
 
-const SRC = path.resolve('Z:/Dev/AI-GAMES/.assets/Robot-Bender Pixel Art.png'); // .assets moved up to AI-GAMES root
-const OUT = path.resolve('Z:/Dev/AI-GAMES/.cline/bender-egg');
+const SRC = path.resolve('C:/Dev/AI-GAMES/.assets/Robot-Bender Pixel Art.png'); // .assets moved up to AI-GAMES root
+const OUT = path.resolve('C:/Dev/AI-GAMES/.cline/bender-egg');
 const buf = readFileSync(SRC);
 
 // ── minimal PNG decoder (RGBA, 8-bit, non-interlaced) ─────────────────────
