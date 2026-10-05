@@ -12,7 +12,7 @@ Dedicated sandbox directory for AI agent scratch work across all games in
 
 ## Rules
 1. Never drop scratch, experimental, or leftover files into `C:\Dev\AI-GAMES`
-   root or into any game's root directory (e.g. `Everything Vs Kitty\`).
+   root or into any game's root directory (e.g. `Kitty Vs Everything\`).
 2. Organize by project/task in subfolders as needed, e.g.
    `evk-v3.16/`, `kitty-wars-art/`.
 3. Clean up or archive when a task is done.

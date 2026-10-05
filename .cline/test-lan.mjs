@@ -1,6 +1,6 @@
 // Test the LAN relay server: connect a host + client, verify message routing.
 import { createRequire } from 'module';
-const require = createRequire('c:/Dev/AI-GAMES/Everything Vs Kitty/package.json');
+const require = createRequire('c:/Dev/AI-GAMES/Kitty Vs Everything/package.json');
 const WebSocket = require('ws');
 
 const URL = 'ws://127.0.0.1:8765';
