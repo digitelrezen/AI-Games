@@ -42,7 +42,9 @@
 //          changes — the v3.88.0 global CSS rule was reverted and
 //          image-rendering is scoped to #game-canvas only; the hangar
 //          hero canvas keeps default bilinear smoothing).
-export const VERSION = 'v3.88.1';
+// v3.89.0: Version label bumped with the crisp 1:1 hangar preview (no
+//          HUD changes — the fix lives in main.js + style.css).
+export const VERSION = 'v3.89.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

@@ -311,7 +311,19 @@
 //          resize) and the offscreen sprite buffers (AssetManager.js,
 //          PowerUp.js). Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.88.1';
+// v3.89.0: CRISP HANGAR PREVIEW (1:1 INTEGER MAPPING) — the hangar
+//          carousel hero canvas (main.js) returns to nearest-neighbor,
+//          but correctly: each cat sprite's CONTENT box (alpha bbox,
+//          measured once per ship and cached in hangarMetrics) is
+//          blitted at the integer HANGAR_K scale where one native pixel
+//          = one CSS pixel (2×2 blocks at DPR 2), content-centered on
+//          the shared stage center (160, 110) — one scale, one bounding
+//          box, one center for all 9 ships (White Cat reference); no
+//          bilinear blur, no non-integer jaggedness. style.css scopes
+//          image-rendering: pixelated/crisp-edges to #game-canvas +
+//          #hangar-canvas. Milestone version synced across package.json,
+//          config.js, main.js, Game.js, HUD.js and index.html.
+export const VERSION = 'v3.89.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

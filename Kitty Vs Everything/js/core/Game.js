@@ -210,7 +210,14 @@
 //          the hangar hero canvas and all UI return to normal smooth
 //          rendering. Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.88.1';
+// v3.89.0: CRISP HANGAR PREVIEW (1:1 INTEGER MAPPING) — the hangar hero
+//          canvas (main.js) rejoins the crisp set: its cat sprites are
+//          blitted at the integer HANGAR_K 1:1 scale with
+//          disableImageSmoothing, content-centered on the shared stage
+//          center (160, 110); the gameplay canvas is unchanged.
+//          Milestone version synced across package.json, config.js,
+//          main.js, Game.js, HUD.js and index.html.
+export const VERSION = 'v3.89.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

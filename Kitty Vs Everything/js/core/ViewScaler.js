@@ -20,7 +20,7 @@
 // v3.88.0: crisp pixel-art — onResize re-applies disableImageSmoothing
 //          after the canvas buffer resize (a canvas.width assignment
 //          resets the 2D context state).
-export const VERSION = 'v3.88.1';
+export const VERSION = 'v3.89.0';
 import { computeViewport } from './Viewport.js';
 import { disableImageSmoothing } from './utils.js'; // v3.88.0: crisp pixel-art enforcement
 

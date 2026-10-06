@@ -264,6 +264,15 @@ body {
   display: block;
   width: 320px;
   height: 220px;
+  /* v3.89.0: crisp 1:1 hero preview — nearest-neighbor buffer→CSS
+     scaling. Safe now that main.js blits each cat sprite at the integer
+     HANGAR_K scale (one native pixel = one CSS pixel, 2×2 blocks at
+     DPR 2): the downsample is a uniform integer block, so the browser's
+     pixelated filter reproduces the art exactly instead of the v3.88.0
+     jagged aliasing. Scoped to this canvas only (the v3.88.1
+     #game-canvas rule is untouched). */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 .hangar-arrow {
   flex: none;

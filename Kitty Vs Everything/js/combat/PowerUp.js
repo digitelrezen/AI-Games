@@ -55,7 +55,7 @@
 //          as the fallback while the sprite decodes (or if the asset is
 //          missing/corrupt).
 
-export const VERSION = 'v3.88.1';
+export const VERSION = 'v3.89.0';
 import { TAU, disableImageSmoothing } from '../core/utils.js'; // v3.88.0: crisp pixel-art enforcement
 import { getMiniPosterSprite } from '../levels/MiniPosterSprite.js';
 import { getBenderFull, BENDER_BODY_W, BENDER_BODY_H } from '../core/BenderSprite.js'; // v3.28.0: tiny full-body Bender icon for the 'robot' drop

@@ -14,8 +14,11 @@
 //          after each buffer resize) and the offscreen sprite buffers
 //          (AssetManager.js, PowerUp.js); the hangar hero canvas keeps
 //          default bilinear smoothing (smooth ship preview).
+// v3.89.0: the hangar hero canvas (main.js) rejoins the crisp set — its
+//          cat sprites are blitted at the integer HANGAR_K 1:1 scale, so
+//          nearest-neighbor is exact (no blur, no jaggedness).
 
-export const VERSION = 'v3.88.1';
+export const VERSION = 'v3.89.0';
 
 export const TAU = Math.PI * 2;
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -59,8 +62,10 @@ export function isOnScreen(game, x, y, r = 0) {
  * (webkit/moz/ms) where a browser still exposes them. v3.88.1: applied
  * only to the main gameplay canvas (Game.js init, ViewScaler.js after
  * each buffer resize) and the offscreen sprite-buffer contexts
- * (AssetManager, PowerUp) — the hangar hero canvas (main.js) keeps
- * default bilinear smoothing so the upscaled ship preview stays smooth.
+ * (AssetManager, PowerUp) — the hangar hero canvas (main.js) kept
+ * default bilinear smoothing. v3.89.0: the hangar hero canvas rejoins
+ * the crisp set — its cat sprites are blitted at the integer HANGAR_K
+ * 1:1 scale, so nearest-neighbor is exact (no blur, no jaggedness).
  * Intentional one-shot asset downscale passes (Wasp2Sprite /
  * AsteroidSprite) opt back in locally on their own contexts.
  * @param {CanvasRenderingContext2D|null} ctx the 2D context to crisp up
