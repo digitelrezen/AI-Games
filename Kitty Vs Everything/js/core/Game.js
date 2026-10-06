@@ -190,14 +190,16 @@
 // v3.81.0: Version label synced (Spaceballs One easter-egg ship — rare
 //          per-wave spawn, unstoppable diagonal sweep, treasure-chest
 //          jackpot on destruction — js/modes/EasterEggs/SpaceballsOne/).
-export const VERSION = 'v3.82.0';
-import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
+// v3.83.0: DROP POLICY — crate destruction spills through the DropManager
+//          (DROP_POLICY.crate: 100% chance, up to 2 drops, on-screen only).
+export const VERSION = 'v3.83.0';
+import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
 import InputManager from '../input/InputManager.js';
 import ParticleSystem from './ParticleSystem.js';
 import { createCatShip } from '../combat/CatShipFactory.js'; // v3.71.0: modular combat
-import PowerUp from '../combat/PowerUp.js'; // v3.42.0: crate destruction drops
+import { spawnSourceDrops } from './DropManager.js'; // v3.83.0: crate spill drop
 import WaveManager from './WaveManager.js';
 import BonusLevel from '../levels/BonusLevel.js';
 import LevelRegistry, { STAGE_SEQUENCE, BONUS_STAGES } from '../levels/LevelRegistry.js'; // v3.76.0 (v3.77.0 E6: BONUS_STAGES now consumed by game/StageFlow.js — import kept for the [6z] pin)
@@ -524,9 +526,9 @@ export default class Game {
     const pts = Math.round(2500 * this.multiplier);
     this.score += pts;
     this.multiplier = Math.min(10, this.multiplier + 0.5);
-    // v3.42.0: destroyed crates spill one drop from the shared active pool
-    // (Health / Frenzy / Shields / Wanted / Extra Life / robot / crate).
-    this.powerups.push(new PowerUp({ x: pw.x, y: pw.y, type: rollPowerUpDrop(), game: this }));
+    // v3.83.0: crate spill routes through the DropManager (DROP_POLICY.crate:
+    // 100% chance, up to 2 drops, on-screen sources only).
+    spawnSourceDrops(this, 'crate', pw.x, pw.y, pw.radius);
     bus.emit('banner', {
       text: 'CRATE DESTROYED! +' + pts.toLocaleString() + ' (x' + this.multiplier.toFixed(1) + ')',
       tone: 'good', duration: 1.6,

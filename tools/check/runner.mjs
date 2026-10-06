@@ -43,7 +43,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.82.0: shuttle round-trip flyby (off-screen flip + mirrored return pass), Spaceballs One one-way bottom-right → top-left flyby, drop rarity ladder, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.83.0: drop policy + off-screen kill gate (DROP_POLICY per-source chance/maxDrops routed through DropManager, isOnScreen gate so kills & drops only happen on-screen, guaranteed special drops bypass the gate), shuttle round-trip flyby, Spaceballs One one-way flyby, drop rarity ladder, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

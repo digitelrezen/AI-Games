@@ -1,5 +1,10 @@
 // Filename: config/drops.js
-// Kitty Vs Everything — v3.80.0
+// Kitty Vs Everything — v3.83.0
+// v3.83.0: DROP POLICY — DROP_RARITY is gone; every normal drop source now
+// rolls DROP_POLICY (per-source chance + max drops per kill) through
+// js/core/DropManager.js, which also enforces the on-screen gate (loot
+// only from on-screen sources). Guaranteed special-ship drops (shuttle
+// mini poster, flyby robot, Spaceballs One treasure chest) bypass it.
 // v3.80.0: drop rarity overhaul — POWERUP_DROPS is now a rarity ladder
 // (robot SUPER RARE 1%) + new DROP_RARITY per-source drop chances.
 // E6 modularization (v3.77.0): power-up drop pool + asteroid chain +
@@ -18,9 +23,9 @@ export const ASTEROID = {
   chain: [
     { size: 46, hp: 120, splits: 2, smallShards: 2 }, // large  → 2 mediums + 2 small shards
     { size: 28, hp: 50,  splits: 4, smallShards: 0 }, // medium → 4 smalls
-    { size: 15, hp: 14,  splits: 0, smallShards: 0 }, // small  → power-up drop roll
+    { size: 15, hp: 14,  splits: 0, smallShards: 0 }, // small  → DROP_POLICY.asteroid drop roll
   ],
-  dropChance: 0.4,        // destroyed small → regular power-up drop
+  // v3.83.0: the destroyed-small drop chance moved to DROP_POLICY.asteroid.
   drift: 40,              // base drift speed (px/s), random direction
   spawnY: -80,            // v3.42.0: wave-spawn Y — large rock (r=46) fully above the viewport
 };
@@ -58,13 +63,22 @@ export function rollPowerUpDrop() {
   return 'crate';
 }
 
-// v3.80.0: DROP RARITY — the chance a NON-guaranteed source drops anything
-// at all. Guaranteed ship drops (the flyby's robot, the shuttle's mini)
-// never roll these. Regular enemy kills: 8% one-roll; champion / miniboss
-// / boss kills: 50% one-roll.
-export const DROP_RARITY = {
-  enemy: 0.08,
-  special: 0.50,
+// v3.83.0: DROP POLICY — the chance + max drops per kill for every NORMAL
+// (non-guaranteed) drop source. Every source rolls through
+// js/core/DropManager.js, which also enforces the on-screen gate (loot
+// only from on-screen sources — no off-screen clutter):
+//   mob      — regular enemy kills (Combat.onEnemyDeath)      8%  / max 1
+//   asteroid — destroyed small asteroid (AsteroidBonus)      40%  / max 1
+//   crate    — destructible crate spill (Game.destroyCrate) 100%  / max 2
+//   boss     — champion / miniboss / finalboss kills         50%  / max 3
+// Guaranteed special-ship drops (the shuttle's mini poster, the flyby's
+// robot, the Spaceballs One treasure chest) bypass this table — they're
+// scripted set-piece rewards, not pool rolls.
+export const DROP_POLICY = {
+  mob:      { chance: 0.08, maxDrops: 1 },
+  asteroid: { chance: 0.40, maxDrops: 1 },
+  crate:    { chance: 1.00, maxDrops: 2 },
+  boss:     { chance: 0.50, maxDrops: 3 },
 };
 
 // v3.77.0: SHUTTLE WAVE EVENT — the Space Shuttle is the wave's "event"

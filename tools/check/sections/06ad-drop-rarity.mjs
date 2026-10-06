@@ -1,15 +1,16 @@
 // ═══════════════════════════════════════════════════════════
-//  [6ad] v3.80.0 DROP RARITY + SHIPS EVERY LEVEL —
+//  [6ad] v3.83.0 DROP POLICY + SHIPS EVERY LEVEL —
 //        (1) The shared POWERUP_DROPS pool is now a rarity ladder:
 //            health 0.30 / frenzy 0.20 / shield 0.22 / mini 0.14 /
 //            crate 0.07 / life 0.06 / robot 0.01 (super-rare, 1%).
 //            The weights sum to exactly 1.00, and the guaranteed
 //            drops stay separate (SHUTTLE_DROP mini poster, ship
 //            flyby robot).
-//        (2) Enemy kill drop chance is rarity-gated via DROP_RARITY
-//            (config/drops.js, re-exported by config.js): normal
-//            enemies 0.08 (8%), special enemies 0.50 (50%) —
-//            Combat.js reads DROP_RARITY for both branches.
+//        (2) v3.83.0: every NORMAL drop source rolls DROP_POLICY
+//            (config/drops.js, re-exported by config.js) through
+//            js/core/DropManager.js — mob 0.08/max 1, asteroid
+//            0.40/max 1, crate 1.00/max 2, boss 0.50/max 3, on-screen
+//            sources only (isOnScreen gate). DROP_RARITY is gone.
 //        (3) Ships every level: WaveManager.startNext starts the
 //            Planet Express flyby egg UNCONDITIONALLY (the v3.42.0
 //            bonus-adjacent skip is gone), and non-shuttle waves
@@ -30,8 +31,10 @@ import path from 'node:path';
 
 export default async function run() {
 {
-  console.log('\n[6ad] v3.80.0 drop rarity + ships every level (source + headless lifecycle)');
-  const { POWERUP_DROPS, DROP_RARITY, SHUTTLE_DROP } = await mod('js/core/config.js');
+  console.log('\n[6ad] v3.83.0 drop policy + ships every level (source + headless lifecycle)');
+  const { POWERUP_DROPS, DROP_POLICY, SHUTTLE_DROP } = await mod('js/core/config.js');
+  const DropManager = await mod('js/core/DropManager.js');
+  const { isOnScreen } = await mod('js/core/utils.js');
   const { default: WaveManager } = await mod('js/core/WaveManager.js');
   const dropsSrc = fs.readFileSync(path.join(ROOT, 'js/core/config/drops.js'), 'utf8');
   const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');
@@ -49,15 +52,21 @@ export default async function run() {
   check('robot is super-rare at 0.01 (1%)', POWERUP_DROPS.robot === 0.01, `got ${POWERUP_DROPS.robot}`);
   check('SHUTTLE_DROP still guarantees the mini poster', SHUTTLE_DROP && SHUTTLE_DROP.type === 'mini', JSON.stringify(SHUTTLE_DROP));
 
-  // ── (2) DROP_RARITY kill-drop gate ──
-  check('DROP_RARITY.enemy = 0.08 (8% normal kill drop)', DROP_RARITY.enemy === 0.08, `got ${DROP_RARITY.enemy}`);
-  check('DROP_RARITY.special = 0.50 (50% special kill drop)', DROP_RARITY.special === 0.50, `got ${DROP_RARITY.special}`);
-  check('drops.js defines DROP_RARITY', dropsSrc.includes('export const DROP_RARITY'));
-  check('config.js re-exports DROP_RARITY from config/drops.js',
-    cfgSrc.includes('DROP_RARITY') && cfgSrc.includes("from './config/drops.js'"));
-  check('Combat.js imports DROP_RARITY', combatSrc.includes('DROP_RARITY'));
-  check('Combat.js uses DROP_RARITY.special for special enemies', combatSrc.includes('DROP_RARITY.special'));
-  check('Combat.js uses DROP_RARITY.enemy for normal enemies', combatSrc.includes('DROP_RARITY.enemy'));
+  // ── (2) DROP_POLICY per-source drop gate (v3.83.0 — DROP_RARITY is gone) ──
+  check('DROP_POLICY.mob = 8% / max 1 (regular enemy kill)', DROP_POLICY.mob.chance === 0.08 && DROP_POLICY.mob.maxDrops === 1, JSON.stringify(DROP_POLICY.mob));
+  check('DROP_POLICY.asteroid = 40% / max 1 (destroyed small asteroid)', DROP_POLICY.asteroid.chance === 0.40 && DROP_POLICY.asteroid.maxDrops === 1, JSON.stringify(DROP_POLICY.asteroid));
+  check('DROP_POLICY.crate = 100% / max 2 (crate spill)', DROP_POLICY.crate.chance === 1.0 && DROP_POLICY.crate.maxDrops === 2, JSON.stringify(DROP_POLICY.crate));
+  check('DROP_POLICY.boss = 50% / max 3 (champion / miniboss / finalboss)', DROP_POLICY.boss.chance === 0.50 && DROP_POLICY.boss.maxDrops === 3, JSON.stringify(DROP_POLICY.boss));
+  check('drops.js defines DROP_POLICY', dropsSrc.includes('export const DROP_POLICY'));
+  check('drops.js no longer exports DROP_RARITY', !dropsSrc.includes('export const DROP_RARITY'));
+  check('config.js re-exports DROP_POLICY from config/drops.js',
+    cfgSrc.includes('DROP_POLICY') && cfgSrc.includes("from './config/drops.js'"));
+  check('DropManager.js exports spawnSourceDrops / spawnGuaranteedDrop / spawnEventDrop / spawnDropAt',
+    typeof DropManager.spawnSourceDrops === 'function' && typeof DropManager.spawnGuaranteedDrop === 'function' &&
+    typeof DropManager.spawnEventDrop === 'function' && typeof DropManager.spawnDropAt === 'function');
+  check('utils.js exports the on-screen kill gate (isOnScreen)', typeof isOnScreen === 'function');
+  check('Combat.js routes kills through the DropManager (mob/boss + shuttle guaranteed)',
+    combatSrc.includes("spawnSourceDrops(game, enemy.special ? 'boss' : 'mob'") && combatSrc.includes('spawnGuaranteedDrop(game, SHUTTLE_DROP.type'));
 
   // ── (3) ships every level (source) ──
   check('WaveManager.startNext starts the ship egg unconditionally',

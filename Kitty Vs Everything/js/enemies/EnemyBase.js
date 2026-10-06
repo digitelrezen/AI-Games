@@ -1,5 +1,8 @@
 // Filename: EnemyBase.js
-// Kitty Vs Everything — v3.11.0 (boss-tier screen containment)
+// Kitty Vs Everything — v3.83.0 (off-screen kill gate)
+// v3.83.0: OFF-SCREEN KILL GATE — applyDamage() ignores all damage while
+// the enemy is fully off-screen (utils.isOnScreen), so kills — and their
+// drops — always happen where the player can see them.
 // v3.36.0: NO-ESCAPE FLAG — enemies that intentionally fly off-screen
 // (the shuttle's round-trip flyby, v3.82.0) set this.noEscape = true to
 // opt out of the 80px off-screen cull in update().
@@ -10,10 +13,10 @@
 //          hold the upper-middle fight zone (with a gentle bob) and can pass
 //          from one side of the screen to the other, instead of being pinned
 //          to the arena edges (which left them stuck on the bottom).
-export const VERSION = 'v3.36.0';
+export const VERSION = 'v3.83.0';
 import Entity from '../core/Entity.js';
 import { ENEMY_TYPES, TIERS } from '../core/config.js';
-import { TAU, rand, clamp, angleTo } from '../core/utils.js';
+import { TAU, rand, clamp, angleTo, isOnScreen } from '../core/utils.js';
 import { onEnemyDeath } from '../combat/Combat.js';
 
 export default class EnemyBase extends Entity {
@@ -112,6 +115,17 @@ export default class EnemyBase extends Entity {
       this.deathHandled = true;
       onEnemyDeath(this.game, this);
     }
+  }
+
+  /**
+   * v3.83.0: OFF-SCREEN KILL GATE — an enemy can only be hurt while it is
+   * on-screen, so it can never die (and drop loot) off-screen. Covers every
+   * damage entry point (applyWeaponHit, ramming, FireZone, NapalmRockets,
+   * player variants) because they all funnel through Entity.applyDamage.
+   */
+  applyDamage(amount) {
+    if (!isOnScreen(this.game, this.x, this.y, this.radius)) return;
+    super.applyDamage(amount);
   }
 
   move(dt, slowMul) {

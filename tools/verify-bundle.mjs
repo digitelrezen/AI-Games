@@ -24,7 +24,8 @@ const parseDropTable = (src, re) => {
   return out;
 };
 const powerupDrops = parseDropTable(s, /POWERUP_DROPS\s*=\s*\{([^}]*)\}/);
-const dropRarity = parseDropTable(s, /DROP_RARITY\s*=\s*\{([^}]*)\}/);
+// v3.83.0: DROP_RARITY is gone — replaced by the nested DROP_POLICY table
+// (per-source chance + maxDrops), checked structurally below.
 
 const tests = [
   ['BENDER sprite payload (body PNG)', s.includes('iVBORw0KGgo') && s.includes('ASUAAAG5CAYAAADIwyJP')],
@@ -274,11 +275,17 @@ const tests = [
     Math.abs(Object.values(powerupDrops).reduce((a, b) => a + b, 0) - 1) < 1e-9,
   ],
   ['v3.80.0: robot is super-rare (1%)', powerupDrops.robot === 0.01],
-  ['v3.80.0: DROP_RARITY kill-drop gate (enemy 8% / special 50%)',
-    dropRarity.enemy === 0.08 && dropRarity.special === 0.5,
+  ['v3.83.0: DROP_POLICY per-source drop table in bundle (mob/asteroid/crate/boss, chance + maxDrops)',
+    /DROP_POLICY\s*=\s*\{/.test(s) && /maxDrops/.test(s) && /chance/.test(s),
   ],
-  ['v3.80.0: Combat.js kill drop reads DROP_RARITY (both branches)',
-    s.includes('DROP_RARITY.special') && s.includes('DROP_RARITY.enemy'),
+  ['v3.83.0: DROP_RARITY gate is gone from the bundle (no definition, no .enemy/.special access)',
+    !/DROP_RARITY\s*=\s*\{/.test(s) && !s.includes('DROP_RARITY.enemy') && !s.includes('DROP_RARITY.special'),
+  ],
+  ['v3.83.0: DropManager drop primitives in bundle (spawnSourceDrops/spawnGuaranteedDrop/spawnEventDrop/spawnDropAt)',
+    s.includes('spawnSourceDrops') && s.includes('spawnGuaranteedDrop') && s.includes('spawnEventDrop') && s.includes('spawnDropAt'),
+  ],
+  ['v3.83.0: Combat.js routes kills through the DropManager (mob/boss + shuttle guaranteed)',
+    /enemy\.special\s*\?\s*["']boss["']\s*:\s*["']mob["']/.test(s) && s.includes('spawnSourceDrops') && s.includes('spawnGuaranteedDrop'),
   ],
   ['v3.80.0: SHUTTLES_PER_WAVE = 2', /SHUTTLES_PER_WAVE\s*=\s*2\b/.test(s)],
   ['v3.80.0: ship egg starts unconditionally every level (old bonus skip gone)',

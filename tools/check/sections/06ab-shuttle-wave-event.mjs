@@ -25,7 +25,7 @@ export default async function run() {
   check('config: SHUTTLE_DROP is the guaranteed mini-ship drop', SHUTTLE_DROP && SHUTTLE_DROP.type === 'mini', JSON.stringify(SHUTTLE_DROP));
   check('Combat: shuttle kills bypass the pool roll (SHUTTLE_DROP special case)',
     combatSrc3.includes("enemy.type === 'shuttle'") && combatSrc3.includes('SHUTTLE_DROP.type'));
-  check('Combat: non-shuttle enemies still roll the shared pool', combatSrc3.includes('rollPowerUpDrop()'));
+  check('Combat: non-shuttle enemies route through the DropManager (mob/boss)', combatSrc3.includes("spawnSourceDrops(game, enemy.special ? 'boss' : 'mob'"));
   check('Game: startCombatStage logs the shuttle wave event',
     gameSrc4.includes("currentSpecies === 'shuttle'") && gameSrc4.includes('SHUTTLE INTERCEPT'));
 

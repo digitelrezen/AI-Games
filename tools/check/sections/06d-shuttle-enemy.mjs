@@ -51,7 +51,7 @@ check('ShuttleEnemy: v1.1.0 round-trip flyby (spawn right, noEscape, off-screen 
 check('ShuttleEnemy: return pass mirrors the sprite (ctx.scale(-1, 1))', seSrc.includes('if (this.strafeDir === 1) ctx.scale(-1, 1)'));
 check('ShuttleEnemy: shootTimer counts down in move() (telegraph contract)', seSrc.includes('this.shootTimer -= dt'));
 const ebSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/EnemyBase.js'), 'utf8');
-check('EnemyBase: noEscape flag gates the 80px off-screen cull (v3.36.0)', (await mod('js/enemies/EnemyBase.js')).VERSION === 'v3.36.0' && ebSrc.includes('this.noEscape = false') && ebSrc.includes('!this.noEscape && (this.y > this.game.H + 80'));
+check('EnemyBase: noEscape flag gates the 80px off-screen cull (v3.36.0)', (await mod('js/enemies/EnemyBase.js')).VERSION === 'v3.83.0' && ebSrc.includes('this.noEscape = false') && ebSrc.includes('!this.noEscape && (this.y > this.game.H + 80'));
 const { TIERS } = await mod('js/core/config.js');
 const mobTier = Object.keys(TIERS).find((k) => !TIERS[k].special);
 let shots = 0;

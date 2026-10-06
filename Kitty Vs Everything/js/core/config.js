@@ -2,6 +2,13 @@
 // Kitty Vs Everything — v3.77.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.83.0: DROP POLICY + OFF-SCREEN KILL GATE — DROP_RARITY is gone:
+//          every normal drop source (mob / asteroid / crate / boss) rolls
+//          DROP_POLICY (chance + max drops) through js/core/DropManager.js,
+//          which only drops from ON-SCREEN sources; EnemyBase.applyDamage
+//          takes no damage while the enemy is fully off-screen (kills +
+//          drops are always visible); guaranteed special-ship drops
+//          (shuttle mini, flyby robot, Spaceballs One chest) bypass it.
 // v3.82.0: SHUTTLE ROUND-TRIP FLYBY — the shuttle (species #17) now spawns
 //          off-screen right, flies left, flips fully off-screen (sprite
 //          mirrors), returns right, and loops until destroyed (EnemyBase
@@ -282,10 +289,10 @@
 //          POWERUP_DROPS type) on destruction. Milestone version synced
 //          across package.json, config.js, main.js, Game.js, HUD.js and
 //          index.html.
-export const VERSION = 'v3.82.0';
+export const VERSION = 'v3.83.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
 export { ENEMY_TYPES, TIERS, WAVE } from './config/enemies.js';
-export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP, DROP_RARITY } from './config/drops.js';
+export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP, DROP_POLICY } from './config/drops.js';
 export { BONUS, LIFE_SCORE_INTERVAL } from './config/stages.js';

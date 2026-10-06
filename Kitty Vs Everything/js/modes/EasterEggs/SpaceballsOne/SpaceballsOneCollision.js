@@ -1,5 +1,5 @@
 // Filename: SpaceballsOneCollision.js
-// Kitty Vs Everything — v3.81.0
+// Kitty Vs Everything — v3.83.0
 // Unstoppable sweep for Spaceballs One. "We brake for nobody!"
 //
 // The ship's bounding box is sampled along this frame's movement segment
@@ -13,8 +13,12 @@
 // Regular power-up pills are left alone (they're loot, not obstacles).
 // Entity lists are snapshotted before the pass so fragments/drops spawned
 // by a destruction are not re-swept in the same frame.
+// v3.83.0: OFF-SCREEN KILL GATE — the sweep skips enemies that are fully
+// off-screen (same utils.isOnScreen gate as EnemyBase.applyDamage), so a
+// swept kill can never happen where the player can't see it.
 
 import { onEnemyDeath } from '../../../combat/Combat.js';
+import { isOnScreen } from '../../../core/utils.js'; // v3.83.0
 
 const SAMPLE_GAP = 24; // px — max distance between sweep samples (no tunneling)
 
@@ -39,6 +43,9 @@ export function sweepPath(game, x0, y0, x1, y1, hw, hh) {
     // ── enemies: obliterated (full death path — score + drops + FX) ──
     for (const e of game.enemies.slice()) {
       if (!e.alive) continue;
+      // v3.83.0: off-screen enemies are invulnerable — the sweep only
+      // kills what the player can see (same gate as EnemyBase).
+      if (!isOnScreen(game, e.x, e.y, e.radius)) continue;
       if (boxHitsCircle(bx, by, hw, hh, e.x, e.y, e.radius)) {
         e.alive = false;
         onEnemyDeath(game, e, null);

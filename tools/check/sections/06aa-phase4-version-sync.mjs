@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-//  [6aa] v3.82.0 VERSION SYNC — the milestone version must
+//  [6aa] v3.83.0 VERSION SYNC — the milestone version must
 //        be consistent across package.json (build filename source of
 //        truth), config.js (central config), main.js (project
 //        manifest), Game.js (game orchestrator), HUD.js (in-game
@@ -12,20 +12,20 @@ import path from 'node:path';
 
 export default async function run() {
 {
-  console.log('\n[6aa] v3.82.0 version sync');
-  const MILESTONE = 'v3.82.0';
+  console.log('\n[6aa] v3.83.0 version sync');
+  const MILESTONE = 'v3.83.0';
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  check('package.json version = 3.82.0 (build filename source of truth)', pkg.version === MILESTONE.slice(1), `got ${pkg.version}`);
+  check('package.json version = 3.83.0 (build filename source of truth)', pkg.version === MILESTONE.slice(1), `got ${pkg.version}`);
   const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');
-  check('config.js: VERSION = v3.82.0 (central config)', cfgSrc.includes(`VERSION = '${MILESTONE}'`));
+  check('config.js: VERSION = v3.83.0 (central config)', cfgSrc.includes(`VERSION = '${MILESTONE}'`));
   const mainSrc = fs.readFileSync(path.join(ROOT, 'js/core/main.js'), 'utf8');
-  check('main.js: VERSION = v3.82.0 (project manifest)', mainSrc.includes(`VERSION = '${MILESTONE}'`));
+  check('main.js: VERSION = v3.83.0 (project manifest)', mainSrc.includes(`VERSION = '${MILESTONE}'`));
   const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
-  check('Game.js: VERSION = v3.82.0 (game orchestrator)', gameSrc.includes(`VERSION = '${MILESTONE}'`));
+  check('Game.js: VERSION = v3.83.0 (game orchestrator)', gameSrc.includes(`VERSION = '${MILESTONE}'`));
   const hudSrc = fs.readFileSync(path.join(ROOT, 'js/ui/HUD.js'), 'utf8');
-  check('HUD.js: VERSION = v3.82.0 (in-game #version-label)', hudSrc.includes(`VERSION = '${MILESTONE}'`));
+  check('HUD.js: VERSION = v3.83.0 (in-game #version-label)', hudSrc.includes(`VERSION = '${MILESTONE}'`));
   const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  check('index.html: tab title carries v3.82.0', htmlSrc.includes(`Kitty Vs Everything — ${MILESTONE}`));
+  check('index.html: tab title carries v3.83.0', htmlSrc.includes(`Kitty Vs Everything — ${MILESTONE}`));
 }
 
 }

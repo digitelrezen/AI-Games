@@ -36,13 +36,13 @@ const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8')
 check('WaveManager: wave-clear asteroid spawns off-screen (ASTEROID.spawnY)', wmSrc.includes('spawnAsteroid(this.game, x, ASTEROID.spawnY)'));
 check('WaveManager: ship easter egg auto-triggers on EVERY combat wave (v3.80.0)', wmSrc.includes("switchEgg(this.game, 'ship')") && !wmSrc.includes('this.wave % this.bonusEvery !== 0'));
 const combatSrc = fs.readFileSync(path.join(ROOT, 'js/combat/Combat.js'), 'utf8');
-check('Combat: enemy kills roll the shared pool (no spawnAsteroid left)', combatSrc.includes('rollPowerUpDrop()') && !combatSrc.includes('spawnAsteroid'));
+check('Combat: enemy kills route through the DropManager (mob/boss)', combatSrc.includes("spawnSourceDrops(game, enemy.special ? 'boss' : 'mob'") && !combatSrc.includes('spawnAsteroid'));
 const abSrc = fs.readFileSync(path.join(ROOT, 'js/levels/AsteroidBonus.js'), 'utf8');
-check('AsteroidBonus: shatter drops roll the shared pool', abSrc.includes('rollPowerUpDrop()'));
+check('AsteroidBonus: shatter drops route through the DropManager (asteroid)', abSrc.includes("spawnSourceDrops(game, 'asteroid'"));
 const ibSrc = fs.readFileSync(path.join(ROOT, 'js/levels/InternetBonus.js'), 'utf8');
-check('InternetBonus: asteroid drops off-screen + shared pool', ibSrc.includes('spawnAsteroid(this.game, x, ASTEROID.spawnY)') && ibSrc.includes('rollPowerUpDrop()'));
+check('InternetBonus: asteroid drops off-screen + DropManager event drop', ibSrc.includes('spawnAsteroid(this.game, x, ASTEROID.spawnY)') && ibSrc.includes('spawnEventDrop(this.game, x, -30)'));
 const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
-check('Game: crate destruction spills a shared-pool drop', gameSrc.includes('type: rollPowerUpDrop()'));
+check('Game: crate destruction spills a DropManager crate drop', gameSrc.includes("spawnSourceDrops(this, 'crate'"));
 const devSrc = fs.readFileSync(path.join(ROOT, 'js/ui/DevPanel.js'), 'utf8');
 check('DevPanel: debug asteroid drop also spawns off-screen', devSrc.includes('spawnAsteroid(g, g.W / 2, ASTEROID.spawnY)'));
 

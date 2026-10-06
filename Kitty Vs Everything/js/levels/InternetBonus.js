@@ -26,13 +26,16 @@
 // v3.42.0: the 12% asteroid drop spawns fully off-screen (ASTEROID.spawnY)
 //          and the remaining drops sample the shared POWERUP_DROPS pool
 //          (config.js) — Health / Frenzy / Shields / Wanted / Extra Life.
-export const VERSION = 'v3.76.0';
-import { BONUS, ASTEROID, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
+// v3.83.0: the bonus power-up drops route through the DropManager
+//          (spawnEventDrop: one shared-pool roll at the fixed off-screen
+//          spawn position, caught as it falls).
+export const VERSION = 'v3.83.0';
+import { BONUS, ASTEROID } from '../core/config.js';
 import { TAU, rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
-import PowerUp from '../combat/PowerUp.js';
+import { spawnEventDrop } from '../core/DropManager.js'; // v3.83.0: bonus drop
 import { spawnAsteroid } from './AsteroidBonus.js'; // v3.11.0: asteroid chain drops
 import { realTimeClock } from '../core/RealTimeClock.js'; // v3.15.0: pendant time sync
 
@@ -163,10 +166,11 @@ export default class InternetBonus {
       const x = rand(80, this.game.viewW - 80); // v3.13.0: live viewport
       // v3.42.0: 12% asteroid (fully off-screen at ASTEROID.spawnY),
       // otherwise one roll from the shared POWERUP_DROPS pool.
+      // v3.83.0: the power-up branch routes through the DropManager.
       if (Math.random() < 0.12) {
         spawnAsteroid(this.game, x, ASTEROID.spawnY);
       } else {
-        this.game.powerups.push(new PowerUp({ x, y: -30, type: rollPowerUpDrop(), game: this.game }));
+        spawnEventDrop(this.game, x, -30); // v3.83.0: event drop via DropManager
       }
     }
 

@@ -1,5 +1,5 @@
 // Filename: EasterEgg.js
-// Kitty Vs Everything — v3.81.0
+// Kitty Vs Everything — v3.83.0
 // Easter egg manager: one slot per egg, all can be alive at the same time.
 //   • BenderEasterEgg (v3.24.0, resized v3.28.0, kill-based v3.29.0) —
 //     the rare 'robot' power-up (dropped by the destroyed Planet Express
@@ -61,7 +61,7 @@ import {
 } from './BenderSprite.js';
 import { getShip, SHIP_W, SHIP_H } from './ShipSprite.js'; // v3.27.0
 import { SpaceballsOne, SPACEBALLS_ONE } from '../modes/EasterEggs/SpaceballsOne/index.js'; // v3.81.0
-import PowerUp from '../combat/PowerUp.js'; // v3.28.0: ship destruction drops the 'robot' power-up
+import { spawnGuaranteedDrop } from './DropManager.js'; // v3.83.0: flyby 'robot' drop
 import { TAU, clamp } from './utils.js';
 
 export const BENDER_KILLS = 4; // v3.29.0: friendly kills that end the egg (HUD "BENDER x/4")
@@ -326,7 +326,9 @@ export class ShipEasterEgg {
     // Normal-scaled mini Bender power-up (PowerUp 'robot' icon). Catching it
     // runs the existing Collisions.js → Game.collectPowerUp path, which
     // calls game.aimbot.trigger() — Bender's kill-based aimbot (v3.29.0).
-    g.powerups.push(new PowerUp({ x: cx, y: cy, type: 'robot', game: g }));
+    // v3.83.0: guaranteed special drop via the DropManager (bypasses
+    // chance + cap — it's a scripted set-piece reward).
+    spawnGuaranteedDrop(g, 'robot', cx, cy);
   }
 
   draw(ctx) {

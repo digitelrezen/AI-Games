@@ -1,13 +1,15 @@
 // Filename: SpaceballsOneLoot.js
-// Kitty Vs Everything — v3.81.0
+// Kitty Vs Everything — v3.83.0
 // Treasure-chest jackpot: when Spaceballs One is destroyed it explodes into
 // ONE of EVERY available power-up type — the full POWERUP_DROPS pool
 // (health / frenzy / shield / mini / crate / life / robot) — ejected
 // simultaneously in a ring around the kill point, plus a gold burst, a
 // jackpot score bonus (× multiplier) and the banner.
+// v3.83.0: the ring drops spawn through the DropManager's raw primitive
+// (spawnDropAt) — a guaranteed special spread that bypasses DROP_POLICY.
 
 import { POWERUP_DROPS } from '../../../core/config.js';
-import PowerUp from '../../../combat/PowerUp.js';
+import { spawnDropAt } from '../../../core/DropManager.js'; // v3.83.0
 import { bus } from '../../../core/EventBus.js';
 import { audio } from '../../../core/AudioSystem.js';
 import { TAU, rand } from '../../../core/utils.js';
@@ -27,13 +29,12 @@ export function spawnTreasureChest(game, x, y, lootScore = 10000) {
   const R = 70; // ring radius
   types.forEach((type, i) => {
     const a = (i / types.length) * TAU - Math.PI / 2;
-    const d = new PowerUp({
-      x: x + Math.cos(a) * R + rand(-6, 6),
-      y: y + Math.sin(a) * R * 0.6 + rand(-6, 6),
-      type, game,
-    });
-    game.powerups.push(d);
-    drops.push(d);
+    // v3.83.0: raw spawn primitive — the treasure chest is a guaranteed
+    // special spread (no DROP_POLICY chance/cap, no on-screen gate).
+    drops.push(spawnDropAt(game,
+      x + Math.cos(a) * R + rand(-6, 6),
+      y + Math.sin(a) * R * 0.6 + rand(-6, 6),
+      type));
   });
   // Jackpot FX — gold burst, shake, score, banner.
   const pts = Math.round(lootScore * game.multiplier);

@@ -1,9 +1,10 @@
 // Filename: AsteroidBonus.js
-// Kitty Vs Everything — v3.42.0
+// Kitty Vs Everything — v3.83.0
 // Destructible asteroid chain power-up (ASTEROID in config.js):
 //   Large  → 2 Medium + 2 Small shards
 //   Medium → 4 Small
-//   every destroyed Small rolls a 40% chance to drop a regular power-up.
+//   every destroyed Small rolls the DROP_POLICY.asteroid chance (40%)
+//   to drop a regular power-up (max 1, via DropManager).
 // Asteroids live in game.powerups with destructible=true, so the existing
 // friendly-bullet collision loop (Collisions.js) routes shots straight
 // into them, and the pickup loop already skips destructible drops.
@@ -19,12 +20,14 @@
 // procedural jittered-rock fallback is drawn instead.
 // v3.42.0: shatter drops sample the shared POWERUP_DROPS pool (config.js)
 //          — Health / Frenzy / Shields / Wanted (mini) / Extra Life.
-export const VERSION = 'v3.42.0';
-import { ASTEROID, rollPowerUpDrop } from '../core/config.js'; // v3.42.0: shared drop pool
+// v3.83.0: shatter drops route through the DropManager (DROP_POLICY.asteroid:
+//          40% chance, max 1 drop, on-screen sources only).
+export const VERSION = 'v3.83.0';
+import { ASTEROID } from '../core/config.js';
+import { spawnSourceDrops } from '../core/DropManager.js'; // v3.83.0
 import { TAU, rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
-import PowerUp from '../combat/PowerUp.js';
 import { getAsteroidSprite, getAsteroidShards } from './AsteroidSprite.js';
 
 export class Asteroid {
@@ -171,9 +174,9 @@ export function destroyAsteroid(game, a) {
         game,
       }));
     }
-  } else if (Math.random() < ASTEROID.dropChance) {
-    // v3.42.0: Small destroyed → roll from the shared POWERUP_DROPS pool
-    // (Health / Frenzy / Shields / Wanted / Extra Life / robot / crate).
-    game.powerups.push(new PowerUp({ x: a.x, y: a.y, type: rollPowerUpDrop(), game }));
+  } else {
+    // v3.83.0: Small destroyed → DropManager 'asteroid' source (40% chance,
+    // max 1 drop, on-screen sources only — DROP_POLICY.asteroid).
+    spawnSourceDrops(game, 'asteroid', a.x, a.y, a.radius);
   }
 }

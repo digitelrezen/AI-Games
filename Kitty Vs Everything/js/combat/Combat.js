@@ -1,5 +1,5 @@
 // Filename: Combat.js
-// Kitty Vs Everything — v3.42.0
+// Kitty Vs Everything — v3.83.0
 // Weapon hit resolution: direct damage, shield-melt (plasma), death handling,
 // scoring, and drops. No legacy elemental secondary effects.
 // v3.1.0: Replaced applyElementalHit with applyWeaponHit. Removed aoeBlast,
@@ -18,11 +18,17 @@
 // v3.80.0: DROP RARITY — the kill drop chance moved from hardcoded values to
 //          DROP_RARITY in config.js (enemy 8% / special 50%); the pool roll
 //          is the new v3.80.0 rarity ladder (robot SUPER RARE, 1%).
-export const VERSION = 'v3.80.0';
-import { WEAPONS, DROP_RARITY, rollPowerUpDrop, SHUTTLE_DROP } from '../core/config.js'; // v3.42.0: shared drop pool
+// v3.83.0: DROP POLICY — maybeDrop now routes through js/core/DropManager.js:
+//          shuttle kills → spawnGuaranteedDrop (SHUTTLE_DROP.type), special
+//          kills → spawnSourceDrops('boss'), regular kills →
+//          spawnSourceDrops('mob'). DROP_POLICY (config/drops.js) carries
+//          the per-source chance + max drops, and the DropManager only
+//          drops from on-screen sources.
+export const VERSION = 'v3.83.0';
+import { WEAPONS, SHUTTLE_DROP } from '../core/config.js'; // v3.42.0: shared drop pool
+import { spawnSourceDrops, spawnGuaranteedDrop } from '../core/DropManager.js'; // v3.83.0
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
-import PowerUp from './PowerUp.js';
 
 /**
  * Resolve a friendly bullet hitting an enemy.
@@ -82,16 +88,15 @@ function maybeDrop(game, enemy) {
   // v3.77.0: SHUTTLE WAVE EVENT — every destroyed Space Shuttle releases its
   // "Wanted" poster: a guaranteed mini-ship power-up at the kill point,
   // bypassing the shared pool roll for this species only.
+  // v3.83.0: guaranteed drops route through the DropManager.
   if (enemy.type === 'shuttle') {
-    game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type: SHUTTLE_DROP.type, game }));
+    spawnGuaranteedDrop(game, SHUTTLE_DROP.type, enemy.x, enemy.y);
     return;
   }
-  // v3.42.0: enemy kills drop from the shared POWERUP_DROPS pool (Health /
-  // Frenzy / Shields / Wanted / Extra Life / robot / crate). No on-screen
-  // asteroid here — asteroids spawn fully off-screen from the wave spawner.
-  // v3.80.0: the kill drop chance comes from the DROP_RARITY table — 8%
-  // for regular enemies, 50% for champions / minibosses / bosses.
-  const chance = enemy.special ? DROP_RARITY.special : DROP_RARITY.enemy;
-  if (Math.random() > chance) return;
-  game.powerups.push(new PowerUp({ x: enemy.x, y: enemy.y, type: rollPowerUpDrop(), game }));
+  // v3.83.0: DROP POLICY — champion / miniboss / finalboss kills roll the
+  // 'boss' source (50%, up to 3 drops), regular enemy kills roll 'mob'
+  // (8%, up to 1). The DropManager enforces the on-screen gate, so a kill
+  // can never drop loot off-screen (and EnemyBase can't die off-screen
+  // anyway — its applyDamage gate makes this a backstop).
+  spawnSourceDrops(game, enemy.special ? 'boss' : 'mob', enemy.x, enemy.y, enemy.radius);
 }

@@ -29,10 +29,14 @@
 //          per-wave roll at the top of startNext (SPACEBALLS_ONE.spawnChance,
 //          capped at SPACEBALLS_ONE.maxPerRun per mission via the
 //          EasterEgg manager counter).
-export const VERSION = 'v3.81.0';
-import { ENEMY_TYPES, WAVE, ASTEROID, rollPowerUpDrop } from './config.js'; // v3.42.0: shared drop pool
+// v3.83.0: WAVE-CLEAR DROP — the wave-clear power-up now routes through
+//          the DropManager (spawnEventDrop: one shared-pool roll at the
+//          fixed off-screen spawn position, caught as it falls).
+export const VERSION = 'v3.83.0';
+import { ENEMY_TYPES, WAVE, ASTEROID } from './config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
-import PowerUp from '../combat/PowerUp.js';
+import PowerUp from '../combat/PowerUp.js'; // v3.83.0: ambient crate spawner only
+import { spawnEventDrop } from './DropManager.js'; // v3.83.0: wave-clear drop
 import { spawnAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0: asteroid chain drops
 import { switchEgg, maybeSpawnSpaceballs } from './EasterEgg.js'; // v3.42.0: ship flyby in most levels
 import { rand } from './utils.js';
@@ -205,7 +209,7 @@ export default class WaveManager {
     if (Math.random() < 0.15) {
       spawnAsteroid(this.game, x, ASTEROID.spawnY); // v3.42.0: off-screen wave spawn
     } else {
-      this.game.powerups.push(new PowerUp({ x, y: -30, type: rollPowerUpDrop(), game: this.game }));
+      spawnEventDrop(this.game, x, -30); // v3.83.0: event drop via DropManager
     }
     // v3.76.0: the WaveManager no longer picks the next stage — it signals
     // completion and Game.advanceStage() consults the LevelRegistry manifest

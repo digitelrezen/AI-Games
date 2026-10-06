@@ -1,9 +1,12 @@
 // Filename: utils.js
-// Kitty Vs Everything — v3.3.0
+// Kitty Vs Everything — v3.83.0
 // Pure math/formatting helpers (no side effects).
 // v3.3.0: Added hexA (hex + alpha → rgba string) for the catship art modules.
+// v3.83.0: Added isOnScreen — live-viewport bounds check shared by the
+//          off-screen kill gate (EnemyBase.applyDamage) and the drop
+//          gating (js/core/DropManager.js).
 
-export const VERSION = 'v3.3.0';
+export const VERSION = 'v3.83.0';
 
 export const TAU = Math.PI * 2;
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -27,3 +30,15 @@ export const formatTime = (secs) => {
   const m = Math.floor(s / 60);
   return String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 };
+
+/**
+ * v3.83.0: live-viewport bounds check — true when (x, y) is inside the
+ * logical viewport (game.W × game.H, the live ViewScaler bounds) with a
+ * small margin, so entities that are half-visible still count as on-screen.
+ * Shared by the off-screen kill gate (EnemyBase.applyDamage) and the drop
+ * gating (js/core/DropManager.js).
+ */
+export function isOnScreen(game, x, y, r = 0) {
+  const m = (r || 0) + 12;
+  return x > -m && x < game.W + m && y > -m && y < game.H + m;
+}
