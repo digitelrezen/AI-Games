@@ -58,12 +58,20 @@
 //          resize resets context state); style.css forces
 //          image-rendering: pixelated/crisp-edges on all canvas/img
 //          elements. Milestone version synced with package.json.
-export const VERSION = 'v3.88.0';
+//          (REVERTED in v3.88.1 — see below.)
+// v3.88.1: CRISP PASS ISOLATION — the v3.88.0 global CSS rule pixelated
+//          the hangar hero preview and the surrounding UI (jagged,
+//          blurry selection screen), so it was reverted: style.css now
+//          scopes image-rendering strictly to #game-canvas, and the
+//          hero canvas keeps its default bilinear smoothing (smooth
+//          ship preview). Crisp nearest-neighbor rendering stays on the
+//          main gameplay canvas only. Milestone version synced with
+//          package.json.
+export const VERSION = 'v3.88.1';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
 import { loadAssets } from './AssetManager.js'; // v3.72.1: re-render icons when sprites land
-import { disableImageSmoothing } from './utils.js'; // v3.88.0: crisp pixel-art enforcement
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer
 import MenuKeybinds from '../input/MenuKeybinds.js'; // v3.23.0: dynamic keybind footer
 
@@ -96,9 +104,10 @@ const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
 if (hangarCanvas) {
   hangarCanvas.width = Math.round(320 * HANGAR_DPR);
   hangarCanvas.height = Math.round(220 * HANGAR_DPR);
-  // v3.88.0: crisp pixel-art — the width/height assignments above reset
-  // the 2D context state, so disable smoothing AFTER the resize.
-  disableImageSmoothing(hangarCtx);
+  // v3.88.1: the hero preview deliberately keeps the default bilinear
+  // smoothing — the ship sprite is upscaled ~2.35× for display, and
+  // nearest-neighbor made it look jagged (v3.88.0 global crisp pass
+  // reverted here).
 }
 const hangarNameplate = document.getElementById('hangar-nameplate');
 const hangarDots = document.getElementById('hangar-dots');

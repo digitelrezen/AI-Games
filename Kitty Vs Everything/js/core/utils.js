@@ -9,8 +9,13 @@
 //          enforcement helper (standard + webkit/moz/ms vendor-prefixed
 //          fallbacks), applied at every 2D context initialization and
 //          after canvas buffer resizes (which reset context state).
+// v3.88.1: CRISP PASS ISOLATION — the helper now applies only to the
+//          main gameplay canvas (Game.js init + ViewScaler.js re-apply
+//          after each buffer resize) and the offscreen sprite buffers
+//          (AssetManager.js, PowerUp.js); the hangar hero canvas keeps
+//          default bilinear smoothing (smooth ship preview).
 
-export const VERSION = 'v3.88.0';
+export const VERSION = 'v3.88.1';
 
 export const TAU = Math.PI * 2;
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -51,10 +56,11 @@ export function isOnScreen(game, x, y, r = 0) {
  * v3.88.0: crisp pixel-art enforcement — disables bilinear image
  * smoothing on a Canvas 2D context so drawImage() uses nearest-neighbor
  * scaling (no blur). Also sets the legacy vendor-prefixed variants
- * (webkit/moz/ms) where a browser still exposes them. Applied at every
- * context initialization in the rendering engine (Game.js main canvas,
- * ViewScaler.js after each buffer resize, main.js hangar canvas) and on
- * the offscreen sprite-buffer contexts (AssetManager, PowerUp).
+ * (webkit/moz/ms) where a browser still exposes them. v3.88.1: applied
+ * only to the main gameplay canvas (Game.js init, ViewScaler.js after
+ * each buffer resize) and the offscreen sprite-buffer contexts
+ * (AssetManager, PowerUp) — the hangar hero canvas (main.js) keeps
+ * default bilinear smoothing so the upscaled ship preview stays smooth.
  * Intentional one-shot asset downscale passes (Wasp2Sprite /
  * AsteroidSprite) opt back in locally on their own contexts.
  * @param {CanvasRenderingContext2D|null} ctx the 2D context to crisp up

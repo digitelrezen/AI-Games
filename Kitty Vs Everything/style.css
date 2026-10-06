@@ -44,14 +44,12 @@ body {
   height: 100%;
   display: block;
   background: var(--bg);
-}
-
-/* v3.88.0: global crisp pixel-art enforcement — every canvas and pixel
-   sprite element scales nearest-neighbor (no bilinear blur) at any DPR
-   or window size. `pixelated` is the modern value; `crisp-edges` is the
-   standard alias — the last value a browser supports wins, so every
-   engine lands on crisp scaling. */
-canvas, .pixel-art, img {
+  /* v3.88.1: crisp pixel-art rendering — scoped STRICTLY to the main
+     gameplay canvas. The v3.88.0 global canvas/img rule was reverted:
+     nearest-neighbor scaling made the hangar hero preview jagged and
+     pixelated the surrounding UI. `pixelated` is the modern value;
+     `crisp-edges` is the standard alias — the last value a browser
+     supports wins. */
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }

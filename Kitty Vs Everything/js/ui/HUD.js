@@ -38,7 +38,11 @@
 // v3.88.0: Version label bumped with the global crisp pixel-art rendering
 //          pass (no HUD changes — the fix lives in style.css + the 2D
 //          context smoothing enforcement in utils/Game/ViewScaler/main).
-export const VERSION = 'v3.88.0';
+// v3.88.1: Version label bumped with the crisp pass isolation (no HUD
+//          changes — the v3.88.0 global CSS rule was reverted and
+//          image-rendering is scoped to #game-canvas only; the hangar
+//          hero canvas keeps default bilinear smoothing).
+export const VERSION = 'v3.88.1';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

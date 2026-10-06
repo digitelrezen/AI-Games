@@ -201,7 +201,16 @@
 //          each buffer resize; style.css forces image-rendering on all
 //          canvas/img elements). Milestone version synced across
 //          package.json, config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.88.0';
+//          (The v3.88.0 global CSS rule was reverted in v3.88.1 — see
+//          below.)
+// v3.88.1: CRISP PASS ISOLATION — the main gameplay canvas keeps its
+//          crisp nearest-neighbor rendering (disableImageSmoothing at
+//          init, re-applied by ViewScaler after each buffer resize) and
+//          style.css now scopes image-rendering strictly to #game-canvas;
+//          the hangar hero canvas and all UI return to normal smooth
+//          rendering. Milestone version synced across package.json,
+//          config.js, main.js, Game.js, HUD.js and index.html.
+export const VERSION = 'v3.88.1';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

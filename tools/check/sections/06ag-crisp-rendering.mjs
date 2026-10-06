@@ -1,18 +1,20 @@
 // ═══════════════════════════════════════════════════════════
-//  [6ag] v3.88.0 GLOBAL CRISP PIXEL-ART RENDERING —
-//        (1) style.css: a global `canvas, .pixel-art, img` rule forces
-//            image-rendering: pixelated + crisp-edges so every canvas
-//            and sprite element scales nearest-neighbor at any DPR/window.
-//        (2) utils.js: new disableImageSmoothing(ctx) helper (standard
+//  [6ag] v3.88.1 SCOPED CRISP PIXEL-ART RENDERING —
+//        (1) style.css: image-rendering: pixelated + crisp-edges is
+//            scoped STRICTLY to the #game-canvas rule (the v3.88.0
+//            global canvas/.pixel-art/img rule was reverted — it
+//            pixelated the hangar hero preview and the UI).
+//        (2) utils.js: disableImageSmoothing(ctx) helper (standard
 //            imageSmoothingEnabled + webkit/moz/ms vendor-prefixed
 //            fallbacks, null-safe).
 //        (3) Context-initialization enforcement: Game.js (main canvas),
 //            ViewScaler.js (re-applied after EVERY buffer resize — a
-//            canvas.width assignment resets 2D context state), main.js
-//            (hangar hero canvas after its DPR buffer sizing),
+//            canvas.width assignment resets 2D context state),
 //            AssetManager.js (shared PNG sprite cache) and PowerUp.js
-//            (jewel icon buffer) all disable smoothing on their 2D
-//            contexts.
+//            (jewel icon buffer) disable smoothing on their 2D
+//            contexts. The hangar hero canvas (main.js) deliberately
+//            keeps default bilinear smoothing — the ship preview is
+//            upscaled and nearest-neighbor made it jagged.
 //        (4) Intentional one-shot bilinear asset-downscale passes are
 //            preserved: Wasp2Sprite.js + AsteroidSprite.js still opt in
 //            with imageSmoothingEnabled = true on their own offscreen
@@ -26,7 +28,7 @@ import path from 'node:path';
 
 export default async function run() {
 {
-  console.log('\n[6ag] v3.88.0 global crisp pixel-art rendering (source + headless)');
+  console.log('\n[6ag] v3.88.1 scoped crisp pixel-art rendering (source + headless)');
   const cssSrc = fs.readFileSync(path.join(ROOT, 'style.css'), 'utf8');
   const utilsSrc = fs.readFileSync(path.join(ROOT, 'js/core/utils.js'), 'utf8');
   const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
@@ -38,13 +40,11 @@ export default async function run() {
   const asteroidSrc = fs.readFileSync(path.join(ROOT, 'js/levels/AsteroidSprite.js'), 'utf8');
   const { disableImageSmoothing } = await mod('js/core/utils.js');
 
-  // ── (1) global CSS rule ──
-  check('style.css has the global `canvas, .pixel-art, img` selector',
-    cssSrc.includes('canvas, .pixel-art, img'));
-  check('style.css forces image-rendering: pixelated',
-    cssSrc.includes('image-rendering: pixelated;'));
-  check('style.css forces image-rendering: crisp-edges',
-    cssSrc.includes('image-rendering: crisp-edges;'));
+  // ── (1) CSS scoped to the main gameplay canvas only ──
+  check('style.css scopes image-rendering to the #game-canvas rule',
+    /#game-canvas\s*{[^}]*image-rendering:\s*pixelated;[^}]*image-rendering:\s*crisp-edges;/.test(cssSrc));
+  check('style.css: the v3.88.0 global canvas/.pixel-art/img rule is gone',
+    !cssSrc.includes('canvas, .pixel-art, img'));
 
   // ── (2) utils helper ──
   check('utils.js exports disableImageSmoothing (runtime)', typeof disableImageSmoothing === 'function');
@@ -59,13 +59,14 @@ export default async function run() {
   })());
   check('disableImageSmoothing is null-safe', disableImageSmoothing(null) === null);
 
-  // ── (3) context-initialization enforcement ──
+  // ── (3) context-initialization enforcement (gameplay canvas only) ──
   check('Game.js disables smoothing on the main canvas context', gameSrc.includes('disableImageSmoothing(this.ctx)'));
   check('ViewScaler.js re-applies smoothing after the buffer resize',
     viewSrc.includes("disableImageSmoothing(this.canvas.getContext('2d'))"));
-  check('main.js disables smoothing on the hangar hero canvas', mainSrc.includes('disableImageSmoothing(hangarCtx)'));
   check('AssetManager.js disables smoothing on the sprite cache context', assetSrc.includes('disableImageSmoothing(g)'));
   check('PowerUp.js disables smoothing on the jewel icon buffer', pwSrc.includes('disableImageSmoothing(g)'));
+  check('main.js keeps default bilinear smoothing on the hangar hero canvas (no disableImageSmoothing)',
+    !mainSrc.includes('disableImageSmoothing'));
 
   // ── (4) intentional bilinear asset-downscale passes preserved ──
   check('Wasp2Sprite.js keeps its explicit bilinear downscale opt-in', waspSrc.includes('octx.imageSmoothingEnabled = true;'));

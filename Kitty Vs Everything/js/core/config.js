@@ -301,8 +301,17 @@
 //          resize, main.js hangar canvas, AssetManager.js sprite cache,
 //          PowerUp.js jewel buffer). Milestone version synced across
 //          package.json, config.js, main.js, Game.js, HUD.js and
-//          index.html.
-export const VERSION = 'v3.88.0';
+//          index.html. (REVERTED in v3.88.1 — see below.)
+// v3.88.1: CRISP PASS ISOLATION — the v3.88.0 global CSS rule pixelated
+//          the hangar hero preview and UI, so image-rendering is now
+//          scoped strictly to #game-canvas (style.css) and the hangar
+//          hero canvas keeps default bilinear smoothing; crisp
+//          nearest-neighbor rendering stays on the main gameplay canvas
+//          (Game.js init + ViewScaler.js re-apply after each buffer
+//          resize) and the offscreen sprite buffers (AssetManager.js,
+//          PowerUp.js). Milestone version synced across package.json,
+//          config.js, main.js, Game.js, HUD.js and index.html.
+export const VERSION = 'v3.88.1';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
