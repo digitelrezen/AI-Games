@@ -192,7 +192,11 @@
 //          jackpot on destruction — js/modes/EasterEggs/SpaceballsOne/).
 // v3.83.0: DROP POLICY — crate destruction spills through the DropManager
 //          (DROP_POLICY.crate: 100% chance, up to 2 drops, on-screen only).
-export const VERSION = 'v3.83.0';
+// v3.84.0: TELEGRAPHED ENEMY ATTACKS + ON-DEATH HAZARDS — standard enemies
+//          (EnemyBase) opt into telegraphed attacks (drawAttackTelegraph after
+//          e.draw) and on-death hazards (game.enemyHazards, updated/drawn after
+//          the fire zones). Easter Egg ships are unaffected.
+export const VERSION = 'v3.84.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -211,6 +215,8 @@ import { runCollisions } from '../combat/Collisions.js';
 import { updateHoming } from '../combat/Homing.js';
 import { stunRockets } from '../combat/StunRockets.js'; // v3.70.0: modular stun rockets (Q/H)
 import { napalmRockets } from '../combat/NapalmRockets.js'; // v3.70.0: modular napalm rockets (E/J)
+import { drawAttackTelegraph } from '../enemies/EnemyAttackModule.js'; // v3.84.0: telegraphed enemy attacks
+import { updateEnemyHazards, drawEnemyHazards } from '../enemies/EnemyHazard.js'; // v3.84.0: on-death hazards
 import { initStars, updateStars, drawStars } from './Starfield.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
@@ -281,6 +287,7 @@ export default class Game {
     this.powerups = [];
     this.bonusTargets = [];
     this.fireZones = [];   // v3.11.0: lingering napalm pools (FireZone.js)
+    this.enemyHazards = [];   // v3.84.0: on-death hazards (EnemyHazard.js)
     this.shake = 0;
     this.godMode = false;
     this.paused = false;
@@ -351,6 +358,7 @@ export default class Game {
     this.powerups = [];
     this.bonusTargets = [];
     this.fireZones = [];
+    this.enemyHazards = [];   // v3.84.0
     this.player = createCatShip(theme, this);
     this.player.score = 0;        // v3.20.0: per-player score
     this.players = [this.player]; // v3.20.0: P1 always
@@ -466,6 +474,7 @@ export default class Game {
       for (const e of this.enemies) e.update(dt);
       for (const p of this.powerups) p.update(dt);
       for (const z of this.fireZones) z.update(dt); // v3.11.0: napalm pool DoT
+      updateEnemyHazards(this, dt); // v3.84.0: on-death hazard pools/bombs (self-culls)
       for (const bt of this.bonusTargets) bt.update(dt);
       // v3.76.0: the active stage (combat wave or bonus round) is driven
       // through the uniform LevelRegistry interface; completion advances
@@ -570,10 +579,11 @@ export default class Game {
       return;
     }
     for (const z of this.fireZones) z.draw(ctx); // v3.11.0: napalm pools under everything
+    drawEnemyHazards(this, ctx); // v3.84.0: on-death hazards under enemies
     this.bonus.draw(ctx); // v3.54.0 → v3.60.0: bonus stage draw hook (Bone Yard bones are destructible bonusTargets)
     for (const pw of this.powerups) pw.draw(ctx);
     for (const bt of this.bonusTargets) bt.draw(ctx);
-    for (const e of this.enemies) e.draw(ctx);
+    for (const e of this.enemies) { e.draw(ctx); drawAttackTelegraph(e, ctx); } // v3.84.0: telegraph after sprite
     if (this.player && !this.player.dead) this.player.draw(ctx);
     this.crosshair.draw(ctx); // v3.48.0: procedural aim reticle (offset + heading-rotated)
     if (coopManager.active) coopManager.render(ctx); // v3.20.0: P2

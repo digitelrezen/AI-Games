@@ -289,10 +289,14 @@
 //          POWERUP_DROPS type) on destruction. Milestone version synced
 //          across package.json, config.js, main.js, Game.js, HUD.js and
 //          index.html.
-export const VERSION = 'v3.83.0';
+// v3.84.0: TELEGRAPHED ENEMY ATTACKS + ON-DEATH HAZARDS — per-species
+//          ENEMY_ATTACK / ENEMY_HAZARD opt-ins (config/enemies.js) drive
+//          telegraphed enemy attacks (EnemyAttackModule.js) and on-death
+//          hazards (EnemyHazard.js) for standard enemies (EnemyBase).
+export const VERSION = 'v3.84.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
-export { ENEMY_TYPES, TIERS, WAVE } from './config/enemies.js';
+export { ENEMY_TYPES, TIERS, WAVE, ENEMY_ATTACK, ENEMY_HAZARD } from './config/enemies.js';
 export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP, DROP_POLICY } from './config/drops.js';
 export { BONUS, LIFE_SCORE_INTERVAL } from './config/stages.js';

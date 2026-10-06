@@ -24,11 +24,15 @@
 //          spawnSourceDrops('mob'). DROP_POLICY (config/drops.js) carries
 //          the per-source chance + max drops, and the DropManager only
 //          drops from on-screen sources.
-export const VERSION = 'v3.83.0';
+// v3.84.0: ON-DEATH HAZARDS — onEnemyDeath spawns a player-facing hazard
+//          (EnemyHazard.spawnEnemyHazard) for standard enemies whose
+//          onDeathEffect is not 'none'. Easter Egg ships are unaffected.
+export const VERSION = 'v3.84.0';
 import { WEAPONS, SHUTTLE_DROP } from '../core/config.js'; // v3.42.0: shared drop pool
 import { spawnSourceDrops, spawnGuaranteedDrop } from '../core/DropManager.js'; // v3.83.0
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
+import { spawnEnemyHazard } from '../enemies/EnemyHazard.js'; // v3.84.0: on-death hazards
 
 /**
  * Resolve a friendly bullet hitting an enemy.
@@ -82,6 +86,12 @@ export function onEnemyDeath(game, enemy, owner) {
   if (owner && owner.score !== undefined) owner.score += pts;
   bus.emit('dmg', { x: enemy.x, y: enemy.y, text: '+' + pts, color: '#ffd54f' });
   maybeDrop(game, enemy);
+  // v3.84.0: ON-DEATH HAZARDS — standard enemies with an onDeathEffect (not
+  // 'none') leave a player-facing hazard at the kill point. Easter Egg ships
+  // never route through onEnemyDeath, so they are unaffected.
+  if (enemy.onDeathEffect && enemy.onDeathEffect !== 'none') {
+    spawnEnemyHazard(game, enemy.x, enemy.y, enemy.onDeathEffect);
+  }
 }
 
 function maybeDrop(game, enemy) {

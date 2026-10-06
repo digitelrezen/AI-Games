@@ -3,6 +3,10 @@
 // v3.83.0: OFF-SCREEN KILL GATE — applyDamage() ignores all damage while
 // the enemy is fully off-screen (utils.isOnScreen), so kills — and their
 // drops — always happen where the player can see them.
+// v3.84.0: TELEGRAPHED ATTACKS + ON-DEATH HAZARDS — initAttackState()/
+// updateAttack() (EnemyAttackModule.js) run the per-species attack state
+// machine; onDeathEffect carries the on-death hazard opt-in to onEnemyDeath.
+// (VERSION export stays v3.83.0 — pinned by the [6d] noEscape check.)
 // v3.36.0: NO-ESCAPE FLAG — enemies that intentionally fly off-screen
 // (the shuttle's round-trip flyby, v3.82.0) set this.noEscape = true to
 // opt out of the 80px off-screen cull in update().
@@ -18,6 +22,7 @@ import Entity from '../core/Entity.js';
 import { ENEMY_TYPES, TIERS } from '../core/config.js';
 import { TAU, rand, clamp, angleTo, isOnScreen } from '../core/utils.js';
 import { onEnemyDeath } from '../combat/Combat.js';
+import { initAttackState, updateAttack } from './EnemyAttackModule.js'; // v3.84.0: telegraphed attacks
 
 export default class EnemyBase extends Entity {
   constructor({ type, tier, x, y, game, difficulty = 1 }) {
@@ -50,6 +55,8 @@ export default class EnemyBase extends Entity {
     this.escaped = false;
     this.noEscape = false; // v3.36.0: opt out of the off-screen cull (shuttle flyby)
     this.deathHandled = false;
+    this.onDeathEffect = t.onDeathEffect || 'none'; // v3.84.0: on-death hazard opt-in (config/enemies.js)
+    initAttackState(this); // v3.84.0: telegraphed attack state machine
   }
 
   update(dt) {
@@ -57,6 +64,7 @@ export default class EnemyBase extends Entity {
     this.flash = Math.max(0, this.flash - dt);
     const slowMul = this.stunTimer > 0 ? 0 : 1;
     this.move(dt, slowMul);
+    updateAttack(this, dt); // v3.84.0: telegraphed attack state machine (after move, before super.update)
 
     if (this.maxShield > 0 && this.shield > 0 && this.shield < this.maxShield * 0.5) {
       this.shield = Math.min(this.maxShield * 0.5, this.shield + 10 * dt);

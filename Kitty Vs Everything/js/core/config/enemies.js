@@ -16,24 +16,24 @@
 //   pattern  AI movement style label (documented per species in js/enemies/)
 export const ENEMY_TYPES = {
   wasp:     { name: 'Wasp',         color: '#e8b62c', speed: 2.2, hp: 20, damage: 8,  fireRate: 0.9, pattern: 'weave' },
-  beetle:   { name: 'Beetle',       color: '#7a4a21', speed: 1.4, hp: 40, damage: 12, fireRate: 1.4, pattern: 'charge' },
+  beetle:   { name: 'Beetle',       color: '#7a4a21', speed: 1.4, hp: 40, damage: 12, fireRate: 1.4, pattern: 'charge', attackType: 'charger' },
   butterfly:{ name: 'Butterfly',    color: '#c77dff', speed: 2.6, hp: 14, damage: 6,  fireRate: 1.1, pattern: 'flutter' },
   wasp2:    { name: 'Wasp2',        color: '#c8ff3d', speed: 2.9, hp: 16, damage: 9,  fireRate: 0.7, pattern: 'track' },
-  rat:      { name: 'Rat',          color: '#8d8d8d', speed: 3.0, hp: 18, damage: 10, fireRate: 0.8, pattern: 'dash' },
+  rat:      { name: 'Rat',          color: '#8d8d8d', speed: 3.0, hp: 18, damage: 10, fireRate: 0.8, pattern: 'dash', onDeathEffect: 'fire_pool' },
   wolf:     { name: 'Wolf',         color: '#9aa5b1', speed: 2.4, hp: 34, damage: 14, fireRate: 1.2, pattern: 'pack' },
   falcon:   { name: 'Falcon',       color: '#b0713a', speed: 3.2, hp: 22, damage: 12, fireRate: 1.0, pattern: 'dive' },
-  bat:      { name: 'Bat',          color: '#5d5d7a', speed: 2.8, hp: 16, damage: 8,  fireRate: 0.9, pattern: 'erratic' },
+  bat:      { name: 'Bat',          color: '#5d5d7a', speed: 2.8, hp: 16, damage: 8,  fireRate: 0.9, pattern: 'erratic', attackType: 'burst' },
   blackcat: { name: 'Black Cat',    color: '#2b2b3a', speed: 2.0, hp: 28, damage: 16, fireRate: 1.3, pattern: 'teleport' },
-  lizard:   { name: 'Lizard',       color: '#4caf50', speed: 1.2, hp: 44, damage: 10, fireRate: 1.5, pattern: 'spit' },
-  dragon:   { name: 'Dragon',       color: '#d64545', speed: 1.6, hp: 70, damage: 20, fireRate: 1.8, pattern: 'breath' },
+  lizard:   { name: 'Lizard',       color: '#4caf50', speed: 1.2, hp: 44, damage: 10, fireRate: 1.5, pattern: 'spit', attackType: 'projectile' },
+  dragon:   { name: 'Dragon',       color: '#d64545', speed: 1.6, hp: 70, damage: 20, fireRate: 1.8, pattern: 'breath', attackType: 'beam' },
   human:    { name: 'Human',        color: '#3d6fb4', speed: 2.2, hp: 50, damage: 14, fireRate: 1.0, pattern: 'strafe' },
   alien:    { name: 'Alien Ship',   color: '#7b2ff7', speed: 2.5, hp: 46, damage: 16, fireRate: 1.2, pattern: 'phase' },
   snake:    { name: 'Snake',        color: '#66bb6a', speed: 2.0, hp: 30, damage: 12, fireRate: 1.1, pattern: 'sine' },
-  spider:   { name: 'Spider',       color: '#4a4a4a', speed: 1.8, hp: 38, damage: 10, fireRate: 0.9, pattern: 'web' },
+  spider:   { name: 'Spider',       color: '#4a4a4a', speed: 1.8, hp: 38, damage: 10, fireRate: 0.9, pattern: 'web', onDeathEffect: 'bomb_drop' },
   pinkcat:  { name: 'Pink Cat',     color: '#ff69b4', speed: 1.8, hp: 60, damage: 18, fireRate: 1.2, pattern: 'fierce' },
   shuttle:  { name: 'Space Shuttle', color: '#cfd8dc', speed: 2.0, hp: 60, damage: 16, fireRate: 1.4, pattern: 'glide' },
   moth:     { name: 'Moth',           color: '#d8c8a0', speed: 2.4, hp: 16, damage: 8,  fireRate: 1.0, pattern: 'erratic' },
-  squirrel: { name: 'Squirrel',       color: '#a5622d', speed: 3.4, hp: 12, damage: 7,  fireRate: 0.7, pattern: 'scurry' },
+  squirrel: { name: 'Squirrel',       color: '#a5622d', speed: 3.4, hp: 12, damage: 7,  fireRate: 0.7, pattern: 'scurry', onDeathEffect: 'fire_pool' },
 };
 
 export const TIERS = {
@@ -67,4 +67,30 @@ export const WAVE = {
   SPAWN_DELAY_MIN: 0.35,
   SPAWN_DELAY_MAX: 1.1,
   BOSS_DELAY: 2.5,
+};
+
+// ─── v3.84.0: opt-in telegraphed attacks (standard enemies only) ───
+// A species opts in by setting attackType in ENEMY_TYPES above. 'none' (the
+// default) keeps the base shootTimer/attack() loop unchanged. Every
+// non-'none' attack shows a telegraph (warning) before it fires so the
+// player can dodge. Tunables live here, NOT in the behavior modules
+// (Phase 2 parameter standardization).
+export const ENEMY_ATTACK = {
+  cooldown:  { none: 0, projectile: 2.6, burst: 3.2, beam: 3.8, charger: 4.2 },
+  telegraph: { none: 0, projectile: 0.7, burst: 0.8, beam: 1.0, charger: 0.9 },
+  projectile: { speed: 300, dmgMul: 1.2, range: 480 },
+  burst:      { count: 5, spread: 0.16, speed: 280, dmgMul: 0.7, range: 420 },
+  beam:       { speed: 620, dmgMul: 1.8, range: 540 },
+  charger:    { speed: 760, duration: 0.5, range: 380 },
+};
+
+// ─── v3.84.0: opt-in on-death hazards (standard enemies only) ───
+// A species opts in by setting onDeathEffect in ENEMY_TYPES above. 'none'
+// (the default) dies normally. fire_pool leaves a lingering pool that
+// damages the player over time; bomb_drop drops a bomb that arms, then
+// explodes for AoE damage. These are PLAYER-facing (game.hitPlayer),
+// distinct from FireZone (enemy-side damage).
+export const ENEMY_HAZARD = {
+  firePool:  { radius: 78, life: 5, dps: 12, color: '#ff7043' },
+  bombDrop:  { fuse: 1.4, radius: 92, damage: 20, color: '#ff5252' },
 };
