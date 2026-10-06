@@ -2,6 +2,9 @@
 //  [6d] v3.50.0 SHUTTLE ENEMY — 17th species: regular waves
 //      only (ENEMY_TYPES → WaveManager pool), Bone Yard Phase 2
 //      locked to an explicit humanoid allowlist (BoneYardBonus.js)
+//  v3.82.0: round-trip flyby — spawns off-screen right, flies left,
+//      flips only fully off-screen (mirrored return pass), loops until
+//      destroyed (noEscape exempts it from the 80px cull in EnemyBase).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -10,7 +13,7 @@ import path from 'node:path';
 const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
 
 export default async function run() {
-console.log('\n[6d] v3.50.0 shuttle enemy (17th species)');
+console.log('\n[6d] shuttle enemy (19 species, v3.82.0 round-trip flyby)');
 const { ENEMY_TYPES, WAVE } = await mod('js/core/config.js');
 check('config: ENEMY_TYPES has 19 species (shuttle + moth + squirrel)', Object.keys(ENEMY_TYPES).length === 19, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
 check('config: shuttle entry (Space Shuttle, glide pattern)', ENEMY_TYPES.shuttle && ENEMY_TYPES.shuttle.name === 'Space Shuttle' && ENEMY_TYPES.shuttle.pattern === 'glide', `got ${JSON.stringify(ENEMY_TYPES.shuttle)}`);
@@ -35,5 +38,40 @@ check('BoneYardBonus: phase 2/3 spawn uses the allowlist (not a bare type)', byS
 // Generated sprite data carries the shuttle PNG (128×60).
 const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), 'utf8');
 check('AssetSprites: shuttle sprite dims 128×60 registered', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(spritesSrc));
-
+// v3.82.0: round-trip flyby — spawn off-screen right, flip only fully
+// off-screen, mirror the sprite on the return pass, noEscape beats the
+// 80px off-screen cull in EnemyBase.update().
+check('ShuttleEnemy: v1.1.0 round-trip flyby (spawn right, noEscape, off-screen flip)',
+  seSrc.includes("export const VERSION = 'v1.1.0'") &&
+  seSrc.includes('this.noEscape = true') &&
+  seSrc.includes('this.x = this.game.W + 140') &&
+  seSrc.includes('this.strafeDir = -1') &&
+  seSrc.includes('if (this.strafeDir === -1 && this.x < -margin) this.strafeDir = 1;') &&
+  seSrc.includes('if (this.strafeDir === 1 && this.x > this.game.W + margin) this.strafeDir = -1;'));
+check('ShuttleEnemy: return pass mirrors the sprite (ctx.scale(-1, 1))', seSrc.includes('if (this.strafeDir === 1) ctx.scale(-1, 1)'));
+check('ShuttleEnemy: shootTimer counts down in move() (telegraph contract)', seSrc.includes('this.shootTimer -= dt'));
+const ebSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/EnemyBase.js'), 'utf8');
+check('EnemyBase: noEscape flag gates the 80px off-screen cull (v3.36.0)', (await mod('js/enemies/EnemyBase.js')).VERSION === 'v3.36.0' && ebSrc.includes('this.noEscape = false') && ebSrc.includes('!this.noEscape && (this.y > this.game.H + 80'));
+const { TIERS } = await mod('js/core/config.js');
+const mobTier = Object.keys(TIERS).find((k) => !TIERS[k].special);
+let shots = 0;
+const g = { W: 1280, H: 720, player: { x: 640, y: 360 }, spawnEnemyBullet() { shots++; } };
+const shuttle = new ShuttleEnemy({ type: 'shuttle', tier: mobTier, x: 0, y: 0, game: g });
+check('ShuttleEnemy: spawns off-screen right at flight altitude (nose left)', shuttle.x > 1280 && shuttle.y >= 80 && shuttle.y <= 180 && shuttle.strafeDir === -1 && shuttle.noEscape === true, `x=${shuttle.x} y=${shuttle.y}`);
+const sx0 = shuttle.x;
+shuttle.move(1 / 60, 1);
+check('ShuttleEnemy: first pass flies left (off-screen spawn → stage)', shuttle.x < sx0, `x0=${sx0} x1=${shuttle.x}`);
+shuttle.x = -100;
+shuttle.move(1 / 60, 1);
+check('ShuttleEnemy: flips to the return pass fully off-screen left', shuttle.strafeDir === 1);
+shuttle.x = 1380;
+shuttle.move(1 / 60, 1);
+check('ShuttleEnemy: flips back to the outbound pass fully off-screen right', shuttle.strafeDir === -1);
+shuttle.x = -100;
+shuttle.update(1 / 60);
+check('ShuttleEnemy: survives fully off-screen (noEscape beats the 80px cull)', shuttle.alive === true && shuttle.escaped === false);
+shuttle.shootTimer = 0;
+shuttle.update(1 / 60);
+for (let i = 0; i < 30 && shots === 0; i++) shuttle.move(1 / 60, 1);
+check('ShuttleEnemy: telegraphed cannon shot fires after the 0.4s aim ring', shots === 1, `shots=${shots}`);
 }

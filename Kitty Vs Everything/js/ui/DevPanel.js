@@ -33,7 +33,7 @@
 //          (Settings.js LIMITS is the source of truth; setSetting clamps).
 // v3.81.0: "Spaceballs One" dev button — force-spawns the rare
 //          unstoppable easter-egg ship (switchEgg(game, 'spaceballs')).
-export const VERSION = 'v3.81.0';
+export const VERSION = 'v3.82.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -179,9 +179,10 @@ export default class DevPanel {
       };
     }
     // ─── v3.81.0: Spaceballs One — the rare unstoppable easter-egg ship ───
-    // Force-spawns the ship (no roll): top-right → bottom-left diagonal,
-    // obliterates everything in its path, brake-light stream at the player,
-    // and a treasure-chest jackpot (one of EVERY power-up) on destruction.
+    // Force-spawns the ship (no roll): bottom-right → top-left diagonal
+    // (v3.82.0), obliterates everything in its path, brake-light stream at
+    // the player, and a treasure-chest jackpot (one of EVERY power-up) on
+    // destruction.
     const spaceballsBtn = document.getElementById('dev-spaceballs');
     if (spaceballsBtn) {
       spaceballsBtn.onclick = () => {

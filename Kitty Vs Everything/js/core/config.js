@@ -2,6 +2,12 @@
 // Kitty Vs Everything — v3.77.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v3.82.0: SHUTTLE ROUND-TRIP FLYBY — the shuttle (species #17) now spawns
+//          off-screen right, flies left, flips fully off-screen (sprite
+//          mirrors), returns right, and loops until destroyed (EnemyBase
+//          noEscape flag exempts it from the 80px off-screen cull);
+//          SPACEBALLS ONE one-way flyby flipped to bottom-right → top-left
+//          (spawns off-screen bottom-right, despawns off-screen top-left).
 // v3.80.0: DROP RARITY OVERHAUL — POWERUP_DROPS (config/drops.js) is now a
 //          rarity ladder (robot SUPER RARE 1%) + new DROP_RARITY per-source
 //          drop chances (enemy 8% / special 50%); both ships enter/exit
@@ -276,7 +282,7 @@
 //          POWERUP_DROPS type) on destruction. Milestone version synced
 //          across package.json, config.js, main.js, Game.js, HUD.js and
 //          index.html.
-export const VERSION = 'v3.81.0';
+export const VERSION = 'v3.82.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

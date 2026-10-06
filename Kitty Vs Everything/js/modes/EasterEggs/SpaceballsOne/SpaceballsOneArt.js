@@ -1,13 +1,14 @@
 // Filename: SpaceballsOneArt.js
-// Kitty Vs Everything — v3.81.0
+// Kitty Vs Everything — v3.82.0
 // "Spaceballs One" easter-egg ship art (js/modes/EasterEggs/SpaceballsOne/).
 //
 // Asset: .assets/We-Brake-For-Nobody.png (696×390 → 128×72 via the shared
 // AssetManager pipeline, key `spaceballs_one` — tools/asset-manifest.json).
-// The art's nose faces -x (left); the ship races top-right → bottom-left,
-// so the blit is rotated by (heading − ART_NOSE_ANGLE) — a slight ~29° tilt
-// on a 1280×720 stage. If the art is ever mirrored, flip ART_NOSE_ANGLE
-// to 0 (nose +x) and the rotation math stays correct.
+// The art's nose faces -x (left); the ship races bottom-right → top-left
+// (v3.82.0: one-way flyby), so the blit is rotated by (heading −
+// ART_NOSE_ANGLE) — a slight ~29° nose-up tilt on a 1280×720 stage. If
+// the art is ever mirrored, flip ART_NOSE_ANGLE to 0 (nose +x) and the
+// rotation math stays correct.
 //
 // Scale is dynamic: SPACEBALLS_ONE.scale (1.75) → 224×126 on screen.
 // Headless / not-yet-decoded → procedural gold-wedge fallback (the game

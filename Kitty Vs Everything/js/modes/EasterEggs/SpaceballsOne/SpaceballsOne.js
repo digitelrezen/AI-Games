@@ -1,5 +1,5 @@
 // Filename: SpaceballsOne.js
-// Kitty Vs Everything — v3.81.0
+// Kitty Vs Everything — v3.82.0
 // "Spaceballs One" — the rare UNSTOPPABLE easter-egg ship (v3.81.0).
 //
 // Spawn: a rare roll at the start of every combat wave
@@ -8,11 +8,11 @@
 // WaveManager.startNext). The dev panel "Spaceballs One" button force-
 // spawns it (switchEgg(game, 'spaceballs')).
 //
-// Flight: enters off-screen top-right and races diagonally to bottom-left
-// (SPACEBALLS_ONE.speed px/s, delta-time integrated), despawning cleanly
-// once fully off-screen. The art (SpaceballsOneArt.js,
-// .assets/We-Brake-For-Nobody.png) is scaled by SPACEBALLS_ONE.scale and
-// rotated to the descent heading.
+// Flight (v3.82.0): one-way flyby — enters off-screen bottom-right and
+// races diagonally up-left (SPACEBALLS_ONE.speed px/s, delta-time
+// integrated), despawning cleanly once fully off-screen top-left. The art
+// (SpaceballsOneArt.js, .assets/We-Brake-For-Nobody.png) is scaled by
+// SPACEBALLS_ONE.scale and rotated to the transit heading.
 //
 // Unstoppable: SpaceballsOneCollision.sweepPath obliterates everything in
 // its path (enemies / asteroids / crates / all projectiles) — "We brake
@@ -33,7 +33,7 @@ export const SPACEBALLS_ONE = {
   spawnChance: 0.06,    // rare roll at the start of each combat wave
   maxPerRun: 2,         // per-mission cap (EasterEgg manager counts)
   hp: 200,              // high-health target — ~3s of focused fire
-  speed: 400,           // px/s diagonal transit (top-right → bottom-left)
+  speed: 400,           // px/s diagonal transit (bottom-right → top-left)
   scale: 1.75,          // 128×72 art → 224×126 on screen
   sweepPad: 20,         // extra px around the art box for the sweep
   fireInterval: 0.16,   // s between weapon volleys
@@ -58,18 +58,18 @@ export default class SpaceballsOne {
     const dims = spaceballsArtDims();
     this.w = dims.w * SPACEBALLS_ONE.scale;
     this.h = dims.h * SPACEBALLS_ONE.scale;
-    // Trajectory: off-screen top-right → off-screen bottom-left.
+    // v3.82.0: one-way flyby — off-screen bottom-right → off-screen top-left.
     const W = game.viewW, H = game.viewH;
     this.x = W + 120;
-    this.y = -120;
-    const dx = -(W + 240), dy = H + 240;
+    this.y = H + 120;
+    const dx = -(W + 240), dy = -(H + 240);
     const len = Math.hypot(dx, dy);
     this.vx = (dx / len) * SPACEBALLS_ONE.speed;
     this.vy = (dy / len) * SPACEBALLS_ONE.speed;
     this.heading = Math.atan2(this.vy, this.vx);
   }
 
-  /** 0 at spawn (top-right) → 1 at exit (bottom-left) (debug snapshot). */
+  /** 0 at spawn (bottom-right) → 1 at exit (top-left) (debug snapshot). */
   get progress() {
     const k = 1 - (this.x - 120) / (this.game.viewW + 240);
     return clamp(k, 0, 1);
@@ -82,8 +82,8 @@ export default class SpaceballsOne {
     this.t += dt;
     this.x += this.vx * dt;
     this.y += this.vy * dt;
-    // Clean despawn: fully off-screen bottom-left → the egg is done.
-    if (this.x < -200 && this.y > g.viewH + 120) {
+    // Clean despawn: fully off-screen top-left → the egg is done (one-way flyby).
+    if (this.x < -200 && this.y < -120) {
       this.alive = false;
       return;
     }

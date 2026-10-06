@@ -1,5 +1,8 @@
 // Filename: EnemyBase.js
 // Kitty Vs Everything — v3.11.0 (boss-tier screen containment)
+// v3.36.0: NO-ESCAPE FLAG — enemies that intentionally fly off-screen
+// (the shuttle's round-trip flyby, v3.82.0) set this.noEscape = true to
+// opt out of the 80px off-screen cull in update().
 // Base class for all enemy species: core physics, health pools, stun timer,
 // common update loop, and shared canvas draw helpers.
 // v3.1.0: Removed ELEMENTS import and status.slow. Uses stunTimer from Entity.
@@ -7,7 +10,7 @@
 //          hold the upper-middle fight zone (with a gentle bob) and can pass
 //          from one side of the screen to the other, instead of being pinned
 //          to the arena edges (which left them stuck on the bottom).
-export const VERSION = 'v3.35.0';
+export const VERSION = 'v3.36.0';
 import Entity from '../core/Entity.js';
 import { ENEMY_TYPES, TIERS } from '../core/config.js';
 import { TAU, rand, clamp, angleTo } from '../core/utils.js';
@@ -42,6 +45,7 @@ export default class EnemyBase extends Entity {
     this.specialTimer = rand(2.5, 4.0);
     this.flash = 0;
     this.escaped = false;
+    this.noEscape = false; // v3.36.0: opt out of the off-screen cull (shuttle flyby)
     this.deathHandled = false;
   }
 
@@ -99,7 +103,7 @@ export default class EnemyBase extends Entity {
         if (this.x < -m) this.x = this.game.W + m;
         else if (this.x > this.game.W + m) this.x = -m;
       }
-    } else if (this.y > this.game.H + 80 || this.x < -80 || this.x > this.game.W + 80) {
+    } else if (!this.noEscape && (this.y > this.game.H + 80 || this.x < -80 || this.x > this.game.W + 80)) {
       this.escaped = true;
       this.alive = false;
       return;

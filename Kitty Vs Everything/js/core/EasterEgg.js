@@ -25,11 +25,12 @@
 //     (HP 30); on destruction it explodes, drops a 'robot' power-up
 //     (catch → Bender's kill-based aimbot) and quips
 //     "Bite My Shiney Metal Ass!". Triggered from the dev panel (Drop Ship).
-//   • SpaceballsOne (v3.81.0) — "Spaceballs One", the rare UNSTOPPABLE
-//     easter-egg ship (js/modes/EasterEggs/SpaceballsOne/): spawns off-
-//     screen top-right on a rare per-wave roll (SPACEBALLS_ONE.spawnChance,
-//     capped at SPACEBALLS_ONE.maxPerRun per mission — maybeSpawnSpaceballs,
-//     called from WaveManager.startNext), races diagonally to bottom-left
+//   • SpaceballsOne (v3.81.0, v3.82.0 one-way flyby) — "Spaceballs One",
+//     the rare UNSTOPPABLE easter-egg ship (js/modes/EasterEggs/SpaceballsOne/):
+//     spawns off-screen bottom-right on a rare per-wave roll
+//     (SPACEBALLS_ONE.spawnChance, capped at SPACEBALLS_ONE.maxPerRun per
+//     mission — maybeSpawnSpaceballs, called from WaveManager.startNext),
+//     races diagonally up-left (one-way, despawns fully off-screen top-left)
 //     at SPACEBALLS_ONE.speed, obliterates everything in its path (enemies
 //     / asteroids / crates / all projectiles — "We brake for nobody!"),
 //     fires a brake-light bolt stream at the player, and on destruction

@@ -33,6 +33,10 @@ export default async function run() {
   const game = makeGame();
   game.powerups = [];
   const shuttle = new ShuttleEnemy({ type: 'shuttle', tier: 'mob', x: 100, y: 100, game, difficulty: 1 });
+  // v3.82.0: the constructor owns the spawn point (off-screen right, fixed
+  // flight altitude) — place the shuttle at the kill point for this test.
+  shuttle.x = 100;
+  shuttle.y = 100;
   shuttle.shield = 0;
   shuttle.hp = 1;
   const bullet = { damage: 10, weapon: 'vulkan', shieldMelt: 0, alive: true, owner: null };

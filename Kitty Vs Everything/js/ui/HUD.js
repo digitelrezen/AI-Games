@@ -35,7 +35,7 @@
 //          changes — drops render through the existing power-up pipeline).
 // v3.81.0: Version label bumped with Spaceballs One (no HUD changes —
 //          the egg renders through the EasterEgg manager draw path).
-export const VERSION = 'v3.81.0';
+export const VERSION = 'v3.82.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

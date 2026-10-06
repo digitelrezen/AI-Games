@@ -190,7 +190,7 @@
 // v3.81.0: Version label synced (Spaceballs One easter-egg ship — rare
 //          per-wave spawn, unstoppable diagonal sweep, treasure-chest
 //          jackpot on destruction — js/modes/EasterEggs/SpaceballsOne/).
-export const VERSION = 'v3.81.0';
+export const VERSION = 'v3.82.0';
 import { LIFE_SCORE_INTERVAL, PLAYER, rollPowerUpDrop } from './config.js'; // v3.42.0: crate drop pool
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

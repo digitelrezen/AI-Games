@@ -54,7 +54,7 @@ const { default: PowerUp } = await mod('js/combat/PowerUp.js');
 const { fireNow, updateWeaponState, cycleWeapon } = await mod('js/player/PlayerWeapons.js');
 
 const makeGame = () => ({
-  viewW: 1280, viewH: 720, H: 720,
+  W: 1280, viewW: 1280, viewH: 720, H: 720,
   particles: { burst() {} }, shake: 0, time: 0,
   bullets: [], score: 0, multiplier: 1,
   msglog: { log() {} }, aimbot: { active: false, trigger() {} },

@@ -36,13 +36,14 @@ import s33 from './sections/06ab-shuttle-wave-event.mjs';
 import s34 from './sections/07-full-smoke.mjs';
 import s35 from './sections/06ac-control-mode.mjs';
 import s36 from './sections/06ad-drop-rarity.mjs';
+import s37 from './sections/06ae-spaceballs-one.mjs';
 
-const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s35, s34];
+const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s35, s34];
 
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.80.0: drop rarity ladder (super-rare 1% robot), rarity-gated kill drops, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, shuttle wave event, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.82.0: shuttle round-trip flyby (off-screen flip + mirrored return pass), Spaceballs One one-way bottom-right → top-left flyby, drop rarity ladder, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }
