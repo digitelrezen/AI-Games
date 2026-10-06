@@ -55,8 +55,8 @@
 //          as the fallback while the sprite decodes (or if the asset is
 //          missing/corrupt).
 
-export const VERSION = 'v3.86.0';
-import { TAU } from '../core/utils.js';
+export const VERSION = 'v3.88.0';
+import { TAU, disableImageSmoothing } from '../core/utils.js'; // v3.88.0: crisp pixel-art enforcement
 import { getMiniPosterSprite } from '../levels/MiniPosterSprite.js';
 import { getBenderFull, BENDER_BODY_W, BENDER_BODY_H } from '../core/BenderSprite.js'; // v3.28.0: tiny full-body Bender icon for the 'robot' drop
 import { getSprite, getDims, POWERUP_ASSETS } from '../core/AssetManager.js'; // v3.33.0: shared PNG pipeline
@@ -125,6 +125,10 @@ function getJewelBuffer(type) {
     if (!c || !g) return null;
     c.width = JEWEL_BUF;
     c.height = JEWEL_BUF;
+    // v3.88.0: crisp pixel-art — nearest-neighbor on the jewel icon
+    // buffer context (the width/height assignments above reset the
+    // context state, so this runs AFTER the sizing).
+    disableImageSmoothing(g);
     b = { c, ctx: g };
     jewelBuffers.set(type, b);
   }

@@ -35,9 +35,10 @@
 //          changes — drops render through the existing power-up pipeline).
 // v3.81.0: Version label bumped with Spaceballs One (no HUD changes —
 //          the egg renders through the EasterEgg manager draw path).
-// v3.87.0: Version label bumped with the start-menu hangar polish (no HUD
-//          changes — the fix lives in style.css + the hangar canvas DPR).
-export const VERSION = 'v3.87.0';
+// v3.88.0: Version label bumped with the global crisp pixel-art rendering
+//          pass (no HUD changes — the fix lives in style.css + the 2D
+//          context smoothing enforcement in utils/Game/ViewScaler/main).
+export const VERSION = 'v3.88.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

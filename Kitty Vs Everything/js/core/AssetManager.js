@@ -16,6 +16,7 @@
 // null-sprite fallback contract holds everywhere.
 
 import { ASSET_B64, ASSET_DIMS } from './AssetSprites.js';
+import { disableImageSmoothing } from './utils.js'; // v3.88.0: crisp pixel-art enforcement
 
 const canvases = new Map(); // key → HTMLCanvasElement | null (null = failed/undecoded)
 const failed = new Set();   // keys that failed to decode (logged once, never retried)
@@ -61,7 +62,11 @@ export function loadAssets(keys = assetKeys()) {
               const c = document.createElement('canvas');
               c.width = dims.w;
               c.height = dims.h;
-              c.getContext('2d').drawImage(img, 0, 0, dims.w, dims.h);
+              // v3.88.0: crisp pixel-art — nearest-neighbor on the sprite
+              // cache context so scaled sprite draws never blur.
+              const g = c.getContext('2d');
+              disableImageSmoothing(g);
+              g.drawImage(img, 0, 0, dims.w, dims.h);
               canvases.set(key, c);
             } catch (err) {
               failed.add(key);

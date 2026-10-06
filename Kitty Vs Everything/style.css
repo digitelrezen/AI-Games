@@ -46,6 +46,16 @@ body {
   background: var(--bg);
 }
 
+/* v3.88.0: global crisp pixel-art enforcement — every canvas and pixel
+   sprite element scales nearest-neighbor (no bilinear blur) at any DPR
+   or window size. `pixelated` is the modern value; `crisp-edges` is the
+   standard alias — the last value a browser supports wins, so every
+   engine lands on crisp scaling. */
+canvas, .pixel-art, img {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 /* ─── HUD ─── */
 #hud {
   position: absolute;

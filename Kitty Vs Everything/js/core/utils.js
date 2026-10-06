@@ -5,8 +5,12 @@
 // v3.83.0: Added isOnScreen — live-viewport bounds check shared by the
 //          off-screen kill gate (EnemyBase.applyDamage) and the drop
 //          gating (js/core/DropManager.js).
+// v3.88.0: Added disableImageSmoothing — global crisp pixel-art
+//          enforcement helper (standard + webkit/moz/ms vendor-prefixed
+//          fallbacks), applied at every 2D context initialization and
+//          after canvas buffer resizes (which reset context state).
 
-export const VERSION = 'v3.83.0';
+export const VERSION = 'v3.88.0';
 
 export const TAU = Math.PI * 2;
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -41,4 +45,26 @@ export const formatTime = (secs) => {
 export function isOnScreen(game, x, y, r = 0) {
   const m = (r || 0) + 12;
   return x > -m && x < game.W + m && y > -m && y < game.H + m;
+}
+
+/**
+ * v3.88.0: crisp pixel-art enforcement — disables bilinear image
+ * smoothing on a Canvas 2D context so drawImage() uses nearest-neighbor
+ * scaling (no blur). Also sets the legacy vendor-prefixed variants
+ * (webkit/moz/ms) where a browser still exposes them. Applied at every
+ * context initialization in the rendering engine (Game.js main canvas,
+ * ViewScaler.js after each buffer resize, main.js hangar canvas) and on
+ * the offscreen sprite-buffer contexts (AssetManager, PowerUp).
+ * Intentional one-shot asset downscale passes (Wasp2Sprite /
+ * AsteroidSprite) opt back in locally on their own contexts.
+ * @param {CanvasRenderingContext2D|null} ctx the 2D context to crisp up
+ * @returns {CanvasRenderingContext2D|null} the same context (null-safe)
+ */
+export function disableImageSmoothing(ctx) {
+  if (!ctx) return ctx;
+  ctx.imageSmoothingEnabled = false;
+  if ('webkitImageSmoothingEnabled' in ctx) ctx.webkitImageSmoothingEnabled = false;
+  if ('mozImageSmoothingEnabled' in ctx) ctx.mozImageSmoothingEnabled = false;
+  if ('msImageSmoothingEnabled' in ctx) ctx.msImageSmoothingEnabled = false;
+  return ctx;
 }

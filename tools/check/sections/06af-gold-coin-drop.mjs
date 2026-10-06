@@ -52,7 +52,7 @@ export default async function run() {
   check('generic audio.powerup() is gated on !customSound', gameSrc.includes('if (!customSound) audio.powerup()'));
 
   // ── (3) PowerUp.js coin rendering ──
-  check("PowerUp.js VERSION is v3.86.0", pwSrc.includes("VERSION = 'v3.86.0'"));
+  check("PowerUp.js VERSION is v3.88.0", pwSrc.includes("VERSION = 'v3.88.0'"));
   check('PowerUp.js JEWEL has a gold coin entry (aura + glint)',
     /coin:\s*\{\s*aura:\s*'255, 200, 40',\s*glint:\s*'255, 250, 230'\s*\}/.test(pwSrc));
   check('PowerUp.js SPARKLES has a gold coin entry',

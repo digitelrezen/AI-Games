@@ -196,7 +196,12 @@
 //          (EnemyBase) opt into telegraphed attacks (drawAttackTelegraph after
 //          e.draw) and on-death hazards (game.enemyHazards, updated/drawn after
 //          the fire zones). Easter Egg ships are unaffected.
-export const VERSION = 'v3.87.0';
+// v3.88.0: GLOBAL CRISP PIXEL-ART RENDERING — the main canvas 2D context
+//          disables image smoothing at init (ViewScaler re-applies after
+//          each buffer resize; style.css forces image-rendering on all
+//          canvas/img elements). Milestone version synced across
+//          package.json, config.js, main.js, Game.js, HUD.js and index.html.
+export const VERSION = 'v3.88.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -220,7 +225,7 @@ import { updateEnemyHazards, drawEnemyHazards } from '../enemies/EnemyHazard.js'
 import { initStars, updateStars, drawStars } from './Starfield.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
-import { rand } from './utils.js';
+import { rand, disableImageSmoothing } from './utils.js'; // v3.88.0: crisp pixel-art enforcement
 // ─── v3.14.0: settings / keybinds / console / pause / aimbot / debug ───
 import { SETTINGS } from '../ui/Settings.js';
 import { KEYBINDS } from '../input/Keybinds.js';
@@ -246,6 +251,9 @@ export default class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    // v3.88.0: crisp pixel-art — nearest-neighbor drawImage on the main
+    // canvas (ViewScaler re-applies this after every buffer resize).
+    disableImageSmoothing(this.ctx);
     this.view = new ViewScaler(this.canvas); // v3.12.0: fit stage to display, U = fullscreen
     // v3.13.0: W/H mirror the LIVE logical viewport so legacy game.W/H
     // consumers (enemies, EasterEgg, DevPanel, bonuses) track ultra-wide.

@@ -53,11 +53,17 @@
 //          nameplate sits centered under the ship, arrow controls enlarged.
 //          The hero canvas also renders at native device-pixel resolution
 //          (DPR-aware buffer) so the start screen is crisp on HiDPI.
-export const VERSION = 'v3.87.0';
+// v3.88.0: Global crisp pixel-art rendering — the hangar hero canvas
+//          disables image smoothing after its DPR buffer sizing (canvas
+//          resize resets context state); style.css forces
+//          image-rendering: pixelated/crisp-edges on all canvas/img
+//          elements. Milestone version synced with package.json.
+export const VERSION = 'v3.88.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
 import { loadAssets } from './AssetManager.js'; // v3.72.1: re-render icons when sprites land
+import { disableImageSmoothing } from './utils.js'; // v3.88.0: crisp pixel-art enforcement
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer
 import MenuKeybinds from '../input/MenuKeybinds.js'; // v3.23.0: dynamic keybind footer
 
@@ -90,6 +96,9 @@ const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
 if (hangarCanvas) {
   hangarCanvas.width = Math.round(320 * HANGAR_DPR);
   hangarCanvas.height = Math.round(220 * HANGAR_DPR);
+  // v3.88.0: crisp pixel-art — the width/height assignments above reset
+  // the 2D context state, so disable smoothing AFTER the resize.
+  disableImageSmoothing(hangarCtx);
 }
 const hangarNameplate = document.getElementById('hangar-nameplate');
 const hangarDots = document.getElementById('hangar-dots');

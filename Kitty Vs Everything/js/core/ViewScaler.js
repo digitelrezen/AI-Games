@@ -17,8 +17,12 @@
 // (computeViewport + ULTRA_WIDE_PRESETS); buffer is now aspect-correct.
 // v3.12.0: canvas buffer + q scale (MAX_BUFFER_SCALE).
 // v3.9.0:  CSS #game-root scale() (replaced canvas CSS size / DPR).
-export const VERSION = 'v3.13.0';
+// v3.88.0: crisp pixel-art — onResize re-applies disableImageSmoothing
+//          after the canvas buffer resize (a canvas.width assignment
+//          resets the 2D context state).
+export const VERSION = 'v3.88.0';
 import { computeViewport } from './Viewport.js';
+import { disableImageSmoothing } from './utils.js'; // v3.88.0: crisp pixel-art enforcement
 
 class ViewScaler {
   constructor(canvas) {
@@ -69,6 +73,10 @@ class ViewScaler {
     this.canvas.style.height = `${vp.viewH}px`;
     // No ctx transform here — Game.js applies ctx.scale(this.q) per frame
     // and all game code works in viewport (game) coordinates.
+    // v3.88.0: crisp pixel-art — the canvas.width/height assignments above
+    // reset the 2D context state, so re-apply nearest-neighbor smoothing
+    // (same context instance Game.js holds).
+    disableImageSmoothing(this.canvas.getContext('2d'));
   }
 
   // ─── v3.12.0: browser fullscreen (U key / dev panel) ───

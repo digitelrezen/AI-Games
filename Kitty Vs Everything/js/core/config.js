@@ -293,7 +293,16 @@
 //          ENEMY_ATTACK / ENEMY_HAZARD opt-ins (config/enemies.js) drive
 //          telegraphed enemy attacks (EnemyAttackModule.js) and on-death
 //          hazards (EnemyHazard.js) for standard enemies (EnemyBase).
-export const VERSION = 'v3.87.0';
+// v3.88.0: GLOBAL CRISP PIXEL-ART RENDERING — style.css forces
+//          image-rendering: pixelated/crisp-edges on all canvas/.pixel-
+//          art/img elements; utils.disableImageSmoothing() (standard +
+//          vendor-prefixed fallbacks) is applied at every 2D context
+//          initialization (Game.js, ViewScaler.js after each buffer
+//          resize, main.js hangar canvas, AssetManager.js sprite cache,
+//          PowerUp.js jewel buffer). Milestone version synced across
+//          package.json, config.js, main.js, Game.js, HUD.js and
+//          index.html.
+export const VERSION = 'v3.88.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
