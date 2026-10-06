@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════
-//  [6ad] v3.83.0 DROP POLICY + SHIPS EVERY LEVEL —
-//        (1) The shared POWERUP_DROPS pool is now a rarity ladder:
-//            health 0.30 / frenzy 0.20 / shield 0.22 / mini 0.14 /
-//            crate 0.07 / life 0.06 / robot 0.01 (super-rare, 1%).
+//  [6ad] v3.86.0 DROP POLICY + SHIPS EVERY LEVEL —
+//        (1) The shared POWERUP_DROPS pool is now coin-first:
+//            coin 0.75 / health 0.07 / shield 0.06 / frenzy 0.05 /
+//            mini 0.03 / crate 0.02 / life 0.01 / robot 0.01 (1%).
 //            The weights sum to exactly 1.00, and the guaranteed
 //            drops stay separate (SHUTTLE_DROP mini poster, ship
 //            flyby robot).
@@ -42,8 +42,8 @@ export default async function run() {
   const waveSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
 
   // ── (1) rarity ladder ──
-  const EXPECTED = { health: 0.30, frenzy: 0.20, shield: 0.22, mini: 0.14, crate: 0.07, life: 0.06, robot: 0.01 };
-  check('POWERUP_DROPS is the v3.80.0 rarity ladder',
+  const EXPECTED = { coin: 0.75, health: 0.07, shield: 0.06, frenzy: 0.05, mini: 0.03, crate: 0.02, life: 0.01, robot: 0.01 };
+  check('POWERUP_DROPS is the v3.86.0 coin-first pool',
     JSON.stringify(Object.keys(POWERUP_DROPS)) === JSON.stringify(Object.keys(EXPECTED)) &&
     Object.entries(EXPECTED).every(([k, w]) => Math.abs(POWERUP_DROPS[k] - w) < 1e-9),
     `got ${JSON.stringify(POWERUP_DROPS)}`);

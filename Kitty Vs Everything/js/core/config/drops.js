@@ -1,5 +1,7 @@
 // Filename: config/drops.js
-// Kitty Vs Everything — v3.83.0
+// Kitty Vs Everything — v3.86.0
+// v3.86.0: GOLD COIN DROP — the shared pool is now coin-first (coin 0.75,
+// +500 score) with the classic power-ups rebalanced below it.
 // v3.83.0: DROP POLICY — DROP_RARITY is gone; every normal drop source now
 // rolls DROP_POLICY (per-source chance + max drops per kill) through
 // js/core/DropManager.js, which also enforces the on-screen gate (loot
@@ -31,24 +33,24 @@ export const ASTEROID = {
 };
 
 // ─── v3.42.0: SHARED POWER-UP DROP POOL (every drop source samples it) ───
-// v3.80.0: NEW RARITY TABLE — the pool is now a rarity ladder: Health /
-// Frenzy / Shields are COMMON, the Wanted (mini) poster + score crate are
-// UNCOMMON, Extra Life is RARE, and the Bender 'robot' is SUPER RARE (1%).
-// The robot's real home is the guaranteed ship sources: the Planet Express
-// flyby drops it on destruction and every shuttle kill guarantees the mini
-// poster (SHUTTLE_DROP below). Enemy kills (Combat.maybeDrop), wave-clear
-// drops (WaveManager), asteroid shatter (AsteroidBonus), the Internet bonus
-// (InternetBonus) and crate destruction (Game.destroyCrate) all roll this
-// one table, so no source is ever missing a core drop. Asteroids are NOT in
-// the pool: they spawn fully off-screen from the wave spawner only
-// (ASTEROID.spawnY).
+// v3.86.0: GOLD COIN FIRST — the pool is now coin-dominated: the gold coin
+// (coin, +500 score) is the common drop at 75%, with the classic power-ups
+// rebalanced below it (health/shield/frenzy UNCOMMON, mini/crate RARE,
+// life/robot SUPER RARE at 1%). The robot's real home is still the
+// guaranteed ship sources (Planet Express flyby + shuttle mini poster,
+// SHUTTLE_DROP below). Enemy kills (Combat), wave-clear drops (WaveManager),
+// asteroid shatter (AsteroidBonus), the Internet bonus (InternetBonus) and
+// crate destruction (Game.destroyCrate) all roll this one table, so no
+// source is ever missing a core drop. Asteroids are NOT in the pool: they
+// spawn fully off-screen from the wave spawner only (ASTEROID.spawnY).
 export const POWERUP_DROPS = {
-  health: 0.30,  // COMMON — hull repair (PLAYER.HEALTH_RESTORE)
-  frenzy: 0.20,  // COMMON — 30s all-cooldowns-off
-  shield: 0.22,  // COMMON — shield restore
-  mini:   0.14,  // UNCOMMON — "Wanted" poster → mini-ship
-  crate:  0.07,  // UNCOMMON — score crate (destructible — drops again)
-  life:   0.06,  // RARE — extra life
+  coin:   0.75,  // COMMON — gold coin (+500 score)
+  health: 0.07,  // UNCOMMON — hull repair (PLAYER.HEALTH_RESTORE)
+  shield: 0.06,  // UNCOMMON — shield restore
+  frenzy: 0.05,  // UNCOMMON — 30s all-cooldowns-off
+  mini:   0.03,  // RARE — "Wanted" poster → mini-ship
+  crate:  0.02,  // RARE — score crate (destructible — drops again)
+  life:   0.01,  // SUPER RARE — extra life
   robot:  0.01,  // SUPER RARE — Bender easter egg
 };
 

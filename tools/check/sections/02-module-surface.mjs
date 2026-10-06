@@ -20,8 +20,8 @@ check('WEAPONS.vulkan.thermalLockout = 1.2', WEAPONS.vulkan.thermalLockout === 1
 check('WEAPONS.vulkan.rate = 0.07', WEAPONS.vulkan.rate === 0.07, `got ${WEAPONS.vulkan.rate}`);
 // v3.42.0: shared drop pool + fully off-screen asteroid spawn
 check('ASTEROID.spawnY = -80 (fully off-screen spawn)', ASTEROID.spawnY === -80, `got ${ASTEROID.spawnY}`);
-check('POWERUP_DROPS has the 7 v3.42.0 drop types',
-  JSON.stringify(Object.keys(POWERUP_DROPS || {}).sort()) === JSON.stringify(['crate', 'frenzy', 'health', 'life', 'mini', 'robot', 'shield']),
+check('POWERUP_DROPS has the 8 v3.86.0 drop types',
+  JSON.stringify(Object.keys(POWERUP_DROPS || {}).sort()) === JSON.stringify(['coin', 'crate', 'frenzy', 'health', 'life', 'mini', 'robot', 'shield']),
   `got ${Object.keys(POWERUP_DROPS || {}).join(', ')}`);
 check('POWERUP_DROPS weights sum to 1',
   Math.abs(Object.values(POWERUP_DROPS || {}).reduce((a, b) => a + b, 0) - 1) < 1e-9,
@@ -82,7 +82,8 @@ const keys = Object.keys(manifest.assets || {});
 // v3.72.0: + cat_black / cat_blue / cat_brown / cat_gray / cat_green /
 //          cat_orange / cat_red / cat_white / cat_yellow (9 catship theme sprites).
 // v3.81.0: + spaceballs_one (Spaceballs One easter-egg ship art — "We Brake For Nobody").
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_black', 'cat_blue', 'cat_brown', 'cat_gray', 'cat_green', 'cat_orange', 'cat_red', 'cat_white', 'cat_yellow', 'spaceballs_one'];
+// v3.86.0: + goldcoin (gold coin drop pixel-art — "GoldCoinPowerup-Points").
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_black', 'cat_blue', 'cat_brown', 'cat_gray', 'cat_green', 'cat_orange', 'cat_red', 'cat_white', 'cat_yellow', 'spaceballs_one', 'goldcoin'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);

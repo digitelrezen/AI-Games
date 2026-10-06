@@ -196,7 +196,7 @@
 //          (EnemyBase) opt into telegraphed attacks (drawAttackTelegraph after
 //          e.draw) and on-death hazards (game.enemyHazards, updated/drawn after
 //          the fire zones). Easter Egg ships are unaffected.
-export const VERSION = 'v3.85.0';
+export const VERSION = 'v3.86.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -496,6 +496,7 @@ export default class Game {
 
   collectPowerUp(pw, player = this.player) {
     const p = player || this.player;
+    let customSound = false; // v3.86.0: true when the drop plays its own SFX (coin)
     switch (pw.type) {
       case 'life':
         p.lives++;
@@ -526,8 +527,18 @@ export default class Game {
       case 'crate':
         this.score += 1000 * this.multiplier;
         break;
+      case 'coin':
+        // v3.86.0: GOLD COIN — +500 score, coin SFX, gold floating text +
+        // burst. The coin plays its own audio.coin(), so the generic
+        // audio.powerup() below is skipped (customSound).
+        this.score += 500;
+        audio.coin();
+        customSound = true;
+        bus.emit('dmg', { x: pw.x, y: pw.y, text: '+500', color: '#ffd54f' });
+        this.particles.burst(pw.x, pw.y, { count: 64, color: '#ffd54f', speed: 420, life: 1.0 });
+        break;
     }
-    audio.powerup();
+    if (!customSound) audio.powerup();
   }
 
   destroyCrate(pw) {

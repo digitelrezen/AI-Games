@@ -293,7 +293,7 @@
 //          ENEMY_ATTACK / ENEMY_HAZARD opt-ins (config/enemies.js) drive
 //          telegraphed enemy attacks (EnemyAttackModule.js) and on-death
 //          hazards (EnemyHazard.js) for standard enemies (EnemyBase).
-export const VERSION = 'v3.85.0';
+export const VERSION = 'v3.86.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

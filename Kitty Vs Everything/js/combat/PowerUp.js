@@ -55,7 +55,7 @@
 //          as the fallback while the sprite decodes (or if the asset is
 //          missing/corrupt).
 
-export const VERSION = 'v3.59.0';
+export const VERSION = 'v3.86.0';
 import { TAU } from '../core/utils.js';
 import { getMiniPosterSprite } from '../levels/MiniPosterSprite.js';
 import { getBenderFull, BENDER_BODY_W, BENDER_BODY_H } from '../core/BenderSprite.js'; // v3.28.0: tiny full-body Bender icon for the 'robot' drop
@@ -107,6 +107,7 @@ const JEWEL = {
   frenzy: { aura: '255, 64, 54',   glint: '255, 232, 224' },  // red pill
   shield: { aura: '255, 205, 40',  glint: '255, 248, 224' },  // yellow pill
   mini:   { aura: '255, 220, 120', glint: '255, 255, 255' },  // bounty white-gold
+  coin:   { aura: '255, 200, 40',  glint: '255, 250, 230' },  // gold coin (v3.86.0)
 };
 const JEWEL_BOX = 56;   // v3.59.0: icon fit box — 2× the v3.58.x 28 (double-sized icons)
 const JEWEL_BUF = 80;   // v3.59.0: offscreen buffer — icon 56 + headroom (2× the v3.58.x 40)
@@ -142,6 +143,7 @@ const SPARKLES = {
   frenzy: { rgb: '255, 100, 90',  count: 7 },  // red pill (frenzy)
   shield: { rgb: '255, 214, 90',  count: 7 },  // yellow pill (shield)
   mini:   { rgb: '255, 236, 170', count: 8 },  // gold/white bounty (wanted)
+  coin:   { rgb: '255, 214, 90',  count: 8 },  // gold coin (v3.86.0)
 };
 
 /** v3.58.0: deterministic 0..1 hash from an integer seed (sin hash). */
@@ -464,6 +466,24 @@ export default class PowerUp {
           ctx.fillStyle = '#4caf50';
           ctx.fillRect(-28, -44, 56 * (this.hp / this.maxHp), 8);
         }
+        break;
+      }
+      case 'coin': {
+        // v3.86.0: GOLD COIN — goldcoin pixel-art (.assets via AssetManager
+        // key "coin") through the 6-pass jewel pipeline (depth → shine →
+        // gold aura → blit → shimmer → gold sparkles). The procedural gold
+        // coin (disc + inner ring + center glint) stays the null-sprite
+        // fallback and runs through the same pass.
+        drawJewelDrop(ctx, 'coin', this.t, (c) => {
+          if (!drawSpriteIcon(c, 'coin', JEWEL_BOX)) {
+            c.fillStyle = '#ffd54f';
+            c.beginPath(); c.arc(0, 0, 24, 0, TAU); c.fill();
+            c.fillStyle = '#ffca28';
+            c.beginPath(); c.arc(0, 0, 18, 0, TAU); c.fill();
+            c.fillStyle = '#fff8e1';
+            c.beginPath(); c.arc(0, 0, 6, 0, TAU); c.fill();
+          }
+        });
         break;
       }
     }

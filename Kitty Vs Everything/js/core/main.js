@@ -45,7 +45,7 @@
 //          everything in its path, brake-light stream at the player,
 //          treasure-chest jackpot (one of EVERY power-up) on destruction.
 //          Project manifest version synced with package.json (3.81.0).
-export const VERSION = 'v3.85.0';
+export const VERSION = 'v3.86.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';

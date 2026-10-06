@@ -37,13 +37,14 @@ import s34 from './sections/07-full-smoke.mjs';
 import s35 from './sections/06ac-control-mode.mjs';
 import s36 from './sections/06ad-drop-rarity.mjs';
 import s37 from './sections/06ae-spaceballs-one.mjs';
+import s38 from './sections/06af-gold-coin-drop.mjs';
 
-const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s35, s34];
+const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s35, s34];
 
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.85.0: hangar-carousel start screen (hero ship showcase + arrow-key cycling + collapsible controls panel), drop policy + off-screen kill gate (DROP_POLICY per-source chance/maxDrops routed through DropManager, isOnScreen gate so kills & drops only happen on-screen, guaranteed special drops bypass the gate), shuttle round-trip flyby, Spaceballs One one-way flyby, drop rarity ladder, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.86.0: gold coin drop (coin-first POWERUP_DROPS pool @ 0.75, +500 score pickup with audio.coin() SFX + gold floating text + gold particle burst, jewel-pipeline coin rendering), drop policy + off-screen kill gate (DROP_POLICY per-source chance/maxDrops routed through DropManager, isOnScreen gate), shuttle round-trip flyby, Spaceballs One one-way flyby, drop rarity ladder, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

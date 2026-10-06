@@ -13,7 +13,7 @@ import path from 'node:path';
 export default async function run() {
 console.log('\n[6e] v3.58.0 jewel shading (all five pill/poster drops)');
 const pwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PowerUp.js'), 'utf8');
-check('PowerUp: VERSION = v3.59.0', pwSrc.includes("VERSION = 'v3.59.0'"));
+check('PowerUp: VERSION = v3.86.0', pwSrc.includes("VERSION = 'v3.86.0'"));
 check('PowerUp: drawJewelDrop() gem pipeline (source-atop depth + lighter glow)',
   pwSrc.includes('function drawJewelDrop(') &&
   pwSrc.includes("globalCompositeOperation = 'source-atop'") &&

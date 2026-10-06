@@ -1,5 +1,5 @@
 // Filename: AudioSystem.js
-// Kitty Vs Everything — v3.14.0
+// Kitty Vs Everything — v3.86.0
 // Synthesized SFX via WebAudio (zero audio files, zero dependencies).
 // v3.14.0: Volume layer (setVolumes — master / SFX / music, applied at
 //          startup from Settings.js and live from the Settings screen),
@@ -7,7 +7,7 @@
 //          sequencer (WebAudio-scheduled drone + arpeggio — PauseMenu starts
 //          it on mission start, stops it on pause and game over).
 
-export const VERSION = 'v3.14.0';
+export const VERSION = 'v3.86.0';
 
 class AudioSystem {
   constructor() {
@@ -64,6 +64,8 @@ class AudioSystem {
   shoot()       { this.tone(880, 0.07, 'square', 0.02, 440); }
   hit()         { this.tone(220, 0.06, 'sawtooth', 0.03, 110); }
   explosion()   { this.tone(120, 0.4, 'sawtooth', 0.08, 30); }
+  /** v3.86.0: gold coin pickup: classic two-note arcade coin (B5 to E6). */
+  coin()        { this.tone(987.77, 0.08, 'square', 0.07); setTimeout(() => this.tone(1318.51, 0.22, 'square', 0.07), 70); }
   powerup()     { this.tone(523, 0.1, 'square', 0.05, 784); this.tone(784, 0.15, 'square', 0.04, 1046); }
   banner()      { this.tone(660, 0.2, 'triangle', 0.06, 880); }
   superWeapon() { this.tone(80, 0.8, 'sawtooth', 0.1, 40); }

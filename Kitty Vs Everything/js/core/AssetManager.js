@@ -114,7 +114,8 @@ export function allReady(keys = assetKeys()) {
  *   frenzy    ← Powerup-RedPill-Frenzy.png      (30s all-cooldowns-off, red pill)
  *   crate     ← Crate-pixel-art.png             (bonus crate, shot to open)
  *   wanted    ← Wanted-Cat-pixel-art.png        (v3.58.0: mini-ship bounty poster)
- */
+ *   goldcoin  ← GoldCoinPowerup-Points-pixelart.png (v3.86.0: gold coin, +500 points)
+  */
 export const POWERUP_ASSETS = {
   health: 'health',
   life: 'extralife',
@@ -122,4 +123,5 @@ export const POWERUP_ASSETS = {
   frenzy: 'frenzy',
   crate: 'crate',
   mini: 'wanted', // v3.58.0: "Adopt Me!" WANTED poster (cat behind bars)
+  coin: 'goldcoin', // v3.86.0: gold coin (+500 points, coin-first drop pool)
 };
