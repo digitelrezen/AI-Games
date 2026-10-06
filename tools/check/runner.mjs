@@ -44,7 +44,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.86.0: gold coin drop (coin-first POWERUP_DROPS pool @ 0.75, +500 score pickup with audio.coin() SFX + gold floating text + gold particle burst, jewel-pipeline coin rendering), drop policy + off-screen kill gate (DROP_POLICY per-source chance/maxDrops routed through DropManager, isOnScreen gate), shuttle round-trip flyby, Spaceballs One one-way flyby, drop rarity ladder, ships every level, ambient asteroid/crate spawners, version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.87.0: start-menu hangar polish (the .menu-hangar CSS block was stranded inside an unclosed #dev-panel rule and silently discarded — style.css now closes #dev-panel and restores the hangar as a top-level section: ship-select arrows flank the stage left/right, the nameplate sits centered under the cat ship, arrow controls enlarged to 56px; the hero canvas renders at native device-pixel resolution via a DPR-aware buffer for a crisp HiDPI start screen), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

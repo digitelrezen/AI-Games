@@ -45,7 +45,15 @@
 //          everything in its path, brake-light stream at the player,
 //          treasure-chest jackpot (one of EVERY power-up) on destruction.
 //          Project manifest version synced with package.json (3.81.0).
-export const VERSION = 'v3.86.0';
+// v3.87.0: Start menu polish — the hangar carousel CSS block was stranded
+//          inside an unclosed #dev-panel rule (the browser discarded it:
+//          arrows stacked vertically, nameplate clipped); style.css now
+//          closes #dev-panel first and restores the hangar section as a
+//          top-level block — arrows flank the stage left/right, the
+//          nameplate sits centered under the ship, arrow controls enlarged.
+//          The hero canvas also renders at native device-pixel resolution
+//          (DPR-aware buffer) so the start screen is crisp on HiDPI.
+export const VERSION = 'v3.87.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
@@ -74,6 +82,15 @@ let selectedTheme = 'yellow';
 
 const hangarCanvas = document.getElementById('hangar-canvas');
 const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;
+// v3.87.0: size the hero buffer at native device-pixel resolution. The
+// canvas CSS size stays 320×220; on HiDPI displays (DPR > 1) a fixed
+// 320×220 buffer gets upscaled by the browser and the ship looks soft.
+// renderHangar() draws in 320×220 logical units under ctx.scale(HANGAR_DPR).
+const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
+if (hangarCanvas) {
+  hangarCanvas.width = Math.round(320 * HANGAR_DPR);
+  hangarCanvas.height = Math.round(220 * HANGAR_DPR);
+}
 const hangarNameplate = document.getElementById('hangar-nameplate');
 const hangarDots = document.getElementById('hangar-dots');
 const HANGAR_THEMES = Object.keys(PLAYER_THEMES);
@@ -86,7 +103,11 @@ function renderHangar() {
   if (!hangarCtx) return;
   const key = HANGAR_THEMES[hangarIndex];
   const th = PLAYER_THEMES[key];
-  hangarCtx.clearRect(0, 0, hangarCanvas.width, hangarCanvas.height);
+  // v3.87.0: draw in 320×220 logical units; the HANGAR_DPR buffer scale
+  // keeps the ship crisp on HiDPI displays.
+  hangarCtx.save();
+  hangarCtx.scale(HANGAR_DPR, HANGAR_DPR);
+  hangarCtx.clearRect(0, 0, 320, 220);
   // ~2.35× the in-game 70px sprite → ~165px tall, centered in the 320×220
   // stage. Static pose: nose up, idle thruster flame, tail straight.
   const mockPlayer = {
@@ -103,9 +124,10 @@ function renderHangar() {
     animTime: 1.0,
   };
   new PlayerRenderer(mockPlayer).drawCatShip(
-    hangarCtx, hangarCanvas.width / 2, hangarCanvas.height / 2, 2.35,
+    hangarCtx, 160, 110, 2.35,
     th.color, th.accent, th.pattern
   );
+  hangarCtx.restore();
   if (hangarNameplate) hangarNameplate.textContent = th.name;
   if (hangarDots) {
     hangarDots.innerHTML = '';

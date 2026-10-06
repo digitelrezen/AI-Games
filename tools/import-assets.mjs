@@ -306,7 +306,7 @@ lines.push('export const ASSET_B64 = {');
 for (const k of sorted) lines.push(`  ${k}: "${imported[k].b64}",`);
 lines.push('};');
 lines.push('');
-const outText = lines.join('\r\n'); // CRLF — matches the project's line endings
+const outText = lines.join('\n'); // LF — the repo enforces eol=lf (.gitattributes: * text=auto eol=lf); --check compares byte-identical, so the generator must match
 
 if (checkMode) {
   if (!fs.existsSync(OUT)) {
