@@ -46,8 +46,9 @@ package.json          Project manifest + BUILD VERSION SOURCE OF TRUTH (version 
 js/core/ - CORE INFRASTRUCTURE & ORCHESTRATOR (29 files: 19 root + config/ 6 + game/ 4)
 =====================================================================
 main.js               Entry point: boots Game, wires #start-btn/#retry-btn/#save-score,
-                      generates the .ship-option theme row from PLAYER_THEMES, Enter
-                      shortcut. Carries project manifest comment + VERSION (v3.77.0).
+                      drives the v3.85.0 hangar-carousel ship showcase from PLAYER_THEMES
+                      (hero canvas + arrows + nameplate + dots), Enter shortcut. Carries
+                      project manifest comment + VERSION (v3.85.0).
 Game.js               THIN PUBLIC SHELL / orchestrator (v3.77.0 E6): state machine, fixed
                       update loop, collision dispatch, scoring, starfield, render
                       dispatch, collectPowerUp, destroyCrate, startCombatStage. Delegates

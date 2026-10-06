@@ -1,7 +1,7 @@
 // Filename: main.js
 // Kitty Vs Everything — v3.3.0
 // Entry point: boots the Game, wires menu / game-over / leaderboard UI,
-// and cat-ship theme selection (v3.1.0 .ship-option buttons).
+// and cat-ship theme selection (v3.85.0 hangar carousel hero stage).
 // v3.2.0: Menu icons render the redesigned catship base model (mock player
 //         now carries animTime + paw/muzzle flash state for the renderer).
 // v3.3.0: Menu icons render the top-down H-pose catship via the v3.3.0
@@ -45,7 +45,7 @@
 //          everything in its path, brake-light stream at the player,
 //          treasure-chest jackpot (one of EVERY power-up) on destruction.
 //          Project manifest version synced with package.json (3.81.0).
-export const VERSION = 'v3.84.0';
+export const VERSION = 'v3.85.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES } from './config.js';
@@ -63,29 +63,34 @@ new MenuKeybinds();
 // v3.20.0: wire the in-game net status HUD (LAN).
 netSettingsUI.showHud(document.getElementById('net-hud'));
 
-// ─── Cat ship theme selection (v3.1.0 menu: .ship-option buttons) ───
-// v3.72.1: the .ship-option cards are GENERATED here from PLAYER_THEMES
-// (all 9 themes) — index.html only provides the empty .menu-ship-select
-// container, so a new theme in config.js automatically gets a menu card.
+// ─── Cat ship theme selection (v3.85.0: HANGAR CAROUSEL) ─────────────
+// v3.85.0: the cramped 9-thumbnail row is replaced by a single hero
+// "hangar" stage that showcases the currently-selected cat ship at large
+// scale, cycled one by one with the ‹/› arrows or the ←/→ keys. The hero
+// canvas, nameplate and dots are generated here from PLAYER_THEMES (all 9
+// themes) — index.html only provides the empty containers, so a new theme
+// in config.js automatically gets a carousel entry.
 let selectedTheme = 'yellow';
 
-// Draw the actual cat ship (same PlayerRenderer used in-game) into a
-// menu button icon canvas, using the theme's colors/accent/pattern.
-function renderShipIcon(icon, theme) {
-  if (!icon || icon.tagName !== 'CANVAS') return;
-  const th = PLAYER_THEMES[theme] || PLAYER_THEMES.yellow;
-  const size = 56;
-  const dpr = Math.max(1, window.devicePixelRatio || 1);
-  icon.width = size * dpr;
-  icon.height = size * dpr;
-  const ctx = icon.getContext('2d');
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, size, size);
-  // Static pose: nose up, idle thruster flame, tail straight, eyes open
-  // v3.72.1: `theme` is REQUIRED — PlayerRenderer.drawCatShip resolves the
-  // cat_* sprite key from this.player.theme (undefined → procedural icon).
+const hangarCanvas = document.getElementById('hangar-canvas');
+const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;
+const hangarNameplate = document.getElementById('hangar-nameplate');
+const hangarDots = document.getElementById('hangar-dots');
+const HANGAR_THEMES = Object.keys(PLAYER_THEMES);
+let hangarIndex = Math.max(0, HANGAR_THEMES.indexOf(selectedTheme));
+
+// v3.85.0: render the active cat ship (same PlayerRenderer used in-game)
+// into the hero stage at large scale so the pixel-art details and colors
+// truly pop, then refresh the nameplate + dot indicators.
+function renderHangar() {
+  if (!hangarCtx) return;
+  const key = HANGAR_THEMES[hangarIndex];
+  const th = PLAYER_THEMES[key];
+  hangarCtx.clearRect(0, 0, hangarCanvas.width, hangarCanvas.height);
+  // ~2.35× the in-game 70px sprite → ~165px tall, centered in the 320×220
+  // stage. Static pose: nose up, idle thruster flame, tail straight.
   const mockPlayer = {
-    theme,
+    theme: key,
     angle: -Math.PI / 2,
     engineFlicker: 0.8,
     thrusterActive: true,
@@ -97,43 +102,60 @@ function renderShipIcon(icon, theme) {
     muzzleFlash: 0,
     animTime: 1.0,
   };
-  const scale = 0.62;
-  // Local bounds: gun muzzles y≈-37.5 … tail/flames y≈+41 → visual center ≈ 2
   new PlayerRenderer(mockPlayer).drawCatShip(
-    ctx, size / 2, size / 2 - 2 * scale, scale,
+    hangarCtx, hangarCanvas.width / 2, hangarCanvas.height / 2, 2.35,
     th.color, th.accent, th.pattern
   );
+  if (hangarNameplate) hangarNameplate.textContent = th.name;
+  if (hangarDots) {
+    hangarDots.innerHTML = '';
+    HANGAR_THEMES.forEach((t, i) => {
+      const dot = document.createElement('span');
+      dot.className = 'hangar-dot' + (i === hangarIndex ? ' active' : '');
+      dot.title = PLAYER_THEMES[t].name;
+      dot.addEventListener('click', () => { hangarIndex = i; selectedTheme = t; renderHangar(); });
+      hangarDots.appendChild(dot);
+    });
+  }
 }
 
-const shipSelect = document.querySelector('.menu-ship-select');
-const shipIcons = [];
-for (const key of Object.keys(PLAYER_THEMES)) {
-  const btn = document.createElement('div');
-  btn.className = 'ship-option' + (key === selectedTheme ? ' selected' : '');
-  btn.dataset.theme = key;
-  const icon = document.createElement('canvas');
-  icon.className = 'ship-icon';
-  const label = document.createElement('span');
-  label.textContent = PLAYER_THEMES[key].name.split(' ')[0];
-  btn.appendChild(icon);
-  btn.appendChild(label);
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.ship-option').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedTheme = key;
-  });
-  shipSelect.appendChild(btn);
-  shipIcons.push({ icon, theme: key });
+// v3.85.0: step the carousel (wraps around) and keep selectedTheme in sync.
+function hangarStep(dir) {
+  hangarIndex = (hangarIndex + dir + HANGAR_THEMES.length) % HANGAR_THEMES.length;
+  selectedTheme = HANGAR_THEMES[hangarIndex];
+  renderHangar();
 }
-const renderAllShipIcons = () => {
-  for (const { icon, theme } of shipIcons) renderShipIcon(icon, theme);
-};
-renderAllShipIcons();
-// v3.72.1: re-render every icon once the AssetManager sprites are decoded —
-// the first draw above runs before the base64 cat_* decode (kicked off in
-// the Game constructor) has landed, so without this the menu would show
-// the procedural hull until the user clicked a card.
-loadAssets().then(renderAllShipIcons);
+
+const hangarPrev = document.getElementById('hangar-prev');
+const hangarNext = document.getElementById('hangar-next');
+if (hangarPrev) hangarPrev.addEventListener('click', () => hangarStep(-1));
+if (hangarNext) hangarNext.addEventListener('click', () => hangarStep(1));
+renderHangar();
+// v3.85.0: re-render once the AssetManager sprites are decoded — the first
+// draw runs before the base64 cat_* decode (kicked off in the Game
+// constructor) has landed, so without this the hero would show the
+// procedural hull until the user cycled the carousel.
+loadAssets().then(renderHangar);
+
+// v3.85.0: ←/→ cycle the hangar carousel (only while the menu is up).
+window.addEventListener('keydown', (e) => {
+  if (game.state !== 'menu') return;
+  if (e.code === 'ArrowLeft') { hangarStep(-1); e.preventDefault(); }
+  else if (e.code === 'ArrowRight') { hangarStep(1); e.preventDefault(); }
+});
+
+// v3.85.0: collapsible CONTROLS panel — the dense keybind block is tucked
+// behind a toggle so the main menu breathes. MenuKeybinds.js already renders
+// the live binds into #menu-keybinds; this just shows/hides the panel.
+const controlsToggle = document.getElementById('menu-controls-toggle');
+const controlsPanel = document.getElementById('menu-controls-panel');
+if (controlsToggle && controlsPanel) {
+  controlsToggle.addEventListener('click', () => {
+    const open = controlsPanel.classList.toggle('hidden') === false;
+    controlsToggle.setAttribute('aria-expanded', String(open));
+    controlsToggle.textContent = (open ? '▾' : '▸') + ' CONTROLS';
+  });
+}
 
 // Start / restart
 document.getElementById('start-btn').addEventListener('click', () => game.start(selectedTheme));
@@ -213,7 +235,7 @@ game.leaderboard.render(document.getElementById('menu-scores-list'));
 //     own ultimate — created via CatShipFactory.js, drawn by PlayerRenderer.js
 //   • Weapon system: auto / semi / scatter / laser (R to cycle)
 //   • F = cat-ship ultimate (per-variant cooldown), Q = stun rocket
-//   • Menu: .ship-option cards with ship icons
+//   • Menu: hangar carousel hero stage (‹/› arrows, ←/→ keys, nameplate, dots)
 //   • Touch UI: joystick + FIRE / BOOST / STUN / NOVA / WPN buttons
 //
 // v3.2.0 CHANGES:

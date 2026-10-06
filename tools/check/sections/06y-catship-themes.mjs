@@ -9,8 +9,12 @@
 //        v3.72.1: + transform fix gate (sprite blit must translate/rotate
 //        to the ship — v3.72.0 drew at raw (0,0): hull off-screen, "floating
 //        circle"), hardpoint FX re-layer gate, and the ship-select menu
-//        gates (index.html no longer hardcodes 5 cards; main.js generates
-//        all 9 from PLAYER_THEMES + re-renders icons after loadAssets()).
+//        gates (index.html no longer hardcodes cards; main.js generates all
+//        9 from PLAYER_THEMES + re-renders after loadAssets()).
+//        v3.85.0: the 9-thumbnail ship-select row is replaced by a HANGAR
+//        CAROUSEL (single hero stage + ‹/› arrows + ←/→ keys + nameplate +
+//        dots); the menu gates now verify the hangar stage is present in
+//        index.html and that main.js drives it from PLAYER_THEMES.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
@@ -52,13 +56,14 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1
   check('PlayerRenderer: procedural fallback when no sprite (2x scale)', prSrc.includes('drawMainShip(ctx, p, th.color, th.accent, th.pattern, { scale: MAIN_SHIP_SCALE })'));
   check('PlayerRenderer: menu-icon compat path passes the theme sprite', prSrc.includes('drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s }, sprite)'));
 
-  // v3.72.1: ship-select menu — all 9 themes, generated from config.js
+  // v3.85.0: hangar carousel — hero stage + arrows + nameplate, generated
+  // from config.js (replaces the v3.72.1 9-thumbnail ship-select row).
   const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const mainSrc = fs.readFileSync(path.join(ROOT, 'js/core/main.js'), 'utf8');
-  check('index.html: no hardcoded ship-option cards (menu generated from PLAYER_THEMES)', !htmlSrc.includes('data-theme=') && htmlSrc.includes('class="menu-ship-select"'));
-  check('main.js: generates one ship-option per PLAYER_THEMES key (all 9 cards)', mainSrc.includes('for (const key of Object.keys(PLAYER_THEMES))') && mainSrc.includes('btn.dataset.theme = key'));
-  check('main.js: mock player carries the theme (menu-icon sprite lookup works)', mainSrc.includes('const mockPlayer = {') && mainSrc.includes('theme,'));
-  check('main.js: re-renders menu icons after loadAssets() resolves', mainSrc.includes('loadAssets().then(renderAllShipIcons)'));
+  check('index.html: hangar carousel stage present (hero canvas + arrows + nameplate)', htmlSrc.includes('id="hangar-canvas"') && htmlSrc.includes('id="hangar-prev"') && htmlSrc.includes('id="hangar-nameplate"'));
+  check('main.js: builds the carousel from PLAYER_THEMES (all 9 themes)', mainSrc.includes('Object.keys(PLAYER_THEMES)') && mainSrc.includes('hangarIndex'));
+  check('main.js: hero render carries the theme (sprite lookup works)', mainSrc.includes('const mockPlayer = {') && mainSrc.includes('theme: key'));
+  check('main.js: re-renders the hero after loadAssets() resolves', mainSrc.includes('loadAssets().then(renderHangar)'));
 
   // PlayerShipArt: optional sprite parameter blits before the procedural hull
   check('PlayerShipArt: drawCatShip accepts an optional sprite parameter', psaSrc.includes('export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null)'));

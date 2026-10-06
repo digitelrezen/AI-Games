@@ -50,7 +50,7 @@ Game.js ─▶ js/core/game/ (StageFlow / DisplayPolicy / GameOver / Gameplay �
 - **style.css** — All styling: layout, menu cards, HUD bars, touch-button colors, and the `.hidden` utility class.
 - **build.mjs** — Single-file build script: esbuild bundles `js/core/main.js` + the whole module graph into one IIFE, inlines style.css, splices into index.html → `C:\Dev\AI-GAMES\Builds\Kitty Vs Everything <version>.html`. The version is read from package.json (source of truth).
 - **package.json** — Project manifest + the BUILD VERSION SOURCE OF TRUTH (`version` drives the output filename). Scripts: `build` / `serve` / `validate` / `check` / `check:full` / `harness` / `lan`.
-- **js/core/main.js** — Entry point: boots Game, wires `#start-btn`/`#retry-btn`/`#save-score`, generates the `.ship-option` theme row from `PLAYER_THEMES`, Enter shortcut; carries the project manifest comment + VERSION.
+- **js/core/main.js** — Entry point: boots Game, wires `#start-btn`/`#retry-btn`/`#save-score`, drives the v3.85.0 hangar-carousel ship showcase from `PLAYER_THEMES` (hero canvas + ‹/› arrows + ←/→ keys + nameplate + dots), Enter shortcut; carries the project manifest comment + VERSION.
 
 ## 2. js/core/ — Core Infrastructure & Orchestrator (29 files: 19 root + config/ 6 + game/ 4)
 

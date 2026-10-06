@@ -196,7 +196,7 @@
 //          (EnemyBase) opt into telegraphed attacks (drawAttackTelegraph after
 //          e.draw) and on-death hazards (game.enemyHazards, updated/drawn after
 //          the fire zones). Easter Egg ships are unaffected.
-export const VERSION = 'v3.84.0';
+export const VERSION = 'v3.85.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
