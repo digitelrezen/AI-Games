@@ -45,7 +45,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.91.0: hue-shifted white-base catship set (the 9 legacy coat-color catships are replaced by White-Blue … White-Yellow, all native 256×384 — theme keys white_blue/white_elecblue/white_green/white_orange/white_pink/white_purple/white_red/white_teal/white_yellow match the asset names end-to-end: manifest → AssetSprites → PLAYER_THEME_SPRITES → hangar carousel), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.92.0: uniform 256×256 power-up art (all seven manifest power-up PNGs — extralife/health/frenzy/shield/crate/wanted/goldcoin — swapped to the new uniform 256×256 set, → 128×128 embedded: manifest → AssetSprites → PowerUp jewel pipeline → verify-bundle dims), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

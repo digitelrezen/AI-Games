@@ -3,6 +3,15 @@
 // Falling drops: extra life, shield, mini-ship, destructible bonus crate,
 // the rare Bender (easter egg, v3.24.0), hull health (v3.33.0) and FRENZY
 // (v3.33.0 — 30s all-cooldowns-off, Vulcan overheat neutralized).
+// v3.92.0: UNIFORM 256×256 POWER-UP ART — all seven manifest power-up PNGs
+//          (extralife/health/frenzy/shield/crate/wanted/goldcoin) swapped to
+//          the new uniform 256×256 set: BluePillExtraLifepowerup256x256.png,
+//          GreenPillHealthpowerup256x256.png, RedPillFrenzypowerup256x256.png,
+//          YellowPillShieldpowerup256x256.png, Crate256x256.png,
+//          WantedMiniPowerup256x256.png, GoldCoinPowerup256x256.png
+//          (→ 128×128 embedded in AssetSprites.js). The aspect-fit jewel
+//          pipeline, JEWEL_BOX=56 geometry, pickup hitboxes and procedural
+//          fallbacks are unchanged — the icons simply fill the square box.
 // v3.59.0: DOUBLE-SIZED ICONS — every drop icon renders at 2× the v3.58.x
 //          size: JEWEL_BOX 28 → 56 (sprite fit box), JEWEL_BUF 40 → 80
 //          (offscreen buffer), and every jewel-pipeline geometry constant
@@ -55,7 +64,7 @@
 //          as the fallback while the sprite decodes (or if the asset is
 //          missing/corrupt).
 
-export const VERSION = 'v3.89.0';
+export const VERSION = 'v3.92.0';
 import { TAU, disableImageSmoothing } from '../core/utils.js'; // v3.88.0: crisp pixel-art enforcement
 import { getMiniPosterSprite } from '../levels/MiniPosterSprite.js';
 import { getBenderFull, BENDER_BODY_W, BENDER_BODY_H } from '../core/BenderSprite.js'; // v3.28.0: tiny full-body Bender icon for the 'robot' drop
@@ -326,7 +335,7 @@ export default class PowerUp {
     switch (this.type) {
       case 'life': {
         // v3.58.0: EXTRA LIFE — blue pill pixel-art
-        // (.assets/Powerup-BluePill-ExtraLife.png via AssetManager) through
+        // (.assets/BluePillExtraLifepowerup256x256.png via AssetManager) through
         // the 6-pass jewel pipeline (depth → shine → blue aura → blit →
         // shimmer → blue sparkles). The classic red heart stays the
         // null-sprite fallback and runs through the same pass.
@@ -344,7 +353,7 @@ export default class PowerUp {
       }
       case 'shield': {
         // v3.58.0: SHIELD — yellow pill pixel-art
-        // (.assets/Powerup-YellowPill-Shield.png via AssetManager) through
+        // (.assets/YellowPillShieldpowerup256x256.png via AssetManager) through
         // the 6-pass jewel pipeline (depth → shine → gold aura → blit →
         // shimmer → gold sparkles). The cyan hexagon outline stays the
         // null-sprite fallback and runs through the same pass.
@@ -366,7 +375,7 @@ export default class PowerUp {
       }
       case 'health': {
         // v3.58.0: HULL REPAIR — green pill pixel-art
-        // (.assets/Powerup-GreanPill-health.png via AssetManager) through
+        // (.assets/GreenPillHealthpowerup256x256.png via AssetManager) through
         // the 6-pass jewel pipeline (depth → shine → green aura → blit →
         // shimmer → green sparkles). The green cross stays the null-sprite
         // fallback and runs through the same pass.
@@ -381,7 +390,7 @@ export default class PowerUp {
       }
       case 'frenzy': {
         // v3.58.0: FRENZY — red pill pixel-art
-        // (.assets/Powerup-RedPill-Frenzy.png via AssetManager) through
+        // (.assets/RedPillFrenzypowerup256x256.png via AssetManager) through
         // the 6-pass jewel pipeline (depth → shine → red aura → blit →
         // shimmer → red sparkles). The classic gold bolt stays the
         // null-sprite fallback and runs through the same pass.
@@ -399,7 +408,7 @@ export default class PowerUp {
       }
       case 'mini': {
         // v3.58.1: "Adopt Me!" WANTED poster — the NEW pixel art
-        // (.assets/Wanted-Cat-pixel-art.png 369×602 → 78×128, AssetManager
+        // (.assets/WantedMiniPowerup256x256.png 256×256 → 128×128, AssetManager
         // key "wanted") through the 6-pass jewel pipeline (depth → shine →
         // bounty white-gold aura → blit → shimmer → gold sparkles).
         // v3.58.0 bug fix: this case used to blit the OLD embedded 28×28
@@ -449,7 +458,7 @@ export default class PowerUp {
         break;
       }
       case 'crate': {
-        // v3.36.0: shared crate pixel-art (.assets/Crate-pixel-art.png via
+        // v3.36.0: shared crate pixel-art (.assets/Crate256x256.png via
         // AssetManager) — fallback: classic wooden crate with $.
         if (!drawSpriteIcon(ctx, 'crate', 56)) {
           ctx.fillStyle = '#8d6e63';

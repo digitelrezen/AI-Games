@@ -206,11 +206,11 @@ const tests = [
   // ── v3.58.0 power-up pixel art (5 pill/poster assets + jewel pipeline) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.58.0: extralife sprite dims 128×46', /extralife:\s*\{\s*w:\s*128,\s*h:\s*46\s*\}/.test(s)],
-  ['v3.58.0: health sprite dims 128×50', /health:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(s)],
-  ['v3.58.0: frenzy sprite dims 128×41', /frenzy:\s*\{\s*w:\s*128,\s*h:\s*41\s*\}/.test(s)],
-  ['v3.58.0: shield sprite dims 128×50', /shield:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(s)],
-  ['v3.58.0: wanted sprite dims 78×128', /wanted:\s*\{\s*w:\s*78,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.92.0: extralife sprite dims 128×128 (uniform 256×256 art)', /extralife:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.92.0: health sprite dims 128×128 (uniform 256×256 art)', /health:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.92.0: frenzy sprite dims 128×128 (uniform 256×256 art)', /frenzy:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.92.0: shield sprite dims 128×128 (uniform 256×256 art)', /shield:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.92.0: wanted sprite dims 128×128 (uniform 256×256 art)', /wanted:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.58.0: POWERUP_ASSETS.mini → "wanted" (bounty poster)', /mini:\s*['"]wanted['"]/.test(s)],
   ['v3.58.0: wanted base64 sprite present in bundle', s.includes('wanted: "iVBORw0KGgo')],
   ['v3.58.1: mini drop draws the "wanted" sprite (old 28×28 poster is fallback only)', /drawSpriteIcon\(c,\s*['"]mini['"]\s*,\s*JEWEL_BOX\)/.test(s)],

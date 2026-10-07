@@ -15,11 +15,11 @@ const pwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PowerUp.js'), 'utf8');
 
 export default async function run() {
 console.log('\n[6k] v3.58.0 power-up pixel art (5 pill/poster assets)');
-check('AssetSprites: extralife sprite dims 128×46 registered', /extralife:\s*\{\s*w:\s*128,\s*h:\s*46\s*\}/.test(spritesSrc));
-check('AssetSprites: health sprite dims 128×50 registered', /health:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(spritesSrc));
-check('AssetSprites: frenzy sprite dims 128×41 registered', /frenzy:\s*\{\s*w:\s*128,\s*h:\s*41\s*\}/.test(spritesSrc));
-check('AssetSprites: shield sprite dims 128×50 registered', /shield:\s*\{\s*w:\s*128,\s*h:\s*50\s*\}/.test(spritesSrc));
-check('AssetSprites: wanted sprite dims 78×128 registered', /wanted:\s*\{\s*w:\s*78,\s*h:\s*128\s*\}/.test(spritesSrc));
+check('AssetSprites: extralife sprite dims 128×128 registered (v3.92.0 uniform)', /extralife:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+check('AssetSprites: health sprite dims 128×128 registered (v3.92.0 uniform)', /health:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+check('AssetSprites: frenzy sprite dims 128×128 registered (v3.92.0 uniform)', /frenzy:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+check('AssetSprites: shield sprite dims 128×128 registered (v3.92.0 uniform)', /shield:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+check('AssetSprites: wanted sprite dims 128×128 registered (v3.92.0 uniform)', /wanted:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 check('AssetManager: POWERUP_ASSETS.mini === "wanted" (v3.58.0)', !!POWERUP_ASSETS && POWERUP_ASSETS.mini === 'wanted');
 // v3.58.1 regression gate: the mini drop must draw the imported "wanted"
 // pixel art (78×128) — v3.58.0 shipped with the mini case still blitting

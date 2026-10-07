@@ -113,13 +113,14 @@ export function allReady(keys = assetKeys()) {
  * Power-up drop type → asset key map (v3.33.0 power-up art, v3.58.0 pill
  * batch). PowerUp.js draws through this map; the keys are imported from
  * .assets by tools/import-assets.mjs (see tools/asset-manifest.json):
- *   health    ← Powerup-GreanPill-health.png    (hull repair, green pill)
- *   extralife ← Powerup-BluePill-ExtraLife.png  (extra life, blue pill)
- *   shield    ← Powerup-YellowPill-Shield.png   (shield, yellow pill)
- *   frenzy    ← Powerup-RedPill-Frenzy.png      (30s all-cooldowns-off, red pill)
- *   crate     ← Crate-pixel-art.png             (bonus crate, shot to open)
- *   wanted    ← Wanted-Cat-pixel-art.png        (v3.58.0: mini-ship bounty poster)
- *   goldcoin  ← GoldCoinPowerup-Points-pixelart.png (v3.86.0: gold coin, +500 points)
+ *   health    ← GreenPillHealthpowerup256x256.png      (hull repair, green pill)
+ *   extralife ← BluePillExtraLifepowerup256x256.png    (extra life, blue pill)
+ *   shield    ← YellowPillShieldpowerup256x256.png     (shield, yellow pill)
+ *   frenzy    ← RedPillFrenzypowerup256x256.png        (30s all-cooldowns-off, red pill)
+ *   crate     ← Crate256x256.png                       (bonus crate, shot to open)
+ *   wanted    ← WantedMiniPowerup256x256.png           (v3.58.0: mini-ship bounty poster)
+ *   goldcoin  ← GoldCoinPowerup256x256.png             (v3.86.0: gold coin, +500 points)
+ * (v3.92.0: uniform 256×256 power-up set, → 128×128 embedded)
   */
 export const POWERUP_ASSETS = {
   health: 'health',
