@@ -11,7 +11,7 @@ import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 
 export default class YellowCat extends Player {
-  constructor(game, theme = 'yellow') {
+  constructor(game, theme = 'white_yellow') {
     super(game, theme);
     this.ultimateName = 'ENERGY RING EXPLOSION';
     this.ULTIMATE_COOLDOWN = 8.0;

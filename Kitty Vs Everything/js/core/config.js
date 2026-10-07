@@ -336,7 +336,7 @@
 //          image-rendering: pixelated/crisp-edges to #game-canvas +
 //          #hangar-canvas. Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.90.0';
+export const VERSION = 'v3.91.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

@@ -226,7 +226,7 @@
 //          center (160, 110); the gameplay canvas is unchanged.
 //          Milestone version synced across package.json, config.js,
 //          main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.90.0';
+export const VERSION = 'v3.91.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

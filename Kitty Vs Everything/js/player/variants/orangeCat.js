@@ -11,7 +11,7 @@ import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 
 export default class OrangeCat extends Player {
-  constructor(game, theme = 'orange') {
+  constructor(game, theme = 'white_orange') {
     super(game, theme);
     this.ultimateName = 'NOVA SHOCKWAVE';
     this.ULTIMATE_COOLDOWN = 10.0;

@@ -95,7 +95,7 @@
 //          image-rendering: pixelated scoped to #hangar-canvas only
 //          (safe now — the buffer→CSS downsample is a uniform integer
 //          block). Milestone version synced with package.json.
-export const VERSION = 'v3.90.0';
+export const VERSION = 'v3.91.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar 1:1 sprite blit
@@ -121,7 +121,7 @@ netSettingsUI.showHud(document.getElementById('net-hud'));
 // canvas, nameplate and dots are generated here from PLAYER_THEMES (all 9
 // themes) — index.html only provides the empty containers, so a new theme
 // in config.js automatically gets a carousel entry.
-let selectedTheme = 'yellow';
+let selectedTheme = 'white_yellow';
 
 const hangarCanvas = document.getElementById('hangar-canvas');
 const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;

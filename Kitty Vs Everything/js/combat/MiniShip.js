@@ -68,7 +68,7 @@ export default class MiniShip extends Entity {
    * @param {number} side   — -1 = left flank, +1 = right flank
    */
   constructor(player, side) {
-    const th = PLAYER_THEMES[player.theme] || PLAYER_THEMES.yellow;
+    const th = PLAYER_THEMES[player.theme] || PLAYER_THEMES.white_yellow;
     const dock = getDockPosition(player, side);
     super({
       x: dock.x, y: dock.y,

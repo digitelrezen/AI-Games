@@ -113,33 +113,39 @@ export const MINI_SHIP = {
   deployOrbitSpeed: 1.8,
 };
 
-// Selectable cat ship color themes
+// v3.91.0: HUE-SHIFTED WHITE-BASE CATSHIP SET — the 9 legacy coat-color
+// themes (yellow/orange/white/gray/brown/blue/red/green/black) are replaced
+// by the 9 hue-shifted White-* base assets (White-Blue … White-Yellow, all
+// native 256×384 in .assets). Theme keys match the asset names: white_blue,
+// white_elecblue, white_green, white_orange, white_pink, white_purple,
+// white_red, white_teal, white_yellow. Each theme keeps a distinct color +
+// accent pair that drives the cockpit glass, weapon glow, thruster flame,
+// shield tint and HUD accent.
 export const PLAYER_THEMES = {
-  yellow: { name: 'Yellow Tabby',  color: '#ffd54f', accent: '#fff9c4', pattern: 'striped' },
-  orange: { name: 'Orange Tabby',  color: '#ff9d3b', accent: '#ffd9a0', pattern: 'striped' },
-  white:  { name: 'White Cat',     color: '#f2f2f2', accent: '#ffffff', pattern: 'solid' },
-  gray:   { name: 'Gray Cat',      color: '#9e9e9e', accent: '#cfd8dc', pattern: 'spotted' },
-  brown:  { name: 'Brown Cat',     color: '#8d6e63', accent: '#bcaaa4', pattern: 'striped' },
-  blue:   { name: 'Blue Cat',      color: '#4fc3f7', accent: '#e1f5fe', pattern: 'solid' },
-  red:    { name: 'Red Cat',       color: '#ef5350', accent: '#ffcdd2', pattern: 'solid' },
-  green:  { name: 'Green Cat',     color: '#66bb6a', accent: '#c8e6c9', pattern: 'solid' },
-  black:  { name: 'Black Cat',     color: '#37474f', accent: '#90a4ae', pattern: 'solid' },
+  white_blue:     { name: 'White Blue Cat',      color: '#3b6fd4', accent: '#8fb8ff', pattern: 'solid' },
+  white_elecblue: { name: 'White Elec Blue Cat', color: '#19c8ff', accent: '#aef4ff', pattern: 'solid' },
+  white_green:    { name: 'White Green Cat',     color: '#3fae4a', accent: '#9fe8a8', pattern: 'solid' },
+  white_orange:   { name: 'White Orange Cat',    color: '#e07a2e', accent: '#ffc07a', pattern: 'striped' },
+  white_pink:     { name: 'White Pink Cat',      color: '#e858a8', accent: '#ffb8e2', pattern: 'solid' },
+  white_purple:   { name: 'White Purple Cat',    color: '#8a4fd0', accent: '#c9a6ff', pattern: 'solid' },
+  white_red:      { name: 'White Red Cat',       color: '#d43b3b', accent: '#ff9d9d', pattern: 'solid' },
+  white_teal:     { name: 'White Teal Cat',      color: '#2aa8a0', accent: '#9fe8e2', pattern: 'solid' },
+  white_yellow:   { name: 'White Yellow Cat',    color: '#e8c832', accent: '#fff08a', pattern: 'striped' },
 };
 
-// v3.72.0 — Catship sprite art (tools/asset-manifest.json → js/core/AssetSprites.js).
-// Each theme maps to a transparent PNG of a cat lying on its back (head + ears at
-// the center/top, the two long upper extensions = the weapon arms, the two lower
-// extensions = the thruster legs). PlayerRenderer blits the sprite in place of the
-// procedural hull; the theme's color/accent still drive the cockpit, weapons,
-// thrusters, shields and HUD. Themes without a sprite keep the procedural hull.
+// v3.91.0 — Catship sprite art (tools/asset-manifest.json → js/core/AssetSprites.js).
+// Each theme maps to one of the 9 hue-shifted White-*-Catship-256x384.png
+// assets (sprite keys match the asset names). PlayerRenderer blits the sprite
+// in place of the procedural hull; the theme's color/accent still drive the
+// cockpit, weapons, thrusters, shields and HUD.
 export const PLAYER_THEME_SPRITES = {
-  yellow: 'cat_yellow',
-  orange: 'cat_orange',
-  white:  'cat_white',
-  gray:   'cat_gray',
-  brown:  'cat_brown',
-  blue:   'cat_blue',
-  red:    'cat_red',
-  green:  'cat_green',
-  black:  'cat_black',
+  white_blue:     'cat_white_blue',
+  white_elecblue: 'cat_white_elecblue',
+  white_green:    'cat_white_green',
+  white_orange:   'cat_white_orange',
+  white_pink:     'cat_white_pink',
+  white_purple:   'cat_white_purple',
+  white_red:      'cat_white_red',
+  white_teal:     'cat_white_teal',
+  white_yellow:   'cat_white_yellow',
 };

@@ -7,7 +7,7 @@
 //
 // Fields (E6 schema mapping, fixed order):
 //   slot     'p1' | 'p2'
-//   theme    ship theme id (yellow/orange/white/gray/brown)
+//   theme    ship theme id (white_blue … white_yellow — v3.91.0 hue-shifted set)
 //   callsign player name (shown in the HUD + top-pilot board)
 //   score    last session score (local save state)
 import E6 from './E6.js';
@@ -15,11 +15,11 @@ import E6 from './E6.js';
 const STORAGE_KEY = 'kve-profiles-v1';
 export const SCHEMA_ID = 'profile';
 export const FIELDS = ['slot', 'theme', 'callsign', 'score'];
-export const THEMES = ['yellow', 'orange', 'white', 'gray', 'brown'];
+export const THEMES = ['white_blue', 'white_elecblue', 'white_green', 'white_orange', 'white_pink', 'white_purple', 'white_red', 'white_teal', 'white_yellow'];
 
 const DEFAULTS = {
-  p1: { slot: 'p1', theme: 'yellow', callsign: 'PILOT-1', score: 0 },
-  p2: { slot: 'p2', theme: 'orange', callsign: 'PILOT-2', score: 0 },
+  p1: { slot: 'p1', theme: 'white_yellow', callsign: 'PILOT-1', score: 0 },
+  p2: { slot: 'p2', theme: 'white_orange', callsign: 'PILOT-2', score: 0 },
 };
 
 class PlayerProfile {

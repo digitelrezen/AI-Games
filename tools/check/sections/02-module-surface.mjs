@@ -81,9 +81,13 @@ const keys = Object.keys(manifest.assets || {});
 // v3.67.0: + squirrel (squirrel enemy — 19th species).
 // v3.72.0: + cat_black / cat_blue / cat_brown / cat_gray / cat_green /
 //          cat_orange / cat_red / cat_white / cat_yellow (9 catship theme sprites).
+// v3.91.0: hue-shifted white-base set — the 9 legacy cat_* keys are replaced
+//          by cat_white_blue / cat_white_elecblue / cat_white_green /
+//          cat_white_orange / cat_white_pink / cat_white_purple / cat_white_red /
+//          cat_white_teal / cat_white_yellow (White-*-Catship-256x384.png).
 // v3.81.0: + spaceballs_one (Spaceballs One easter-egg ship art — "We Brake For Nobody").
 // v3.86.0: + goldcoin (gold coin drop pixel-art — "GoldCoinPowerup-Points").
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_black', 'cat_blue', 'cat_brown', 'cat_gray', 'cat_green', 'cat_orange', 'cat_red', 'cat_white', 'cat_yellow', 'spaceballs_one', 'goldcoin'];
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_white_blue', 'cat_white_elecblue', 'cat_white_green', 'cat_white_orange', 'cat_white_pink', 'cat_white_purple', 'cat_white_red', 'cat_white_teal', 'cat_white_yellow', 'spaceballs_one', 'goldcoin'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);

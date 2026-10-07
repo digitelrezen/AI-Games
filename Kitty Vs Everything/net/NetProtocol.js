@@ -42,7 +42,7 @@ const r0 = (n) => Math.round(Number(n) || 0);
 export function playerRecord(p) {
   return {
     id: p.netId || 'p1',
-    theme: p.theme || 'yellow',
+    theme: p.theme || 'white_yellow',
     x: r1(p.x), y: r1(p.y), angle: r1(p.angle),
     hp: r0(p.hp), shield: r0(p.shield),
     weapon: p.weapon || 'vulkan',

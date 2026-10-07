@@ -12,7 +12,7 @@ import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 
 export default class WhiteCat extends Player {
-  constructor(game, theme = 'white') {
+  constructor(game, theme = 'white_pink') {
     super(game, theme);
     this.ultimateName = 'TACTICAL NUKE';
     this.ULTIMATE_COOLDOWN = 15.0;

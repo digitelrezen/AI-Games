@@ -55,8 +55,8 @@ import PulseCannon from '../combat/PulseCannon.js';   // v3.69.0: modular weapon
 import RailCannon from '../combat/RailCannon.js';     // v3.69.0: modular weapon
 
 export default class Player extends Entity {
-  constructor(game, theme = 'yellow') {
-    const th = PLAYER_THEMES[theme] || PLAYER_THEMES.yellow;
+  constructor(game, theme = 'white_yellow') {
+    const th = PLAYER_THEMES[theme] || PLAYER_THEMES.white_yellow;
     super({ x: game.viewW / 2, y: game.viewH - 90, radius: 18, hp: 100, shield: 50, color: th.color }); // v3.13.0: live viewport
     this.game = game;
     this.theme = theme;

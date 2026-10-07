@@ -12,7 +12,7 @@ import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 
 export default class GreyCat extends Player {
-  constructor(game, theme = 'gray') {
+  constructor(game, theme = 'white_blue') {
     super(game, theme);
     this.ultimateName = 'BLACK HOLE PULL';
     this.ULTIMATE_COOLDOWN = 12.0;

@@ -13,7 +13,7 @@ import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 
 export default class BrownCat extends Player {
-  constructor(game, theme = 'brown') {
+  constructor(game, theme = 'white_red') {
     super(game, theme);
     this.ultimateName = 'SHIELD OVERCHARGE';
     this.ULTIMATE_COOLDOWN = 14.0;

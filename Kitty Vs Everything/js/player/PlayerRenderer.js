@@ -53,14 +53,14 @@ export default class PlayerRenderer {
   /** Main draw entry point called by Player.draw(ctx). */
   draw(ctx) {
     const p = this.player;
-    const th = PLAYER_THEMES[p.theme] || PLAYER_THEMES.yellow;
+    const th = PLAYER_THEMES[p.theme] || PLAYER_THEMES.white_yellow;
     const blink = p.invuln > 0 && Math.floor(p.invuln * 12) % 2 === 0;
     if (blink) ctx.globalAlpha = 0.35;
 
     // Draw docked mini-ships first (behind main ship)
     for (const m of p.minis) {
       if (!m.alive) continue;
-      const mt = PLAYER_THEMES[m.theme] || PLAYER_THEMES.yellow;
+      const mt = PLAYER_THEMES[m.theme] || PLAYER_THEMES.white_yellow;
       // v3.17.0: arc-bolt coupling tether (DOCKED only) — drawn behind the
       // ships so it reads as a latch keeping the mini coupled to the hull.
       if (!p.fleetDeployed) drawDockArc(ctx, m, p);

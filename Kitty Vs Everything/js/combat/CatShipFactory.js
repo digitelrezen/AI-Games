@@ -18,12 +18,19 @@ import GreyCat from '../player/variants/greyCat.js';
 import WhiteCat from '../player/variants/whiteCat.js';
 import BrownCat from '../player/variants/brownCat.js';
 
+// v3.91.0: hue-shifted white-base theme keys (White-*-Catship-256x384.png).
+// Each of the 9 themes maps to the variant class of its hue family — the
+// class supplies the ultimate; white_yellow is the fallback class.
 const VARIANTS = {
-  orange: OrangeCat,
-  yellow: YellowCat,
-  gray: GreyCat,
-  white: WhiteCat,
-  brown: BrownCat,
+  white_yellow:   YellowCat, // bright family — Energy Ring Explosion
+  white_green:    YellowCat,
+  white_orange:   OrangeCat, // hot family — Nova Shockwave
+  white_pink:     WhiteCat,  // bright/soft family — Tactical Nuke
+  white_purple:   WhiteCat,
+  white_blue:     GreyCat,   // cool family — Black Hole Pull
+  white_elecblue: GreyCat,
+  white_teal:     GreyCat,
+  white_red:      BrownCat,  // deep warm family — Shield Overcharge
 };
 
 /** Create the main hull variant for a theme (Game.start calls this). */

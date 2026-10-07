@@ -46,7 +46,7 @@
 //          HUD changes — the fix lives in main.js + style.css).
 // v3.90.0: Version label bumped with the crisp 256×384 native catship
 //          hangar (no HUD changes — the fix lives in main.js + style.css).
-export const VERSION = 'v3.90.0';
+export const VERSION = 'v3.91.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter
