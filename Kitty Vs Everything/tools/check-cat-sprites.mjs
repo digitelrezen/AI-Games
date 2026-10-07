@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check-cat-sprites.mjs — Kitty Vs Everything v3.32.0
+// tools/check-cat-sprites.mjs — Kitty Vs Everything v3.32.0
 // Headless validation of the v3.32.0 generated cat sprites:
 //   [1] Import BlackCatSprite.js / PinkCatSprite.js — verify the exports and
 //       the null-sprite contract (the sprite is OPTIONAL at runtime; the
@@ -24,7 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SELF = path.join(__dirname, 'check-cat-sprites.mjs');
-const ROOT = path.resolve(__dirname, '..', 'Kitty Vs Everything');
+const ROOT = path.resolve(__dirname, '..');
 const url = (f) => pathToFileURL(path.join(ROOT, f)).href;
 
 let failures = 0;
@@ -139,7 +139,7 @@ function makeMockCtx() {
 // ─── Child mode: instantiate the real enemies and run draw() ───
 async function runEnemyDraw(mode) {
   const spriteBranch = mode === '--enemy-sprite';
-  // Same minimal shims as ../tools/smoke.mjs (the enemy chain reaches
+  // Same minimal shims as tools/smoke.mjs (the enemy chain reaches
   // AudioSystem.js via Combat.js).
   const store = new Map();
   globalThis.localStorage = {

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/validate.mjs — Kitty Vs Everything v3.14.0 (tools/ moved up to AI-GAMES root)
+// tools/validate.mjs — Kitty Vs Everything v3.14.0 (tools/ lives in the game root)
 // Static consistency validator (Node, no deps). Run: npm run validate (from the game folder)
 // Checks:
 //   1. every relative import in the game modules resolves to a real file
@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'Kitty Vs Everything');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 function walkJs(dir, base) {
   const out = [];
   for (const e of fs.readdirSync(dir)) {

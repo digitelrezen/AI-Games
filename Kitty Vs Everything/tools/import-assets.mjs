@@ -2,10 +2,10 @@
 // tools/import-assets.mjs — Kitty Vs Everything v3.33.0
 // Robust asset-import & mapping utility for the shared art folder.
 //
-// Discovers, validates and maps transparent PNGs out of C:\Dev\AI-GAMES\.assets
+// Discovers, validates and maps transparent PNGs out of <AI-GAMES>/.assets
 // (resolved RELATIVE to this file — no hardcoded UNC paths) and generates the
 // game's embedded sprite registry:
-//   "Kitty Vs Everything/js/core/AssetSprites.js"
+//   "js/core/AssetSprites.js"
 //
 // The game builds to a single self-contained HTML (build.mjs), so runtime
 // file:// fetches of external PNGs are not an option — the established
@@ -46,10 +46,10 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Clean relative mappings (no stale UNC paths): tools/ → AI-GAMES root → .assets
-const ASSET_DIR = path.resolve(__dirname, '..', '.assets');
+// Clean relative mappings (no stale UNC paths): tools/ → game root → AI-GAMES root → .assets
+const ASSET_DIR = path.resolve(__dirname, '..', '..', '.assets');
 const MANIFEST = path.join(__dirname, 'asset-manifest.json');
-const OUT = path.resolve(__dirname, '..', 'Kitty Vs Everything', 'js', 'core', 'AssetSprites.js');
+const OUT = path.resolve(__dirname, '..', 'js', 'core', 'AssetSprites.js');
 const MAX_DIM = 128; // v3.72.0 normalization ceiling for embedded art (keeps the single-file build small)
 const CATSHIP_MAX_DIM = 512; // v3.90.0: cat_* keys (the 9 catship themes) embed at native 256×384 — 512 only guards future oversized catship art
 const SHIP_MAX_DIM = 384; // v3.93.0: spaceballs_one ship embeds at native 384×256 (text must stay readable)
@@ -293,7 +293,7 @@ const lines = [];
 lines.push('// Filename: AssetSprites.js');
 lines.push('// GENERATED FILE — do not edit by hand.');
 lines.push('// Regenerate: node tools/import-assets.mjs   (tools/asset-manifest.json → this registry)');
-lines.push('// Source art: C:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px; spaceballs_one ship embeds native 384×256).');
+lines.push('// Source art: <AI-GAMES>/.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px; spaceballs_one ship embeds native 384×256).');
 lines.push('// The runtime manager is js/core/AssetManager.js (decode + per-key');
 lines.push('// error isolation + null → procedural fallback in the consumers).');
 lines.push('');

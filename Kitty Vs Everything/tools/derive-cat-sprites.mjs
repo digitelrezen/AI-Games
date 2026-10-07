@@ -24,8 +24,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateSync, deflateSync } from 'node:zlib';
 
 const TOOLS_DIR = dirname(fileURLToPath(import.meta.url));
-const GAME_ROOT = resolve(TOOLS_DIR, '..', 'Kitty Vs Everything');
-const ASSET_DIR = resolve(TOOLS_DIR, '..', '.assets');
+const GAME_ROOT = resolve(TOOLS_DIR, '..');
+const ASSET_DIR = resolve(TOOLS_DIR, '..', '..', '.assets');
 const OUT_DIR = join(GAME_ROOT, 'js', 'bosses');
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -253,7 +253,7 @@ function moduleSource(a, stats) {
 // GENERATED FILE — regenerate with:  node tools/derive-cat-sprites.mjs
 //
 // ${a.label} (v3.32.0): the pixel-art cat from
-// \`C:\\Dev\\AI-GAMES\\.assets\\${a.src}\` (${stats.srcW}×${stats.srcH}, 8-bit RGBA, real
+// \`<AI-GAMES>/.assets/${a.src}\` (${stats.srcW}×${stats.srcH}, 8-bit RGBA, real
 // alpha channel — no white-background keying needed).
 //
 // Generation pipeline (Node, at generation time — not at runtime):

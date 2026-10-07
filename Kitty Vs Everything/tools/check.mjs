@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check.mjs — Kitty Vs Everything v3.77.0 (tools/ lives at AI-GAMES root)
+// tools/check.mjs — Kitty Vs Everything v3.77.0 (tools/ lives in the game root)
 // One-stop health check for the v3.43.0 release work (alien UFO pixel-art
 // dual-skin sprite swap) plus the v3.42.0 release work (shared POWERUP_DROPS
 // drop pool, fully off-screen asteroid spawns, ship easter egg in most

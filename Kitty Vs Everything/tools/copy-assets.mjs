@@ -1,6 +1,6 @@
 // copy-assets.mjs
-// Copies ALL files from C:\Dev\AI-GAMES\.assets\NEW into the active
-// project asset folder C:\Dev\AI-GAMES\Kitty Vs Everything\assets.
+// Copies ALL files from <AI-GAMES>\.assets\NEW into the active project
+// asset folder <game root>\assets (resolved relative to this file).
 // Raw file copy only — no code, manifest, or build changes.
 //
 // Usage: node tools/copy-assets.mjs
@@ -8,8 +8,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SRC = 'C:\\Dev\\AI-GAMES\\.assets\\NEW';
-const DEST = 'C:\\Dev\\AI-GAMES\\Kitty Vs Everything\\assets';
+const SRC = path.resolve(__dirname, '..', '..', '.assets', 'NEW');
+const DEST = path.resolve(__dirname, '..', 'assets');
 
 if (!fs.existsSync(SRC)) {
   console.error(`Source folder not found: ${SRC}`);

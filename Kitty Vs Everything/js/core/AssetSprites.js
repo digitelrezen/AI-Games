@@ -1,7 +1,7 @@
 // Filename: AssetSprites.js
 // GENERATED FILE — do not edit by hand.
 // Regenerate: node tools/import-assets.mjs   (tools/asset-manifest.json → this registry)
-// Source art: C:\Dev\AI-GAMES\.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px; spaceballs_one ship embeds native 384×256).
+// Source art: <AI-GAMES>/.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px; spaceballs_one ship embeds native 384×256).
 // The runtime manager is js/core/AssetManager.js (decode + per-key
 // error isolation + null → procedural fallback in the consumers).
 

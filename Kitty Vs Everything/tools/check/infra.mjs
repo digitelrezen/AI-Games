@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const TOOLS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const ROOT = path.resolve(TOOLS, '..', 'Kitty Vs Everything');
+const ROOT = path.resolve(TOOLS, '..');
 const FULL = process.argv.includes('--full');
 
 console.log(`\n[check] game root : ${ROOT}`);

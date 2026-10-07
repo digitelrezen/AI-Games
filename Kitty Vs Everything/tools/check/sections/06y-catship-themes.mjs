@@ -25,7 +25,7 @@
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
-const ASSET_DIR = path.resolve(TOOLS, '..', '.assets');
+const ASSET_DIR = path.resolve(TOOLS, '..', '..', '.assets');
 const MANIFEST = path.join(TOOLS, 'asset-manifest.json');
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), 'utf8');

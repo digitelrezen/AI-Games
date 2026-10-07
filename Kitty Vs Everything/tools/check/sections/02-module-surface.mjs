@@ -59,7 +59,7 @@ const { default: HUDFireControl } = await mod('js/ui/HUDFireControl.js');
 check('HUDFireControl has constructor + update', typeof HUDFireControl === 'function' && typeof HUDFireControl.prototype.update === 'function');
 
 // ─── Asset pipeline static surface (files the PNG pipeline needs) ───
-const ASSET_DIR = path.resolve(TOOLS, '..', '.assets');
+const ASSET_DIR = path.resolve(TOOLS, '..', '..', '.assets');
 const MANIFEST = path.join(TOOLS, 'asset-manifest.json');
 check('.assets directory exists', fs.existsSync(ASSET_DIR));
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));

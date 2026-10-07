@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ../tools/check-bender-sprite.mjs — Kitty Vs Everything v3.29.0 (tools/ moved up to AI-GAMES root)
+// tools/check-bender-sprite.mjs — Kitty Vs Everything v3.29.0 (tools/ lives in the game root)
 // Headless validation of the Bender easter-egg pipeline:
 //   1. embedded PNG payloads in BenderSprite.js (signature + IHDR dims)
 //   2. exported geometry constants (art pixels, arm-length consistency)
@@ -8,13 +8,13 @@
 //      aimbot off + exit slide → reset, with the real EventBus
 //      (banners captured) and AudioSystem (no-op headless)
 //   4. Game.js / HUD.js / Combat.js consumer wiring (static)
-// Run: node ../tools/check-bender-sprite.mjs
+// Run: node tools/check-bender-sprite.mjs
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'Kitty Vs Everything');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let failures = 0;
 const check = (label, cond) => {
   console.log(`  ${cond ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${label}`);

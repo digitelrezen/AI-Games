@@ -1,14 +1,14 @@
 // Verify the built single-file bundle is valid and contains the current
 // milestone's features. The version is read from package.json so this always
-// checks the latest build. Usage: node ../tools/verify-bundle.mjs (tools/ at AI-GAMES root)
+// checks the latest build. Usage: node tools/verify-bundle.mjs (from the game folder)
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..'); // AI-GAMES workspace root
-const pkg = JSON.parse(readFileSync(join(root, 'Kitty Vs Everything', 'package.json'), 'utf8'));
+const root = join(dirname(fileURLToPath(import.meta.url)), '..'); // game root (Kitty Vs Everything)
+const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const VER = String(pkg.version || '');
-const bundle = join(root, 'Builds', `Kitty Vs Everything ${VER}.html`);
+const bundle = join(root, '..', 'Builds', `Kitty Vs Everything ${VER}.html`);
 const s = readFileSync(bundle, 'utf8');
 
 // ── v3.80.0: parse the drop tables numerically (esbuild may normalize

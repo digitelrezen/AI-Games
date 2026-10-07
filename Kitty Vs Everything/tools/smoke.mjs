@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// ../tools/smoke.mjs — Kitty Vs Everything v3.72.3 (tools/ moved up to AI-GAMES root)
+// tools/smoke.mjs — Kitty Vs Everything v3.72.3 (tools/ lives in the game root)
 // Headless smoke test for the pure-logic v3.47.0 modules (Settings, Keybinds,
 // MessageLog, EventBus, DebugBridge, MenuKeybinds) using minimal DOM shims.
-// Run: node ../tools/smoke.mjs
+// Run: node tools/smoke.mjs
 //
 // v3.47.0: key-triggered Synergy Explosion — the 'synergy' action joins the
 //          12-row menu keybind footer (T default, - lefty, , P2 co-op) and
@@ -11,7 +11,7 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'Kitty Vs Everything');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let failures = 0;
 const check = (label, cond) => {
   console.log(`  ${cond ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${label}`);
@@ -147,7 +147,7 @@ console.log('\n[6] MenuKeybinds.js — dynamic select-screen footer (v3.23.0)');
   };
 
   check('renders 12 rows', rows().length === 12);
-  check('WSAD: Forward, Back/stop, Spin Left, Spin Right', rowText(rows()[0]) === 'WSAD: Forward, Back/stop, Spin Left, Spin Right');
+  check('WSAD: Forward, Back/stop, Strafe/Spin Left, Strafe/Spin Right', rowText(rows()[0]) === 'WSAD: Forward, Back/stop, Strafe/Spin Left, Strafe/Spin Right');
   check('Q: Stun Rockets', rowText(rows()[1]) === 'Q: Stun Rockets');
   check('E: Napalm', rowText(rows()[2]) === 'E: Napalm');
   check('R: Weapon Switch', rowText(rows()[3]) === 'R: Weapon Switch');
@@ -168,10 +168,10 @@ console.log('\n[6] MenuKeybinds.js — dynamic select-screen footer (v3.23.0)');
   removeBind('thrust', 'KeyW');
   removeBind('thrust', 'ArrowUp');
   setBind('thrust', 'KeyZ');
-  check('wsad row → Z / S / A / D', rowText(rows()[0]) === 'Z / S / A / D: Forward, Back/stop, Spin Left, Spin Right');
+  check('wsad row → Z / S / A / D', rowText(rows()[0]) === 'Z / S / A / D: Forward, Back/stop, Strafe/Spin Left, Strafe/Spin Right');
   // Reset → the standard default set returns
   resetBinds();
-  check('reset → WSAD standard row', rowText(rows()[0]) === 'WSAD: Forward, Back/stop, Spin Left, Spin Right');
+  check('reset → WSAD standard row', rowText(rows()[0]) === 'WSAD: Forward, Back/stop, Strafe/Spin Left, Strafe/Spin Right');
   check('reset → Q: Stun Rockets', rowText(rows()[1]) === 'Q: Stun Rockets');
   // destroy() unsubscribes — no more re-renders
   footer.destroy();

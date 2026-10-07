@@ -21,8 +21,8 @@ const fakeCtx = new Proxy({}, {
 });
 globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => fakeCtx }) };
 
-const { default: EasterEgg, switchEgg } = await import('../Kitty Vs Everything/js/core/EasterEgg.js');
-const { bus } = await import('../Kitty Vs Everything/js/core/EventBus.js');
+const { default: EasterEgg, switchEgg } = await import('../js/core/EasterEgg.js');
+const { bus } = await import('../js/core/EventBus.js');
 
 const banners = [];
 bus.on('banner', (e) => banners.push(e.text));
@@ -139,8 +139,8 @@ console.log('\n[B2] Enemy bullets must NOT damage the ship');
 console.log('\n[C] Bender: kill-based dialogue (v3.29.0) — trigger/intro/kills/exit');
 {
   banners.length = 0;
-  const src = readFileSync(new URL('../Kitty Vs Everything/js/core/EasterEgg.js', import.meta.url), 'utf8');
-  const combatSrc = readFileSync(new URL('../Kitty Vs Everything/js/combat/Combat.js', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../js/core/EasterEgg.js', import.meta.url), 'utf8');
+  const combatSrc = readFileSync(new URL('../js/combat/Combat.js', import.meta.url), 'utf8');
   check('BENDER_SCALE = 0.5', /const BENDER_SCALE = 0\.5;/.test(src));
   check('no armReach / ARM_REACH_MAX / ARM_EXTEND / BENDER_ARM_LEN refs',
     !/armReach|ARM_REACH_MAX|ARM_EXTEND|BENDER_ARM_LEN/.test(src));

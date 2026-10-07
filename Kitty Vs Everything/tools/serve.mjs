@@ -1,10 +1,11 @@
-// Tiny static server for headless bundle verification (../tools/serve.mjs — tools/ moved up to AI-GAMES root)
-// Serves C:\Dev\AI-GAMES\Builds on http://localhost:8765
+// Tiny static server for headless bundle verification (tools/serve.mjs — tools/ lives in the game root)
+// Serves <AI-GAMES>\Builds (game root/../Builds) on http://localhost:8765
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
-import { join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, normalize } from 'node:path';
 
-const ROOT = 'C:/Dev/AI-GAMES/Builds';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'Builds');
 const PORT = 8765;
 
 createServer((req, res) => {

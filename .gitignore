@@ -1,7 +1,9 @@
 Builds/
 .tools/
 node_modules/
+# shared art + generated previews stay out of git; the game's own asset PNGs are tracked
 *.png
+!Kitty Vs Everything/assets/*.png
 Thumbs.db
-# temp debug dumps (tools/)
+# temp debug dumps (game-local tools/)
 tools/.*.txt

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// ../tools/harness.mjs — Kitty Vs Everything v3.14.0 (tools/ moved up to AI-GAMES root)
+// tools/harness.mjs — Kitty Vs Everything v3.14.0 (tools/ lives in the game root)
 // EXTERNAL DEBUGGER HARNESS (dev tooling, runs in Node).
 // Bridges a terminal REPL to the running game through the in-browser
 // DebugBridge (window.__KVE__):
 //   1. Run the game in a browser tab (npm start or any static server).
-//   2. node ../tools/harness.mjs [port]   (default port 3123)
+//   2. node tools/harness.mjs [port]   (default port 3123)
 //   3. In the browser DEVTOOLS CONSOLE, paste the printed one-liner.
 //   4. Type commands in the terminal — `help` lists them. The bridge
 //      executes them via window.__KVE__.run() and streams results +
