@@ -24,7 +24,7 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   check('BoneYardBonus: deterministic mulberry32 layout (seed 20261001)', bySrc.includes('function mulberry32') && bySrc.includes('mulberry32(20261001)'));
   check('BoneYardBonus: field drift 6–18 px/s, no horizontal drift', bySrc.includes('bone.vy = 6 + rng() * 12') && bySrc.includes('bone.vx = 0'));
   check('BoneYardBonus: Phase 1 rain rolls the weighted pool', bySrc.includes('new BoneFragment({ x, y: -30, game: this.game })'));
-  check('BoneFragment: VERSION = v2.3.0', bfSrc.includes("VERSION = 'v2.3.0'"));
+  check('BoneFragment: VERSION = v2.4.0', bfSrc.includes("VERSION = 'v2.4.0'"));
   check('BoneFragment: per-key radius/HP/score bands', bfSrc.includes('BONE_FRAGMENT_STATS') && bfSrc.includes('score: 500') && bfSrc.includes('score: 1000') && bfSrc.includes('score: 2000'));
   check('BoneFragment: weighted spawn pool 40/40/15/5', bfSrc.includes('BONE_FRAGMENT_POOL') && bfSrc.includes('weight: 40') && bfSrc.includes('weight: 15') && bfSrc.includes('weight: 5'));
   check('BoneFragment: optional spriteKey constructor arg', bfSrc.includes('spriteKey = null'));

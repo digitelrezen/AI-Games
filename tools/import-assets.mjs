@@ -29,6 +29,7 @@
 // to fit (aspect preserved) and re-encoded as 8-bit RGBA PNG — keeps the
 // single-file build small. v3.90.0: cat_* keys (the 9 catship themes) use
 // CATSHIP_MAX_DIM (512) so the native 256×384 catship art embeds untouched.
+// v3.93.0: spaceballs_one uses SHIP_MAX_DIM (384) so the 384×256 ship art (readable text) embeds untouched.
 // Output is DETERMINISTIC (sorted keys, per-asset source sha12, no
 // timestamps) so --check can byte-compare.
 //
@@ -51,6 +52,7 @@ const MANIFEST = path.join(__dirname, 'asset-manifest.json');
 const OUT = path.resolve(__dirname, '..', 'Kitty Vs Everything', 'js', 'core', 'AssetSprites.js');
 const MAX_DIM = 128; // v3.72.0 normalization ceiling for embedded art (keeps the single-file build small)
 const CATSHIP_MAX_DIM = 512; // v3.90.0: cat_* keys (the 9 catship themes) embed at native 256×384 — 512 only guards future oversized catship art
+const SHIP_MAX_DIM = 384; // v3.93.0: spaceballs_one ship embeds at native 384×256 (text must stay readable)
 
 const checkMode = process.argv.includes('--check');
 let failures = 0;
@@ -253,7 +255,7 @@ for (const key of keys) {
   }
   // Normalize (downscale + re-encode) when larger than MAX_DIM
   let outBuf = buf, outW = png.width, outH = png.height, normalized = false;
-  const cap = key.startsWith('cat_') ? CATSHIP_MAX_DIM : MAX_DIM; // v3.90.0: catship art embeds native; everything else stays at the 128px normalization
+  const cap = key.startsWith('cat_') ? CATSHIP_MAX_DIM : (key === 'spaceballs_one' ? SHIP_MAX_DIM : MAX_DIM); // v3.90.0: catship art embeds native; everything else stays at the 128px normalization
   const scale = Math.min(1, cap / Math.max(png.width, png.height));
   if (scale < 1) {
     const dw = Math.max(1, Math.round(png.width * scale));
@@ -291,7 +293,7 @@ const lines = [];
 lines.push('// Filename: AssetSprites.js');
 lines.push('// GENERATED FILE — do not edit by hand.');
 lines.push('// Regenerate: node tools/import-assets.mjs   (tools/asset-manifest.json → this registry)');
-lines.push('// Source art: C:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px).');
+lines.push('// Source art: C:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px; spaceballs_one ship embeds native 384×256).');
 lines.push('// The runtime manager is js/core/AssetManager.js (decode + per-key');
 lines.push('// error isolation + null → procedural fallback in the consumers).');
 lines.push('');

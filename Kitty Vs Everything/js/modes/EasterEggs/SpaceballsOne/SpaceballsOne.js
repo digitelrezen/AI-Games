@@ -1,5 +1,5 @@
 // Filename: SpaceballsOne.js
-// Kitty Vs Everything — v3.82.0
+// Kitty Vs Everything — v3.83.0
 // "Spaceballs One" — the rare UNSTOPPABLE easter-egg ship (v3.81.0).
 //
 // Spawn: a rare roll at the start of every combat wave
@@ -11,7 +11,7 @@
 // Flight (v3.82.0): one-way flyby — enters off-screen bottom-right and
 // races diagonally up-left (SPACEBALLS_ONE.speed px/s, delta-time
 // integrated), despawning cleanly once fully off-screen top-left. The art
-// (SpaceballsOneArt.js, .assets/We-Brake-For-Nobody.png) is scaled by
+// (SpaceballsOneArt.js, .assets/We-Brake-For-Nobody384x256.png) is scaled by
 // SPACEBALLS_ONE.scale and rotated to the transit heading.
 //
 // Unstoppable: SpaceballsOneCollision.sweepPath obliterates everything in
@@ -34,7 +34,7 @@ export const SPACEBALLS_ONE = {
   maxPerRun: 2,         // per-mission cap (EasterEgg manager counts)
   hp: 200,              // high-health target — ~3s of focused fire
   speed: 400,           // px/s diagonal transit (bottom-right → top-left)
-  scale: 1.75,          // 128×72 art → 224×126 on screen
+  scale: 1.0,           // 384×256 art → 384×256 on screen (native, text readable)
   sweepPad: 20,         // extra px around the art box for the sweep
   fireInterval: 0.16,   // s between weapon volleys
   bulletsPerVolley: 3,  // 3-way spread

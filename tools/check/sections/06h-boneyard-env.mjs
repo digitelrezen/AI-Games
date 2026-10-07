@@ -17,10 +17,10 @@ console.log('\n[6h] v3.54.0 boneyard pixel-art environment');
   check('BonusLevel: VERSION = v3.76.0', blSrc.includes("VERSION = 'v3.76.0'"));
   check('BonusLevel: draw(ctx) delegates to the active bonus', blSrc.includes('draw(ctx)') && blSrc.includes('this.currentBonus.draw(ctx)'));
   check('Game: bonus draw hook under the bonus targets', gameSrc.includes('this.bonus.draw(ctx)'));
-  check('AssetSprites: skeleton dims 76×128 registered', /skeleton:\s*\{\s*w:\s*76,\s*h:\s*128\s*\}/.test(spritesSrc));
-  check('AssetSprites: skull dims 104×128 registered', /skull:\s*\{\s*w:\s*104,\s*h:\s*128\s*\}/.test(spritesSrc));
-  check('AssetSprites: femur dims 126×128 registered', /femur:\s*\{\s*w:\s*126,\s*h:\s*128\s*\}/.test(spritesSrc));
-  check('AssetSprites: profile_bone dims 128×56 registered', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*56\s*\}/.test(spritesSrc));
+  check('AssetSprites: skeleton dims 85×128 registered', /skeleton:\s*\{\s*w:\s*85,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: skull dims 128×128 registered', /skull:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: femur dims 128×128 registered', /femur:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: profile_bone dims 128×128 registered', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 }
 
 }

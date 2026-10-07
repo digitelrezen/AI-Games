@@ -117,10 +117,10 @@ const tests = [
   // ── v3.54.0 boneyard pixel-art environment (skeleton/skull/femur/profile bone) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.54.0: skeleton sprite dims 76×128', /skeleton:\s*\{\s*w:\s*76,\s*h:\s*128\s*\}/.test(s)],
-  ['v3.54.0: skull sprite dims 104×128', /skull:\s*\{\s*w:\s*104,\s*h:\s*128\s*\}/.test(s)],
-  ['v3.54.0: femur sprite dims 126×128', /femur:\s*\{\s*w:\s*126,\s*h:\s*128\s*\}/.test(s)],
-  ['v3.54.0: profile_bone sprite dims 128×56', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*56\s*\}/.test(s)],
+  ['v3.54.0: skeleton sprite dims 85×128', /skeleton:\s*\{\s*w:\s*85,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.54.0: skull sprite dims 128×128', /skull:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.54.0: femur sprite dims 128×128', /femur:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.54.0: profile_bone sprite dims 128×128', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.60.0: BoneYardBonus no-op draw hook (backdrop gone)', /draw\(ctx\)\s*\{\s*\}/.test(s) && !s.includes('BONEYARD_BG_KEYS')],
   ['v3.54.0: BonusLevel draw() delegates to the active bonus', s.includes('this.currentBonus.draw(ctx)')],
   ['v3.54.0: Game render draws the bonus backdrop', s.includes('this.bonus.draw(ctx)')],

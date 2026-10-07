@@ -1,7 +1,10 @@
 // Filename: BoneFragment.js
-// Kitty Vs Everything — v2.3.0
+// Kitty Vs Everything — v2.4.0
 // Bone that drifts downward in the Bone Yard bonus. When shot, shatters
 // into sharp bone shrapnel particles.
+// v2.4.0 (v3.93.0 release): uniform bone art — femur / skull re-exported
+// as 256×256 (→ 128×128 embedded) and skeleton as 256×384 (→ 85×128),
+// matching the v3.92.0 power-up art pipeline (native → 128px box).
 // v2.3.0 (v3.60.0 release): every bone is fully DESTRUCTIBLE — the two
 // regular bones (femur / profile_bone), skulls, and full skeletons.
 // Each sprite key carries its own size / HP / score band
@@ -14,7 +17,7 @@
 // through the AssetManager pipeline, aspect-preserving, rotated with the
 // fragment, with an ethereal glow pass. The classic procedural bone is
 // kept as the null-sprite fallback per the AssetManager contract.
-export const VERSION = 'v2.3.0';
+export const VERSION = 'v2.4.0';
 import Entity from '../core/Entity.js';
 import { TAU, rand } from '../core/utils.js';
 import { audio } from '../core/AudioSystem.js';

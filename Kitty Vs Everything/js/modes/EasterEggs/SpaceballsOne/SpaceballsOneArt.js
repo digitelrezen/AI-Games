@@ -1,8 +1,8 @@
 // Filename: SpaceballsOneArt.js
-// Kitty Vs Everything — v3.82.0
+// Kitty Vs Everything — v3.83.0
 // "Spaceballs One" easter-egg ship art (js/modes/EasterEggs/SpaceballsOne/).
 //
-// Asset: .assets/We-Brake-For-Nobody.png (696×390 → 128×72 via the shared
+// Asset: .assets/We-Brake-For-Nobody384x256.png (384×256 native via the shared
 // AssetManager pipeline, key `spaceballs_one` — tools/asset-manifest.json).
 // The art's nose faces -x (left); the ship races bottom-right → top-left
 // (v3.82.0: one-way flyby), so the blit is rotated by (heading −
@@ -10,7 +10,7 @@
 // the art is ever mirrored, flip ART_NOSE_ANGLE to 0 (nose +x) and the
 // rotation math stays correct.
 //
-// Scale is dynamic: SPACEBALLS_ONE.scale (1.75) → 224×126 on screen.
+// Scale is dynamic: SPACEBALLS_ONE.scale (1.0) → 384×256 on screen (native).
 // Headless / not-yet-decoded → procedural gold-wedge fallback (the game
 // never breaks on a missing art file — AssetManager null-sprite contract).
 
@@ -18,8 +18,8 @@ import { getSprite, getDims, isReady } from '../../../core/AssetManager.js';
 import { TAU } from '../../../core/utils.js';
 
 export const SPACEBALLS_ART_KEY = 'spaceballs_one';
-export const SPACEBALLS_ART_W = 128; // registry dims (normalized ≤128px)
-export const SPACEBALLS_ART_H = 72;
+export const SPACEBALLS_ART_W = 384; // registry dims (native 384×256)
+export const SPACEBALLS_ART_H = 256;
 export const ART_NOSE_ANGLE = Math.PI; // nose faces -x (left) in the raw art
 
 /** Registry dims (available before decode — aspect-correct sizing). */
