@@ -22,7 +22,7 @@ console.log('\n[6p] v3.63.0 lizard pixel-art sprite');
   check('LizardEnemy: aspect-preserving nearest-neighbor draw', lzSrc.includes('(targetW * dims.h) / dims.w') && lzSrc.includes('ctx.imageSmoothingEnabled = false'));
   check('LizardEnemy: ground shadow + type-color accent glow pass', lzSrc.includes('ctx.ellipse(0, targetH * 0.41') && lzSrc.includes('ctx.shadowColor = this.color'));
   check('LizardEnemy: procedural fallback art intact (tongue/tail/scales)', lzSrc.includes('tongueOut') && lzSrc.includes('tailSway') && lzSrc.includes('segGrad'));
-  check('AssetSprites: lizard sprite dims 99×128 registered', /lizard:\s*\{\s*w:\s*99,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: lizard sprite dims 128×128 registered', /lizard:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 }
 
 }

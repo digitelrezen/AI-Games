@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 //  [6t] v3.67.0 SQUIRREL ENEMY (19th species) — fast, erratic
 //       tree-dweller with a bushy tail; draws the shared PNG
-//       (key "squirrel", 580×476 → 128×105) upright (head up,
+//       (key "squirrel", 256×256 → 128×128) upright (head up,
 //       centered mass) with a scurry bounce (t*16) + twitchy
 //       wobble (t*4.2) + sprint stretch + type-color accent
 //       glow; procedural fallback retained; scurry + hop
@@ -37,8 +37,8 @@ console.log('\n[6t] v3.67.0 squirrel enemy (19th species)');
   check('EnemyFactory: getEnemyClass("squirrel") is the SquirrelEnemy class', typeof getEnemyClass('squirrel') === 'function' && getEnemyClass('squirrel').name === 'SquirrelEnemy', `got ${getEnemyClass('squirrel') && getEnemyClass('squirrel').name}`);
   const { default: SquirrelEnemy } = await mod('js/enemies/SquirrelEnemy.js');
   check('SquirrelEnemy: extends EnemyBase', Object.getPrototypeOf(SquirrelEnemy.prototype).constructor.name === 'EnemyBase');
-  check('AssetSprites: squirrel sprite dims 128×105 registered', /squirrel:\s*\{\s*w:\s*128,\s*h:\s*105\s*\}/.test(spritesSrc));
-  check('AssetSprites: squirrel source 580×476 → 128×105', /squirrel: "Squirel pixel_art\.png \(580×476 → 128×105,/.test(spritesSrc));
+  check('AssetSprites: squirrel sprite dims 128×128 registered', /squirrel:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: squirrel source 256×256 → 128×128', /squirrel: "Squirel-256x256\.png \(256×256 → 128×128,/.test(spritesSrc));
 }
 
 }

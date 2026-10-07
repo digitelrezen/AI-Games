@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-//  [6aa] v3.93.0 VERSION SYNC — the milestone version must
+//  [6aa] v3.94.0 VERSION SYNC — the milestone version must
 //        be consistent across package.json (build filename source of
 //        truth), config.js (central config), main.js (project
 //        manifest), Game.js (game orchestrator), HUD.js (in-game
@@ -12,8 +12,8 @@ import path from 'node:path';
 
 export default async function run() {
 {
-  console.log('\n[6aa] v3.93.0 version sync');
-  const MILESTONE = 'v3.93.0';
+  console.log('\n[6aa] v3.94.0 version sync');
+  const MILESTONE = 'v3.94.0';
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   check(`package.json version = ${MILESTONE.slice(1)} (build filename source of truth)`, pkg.version === MILESTONE.slice(1), `got ${pkg.version}`);
   const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');

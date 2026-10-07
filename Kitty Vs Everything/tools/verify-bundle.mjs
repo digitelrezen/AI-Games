@@ -73,11 +73,11 @@ const tests = [
   ['v3.55.0: reticle offset clamped in Crosshair.draw (LIMITS)', /Math\.max\(\w+\.min,\s*Math\.min\(\w+\.max,\s*SETTINGS\.crosshairOffset\)\)/.test(s)],
   ['v3.48.0: reticle drawn in Game render', s.includes('this.crosshair.draw(ctx)')],
   ['v3.48.0: settings toggle + dev slider wired', s.includes('set-crosshair') && s.includes('dev-crosshair-offset')],
-  ['v3.49.0: butterfly top-down sprite registered (asset dims 128×83)', /butterfly:\s*\{\s*w:\s*128,\s*h:\s*83\s*\}/.test(s)],
+  ['v3.49.0: butterfly top-down sprite registered (v3.94.0 asset dims 128×128)', /butterfly:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   // ── v3.50.0 space shuttle enemy (17th species, regular waves only) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.50.0: shuttle sprite dims 128×60', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(s)],
+  ['v3.50.0: shuttle sprite dims 128×128', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.50.0: shuttle in ENEMY_TYPES (Space Shuttle, glide pattern)', /shuttle:\s*\{\s*name:\s*["']Space Shuttle["']/.test(s)],
   ['v3.67.0: WAVE.SPECIES_COUNT = 19', /SPECIES_COUNT:\s*19/.test(s)],
   ['v3.50.0: shuttle registered in EnemyFactory REGISTRY', /shuttle:\s*ShuttleEnemy/.test(s)],
@@ -98,19 +98,19 @@ const tests = [
   // ── v3.52.0 moth enemy (18th species, regular waves only) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.52.0: moth sprite dims 128×79', /moth:\s*\{\s*w:\s*128,\s*h:\s*79\s*\}/.test(s)],
+  ['v3.52.0: moth sprite dims 128×128', /moth:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.52.0: moth in ENEMY_TYPES (Moth, erratic pattern)', /moth:\s*\{\s*name:\s*["']Moth["']/.test(s)],
   ['v3.52.0: moth registered in EnemyFactory REGISTRY', /moth:\s*MothEnemy/.test(s)],
   ['v3.52.0: MothEnemy class in bundle', /MothEnemy\s*=\s*class/.test(s)],
   ['v3.52.0: Bone Yard humanoid allowlist still ["human"] only', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*["']human["']\s*\]/.test(s)],
   // ── v3.53.0 beetle pixel-art sprite (armored tank) ──
-  ['v3.53.0: beetle sprite dims 123×128', /beetle:\s*\{\s*w:\s*123,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.53.0: beetle sprite dims 128×128', /beetle:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.53.0: beetle sprite key in AssetSprites registry', s.includes('beetle: "iVBORw0KGgo')],
   ['v3.53.0: BeetleEnemy sprite + procedural fallback', /BEETLE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   // ── v3.57.0 spider pixel-art sprite (web-spinner) + red hourglass mark ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.57.0: spider sprite dims 94×128', /spider:\s*\{\s*w:\s*94,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.57.0: spider sprite dims 128×128', /spider:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.57.0: spider sprite key in AssetSprites registry', s.includes('spider: "iVBORw0KGgo')],
   ['v3.57.0: SpiderEnemy sprite + procedural fallback', /SPIDER_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   ['v3.57.0: bright red hourglass dorsal mark', s.includes('_drawHourglassMark') && /rgba\(255,\s*34,\s*34/.test(s)],
@@ -136,13 +136,13 @@ const tests = [
   // ── v3.62.0 wolf pixel-art sprite (pack hunter) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.62.0: wolf sprite dims 122×128', /wolf:\s*\{\s*w:\s*122,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.62.0: wolf sprite dims 128×128', /wolf:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.62.0: wolf sprite key in AssetSprites registry', s.includes('wolf: "iVBORw0KGgo')],
   ['v3.62.0: WolfEnemy sprite + procedural fallback', /WOLF_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   // ── v3.63.0 lizard pixel-art sprite (slow acid tank) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
-  ['v3.63.0: lizard sprite dims 99×128', /lizard:\s*\{\s*w:\s*99,\s*h:\s*128\s*\}/.test(s)],
+  ['v3.63.0: lizard sprite dims 128×128', /lizard:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.63.0: lizard sprite key in AssetSprites registry', s.includes('lizard: "iVBORw0KGgo')],
   ['v3.63.0: LizardEnemy sprite + procedural fallback', /LIZARD_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   ['v3.63.0: tank gait phase-locked to hover bob', /sway\s*=\s*Math\.sin\(this\.t\)/.test(s)],
@@ -158,19 +158,19 @@ const tests = [
   ['v3.65.0: falcon sprite dims 128×128', /falcon:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.65.0: falcon sprite key in AssetSprites registry', s.includes('falcon: "iVBORw0KGgo')],
   ['v3.65.0: FalconEnemy sprite + procedural fallback', /FALCON_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
-  ['v3.65.0: falcon beak-lead dive heading + PI/2 blit rotation', /this\._heading\s*\+\s*Math\.PI\s*\/\s*2/.test(s)],
+  ['v3.65.0: falcon beak-lead dive heading - PI blit rotation (v3.94.0 left-facing art)', /this\._heading\s*-\s*Math\.PI/.test(s)],
   ['v3.65.0: falcon wing-beat (t*6) + hover bob (t*3) phase-locked', /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*6\)/.test(s) && /bob\s*=\s*Math\.sin\(this\.t\s*\*\s*3\)/.test(s)],
   ['v3.65.0: falcon config entry intact', /falcon:\s*\{\s*name:\s*['"]Falcon['"]/.test(s) && s.includes('#b0713a')],
   // ── v3.66.0 bat pixel-art sprite (erratic flutterer) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['\"]).
-  ['v3.66.0: bat sprite dims 128×69', /bat:\s*\{\s*w:\s*128,\s*h:\s*69\s*\}/.test(s)],
+  ['v3.66.0: bat sprite dims 128×128', /bat:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.66.0: bat sprite key in AssetSprites registry', s.includes('bat: "iVBORw0KGgo')],
   ['v3.66.0: BatEnemy sprite + procedural fallback', /BAT_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   ['v3.66.0: bat wing-beat (t*14) + hover bob (t*3) phase-locked', /flap\s*=\s*Math\.sin\(this\.t\s*\*\s*14\)/.test(s) && /bob\s*=\s*Math\.sin\(this\.t\s*\*\s*3\)/.test(s)],
   ['v3.66.0: bat config entry intact', /bat:\s*\{\s*name:\s*['"]Bat['"]/.test(s) && s.includes('#5d5d7a')],
   // ── v3.67.0 squirrel enemy (19th species, fast erratic scurry) ──
-  ['v3.67.0: squirrel sprite dims 128×105', /squirrel:\s*\{\s*w:\s*128,\s*h:\s*105\s*\}/.test(s)],
+  ['v3.67.0: squirrel sprite dims 128×128', /squirrel:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.67.0: squirrel sprite key in AssetSprites registry', s.includes('squirrel: "iVBORw0KGgo')],
   ['v3.67.0: SquirrelEnemy sprite + procedural fallback', /SQUIRREL_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
   ['v3.67.0: squirrel scurry bounce (t*16) + twitchy wobble (t*4.2)', /bounce\s*=\s*Math\.sin\(this\.t\s*\*\s*16\)/.test(s) && /wobble\s*=\s*Math\.sin\(this\.t\s*\*\s*4\.2\)/.test(s)],

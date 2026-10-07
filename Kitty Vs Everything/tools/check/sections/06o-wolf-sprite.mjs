@@ -20,7 +20,7 @@ console.log('\n[6o] v3.62.0 wolf pixel-art sprite');
   check('WolfEnemy: pack-sine gait (sway/bob/tilt) phase-locked to the movement sine', wfSrc.includes('const phase = this.t * 1.2 + this.baseX * 0.01') && wfSrc.includes('const sway = Math.sin(phase)') && wfSrc.includes('const tilt = Math.sin(phase + 0.6)'));
   check('WolfEnemy: aspect-preserving nearest-neighbor draw', wfSrc.includes('(targetW * dims.h) / dims.w') && wfSrc.includes('ctx.imageSmoothingEnabled = false'));
   check('WolfEnemy: type-color accent glow pass', wfSrc.includes('ctx.shadowColor = this.color') && wfSrc.includes('ctx.shadowBlur = r * 0.8'));
-  check('AssetSprites: wolf sprite dims 122×128 registered', /wolf:\s*\{\s*w:\s*122,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: wolf sprite dims 128×128 registered', /wolf:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 }
 
 }

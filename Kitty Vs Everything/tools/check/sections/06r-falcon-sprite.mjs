@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════
 //  [6r] v3.65.0 FALCON PIXEL-ART SPRITE — diving raptor now draws
-//       the shared PNG (key "falcon", 718×718 → 128×128) with a
+//       the shared PNG (key "falcon", 256×256 → 128×128) with a
 //       beak-lead dive rotation (heading eases toward the dive
-//       vector, blit rotated by heading + PI/2 since the art faces
-//       up) + wing-beat (t*6) + hover bob + type-color accent glow;
+//       vector, blit rotated by heading - PI since the art faces
+//       left) + wing-beat (t*6) + hover bob + type-color accent glow;
 //       procedural fallback retained
 // ═══════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ console.log('\n[6r] v3.65.0 falcon pixel-art sprite');
   check('FalconEnemy: sprite key "falcon" via AssetManager', faSrc.includes("FALCON_SPRITE_KEY = 'falcon'") && faSrc.includes('getSprite(FALCON_SPRITE_KEY)'));
   check('FalconEnemy: null-sprite → procedural fallback branch', faSrc.includes('this._drawProcedural(ctx, r)'));
   check('FalconEnemy: beak-lead dive heading eases toward the dive vector (dh * 0.18)', faSrc.includes('this._heading += dh * 0.18'));
-  check('FalconEnemy: blit rotated by heading + PI/2 (art faces up)', faSrc.includes('this._heading + Math.PI / 2'));
+  check('FalconEnemy: blit rotated by heading - PI (art faces left)', faSrc.includes('this._heading - Math.PI'));
   check('FalconEnemy: wing-beat (t*6) + hover bob phase-locked to the procedural flap', faSrc.includes('const flap = Math.sin(this.t * 6)') && faSrc.includes('const bob = Math.sin(this.t * 3)'));
   check('FalconEnemy: aspect-preserving nearest-neighbor draw', faSrc.includes('(targetW * dims.h) / dims.w') && faSrc.includes('ctx.imageSmoothingEnabled = false'));
   check('FalconEnemy: type-color accent glow pass', faSrc.includes('ctx.shadowColor = this.color') && faSrc.includes('ctx.shadowBlur = r * 0.8'));
@@ -38,14 +38,21 @@ console.log('\n[6r] v3.65.0 falcon pixel-art sprite');
     ENEMY_TYPES.falcon.pattern === 'dive',
     `got ${JSON.stringify(ENEMY_TYPES.falcon)}`);
   check('AssetSprites: falcon sprite dims 128×128 registered', /falcon:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
-  check('AssetSprites: falcon source 718×718 → 128×128', /falcon: "Falcon pixel_art\.png \(718×718 → 128×128,/.test(spritesSrc));
-  // v3.71.1 regression gate: the embedded falcon art must face UP (beak in
-  // the top half). Since v3.65.0 the source PNG was stored vertically
-  // flipped (beak down), so the raptor rendered upside down on canvas —
-  // headless decode of the embedded b64 (pure Node zlib, no DOM).
+  check('AssetSprites: falcon source 256×256 → 128×128', /falcon: "Falcon-256x256\.png \(256×256 → 128×128,/.test(spritesSrc));
+  // v3.94.0 regression gate: the embedded falcon art must face LEFT
+  // (wings up, black beak center-left with the tip bent down, orange
+  // talons bottom-left). The blit rotates by heading - PI so the beak
+  // leads the dive. If the art is re-imported mirrored/rotated, either
+  // the beak-tip zone (rows whose leftmost opaque pixel sits within ~4%
+  // of the width of the global leftmost) leaves the left half / vertical
+  // center band, or the talons leave the bottom third → this check
+  // fails. Headless decode of the embedded b64 (pure Node zlib, no DOM).
+  // (Replaces the v3.71.1 "beak pixels in top half" gate for the old
+  // top-facing art.)
   {
     const falconB64 = (spritesSrc.match(/falcon: "([A-Za-z0-9+/=]+)"/) || [])[1];
-    let beakTop = 0, beakTotal = 0;
+    let beakOk = false;
+    let beakDetail = 'no embedded falcon b64';
     if (falconB64) {
       const buf = Buffer.from(falconB64, 'base64');
       let off = 8, w = 0, h = 0, ch = 0;
@@ -78,17 +85,35 @@ console.log('\n[6r] v3.65.0 falcon pixel-art sprite');
           px[y * stride + x] = v;
         }
       }
+      const minx = new Array(h).fill(9999);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const al = ch === 4 ? px[(y * w + x) * ch + 3] : 255;
+        if (al >= 16) { minx[y] = x; break; }
+      }
+      let globalMinX = 9999;
+      for (let y = 0; y < h; y++) if (minx[y] < globalMinX) globalMinX = minx[y];
+      const tol = Math.max(4, Math.round(w * 0.04));
+      const tipRows = [];
+      for (let y = 0; y < h; y++) if (minx[y] <= globalMinX + tol) tipRows.push(y);
+      let talonTop = 0, talonBot = 0;
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
         const i = (y * w + x) * ch;
         const r = px[i], g = px[i + 1], b = px[i + 2], al = ch === 4 ? px[i + 3] : 255;
         if (al < 16) continue;
         if (r > 170 && g > 90 && g < 215 && b < 125 && r > g && g > b) {
-          beakTotal++;
-          if (y < h / 2) beakTop++;
+          if (y < h / 3) talonTop++; else if (y >= 2 * h / 3) talonBot++;
         }
       }
+      if (tipRows.length && talonBot > 0) {
+        const tipTop = tipRows[0] / h, tipBot = tipRows[tipRows.length - 1] / h;
+        const leftFacing = globalMinX < w / 2;
+        const centered = tipTop >= 0.40 && tipBot <= 0.80;
+        const feetDown = talonBot > talonTop;
+        beakOk = leftFacing && centered && feetDown;
+        beakDetail = `leftmost x=${globalMinX}/${w} (left: ${leftFacing}), beak-tip zone ${tipTop.toFixed(2)}..${tipBot.toFixed(2)} fracH (centered: ${centered}), talons top/bot ${talonTop}/${talonBot} (down: ${feetDown})`;
+      }
     }
-    check('AssetSprites: falcon art faces up — beak pixels in top half (v3.71.1 flip fix)', beakTotal > 0 && beakTop > beakTotal / 2, `beak pixels top/bottom: ${beakTop}/${beakTotal - beakTop}`);
+    check('AssetSprites: falcon art faces left — beak center-left, talons bottom (v3.94.0 gate)', beakOk, beakDetail);
   }
 }
 

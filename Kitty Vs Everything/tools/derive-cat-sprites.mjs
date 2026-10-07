@@ -316,7 +316,7 @@ makeCanvas(${a.prefix}_B64, ${a.prefix}_W, ${a.prefix}_H)
 // ─────────────────────────────────────────────────────────────────────────
 const ASSETS = [
   {
-    src: 'black-cat-pixel-art.png',
+    src: 'Blackcat-256x256.png',
     module: 'BlackCatSprite.js',
     label: 'Black Cat enemy sprite',
     prefix: 'BLACK_CAT',
@@ -327,7 +327,7 @@ const ASSETS = [
     enemy: 'BlackCatEnemy.js',
   },
   {
-    src: 'Pink-Cat-pixel-art.png',
+    src: 'Pinkcat-256x256.png',
     module: 'PinkCatSprite.js',
     label: 'Pink Cat boss sprite',
     prefix: 'PINK_CAT',

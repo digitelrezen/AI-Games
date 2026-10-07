@@ -206,7 +206,7 @@ async function runEnemyDraw(mode) {
       const [dx, dy, dw, dh] = args;
       check('blackcat drawImage source is the decoded sprite', img === bs);
       check('blackcat drawn width = 2 × hitbox radius', Math.abs(dw - 2 * black.radius) < 0.001);
-      check('blackcat aspect preserved (362:357)', Math.abs(dw / dh - blackSprite.BLACK_CAT_W / blackSprite.BLACK_CAT_H) < 0.001);
+      check('blackcat aspect preserved (128:127)', Math.abs(dw / dh - blackSprite.BLACK_CAT_W / blackSprite.BLACK_CAT_H) < 0.001);
       check('blackcat drawn centered on the hitbox', Math.abs(dx + dw / 2) < 0.001 && Math.abs(dy + dh / 2) < 0.001);
     }
     if (ctxP.calls.drawImage.length === 1) {
@@ -233,8 +233,8 @@ if (mode) { console.log(`Unknown mode: ${mode}`); process.exit(2); }
 console.log('\n[1] Sprite modules — exports + null contract (headless Node)');
 const blackSprite = await import(url('js/bosses/BlackCatSprite.js'));
 const pinkSprite = await import(url('js/bosses/PinkCatSprite.js'));
-check('blackcat exports (B64, W=362, H=357, getter, ready)', typeof blackSprite.BLACK_CAT_B64 === 'string' && blackSprite.BLACK_CAT_W === 362 && blackSprite.BLACK_CAT_H === 357 && typeof blackSprite.getBlackCatSprite === 'function' && typeof blackSprite.isBlackCatSpriteReady === 'function');
-check('pinkcat exports (B64, W=180, H=283, getter, ready)', typeof pinkSprite.PINK_CAT_B64 === 'string' && pinkSprite.PINK_CAT_W === 180 && pinkSprite.PINK_CAT_H === 283 && typeof pinkSprite.getPinkCatSprite === 'function' && typeof pinkSprite.isPinkCatSpriteReady === 'function');
+check('blackcat exports (B64, W=128, H=127, getter, ready)', typeof blackSprite.BLACK_CAT_B64 === 'string' && blackSprite.BLACK_CAT_W === 128 && blackSprite.BLACK_CAT_H === 127 && typeof blackSprite.getBlackCatSprite === 'function' && typeof blackSprite.isBlackCatSpriteReady === 'function');
+check('pinkcat exports (B64, W=90, H=124, getter, ready)', typeof pinkSprite.PINK_CAT_B64 === 'string' && pinkSprite.PINK_CAT_W === 90 && pinkSprite.PINK_CAT_H === 124 && typeof pinkSprite.getPinkCatSprite === 'function' && typeof pinkSprite.isPinkCatSpriteReady === 'function');
 check('blackcat sprite is null in Node (optional — circle fallback)', blackSprite.getBlackCatSprite() === null && blackSprite.isBlackCatSpriteReady() === false);
 check('pinkcat sprite is null in Node (optional — circle fallback)', pinkSprite.getPinkCatSprite() === null && pinkSprite.isPinkCatSpriteReady() === false);
 
@@ -246,7 +246,7 @@ check('blackcat PNG decodes (pure Node)', !!blackPng);
 check('pinkcat PNG decodes (pure Node)', !!pinkPng);
 if (blackPng) {
   check('blackcat is 8-bit RGBA (real alpha channel)', blackPng.bitDepth === 8 && blackPng.colorType === 6 && blackPng.channels === 4);
-  check('blackcat IHDR 362×357 matches exported W/H', blackPng.width === blackSprite.BLACK_CAT_W && blackPng.height === blackSprite.BLACK_CAT_H);
+  check('blackcat IHDR 128×127 matches exported W/H', blackPng.width === blackSprite.BLACK_CAT_W && blackPng.height === blackSprite.BLACK_CAT_H);
   const sb = alphaStats(blackPng);
   check('blackcat has non-transparent content', sb.content > 0);
   console.log(`    blackcat: ${sb.opaque} opaque + ${sb.semi} semi-transparent of ${sb.total} px (${((100 * sb.content) / sb.total).toFixed(1)}% content)`);
@@ -254,7 +254,7 @@ if (blackPng) {
 }
 if (pinkPng) {
   check('pinkcat is 8-bit RGBA (real alpha channel)', pinkPng.bitDepth === 8 && pinkPng.colorType === 6 && pinkPng.channels === 4);
-  check('pinkcat IHDR 180×283 matches exported W/H', pinkPng.width === pinkSprite.PINK_CAT_W && pinkPng.height === pinkSprite.PINK_CAT_H);
+  check('pinkcat IHDR 90×124 matches exported W/H', pinkPng.width === pinkSprite.PINK_CAT_W && pinkPng.height === pinkSprite.PINK_CAT_H);
   const sp = alphaStats(pinkPng);
   check('pinkcat has non-transparent content', sp.content > 0);
   console.log(`    pinkcat: ${sp.opaque} opaque + ${sp.semi} semi-transparent of ${sp.total} px (${((100 * sp.content) / sp.total).toFixed(1)}% content)`);

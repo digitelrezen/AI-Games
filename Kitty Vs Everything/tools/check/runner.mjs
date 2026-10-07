@@ -45,7 +45,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.93.0: uniform bone art (femur/skull 256×256 → 128×128, skeleton 256×384 → 85×128) + Spaceballs One ship embedded at native 384×256 (readable text), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.94.0: full 256×256 art migration (falcon + 11 enemies re-embedded at 128×128, cat bosses derived from 256×256, Wasp2 full-color RGBA sprite), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

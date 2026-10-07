@@ -17,7 +17,7 @@ console.log('\n[6g] v3.53.0 beetle pixel-art sprite');
   check('BeetleEnemy: sprite key "beetle" via AssetManager', beSrc.includes("BEETLE_SPRITE_KEY = 'beetle'") && beSrc.includes('getSprite(BEETLE_SPRITE_KEY)'));
   check('BeetleEnemy: null-sprite → procedural fallback branch', beSrc.includes('this._drawProcedural(ctx, r)'));
   check('BeetleEnemy: charge-lunge pulse tracks the 2.4 s burst', beSrc.includes('_drawSprite(ctx, sprite, r)') && beSrc.includes('this.t % 2.4'));
-  check('AssetSprites: beetle sprite dims 123×128 registered', /beetle:\s*\{\s*w:\s*123,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: beetle sprite dims 128×128 registered', /beetle:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 }
 
 }

@@ -35,9 +35,9 @@ check('WaveManager: species pool comes from ENEMY_TYPES (source gate)', wmSrc.in
 const bySrc = fs.readFileSync(path.join(ROOT, 'js/levels/BoneYardBonus.js'), 'utf8');
 check('BoneYardBonus: explicit humanoid allowlist is [\'human\']', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*'human'\s*\]/.test(bySrc));
 check('BoneYardBonus: phase 2/3 spawn uses the allowlist (not a bare type)', bySrc.includes('type: BONE_YARD_HUMANOID_TYPES[0]'));
-// Generated sprite data carries the shuttle PNG (128×60).
+// Generated sprite data carries the shuttle PNG (128×128).
 const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), 'utf8');
-check('AssetSprites: shuttle sprite dims 128×60 registered', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*60\s*\}/.test(spritesSrc));
+check('AssetSprites: shuttle sprite dims 128×128 registered', /shuttle:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 // v3.82.0: round-trip flyby — spawn off-screen right, flip only fully
 // off-screen, mirror the sprite on the return pass, noEscape beats the
 // 80px off-screen cull in EnemyBase.update().

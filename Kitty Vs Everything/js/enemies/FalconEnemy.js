@@ -8,10 +8,11 @@
 //         "falcon", normalized to 128×128). The full pixel-art feather
 //         shading, depth, and plumage texture replace the flat gradients:
 //         aspect-preserving, centered on the hitbox, nearest-neighbor, with
-//         a beak-lead dive rotation (the art faces up — head/beak at the
-//         top, same orientation as the procedural falcon — so the beak
-//         leads the dive: the heading eases toward angleToPlayer and the
-//         blit rotates by heading + PI/2), a wing-beat oscillation
+//         a beak-lead dive rotation (the art faces left — wings up,
+//         black beak center-left with the tip bent down, talons
+//         bottom-left — so the beak leads the dive: the heading eases
+//         toward angleToPlayer and the blit rotates by heading - PI), a
+//         wing-beat oscillation
 //         phase-locked to the procedural flap (t * 6), a hover bob, and a
 //         type-color accent glow pass. The classic procedural falcon is
 //         kept as the null-sprite fallback per the AssetManager contract
@@ -64,12 +65,12 @@ export default class FalconEnemy extends EnemyBase {
   }
 
   // v1.2.0 — pixel-art falcon sprite. Aspect-preserving, centered on the
-  // hitbox, nearest-neighbor. The PNG faces up (head/beak at the top,
-  // wings spread, tail below — same orientation as the procedural falcon),
-  // so the beak leads the dive: the heading eases toward the dive vector
-  // (straight down while hovering above y = 120, angleToPlayer once the
-  // dive starts — the same vector move() flies along) and the blit rotates
-  // by heading + PI/2. A wing-beat oscillation (t * 6, the procedural
+  // hitbox, nearest-neighbor. The PNG faces left (wings up, black beak
+  // center-left with the tip bent down, talons bottom-left), so the beak
+  // leads the dive: the heading eases toward the dive vector (straight
+  // down while hovering above y = 120, angleToPlayer once the dive
+  // starts — the same vector move() flies along) and the blit rotates by
+  // heading - PI. A wing-beat oscillation (t * 6, the procedural
   // flap's phase) + a hover bob keep the blit alive between dives, and a
   // type-color accent glow pass adds depth under the crisp draw.
   _drawSprite(ctx, sprite, r) {
@@ -77,7 +78,7 @@ export default class FalconEnemy extends EnemyBase {
     const targetW = r * 3.0;
     const targetH = dims ? (targetW * dims.h) / dims.w : targetW;
     const dx = -targetW / 2, dy = -targetH / 2;
-    // Beak-lead dive heading (art faces up → rotate by heading + PI/2)
+    // Beak-lead dive heading (art faces left → rotate by heading - PI)
     const p = this.game.player;
     const diving = this.y >= 120 && p && !p.dead;
     const target = diving ? angleTo(this.x, this.y, p.x, p.y) : Math.PI / 2;
@@ -88,7 +89,7 @@ export default class FalconEnemy extends EnemyBase {
     // Wing-beat (t * 6 = procedural flap phase) + hover bob
     const flap = Math.sin(this.t * 6);
     const bob = Math.sin(this.t * 3) * r * 0.05;
-    const rot = this._heading + Math.PI / 2 + flap * 0.06;
+    const rot = this._heading - Math.PI + flap * 0.06;
     ctx.save();
     ctx.translate(0, bob);
     ctx.rotate(rot);

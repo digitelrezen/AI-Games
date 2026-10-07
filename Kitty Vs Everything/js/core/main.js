@@ -95,7 +95,7 @@
 //          image-rendering: pixelated scoped to #hangar-canvas only
 //          (safe now — the buffer→CSS downsample is a uniform integer
 //          block). Milestone version synced with package.json.
-export const VERSION = 'v3.93.0';
+export const VERSION = 'v3.94.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar 1:1 sprite blit

@@ -1,9 +1,8 @@
 // Filename: Wasp2Enemy.js
 // Kitty Vs Everything — v1.0.0
-// Wasp2: black wireframe wasp rendered from the pixel-art silhouette in
-// ../.assets/Wasp 1 Pixel Art.png (sprite pipeline in sprites/Wasp2Sprite.js
-// — the white background is keyed to transparency, only the black outline is
-// kept).
+// Wasp2: full-color pixel-art wasp from .assets/Wasp2-256x256.png (sprite
+// pipeline in sprites/Wasp2Sprite.js — 8-bit RGBA with a real alpha channel,
+// content-bbox cropped at generation time, no runtime keying).
 // AI: hovers while TRACKING the player's X (exponential lerp), OSCILLATES
 // side to side around the tracked point, and periodically LUNGES — a fast
 // dash straight at the player. Fires aimed darts (occasional 2-way spread).
@@ -85,12 +84,12 @@ export default class Wasp2Enemy extends EnemyBase {
     if (sprite) {
       const h = r * 3.4;
       const w = h * (sprite.width / sprite.height);
-      // Pass 1: accent glow so the black wireframe reads against space
+      // Pass 1: accent glow so the sprite reads against space
       ctx.imageSmoothingEnabled = true;
       ctx.shadowColor = this.color;
       ctx.shadowBlur = Math.max(6, r * 0.55);
       ctx.drawImage(sprite, -w / 2, -h / 2, w, h);
-      // Pass 2: crisp black silhouette on top (no shadow)
+      // Pass 2: crisp sprite on top (no shadow)
       ctx.shadowBlur = 0;
       ctx.drawImage(sprite, -w / 2, -h / 2, w, h);
     } else {

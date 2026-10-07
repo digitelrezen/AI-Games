@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════
 //  [6q] v3.64.0 DRAGON PIXEL-ART SPRITE — fire-breather now draws
-//       the shared PNG (key "dragon", 800×800 → 128×128) with a
+//       the shared PNG (key "dragon", 256×256 → 128×128) with a
 //       flight gait (sway/bob/tilt phase-locked to the horizontal
 //       weave + wing-beat) + type-color accent glow + pulsing
 //       fire-throat glow; procedural fallback retained
@@ -31,7 +31,7 @@ console.log('\n[6q] v3.64.0 dragon pixel-art sprite');
     ENEMY_TYPES.dragon.pattern === 'breath',
     `got ${JSON.stringify(ENEMY_TYPES.dragon)}`);
   check('AssetSprites: dragon sprite dims 128×128 registered', /dragon:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
-  check('AssetSprites: dragon source 800×800 → 128×128', /dragon: "Dragon-pixel-art\.png \(800×800 → 128×128,/.test(spritesSrc));
+  check('AssetSprites: dragon source 256×256 → 128×128', /dragon: "Dragon-256x256\.png \(256×256 → 128×128,/.test(spritesSrc));
 }
 
 }

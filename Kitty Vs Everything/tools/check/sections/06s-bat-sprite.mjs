@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════
 //  [6s] v3.66.0 BAT PIXEL-ART SPRITE — erratic flutterer now draws
-//       the shared PNG (key "bat", 679×367 → 128×69) upright
+//       the shared PNG (key "bat", 256×256 → 128×128) upright
 //       (head/ears up, wings spread) with a wing-beat (t*14) +
 //       flutter wobble + hover bob (t*3) phase-locked to the
 //       procedural flap + type-color accent glow; procedural
@@ -30,8 +30,8 @@ console.log('\n[6s] v3.66.0 bat pixel-art sprite');
     ENEMY_TYPES.bat.hp === 16 && ENEMY_TYPES.bat.damage === 8 && ENEMY_TYPES.bat.fireRate === 0.9 &&
     ENEMY_TYPES.bat.pattern === 'erratic',
     `got ${JSON.stringify(ENEMY_TYPES.bat)}`);
-  check('AssetSprites: bat sprite dims 128×69 registered', /bat:\s*\{\s*w:\s*128,\s*h:\s*69\s*\}/.test(spritesSrc));
-  check('AssetSprites: bat source 679×367 → 128×69', /bat: "Bat-pixel-art\.png \(679×367 → 128×69,/.test(spritesSrc));
+  check('AssetSprites: bat sprite dims 128×128 registered', /bat:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: bat source 256×256 → 128×128', /bat: "Bat-256x256\.png \(256×256 → 128×128,/.test(spritesSrc));
 }
 
 }

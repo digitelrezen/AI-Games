@@ -2,7 +2,7 @@
 // Kitty Vs Everything — v2.1.0
 // Factory pattern: single entry point for spawning any enemy by type ID.
 // v2.1.0: Added PinkCatEnemy registration.
-// v2.2.0: Added Wasp2Enemy registration (wireframe wasp — see sprites/Wasp2Sprite.js).
+// v2.2.0: Added Wasp2Enemy registration (pixel-art wasp — see sprites/Wasp2Sprite.js).
 // v3.31.0 (v3.50.0 release): Added ShuttleEnemy registration — the space
 //          shuttle is the 17th species (regular waves only; Bone Yard Phase 2
 //          stays humanoid via its explicit allowlist).

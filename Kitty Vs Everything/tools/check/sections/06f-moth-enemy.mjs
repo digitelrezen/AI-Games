@@ -20,8 +20,8 @@ check('EnemyFactory: getEnemyClass("moth") is the MothEnemy class', typeof getEn
 const { default: MothEnemy } = await mod('js/enemies/MothEnemy.js');
 const meSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/MothEnemy.js'), 'utf8');
 check('MothEnemy: extends EnemyBase, sprite key "moth", erratic dart + flutter', Object.getPrototypeOf(MothEnemy.prototype).constructor.name === 'EnemyBase' && meSrc.includes("MOTH_SPRITE_KEY = 'moth'") && meSrc.includes('this._dartX') && meSrc.includes('this._dartT'));
-// Generated sprite data carries the moth PNG (128×79).
-check('AssetSprites: moth sprite dims 128×79 registered', /moth:\s*\{\s*w:\s*128,\s*h:\s*79\s*\}/.test(spritesSrc));
+// Generated sprite data carries the moth PNG (128×128).
+check('AssetSprites: moth sprite dims 128×128 registered', /moth:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 // Bone Yard Phase 2/3: explicit humanoid allowlist — the moth can never
 // leak into the march.
 check('BoneYardBonus: humanoid allowlist excludes moth', /BONE_YARD_HUMANOID_TYPES\s*=\s*\[\s*'human'\s*\]/.test(bySrc));

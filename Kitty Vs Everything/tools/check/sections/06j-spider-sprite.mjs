@@ -20,7 +20,7 @@ console.log('\n[6j] v3.57.0 spider pixel-art sprite + red hourglass mark');
   check('SpiderEnemy: aspect-preserving nearest-neighbor draw', spSrc.includes('(targetW * dims.h) / dims.w') && spSrc.includes('ctx.imageSmoothingEnabled = false'));
   check('SpiderEnemy: bright red hourglass dorsal mark', spSrc.includes('_drawHourglassMark(ctx, targetW, targetH)') && spSrc.includes('rgba(255, 34, 34,') && spSrc.includes('-targetH * 0.09'));
   check('SpiderEnemy: procedural fallback keeps red hourglass marking', spSrc.includes('BRIGHT RED HOURGLASS marking (dorsal/back section)'));
-  check('AssetSprites: spider sprite dims 94×128 registered', /spider:\s*\{\s*w:\s*94,\s*h:\s*128\s*\}/.test(spritesSrc));
+  check('AssetSprites: spider sprite dims 128×128 registered', /spider:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
 }
 
 }
