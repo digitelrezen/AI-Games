@@ -210,6 +210,15 @@
 //          the hangar hero canvas and all UI return to normal smooth
 //          rendering. Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
+// v3.90.0: CRISP 256×384 NATIVE CATSHIP HANGAR — the 9 catship assets
+//          are now the native 256×384 PNGs (importer catship ceiling 512,
+//          art embeds untouched) and the hangar hero stage is sized to the
+//          native frame (320×384 CSS px, buffer ×DPR). The v3.89.0 1:1
+//          integer mapping is preserved (HANGAR_K = max(1, round(DPR)));
+//          each ship's content box is blitted at the identical scale,
+//          centered on the FIXED stage midpoint (160, 192) — completely
+//          stationary (no bounce), razor-sharp. No orchestrator changes.
+//          Milestone version synced with package.json.
 // v3.89.0: CRISP HANGAR PREVIEW (1:1 INTEGER MAPPING) — the hangar hero
 //          canvas (main.js) rejoins the crisp set: its cat sprites are
 //          blitted at the integer HANGAR_K 1:1 scale with
@@ -217,7 +226,7 @@
 //          center (160, 110); the gameplay canvas is unchanged.
 //          Milestone version synced across package.json, config.js,
 //          main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.89.0';
+export const VERSION = 'v3.90.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

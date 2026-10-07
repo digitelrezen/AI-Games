@@ -15,6 +15,11 @@
 //        CAROUSEL (single hero stage + ‹/› arrows + ←/→ keys + nameplate +
 //        dots); the menu gates now verify the hangar stage is present in
 //        index.html and that main.js drives it from PLAYER_THEMES.
+//        v3.90.0: the 9 catship assets are the native 256×384 PNGs — the
+//        importer's 128px cap no longer applies to cat_* keys (they use the
+//        512px catship ceiling), so the registry carries full native dims
+//        (w: 256, h: 384) and the manifest points at the *-256x384.png
+//        files; the hangar blits them 1:1 on the 320×384 stage (06ag).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
@@ -26,7 +31,7 @@ const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), 'utf8');
 
 export default async function run() {
-console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1 render/menu fixes');
+console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1 render/menu fixes + v3.90.0 native 256×384 art');
 {
   const { PLAYER_THEMES, PLAYER_THEME_SPRITES } = await mod('js/core/config.js');
   const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
@@ -40,6 +45,17 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1
   for (const key of Object.values(PLAYER_THEME_SPRITES)) {
     check(`AssetSprites: ${key} registered with dims`, new RegExp(`${key}:\\s*\\{\\s*w:\\s*\\d+,\\s*h:\\s*\\d+\\s*\\}`).test(spritesSrc));
   }
+
+  // v3.90.0: the catship art is native 256×384 — the registry must carry
+  // the full native dims (the importer's 128px cap no longer applies to
+  // cat_* keys) and the manifest must point at the *-256x384.png files.
+  const isNative256x384 = k => new RegExp(`${k}:\\s*\\{\\s*w:\\s*256,\\s*h:\\s*384\\s*\\}`).test(spritesSrc);
+  check('v3.90.0: all 9 cat_* assets are native 256×384 in the registry',
+    Object.values(PLAYER_THEME_SPRITES).every(isNative256x384),
+    `not native: ${Object.values(PLAYER_THEME_SPRITES).filter(k => !isNative256x384(k)).join(', ')}`);
+  check('v3.90.0: manifest cat_* keys point at the *-256x384.png files',
+    Object.values(PLAYER_THEME_SPRITES).every(k => typeof manifest.assets[k] === 'string' && manifest.assets[k].endsWith('-256x384.png')),
+    `wrong file: ${Object.values(PLAYER_THEME_SPRITES).filter(k => !(typeof manifest.assets[k] === 'string' && manifest.assets[k].endsWith('-256x384.png'))).join(', ')}`);
   check('manifest: all 9 cat_* keys map to existing PNGs in .assets',
     Object.values(PLAYER_THEME_SPRITES).every(k => manifest.assets[k] && fs.existsSync(path.join(ASSET_DIR, manifest.assets[k]))),
     `missing: ${Object.values(PLAYER_THEME_SPRITES).filter(k => !manifest.assets[k] || !fs.existsSync(path.join(ASSET_DIR, manifest.assets[k]))).join(', ')}`);

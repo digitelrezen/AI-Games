@@ -311,6 +311,19 @@
 //          resize) and the offscreen sprite buffers (AssetManager.js,
 //          PowerUp.js). Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
+// v3.90.0: CRISP 256×384 NATIVE CATSHIP HANGAR — the 9 catship assets
+//          are now the native 256×384 PNGs (tools/import-assets.mjs
+//          MAX_DIM 128 → 512, so the art embeds untouched — no
+//          downscale, no blur) and the hangar hero stage is sized to
+//          the native frame (320×384 CSS px, buffer ×DPR). The v3.89.0
+//          1:1 integer mapping is preserved (HANGAR_K = max(1,
+//          round(DPR)) — one native pixel = one CSS pixel, 2×2 blocks at
+//          DPR 2); each ship's content box is blitted at the identical
+//          scale, centered on the FIXED stage midpoint (160, 192) —
+//          completely stationary (no bounce), razor-sharp. Menu CSS
+//          compacted to fit the taller hero stage in the 720px stage.
+//          Milestone version synced across package.json, config.js,
+//          main.js, Game.js, HUD.js and index.html.
 // v3.89.0: CRISP HANGAR PREVIEW (1:1 INTEGER MAPPING) — the hangar
 //          carousel hero canvas (main.js) returns to nearest-neighbor,
 //          but correctly: each cat sprite's CONTENT box (alpha bbox,
@@ -323,7 +336,7 @@
 //          image-rendering: pixelated/crisp-edges to #game-canvas +
 //          #hangar-canvas. Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.89.0';
+export const VERSION = 'v3.90.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

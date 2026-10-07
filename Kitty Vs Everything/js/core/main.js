@@ -67,6 +67,19 @@
 //          ship preview). Crisp nearest-neighbor rendering stays on the
 //          main gameplay canvas only. Milestone version synced with
 //          package.json.
+// v3.90.0: CRISP 256×384 NATIVE CATSHIP HANGAR — the 9 catship assets
+//          are now the native 256×384 PNGs (importer MAX_DIM 128 → 512,
+//          art embeds untouched — no downscale, no blur) and the hangar
+//          hero stage is sized to the native frame (320×384 CSS px,
+//          buffer ×DPR). The v3.89.0 1:1 integer mapping is preserved
+//          (HANGAR_K = max(1, round(DPR)) — one native pixel = one CSS
+//          pixel, 2×2 blocks at DPR 2), but the shared stage center
+//          moves to (160, 192): each ship's CONTENT box is blitted at
+//          the identical 1:1 scale, centered on the fixed stage
+//          midpoint — completely stationary (no bounce, no animation),
+//          razor-sharp. (The old 320×220 stage clipped the 384px-tall
+//          art.) Menu CSS compacted to fit the taller hero stage in the
+//          720px stage. Milestone version synced with package.json.
 // v3.89.0: CRISP HANGAR PREVIEW (1:1 INTEGER MAPPING) — the v3.88.1
 //          bilinear hero preview was soft, so the hangar canvas goes back
 //          to nearest-neighbor — but correctly this time: every cat
@@ -82,7 +95,7 @@
 //          image-rendering: pixelated scoped to #hangar-canvas only
 //          (safe now — the buffer→CSS downsample is a uniform integer
 //          block). Milestone version synced with package.json.
-export const VERSION = 'v3.89.0';
+export const VERSION = 'v3.90.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar 1:1 sprite blit
@@ -113,9 +126,10 @@ let selectedTheme = 'yellow';
 const hangarCanvas = document.getElementById('hangar-canvas');
 const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;
 // v3.87.0: size the hero buffer at native device-pixel resolution. The
-// canvas CSS size stays 320×220; on HiDPI displays (DPR > 1) a fixed
-// 320×220 buffer gets upscaled by the browser and the ship looks soft.
-// renderHangar() draws in 320×220 logical units under ctx.scale(HANGAR_DPR).
+// canvas CSS size stays 320×384 (v3.90.0: the native 256×384 frame); on
+// HiDPI displays (DPR > 1) a fixed 320×384 buffer gets upscaled by the
+// browser and the ship looks soft. renderHangar() draws in 320×384
+// logical units under ctx.scale(HANGAR_DPR).
 const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
 // v3.89.0: crisp 1:1 preview scale — integer buffer pixels per native
 // sprite pixel (1 at DPR 1, 2 at DPR 2). The blit destination is sized so
@@ -124,7 +138,7 @@ const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
 const HANGAR_K = Math.max(1, Math.round(HANGAR_DPR));
 if (hangarCanvas) {
   hangarCanvas.width = Math.round(320 * HANGAR_DPR);
-  hangarCanvas.height = Math.round(220 * HANGAR_DPR);
+  hangarCanvas.height = Math.round(384 * HANGAR_DPR); // v3.90.0: 220 → 384 (native frame)
   // v3.89.0: nearest-neighbor drawImage on the hero canvas — the v3.88.1
   // bilinear default is gone now that the blit is a 1:1 integer mapping.
   // A canvas.width assignment resets 2D context state, so this runs
@@ -175,18 +189,20 @@ function renderHangar() {
   if (!hangarCtx) return;
   const key = HANGAR_THEMES[hangarIndex];
   const th = PLAYER_THEMES[key];
-  // v3.87.0: draw in 320×220 logical units; the HANGAR_DPR buffer scale
-  // keeps the ship crisp on HiDPI displays.
+  // v3.87.0: draw in 320×384 logical units (v3.90.0: native frame size);
+  // the HANGAR_DPR buffer scale keeps the ship crisp on HiDPI displays.
   hangarCtx.save();
   hangarCtx.scale(HANGAR_DPR, HANGAR_DPR);
-  hangarCtx.clearRect(0, 0, 320, 220);
-  // v3.89.0: crisp 1:1 preview — blit the sprite's CONTENT box at the
-  // integer HANGAR_K scale (one native pixel = exactly one CSS pixel),
-  // content-centered on the shared stage center (160, 110). All ships
-  // share the identical scale + center (White Cat reference). Until the
-  // sprite decodes (or if it fails), fall back to the procedural hull —
-  // ~2.35× the in-game 70px sprite → ~165px tall, static pose: nose up,
-  // idle thruster flame, tail straight.
+  hangarCtx.clearRect(0, 0, 320, 384);
+  // v3.90.0: crisp 1:1 preview of the native 256×384 art — blit the
+  // sprite's CONTENT box at the integer HANGAR_K scale (one native pixel
+  // = exactly one CSS pixel), content-centered on the FIXED stage
+  // midpoint (160, 192). All ships share the identical scale + center —
+  // the midpoint never moves between ships, so the carousel is
+  // completely stationary (no bounce on selection). Until the sprite
+  // decodes (or if it fails), fall back to the procedural hull — ~4.5×
+  // the in-game 70px sprite → ~315px tall, static pose: nose up, idle
+  // thruster flame, tail straight.
   const sprite = getSprite(PLAYER_THEME_SPRITES[key]);
   if (!hangarMetrics) hangarMetrics = {};
   let m = hangarMetrics[key];
@@ -196,7 +212,7 @@ function renderHangar() {
   if (m && m.sw > 0) {
     const s = HANGAR_K / HANGAR_DPR; // logical px per native px (1 at DPR 1/2)
     const dw = m.sw * s, dh = m.sh * s;
-    hangarCtx.drawImage(sprite, m.sx, m.sy, m.sw, m.sh, 160 - dw / 2, 110 - dh / 2, dw, dh);
+    hangarCtx.drawImage(sprite, m.sx, m.sy, m.sw, m.sh, 160 - dw / 2, 192 - dh / 2, dw, dh); // v3.90.0: fixed stage midpoint (160, 192)
   } else {
     const mockPlayer = {
       theme: key,
@@ -212,7 +228,7 @@ function renderHangar() {
       animTime: 1.0,
     };
     new PlayerRenderer(mockPlayer).drawCatShip(
-      hangarCtx, 160, 110, 2.35,
+      hangarCtx, 160, 192, 4.5, // v3.90.0: fixed stage midpoint + native-frame scale
       th.color, th.accent, th.pattern
     );
   }

@@ -45,7 +45,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.89.0: crisp 1:1 hangar preview (main.js blits the content box of each cat sprite at the integer HANGAR_K scale — one native pixel = one CSS pixel, 2×2 blocks at DPR 2 — content-centered on the shared stage center (160, 110) with smoothing disabled; style.css scopes image-rendering: pixelated/crisp-edges to #game-canvas + #hangar-canvas; utils.disableImageSmoothing() with webkit/moz/ms vendor-prefixed fallbacks applied to the main gameplay canvas — Game.js init, ViewScaler.js after each buffer resize — the hangar hero canvas and the offscreen sprite buffers — AssetManager.js sprite cache, PowerUp.js jewel icon buffer — while the intentional bilinear asset-downscale passes in Wasp2Sprite/AsteroidSprite keep their explicit smoothing opt-in), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.90.0: crisp 256×384 native catship hangar (the 9 catship assets embed at native 256×384 — importer catship ceiling 512, no downscale — and main.js blits the content box of each ship at the integer HANGAR_K 1:1 scale on the 320×384 stage, centered on the fixed stage midpoint (160, 192), smoothing disabled — stationary, razor-sharp), version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

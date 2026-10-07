@@ -95,7 +95,7 @@ export default async function run() {
     !pauseSrc.includes('pauseBtn'));
   check('PauseMenu.js still handles the Esc / P keydowns',
     pauseSrc.includes("'Escape'") && pauseSrc.includes("'KeyP'"));
-  check('index.html tab title is synced to v3.89.0',
-    indexHtml.includes('Kitty Vs Everything — v3.89.0'));
+  check('index.html tab title is synced to v3.90.0',
+    indexHtml.includes('Kitty Vs Everything — v3.90.0'));
 }
 }

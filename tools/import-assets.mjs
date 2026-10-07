@@ -25,10 +25,12 @@
 //   • color type 6 (RGBA) — transparency is mandatory for this pipeline
 //   • non-transparent pixel content exists (decoded, not just declared)
 //
-// Normalization: art larger than MAX_DIM px is box-filter downscaled to fit
-// MAX_DIM (aspect preserved) and re-encoded as 8-bit RGBA PNG — keeps the
-// single-file build small. Output is DETERMINISTIC (sorted keys, per-asset
-// source sha12, no timestamps) so --check can byte-compare.
+// Normalization: art larger than MAX_DIM px (128) is box-filter downscaled
+// to fit (aspect preserved) and re-encoded as 8-bit RGBA PNG — keeps the
+// single-file build small. v3.90.0: cat_* keys (the 9 catship themes) use
+// CATSHIP_MAX_DIM (512) so the native 256×384 catship art embeds untouched.
+// Output is DETERMINISTIC (sorted keys, per-asset source sha12, no
+// timestamps) so --check can byte-compare.
 //
 // Usage:
 //   node tools/import-assets.mjs          → import + regenerate AssetSprites.js
@@ -47,7 +49,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ASSET_DIR = path.resolve(__dirname, '..', '.assets');
 const MANIFEST = path.join(__dirname, 'asset-manifest.json');
 const OUT = path.resolve(__dirname, '..', 'Kitty Vs Everything', 'js', 'core', 'AssetSprites.js');
-const MAX_DIM = 128; // normalization ceiling for embedded art
+const MAX_DIM = 128; // v3.72.0 normalization ceiling for embedded art (keeps the single-file build small)
+const CATSHIP_MAX_DIM = 512; // v3.90.0: cat_* keys (the 9 catship themes) embed at native 256×384 — 512 only guards future oversized catship art
 
 const checkMode = process.argv.includes('--check');
 let failures = 0;
@@ -250,7 +253,8 @@ for (const key of keys) {
   }
   // Normalize (downscale + re-encode) when larger than MAX_DIM
   let outBuf = buf, outW = png.width, outH = png.height, normalized = false;
-  const scale = Math.min(1, MAX_DIM / Math.max(png.width, png.height));
+  const cap = key.startsWith('cat_') ? CATSHIP_MAX_DIM : MAX_DIM; // v3.90.0: catship art embeds native; everything else stays at the 128px normalization
+  const scale = Math.min(1, cap / Math.max(png.width, png.height));
   if (scale < 1) {
     const dw = Math.max(1, Math.round(png.width * scale));
     const dh = Math.max(1, Math.round(png.height * scale));
@@ -287,7 +291,7 @@ const lines = [];
 lines.push('// Filename: AssetSprites.js');
 lines.push('// GENERATED FILE — do not edit by hand.');
 lines.push('// Regenerate: node tools/import-assets.mjs   (tools/asset-manifest.json → this registry)');
-lines.push('// Source art: C:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, normalized to ≤128px).');
+lines.push('// Source art: C:\\Dev\\AI-GAMES\\.assets (shared transparent PNGs, ≤128px normalized; cat_* catship art embeds native ≤512px).');
 lines.push('// The runtime manager is js/core/AssetManager.js (decode + per-key');
 lines.push('// error isolation + null → procedural fallback in the consumers).');
 lines.push('');
