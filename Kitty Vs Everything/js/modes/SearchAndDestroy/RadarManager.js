@@ -1,5 +1,5 @@
 // Filename: RadarManager.js
-// Kitty Vs Everything — v3.99.0
+// Kitty Vs Everything — v4.0.0
 // SEARCH & DESTROY — avionics: the cockpit radar HUD.
 //
 // A toggleable cockpit overlay (F1 — SAR.RADAR.KEY, DevPanel-style window
@@ -14,7 +14,7 @@
 // position (SectorMap.screenToWorld) projected relative to the player's
 // world position, scaled to the radar range (SAR.RADAR.RANGE world px →
 // SAR.RADAR.R screen px).
-export const VERSION = 'v1.0.0';
+export const VERSION = 'v4.0.0';
 import { SAR, sarProgress } from '../../core/config.js';
 import { TAU, clamp } from '../../core/utils.js';
 
@@ -91,7 +91,7 @@ export default class RadarManager {
     ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
     ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('AVIONICS — SEARCH & DESTROY', m + 10, m + 22);
+    ctx.fillText('AVIONICS — SEARCH & DESTROY v4.0.0', m + 10, m + 22);
     ctx.textAlign = 'right';
     ctx.fillText('RADAR ' + (this.visible ? 'ON' : 'OFF') + ' [' + SAR.RADAR.KEY + ']', W - m - 10, m + 22);
     ctx.textAlign = 'left';

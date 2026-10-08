@@ -1,5 +1,5 @@
 // Filename: SectorCombatManager.js
-// Kitty Vs Everything — v3.99.0
+// Kitty Vs Everything — v4.0.0
 // SEARCH & DESTROY — combat & roster parity + the target base.
 //
 // ROSTER PARITY: the SAR mode reuses the ENTIRE classic combat stack —
@@ -9,13 +9,14 @@
 // owns the SAR-specific combat:
 //   • the target base — Eridath's Mom's House: a world-anchored,
 //     shootable, PERSISTENT enemy-spawning base in the deep sector
-//     (asset `eridath_moms_house`; art renders through SectorMap)
+//     (asset `eridath_moms_house` — the 512px .assets/Eridaths-Moms-
+//     House landmark; art renders through SectorMap)
 //   • friendly-bullet → house collision (the house is a SAR entity, not
 //     a game.enemies member, so it gets its own collision pass — the
 //     classic Collisions.js is untouched)
 //   • the base's spawn volleys (the "persistent enemy-spawning base")
 //   • the victory sequence (house destroyed → mission accomplished)
-export const VERSION = 'v1.0.0';
+export const VERSION = 'v4.0.0';
 import { SAR } from '../../core/config.js';
 import { rand, randInt, clamp, dist2, isOnScreen } from '../../core/utils.js';
 import { bus } from '../../core/EventBus.js';
@@ -159,7 +160,7 @@ export default class SectorCombatManager {
     const g = this.game;
     const hs = this.houseScreen();
     if (!isOnScreen(g, hs.x, hs.y, 200)) return;
-    const size = 128 * SAR.HOUSE.drawScale;
+    const size = 512 * SAR.HOUSE.drawScale;
     const w = size * 0.7;
     const barY = hs.y - size / 2 - 26;
     ctx.save();

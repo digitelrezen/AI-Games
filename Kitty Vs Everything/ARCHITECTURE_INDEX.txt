@@ -1,9 +1,26 @@
-Kitty Vs Everything — v3.77.0 (Phase 4: modularization lock-in)
-Generated: 2026-10-04
+Kitty Vs Everything — v4.0.0 (SEARCH & DESTROY: displacement-accumulator camera + world-anchored sector journey)
+Generated: 2026-10-08
 Workspace: C:\Dev\AI-GAMES\Kitty Vs Everything
 Git root: C:\Dev\AI-GAMES (remote: https://github.com/digitelrezen/AI-Games.git)
-Build: npm run build -> C:\Dev\AI-GAMES\Builds\Kitty Vs Everything 3.77.0.html
+Build: npm run build -> C:\Dev\AI-GAMES\Builds\Kitty Vs Everything 4.0.0.html
 Run: python -m http.server 8000 -> http://localhost:8000   LAN: npm run lan
+
+v4.0.0 milestone: SEARCH & DESTROY (js/modes/SearchAndDestroy/, E6 nested
+modules) reworked onto the DISPLACEMENT-ACCUMULATOR camera (SectorMap) -
+the ship flies in screen space (PlayerFlight stays sovereign), its screen
+offset is tracked against a dead zone (SAR.CAMERA.DEADZONE_X/Y), the excess
+delta is accumulated into world coordinates (worldX/worldY) and the ship is
+softly recentered (SAR.CAMERA.RECENTER + CLAMP_MARGIN backstop) - the world
+scrolls fluidly around the untouched classic combat stack. Debris, hazards
+and regional patrols are WORLD-ANCHORED at absolute world coordinates
+(deterministic seeded layout, SAR.WORLD). Journey: OPEN SPACE -> THE
+BONEYARD -> DEEP SECTOR, where Eridath's Mom's House (the 512px
+.assets/Eridaths-Moms-House PNG, manifest key eridath_moms_house) anchors
+the deep sector as a persistent, shootable, enemy-spawning base - destroying
+it wins the mission (game.victory() -> GameOver "MISSION ACCOMPLISHED").
+Cockpit radar: RadarManager (F1 toggle). Tuning: js/core/config/
+searchDestroy.js (SAR / sarProgress / sarZoneFor, re-exported by config.js).
+Pinned by check.mjs [6aa] (version sync) + [6aj] (SAR gate).
 
 Modular refactor timeline (4 phases, complete as of v3.77.0):
   v3.74.0 Phase 1 - js/player/variants/ (5 cat variants) + js/bosses/ (6 boss files)
@@ -16,10 +33,11 @@ Modular refactor timeline (4 phases, complete as of v3.77.0):
                      Game.js/HUD.js/index.html), check.mjs [6aa] version-sync gate,
                      docs restructured, final build
 
-File counts: ~133 files total
-  js/   113 ES modules across 9 top-level subfolders (core 29 = 19 root + config/ 6
+File counts: ~138 files total
+  js/   115 ES modules across 9 top-level subfolders (core 32 = 20 root + config/ 8
         + game/ 4, player 9, player/variants 5, combat 18, enemies 19,
-        enemies/sprites 1, bosses 6, levels 9, hazards 3 (v3.97.0), input 3, ui 11)
+        enemies/sprites 1, bosses 6, levels 9, hazards 3 (v3.97.0),
+        modes 5 (v3.99.0->v4.0.0 SEARCH & DESTROY), input 3, ui 11)
   net/  14 files (11 modules + net/data/ 3 E6 data files)
   root  index.html, style.css, build.mjs, package.json, ARCHITECTURE.md, ARCHITECTURE_INDEX.txt
   tools (shared C:\Dev\AI-GAMES\tools): check.mjs (40 gate sections under check/sections/),
@@ -406,6 +424,63 @@ HazardManager.js      THE independent spawner + per-frame driver (game.hazards):
                       expanding shockwave ring, screen shake, audio, and AoE
                       damage to every live player inside the blast radius.
                       ZERO LOOT: the module never imports the DropManager.
+
+=====================================================================
+js/modes/SearchAndDestroy/ - SEARCH & DESTROY (5 files, v3.99.0 -> v4.0.0)
+=====================================================================
+The sector-journey mode: a world-space coordinate grid the player flies
+through left -> right (OPEN SPACE -> THE BONEYARD -> DEEP SECTOR) to
+destroy Eridath's Mom's House. A world-space CAMERA LAYER over the
+untouched screen-space combat stack - full roster parity (all 9 Catships,
+Vulcan/Plasma/Rail, rockets, ultimates, shared power-up pool). Entry:
+#sard-btn (start screen) / #dev-sard (DevPanel) -> game.start(theme,
+{ mode: 'sard' }); Game.js ticks game.sard.update(dt), render swaps in
+the sector background + radar HUD, game.sard.hudLabel() owns the wave
+label in SAR mode, victory routes through game.victory().
+index.js              The SearchAndDestroy facade (barrel + single import
+                      surface): owns the four modules, drives them from the
+                      core loop (update(dt) -> map -> spawner -> combat ->
+                      radar; renderBackground(ctx) / renderHud(ctx)),
+                      exposes hudLabel(), destroys the modules on exit.
+SectorMap.js          The sector grid + the DISPLACEMENT-ACCUMULATOR
+                      camera (v4.0.0): the ship flies in screen space
+                      (PlayerFlight stays sovereign - the camera NEVER
+                      writes player.vx/vy); the ship's screen offset is
+                      tracked against a dead zone (CAMERA.DEADZONE_X/Y),
+                      the EXCESS delta is accumulated into world
+                      coordinates (worldX/worldY), and the ship is softly
+                      recentered (CAMERA.RECENTER lerp + CLAMP_MARGIN
+                      screen-edge backstop). worldToScreen/playerWorld
+                      projection drives the scrolling grid, zone labels
+                      and the deterministic world-anchored layout
+                      (debrisAnchors / hazardAnchors / patrolSites -
+                      seeded PRNG, identical every run).
+SectorSpawner.js      Journey progression + world-anchored spawners: the
+                      player's WORLD position (playerWorld().x) drives zone
+                      entry (OPEN SPACE -> THE BONEYARD -> DEEP SECTOR
+                      banners); debris and hazard anchors activate when the
+                      camera nears them (spawned into the shared
+                      game.hazards / bonus-target lists, culled when far
+                      behind); regional enemy patrols spawn from per-zone
+                      patrol sites near the player's world position
+                      (classic EnemyFactory roster).
+SectorCombatManager.js The target base + victory sequence: Eridath's Mom's
+                      House (the 512px native .assets/Eridaths-Moms-House
+                      PNG, manifest key eridath_moms_house, drawn 512x512
+                      with a HOUSE.radius collision circle) sits at
+                      HOUSE.x/y in the deep sector - persistent, shootable,
+                      spawns enemy patrols while alive; friendly bullets
+                      damage it (off-screen kill gate parity), destruction
+                      fires the 3s victory countdown -> game.victory().
+RadarManager.js       The cockpit radar HUD (F1 toggle, SAR.RADAR): a
+                      rotating sweep, enemy/power-up/house blips projected
+                      from world space, and the "AVIONICS - SEARCH &
+                      DESTROY" readout.
+Tunables: SAR / sarProgress / sarZoneFor in js/core/config/searchDestroy.js
+(re-exported by config.js). Pinned by tools/check/sections/
+06aj-search-destroy.mjs (displacement-accumulator headless drive:
+dead-zone hold, excess accumulation, soft recenter, sustained scroll,
+world-anchored layout determinism, house destruction -> victory).
 
 =====================================================================
 js/ui/ - HUD / UI / META (11 files)

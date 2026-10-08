@@ -1,27 +1,43 @@
 // Filename: SectorMap.js
-// Kitty Vs Everything — v3.99.0
-// SEARCH & DESTROY — the sector map: a large 2D world-space coordinate
-// grid + the rotational background camera.
+// Kitty Vs Everything — v4.0.0
+// SEARCH & DESTROY — the sector map: a true 2D world-space coordinate
+// grid + the DISPLACEMENT-ACCUMULATOR camera (v4.0.0).
 //
-// Camera model: the camera owns a world position (x, y) + a background
-// rotation (angle). The player flies in SCREEN space (the classic combat
-// stack is untouched — full parity); the camera converts:
-//   • PAN    — the player's screen-space velocity scrolls the world
-//              (× CAMERA.PAN_FACTOR), and the tether clamps the player
-//              near the screen center: beyond the dead zone the camera
-//              pans 1:1 with the overflow, so the ship never leaves the
-//              screen (classic wrap bounds disabled — the world scrolls).
-//   • ROTATE — the background rotates toward the ship's heading
-//              (× CAMERA.ROTATION_INFLUENCE): the "rotational background
-//              camera shift" relative to the movement vector.
-// The background (3-layer parallax starfield, reference planets, sector
-// grid, journey zone bands, boneyard debris texture, the house base)
-// renders in world space through the camera transform; gameplay entities
-// render in screen space above it (Game.render).
+// Camera model (displacement accumulator): the camera owns a world
+// position (worldX, worldY) — the world coordinate at the screen
+// center. The player flies in SCREEN space (the classic combat stack
+// is untouched — full parity; PlayerFlight's velocity / input
+// integration / weapon-collision routines are 100% sovereign). Per
+// frame:
+//   1. OBSERVE  — the player's screen delta is read (the flight
+//                 integration already ran; we only observe it, and we
+//                 undo our own previous camera nudge — soft recentering
+//                 + backstop — to recover the ship's true flight delta);
+//   2. ACCUMULATE — the dead zone (CAMERA.DEADZONE_X/Y × viewW/H)
+//                 absorbs travel around the screen center; the EXCESS
+//                 delta is accumulated into the world coordinates
+//                 (worldX / worldY) — the world scrolls fluidly
+//                 around the combat layer (1:1 with the overflow);
+//   3. RECENTER — the ship is SOFTLY recentered: pulled back toward
+//                 the center by a fraction of the excess (exponential
+//                 ease, CAMERA.RECENTER — no hard clamp, no velocity
+//                 change) + a screen-edge backstop as a safety net;
+//   4. CLAMP    — the camera stays inside the sector bounds.
+// The background (3-layer parallax starfield, reference planets,
+// sector grid, journey zone bands, boneyard debris texture, the house
+// base) renders in world space through the camera transform; gameplay
+// entities render in screen space above it (Game.render).
 //
-// Pure camera + rendering — no gameplay state. The house's live state
-// (hp / flash / alive) is passed in from SectorCombatManager at draw time.
-export const VERSION = 'v1.0.0';
+// World-anchored layout (v4.0.0): the sector's debris anchors, hazard
+// anchors and regional patrol sites are generated once from a seeded
+// PRNG (identical every run) at ABSOLUTE world coordinates —
+// SectorSpawner.js activates them as the player's world position
+// approaches (debrisAnchors / hazardAnchors / patrolSites below).
+//
+// Pure camera + layout + rendering — no gameplay state. The house's
+// live state (hp / flash / alive) is passed in from SectorCombatManager
+// at draw time.
+export const VERSION = 'v4.0.0';
 import { SAR } from '../../core/config.js';
 import { TAU, clamp } from '../../core/utils.js';
 import { getSprite } from '../../core/AssetManager.js';
@@ -39,7 +55,7 @@ function mulberry32(seed) {
 }
 
 // Parallax starfield layers: f = parallax factor (0 = pinned far, 1 =
-// full camera lock). Far layers drift/rotate less — depth for free.
+// full camera lock). Far layers drift less — depth for free.
 const STAR_LAYERS = [
   { f: 0.25, n: 240, size: 1.4, alpha: 0.45 },
   { f: 0.5, n: 170, size: 2.0, alpha: 0.65 },
@@ -49,19 +65,33 @@ const STAR_LAYERS = [
 export default class SectorMap {
   constructor(game) {
     this.game = game;
-    this.cam = { x: SAR.START.x, y: SAR.START.y, angle: 0 };
+    this.worldX = SAR.START.x;
+    this.worldY = SAR.START.y;
     this.time = 0;
+    // Displacement-accumulator state (previous frame's observed player
+    // position, clamped dead-zone offset and total camera nudge).
+    this._accInit = false;
+    this.prevPX = 0;
+    this.prevPY = 0;
+    this.prevClX = 0;
+    this.prevClY = 0;
+    this.prevNudgeX = 0;
+    this.prevNudgeY = 0;
     this.layers = this._makeStarLayers();
     this.planets = this._makePlanets();
     this.boneMarks = this._makeBoneMarks();
+    // ── WORLD-ANCHORED LAYOUT (deterministic, absolute world px) ──
+    this.debrisAnchors = this._makeDebrisAnchors();
+    this.hazardAnchors = this._makeHazardAnchors();
+    this.patrolSites = this._makePatrolSites();
   }
 
   /** Fresh sector per mission (camera back at the start coordinates). */
   reset() {
-    this.cam.x = SAR.START.x;
-    this.cam.y = SAR.START.y;
-    this.cam.angle = 0;
+    this.worldX = SAR.START.x;
+    this.worldY = SAR.START.y;
     this.time = 0;
+    this._accInit = false;
   }
 
   _makeStarLayers() {
@@ -86,7 +116,7 @@ export default class SectorMap {
         y: 1500 + rng() * (SAR.SECTOR.H - 3000),
         r: 80 + rng() * 100,
         hue: hues[i % hues.length],
-        ring: rng() > 0.5,
+        ring: rng() < 0.5,
         spin: rng() * TAU,
       });
     }
@@ -95,8 +125,8 @@ export default class SectorMap {
 
   _makeBoneMarks() {
     // Faint debris texture across THE BONEYARD band (world space) — the
-    // yard's "floor" (the shootable debris itself is screen-space
-    // bonusTargets spawned by SectorSpawner).
+    // yard's "floor" (the shootable debris itself is world-anchored
+    // bonusTargets activated by SectorSpawner).
     const rng = mulberry32(0xB0BE);
     const z = SAR.ZONES[1];
     const out = [];
@@ -111,26 +141,68 @@ export default class SectorMap {
     return out;
   }
 
-  // ─── COORDINATE TRANSFORMS (camera pan + rotation) ───
+  // ─── WORLD-ANCHORED LAYOUT (deterministic, absolute world px) ───
 
-  /** Screen → world (through the camera pan + rotation). */
+  /** Boneyard bone-debris anchors (THE BONEYARD band, world space). */
+  _makeDebrisAnchors() {
+    const rng = mulberry32(0xB0D57);
+    const z = SAR.ZONES[1];
+    const out = [];
+    for (let i = 0; i < SAR.WORLD.DEBRIS.count; i++) {
+      out.push({
+        x: z.x0 + rng() * (z.x1 - z.x0),
+        y: rng() * SAR.SECTOR.H,
+        a: rng() * TAU,
+        used: false,
+      });
+    }
+    return out;
+  }
+
+  /** Boneyard hazard anchors (THE BONEYARD band, world space). */
+  _makeHazardAnchors() {
+    const rng = mulberry32(0xDE57A7);
+    const z = SAR.ZONES[1];
+    const out = [];
+    for (let i = 0; i < SAR.WORLD.HAZARDS.count; i++) {
+      out.push({
+        x: z.x0 + rng() * (z.x1 - z.x0),
+        y: rng() * SAR.SECTOR.H,
+        used: false,
+      });
+    }
+    return out;
+  }
+
+  /** Regional patrol sites — one set per journey zone (world space). */
+  _makePatrolSites() {
+    const rng = mulberry32(0x7A7E01);
+    return SAR.ZONES.map((z) => {
+      const sites = [];
+      for (let i = 0; i < SAR.WORLD.PATROL.perZone; i++) {
+        sites.push({
+          x: z.x0 + 800 + rng() * (z.x1 - z.x0 - 1600),
+          y: 600 + rng() * (SAR.SECTOR.H - 1200),
+          used: false,
+          cooldown: 0,
+        });
+      }
+      return sites;
+    });
+  }
+
+  // ─── COORDINATE TRANSFORMS (displacement-accumulator pan) ───
+
+  /** Screen → world (through the camera displacement). */
   screenToWorld(sx, sy) {
     const g = this.game;
-    const dx = sx - g.viewW / 2;
-    const dy = sy - g.viewH / 2;
-    const c = Math.cos(this.cam.angle);
-    const s = Math.sin(this.cam.angle);
-    return { x: this.cam.x + dx * c - dy * s, y: this.cam.y + dx * s + dy * c };
+    return { x: this.worldX + (sx - g.viewW / 2), y: this.worldY + (sy - g.viewH / 2) };
   }
 
   /** World → screen (inverse of screenToWorld). */
   worldToScreen(wx, wy) {
     const g = this.game;
-    const dx = wx - this.cam.x;
-    const dy = wy - this.cam.y;
-    const c = Math.cos(-this.cam.angle);
-    const s = Math.sin(-this.cam.angle);
-    return { x: g.viewW / 2 + dx * c - dy * s, y: g.viewH / 2 + dx * s + dy * c };
+    return { x: wx - this.worldX + g.viewW / 2, y: wy - this.worldY + g.viewH / 2 };
   }
 
   /** The player's live world position (screen pos → world). */
@@ -142,67 +214,99 @@ export default class SectorMap {
   /** The visible world rectangle (for background culling). */
   visibleRect() {
     const g = this.game;
-    const pts = [
-      this.screenToWorld(0, 0),
-      this.screenToWorld(g.viewW, 0),
-      this.screenToWorld(0, g.viewH),
-      this.screenToWorld(g.viewW, g.viewH),
-    ];
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const p of pts) {
-      if (p.x < minX) minX = p.x;
-      if (p.y < minY) minY = p.y;
-      if (p.x > maxX) maxX = p.x;
-      if (p.y > maxY) maxY = p.y;
-    }
-    return { minX, minY, maxX, maxY };
+    return {
+      minX: this.worldX - g.viewW / 2,
+      maxX: this.worldX + g.viewW / 2,
+      minY: this.worldY - g.viewH / 2,
+      maxY: this.worldY + g.viewH / 2,
+    };
   }
 
-  // ─── CAMERA UPDATE (pan + tether + rotation) ───
+  // ─── CAMERA UPDATE (displacement accumulator, v4.0.0) ───
 
   /**
-   * Per-frame camera follow:
-   *   1. rotate — ease the background toward the ship's heading
-   *   2. pan    — the ship's screen-space velocity scrolls the world
-   *   3. tether — clamp the player near the screen center (bounds
-   *               disabled: the camera pans 1:1 with the overflow)
-   *   4. clamp  — keep the camera inside the sector bounds
+   * Per-frame displacement accumulator:
+   *   1. observe the player's screen delta (PlayerFlight is sovereign —
+   *      the flight integration already ran; we only read the result
+   *      and undo our own previous camera nudge — soft recentering +
+   *      screen-edge backstop — to recover the true flight delta);
+   *   2. accumulate the EXCESS delta (beyond the dead zone) into the
+   *      world coordinates (worldX / worldY) — the world scrolls
+   *      fluidly around the combat layer;
+   *   3. softly recenter the ship (fraction of the excess, exponential
+   *      ease — no hard clamp, no velocity change) + screen-edge
+   *      backstop;
+   *   4. clamp the camera inside the sector bounds.
    */
   update(dt, player) {
     this.time += dt;
     const g = this.game;
-    // ── 1. ROTATION (rotational background camera shift) ──
-    const target = player.angle * SAR.CAMERA.ROTATION_INFLUENCE;
-    let d = target - this.cam.angle;
-    d = Math.atan2(Math.sin(d), Math.cos(d)); // shortest arc
-    this.cam.angle += d * Math.min(1, SAR.CAMERA.ANGLE_EASE * dt);
-    const c = Math.cos(this.cam.angle);
-    const s = Math.sin(this.cam.angle);
-    // ── 2. PAN (the ship's screen-space velocity scrolls the world) ──
-    const pvx = player.vx * SAR.CAMERA.PAN_FACTOR;
-    const pvy = player.vy * SAR.CAMERA.PAN_FACTOR;
-    this.cam.x += (pvx * c - pvy * s) * dt;
-    this.cam.y += (pvx * s + pvy * c) * dt;
-    // ── 3. TETHER (player near screen center; overflow pans 1:1) ──
-    const tx = g.viewW * SAR.CAMERA.TETHER_X;
-    const ty = g.viewH * SAR.CAMERA.TETHER_Y;
-    let ox = 0, oy = 0;
-    if (player.x < g.viewW / 2 - tx) ox = g.viewW / 2 - tx - player.x;
-    else if (player.x > g.viewW / 2 + tx) ox = g.viewW / 2 + tx - player.x;
-    if (player.y < g.viewH / 2 - ty) oy = g.viewH / 2 - ty - player.y;
-    else if (player.y > g.viewH / 2 + ty) oy = g.viewH / 2 + ty - player.y;
-    if (ox !== 0 || oy !== 0) {
-      // Screen-space overflow → world-space pan (through the rotation),
-      // then clamp the ship back onto the tether edge.
-      this.cam.x += ox * c - oy * s;
-      this.cam.y += ox * s + oy * c;
-      player.x += ox;
-      player.y += oy;
+    const cx = g.viewW / 2, cy = g.viewH / 2;
+    const dzX = g.viewW * SAR.CAMERA.DEADZONE_X;
+    const dzY = g.viewH * SAR.CAMERA.DEADZONE_Y;
+    if (!this._accInit) {
+      // First frame: anchor the accumulator to the ship's current
+      // screen position (no accumulation, no recentering).
+      this.prevPX = player.x;
+      this.prevPY = player.y;
+      this.prevClX = clamp(player.x - cx, -dzX, dzX);
+      this.prevClY = clamp(player.y - cy, -dzY, dzY);
+      this.prevNudgeX = 0;
+      this.prevNudgeY = 0;
+      this._accInit = true;
+      return;
     }
+    // ── 1. OBSERVE the player's screen-space delta ──
+    const dpx = player.x - this.prevPX;
+    const dpy = player.y - this.prevPY;
+    this.prevPX = player.x;
+    this.prevPY = player.y;
+    const soft = 1 - Math.exp(-SAR.CAMERA.RECENTER * dt);
+    // The observed delta includes last frame's total camera nudge (soft
+    // recentering + screen-edge backstop) — remove it to recover the
+    // ship's true flight delta (we only undo OUR OWN positional
+    // correction; PlayerFlight is untouched).
+    const flightX = dpx + this.prevNudgeX;
+    const flightY = dpy + this.prevNudgeY;
+    // ── 2. ACCUMULATE the excess delta into world coordinates ──
+    const ox = player.x - cx;
+    const oy = player.y - cy;
+    const clX = clamp(ox, -dzX, dzX);
+    const clY = clamp(oy, -dzY, dzY);
+    const exX = ox - clX;
+    const exY = oy - clY;
+    // The dead zone absorbs (clX - prevClX) of the flight delta; the
+    // excess is the displacement the world takes on. The per-frame cap
+    // is a teleport guard (respawn / dev warp).
+    const maxStep = g.viewW * 0.5;
+    this.worldX += clamp(flightX - (clX - this.prevClX), -maxStep, maxStep);
+    this.worldY += clamp(flightY - (clY - this.prevClY), -maxStep, maxStep);
+    this.prevClX = clX;
+    this.prevClY = clY;
+    // ── 3. SOFTLY RECENTER the ship (fraction of the excess) ──
+    let nudgeX = 0;
+    let nudgeY = 0;
+    if (exX !== 0 || exY !== 0) {
+      nudgeX = exX * soft;
+      nudgeY = exY * soft;
+      player.x -= nudgeX;
+      player.y -= nudgeY;
+    }
+    // Screen-edge backstop (safety net — the soft recentering keeps the
+    // ship well inside; this only catches extreme full-throttle cases).
+    const preX = player.x;
+    const preY = player.y;
+    player.x = clamp(player.x, 12, g.viewW - 12);
+    player.y = clamp(player.y, 12, g.viewH - 12);
+    // The camera's TOTAL positional nudge this frame (soft recentering +
+    // backstop) is removed from the next frame's observed delta — the
+    // accumulator stays exact even when the backstop fires.
+    this.prevNudgeX = nudgeX + (preX - player.x);
+    this.prevNudgeY = nudgeY + (preY - player.y);
     // ── 4. SECTOR BOUNDS ──
     const m = SAR.CAMERA.CLAMP_MARGIN;
-    this.cam.x = clamp(this.cam.x, m, SAR.SECTOR.W - m);
-    this.cam.y = clamp(this.cam.y, m, SAR.SECTOR.H - m);
+    this.worldX = clamp(this.worldX, m, SAR.SECTOR.W - m);
+    this.worldY = clamp(this.worldY, m, SAR.SECTOR.H - m);
   }
 
   // ─── BACKGROUND RENDER (world space through the camera transform) ───
@@ -218,15 +322,11 @@ export default class SectorMap {
     // ── PARALLAX STARFIELD (3 layers, world-anchored, per-layer parallax) ──
     for (const layer of this.layers) {
       const f = layer.f;
-      const c = Math.cos(this.cam.angle * f);
-      const s = Math.sin(this.cam.angle * f);
-      const cx = this.cam.x * f;
-      const cy = this.cam.y * f;
+      const cx = this.worldX * f;
+      const cy = this.worldY * f;
       for (const st of layer.stars) {
-        const dx = st.x - cx;
-        const dy = st.y - cy;
-        const sx = W / 2 + dx * c - dy * s;
-        const sy = H / 2 + dx * s + dy * c;
+        const sx = W / 2 + (st.x - cx);
+        const sy = H / 2 + (st.y - cy);
         if (sx < -4 || sx > W + 4 || sy < -4 || sy > H + 4) continue;
         const tw = 0.7 + 0.3 * Math.sin(this.time * 2 + st.tw);
         ctx.globalAlpha = layer.alpha * tw;
@@ -237,9 +337,7 @@ export default class SectorMap {
     ctx.globalAlpha = 1;
     // ── WORLD-SPACE PASS (planets → grid → zones → boneyard → house) ──
     ctx.save();
-    ctx.translate(W / 2, H / 2);
-    ctx.rotate(this.cam.angle);
-    ctx.translate(-this.cam.x, -this.cam.y);
+    ctx.translate(W / 2 - this.worldX, H / 2 - this.worldY);
     const rect = this.visibleRect();
     this._drawPlanets(ctx, rect);
     this._drawGrid(ctx, rect);
@@ -336,8 +434,8 @@ export default class SectorMap {
   }
 
   _drawBoneMarks(ctx, rect) {
-    // Faint boneyard debris texture (the shootable bones are screen-space
-    // bonusTargets — these are the yard's ambient "floor").
+    // Faint boneyard debris texture (the shootable bones are world-
+    // anchored bonusTargets — these are the yard's ambient "floor").
     const z = SAR.ZONES[1];
     if (rect.maxX < z.x0 || rect.minX > z.x1) return;
     ctx.save();
@@ -368,7 +466,9 @@ export default class SectorMap {
   _drawHouse(ctx, house) {
     if (!house) return;
     const rect = this.visibleRect();
-    const size = 128 * SAR.HOUSE.drawScale;
+    // 512px native asset (manifest `eridath_moms_house`) × drawScale —
+    // 1:1 crisp at drawScale 1 (the canvas context is already crisp).
+    const size = 512 * SAR.HOUSE.drawScale;
     const hx = house.x, hy = house.y;
     if (hx + size < rect.minX || hx - size > rect.maxX ||
         hy + size < rect.minY || hy - size > rect.maxY) return;
@@ -382,7 +482,7 @@ export default class SectorMap {
     ctx.beginPath();
     ctx.arc(hx, hy, size * 0.95 * pulse, 0, TAU);
     ctx.fill();
-    // House art (asset `eridath_moms_house`, 128px native → drawScale) —
+    // House art (the 512px .assets/Eridaths-Moms-House landmark) —
     // nearest-neighbor (the canvas context is already crisp).
     const sprite = getSprite('eridath_moms_house');
     if (sprite) {

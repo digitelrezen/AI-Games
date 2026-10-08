@@ -1,5 +1,5 @@
 // Filename: index.js
-// Kitty Vs Everything — v3.99.0
+// Kitty Vs Everything — v4.0.0
 // SEARCH & DESTROY subsystem barrel (E6 nested module) — the single import
 // surface for js/modes/SearchAndDestroy/. Game.js imports the
 // SearchAndDestroy facade from here; the submodules are re-exported for
@@ -7,10 +7,19 @@
 //
 // The facade owns the four SAR modules and drives them from the core
 // loop (Game.update → update, Game.render → renderBackground/renderHud):
-//   SectorMap            — world grid + rotational background camera
-//   SectorSpawner        — journey zones + regional spawners
+//   SectorMap            — world grid + displacement-accumulator camera
+//   SectorSpawner        — journey zones + world-anchored spawners
 //   SectorCombatManager  — the house base + victory sequence
 //   RadarManager         — cockpit radar HUD (F1 toggle)
+//
+// v4.0.0: the DISPLACEMENT-ACCUMULATOR camera (SectorMap) replaces the
+// v3.99.0 pan+rotation model — the player's screen offset is tracked
+// against a dead zone, the excess delta is accumulated into world
+// coordinates (worldX / worldY) and the ship is softly recentered; the
+// world scrolls fluidly around the untouched screen-space combat layer
+// (PlayerFlight stays sovereign). Debris, hazards and regional patrols
+// are WORLD-ANCHORED at absolute world coordinates (the deterministic
+// SectorMap layout).
 //
 // Roster parity: the classic combat stack (all 9 Catships, the
 // Vulcan/Plasma/Rail weapons, rockets, ultimates, POWERUP_DROPS) is
@@ -39,12 +48,12 @@ export default class SearchAndDestroy {
     this.spawner.reset();
     this.map.reset();
     bus.emit('banner', {
-      text: "SEARCH & DESTROY — FIND ERIDATH'S MOM'S HOUSE",
+      text: "SEARCH & DESTROY v4.0.0 — FIND ERIDATH'S MOM'S HOUSE",
       tone: 'warn',
       duration: 4,
     });
     audio.banner();
-    game.msglog.log('SEARCH & DESTROY MISSION START', 'warn', game.time);
+    game.msglog.log('SEARCH & DESTROY v4.0.0 MISSION START', 'warn', game.time);
     game.msglog.log('OBJECTIVE: cross the sector, clear The Boneyard, destroy the base', 'info', game.time);
     game.msglog.log('F1 toggles the cockpit radar', 'info', game.time);
   }

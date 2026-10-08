@@ -1,7 +1,25 @@
 // Filename: config.js
-// Kitty Vs Everything — v3.77.0
+// Kitty Vs Everything — v4.0.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v4.0.0: SEARCH & DESTROY — the sector-journey mode (js/modes/
+//          SearchAndDestroy/, E6 nested modules) stamps 4.0.0: the
+//          DISPLACEMENT-ACCUMULATOR camera (SectorMap) replaces the
+//          v3.99.0 pan+rotation model — the player's screen offset is
+//          tracked against a dead zone (CAMERA.DEADZONE_X/Y), the
+//          EXCESS delta is accumulated into world coordinates
+//          (worldX/worldY) and the ship is softly recentered
+//          (CAMERA.RECENTER) — the world scrolls fluidly around the
+//          untouched screen-space combat layer (PlayerFlight stays
+//          sovereign). Debris, hazards and regional enemy patrols are
+//          WORLD-ANCHORED at absolute world coordinates (the
+//          deterministic SectorMap layout — SAR.WORLD); the journey
+//          runs OPEN SPACE → THE BONEYARD → DEEP SECTOR, where
+//          Eridath's Mom's House (the 512px .assets/Eridaths-Moms-
+//          House landmark) anchors the deep sector as a persistent,
+//          shootable base. Milestone version synced across
+//          package.json, config.js, main.js, Game.js, HUD.js and
+//          index.html.
 // v3.97.0: HAZARDS — new independent game module (js/hazards/): 10
 //          non-lootable, shootable environmental obstacles (BioBarrel,
 //          BioBomb, ClusterBomb, DepletedShell, FireBarrel, FireMine,
@@ -347,7 +365,7 @@
 //          image-rendering: pixelated/crisp-edges to #game-canvas +
 //          #hangar-canvas. Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.100.0';
+export const VERSION = 'v4.0.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

@@ -127,7 +127,15 @@
 //          grid-nav (wraps), ENTER launches the active mode, TAB toggles
 //          CLASSIC ↔ SEARCH & DESTROY. Milestone version synced with
 //          package.json.
-export const VERSION = 'v3.100.0';
+// v4.0.0: SEARCH & DESTROY — the sector-journey mode stamps 4.0.0:
+//          the DISPLACEMENT-ACCUMULATOR camera (SectorMap) replaces the
+//          v3.99.0 pan+rotation model (the player's screen offset is
+//          tracked against a dead zone, the excess delta is accumulated
+//          into world coordinates worldX/worldY and the ship is softly
+//          recentered — PlayerFlight stays sovereign); debris, hazards
+//          and regional patrols are WORLD-ANCHORED at absolute world
+//          coordinates. Milestone version synced with package.json.
+export const VERSION = 'v4.0.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup

@@ -1,17 +1,24 @@
 // ═══════════════════════════════════════════════════════════
-//  [6aj] v3.99.0 SEARCH & DESTROY — the world-space sector-journey
+//  [6aj] v4.0.0 SEARCH & DESTROY — the world-space sector-journey
 //        mode (js/modes/SearchAndDestroy/, E6 nested modules). The
 //        player flies in SCREEN space (full Catship/weapon/drop
-//        parity — the classic combat stack is untouched) while a
-//        rotational background camera (SectorMap) pans + rotates a
-//        large 2D sector grid. The sequenced journey runs left →
-//        right: OPEN SPACE → THE BONEYARD → DEEP SECTOR, where
-//        Eridath's Mom's House anchors the deep sector as a
-//        persistent, shootable, enemy-spawning base (the objective).
-//        A cockpit radar (RadarManager, F1) tracks enemies /
-//        power-ups / the house. Destroying the house = victory.
-//        Headless: the facade is driven directly (camera pan, zone
-//        entry, house state, hudLabel, sarProgress/sarZoneFor).
+//        parity — the classic combat stack is untouched, PlayerFlight
+//        stays sovereign) while the DISPLACEMENT-ACCUMULATOR camera
+//        (SectorMap) tracks the player's screen offset against a dead
+//        zone, accumulates the EXCESS delta into world coordinates
+//        (worldX/worldY) and softly recenter the ship — the world
+//        scrolls fluidly around the combat layer. Debris, hazards and
+//        regional patrols are WORLD-ANCHORED at absolute world
+//        coordinates (deterministic seeded layout). The journey runs
+//        left → right: OPEN SPACE → THE BONEYARD → DEEP SECTOR, where
+//        Eridath's Mom's House (the 512px .assets/Eridaths-Moms-House
+//        landmark) anchors the deep sector as a persistent, shootable,
+//        enemy-spawning base (the objective). A cockpit radar
+//        (RadarManager, F1) tracks enemies / power-ups / the house.
+//        Destroying the house = victory.
+//        Headless: the facade is driven directly (displacement
+//        accumulator, world-anchored layout, zone entry, house state,
+//        hudLabel, sarProgress/sarZoneFor).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod, makeGame } from '../infra.mjs';
@@ -19,7 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export default async function run() {
-  console.log('\n[6aj] v3.99.0 search & destroy (sector journey, source gates + headless)');
+  console.log('\n[6aj] v4.0.0 search & destroy (displacement-accumulator camera + world-anchored journey)');
   {
     // ── Module existence (E6 nested mode) ──
     for (const f of [
@@ -35,6 +42,8 @@ export default async function run() {
 
     const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');
     const cfgSardSrc = fs.readFileSync(path.join(ROOT, 'js/core/config/searchDestroy.js'), 'utf8');
+    const mapSrc = fs.readFileSync(path.join(ROOT, 'js/modes/SearchAndDestroy/SectorMap.js'), 'utf8');
+    const spawnSrc = fs.readFileSync(path.join(ROOT, 'js/modes/SearchAndDestroy/SectorSpawner.js'), 'utf8');
     const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
     const flightSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerFlight.js'), 'utf8');
     const goSrc = fs.readFileSync(path.join(ROOT, 'js/core/game/GameOver.js'), 'utf8');
@@ -45,22 +54,36 @@ export default async function run() {
     const devSrc = fs.readFileSync(path.join(ROOT, 'js/ui/DevPanel.js'), 'utf8');
     const flowSrc = fs.readFileSync(path.join(ROOT, 'js/core/game/StageFlow.js'), 'utf8');
 
-    // ── Config surface (single tuning point) ──
-    check('config/searchDestroy.js: SAR sector / start / camera tuning',
+    // ── Config surface (single tuning point, v4.0.0) ──
+    check('config/searchDestroy.js: the displacement-accumulator camera tuning',
       cfgSardSrc.includes('SECTOR:') && cfgSardSrc.includes('START:') && cfgSardSrc.includes('CAMERA:') &&
-      cfgSardSrc.includes('PAN_FACTOR') && cfgSardSrc.includes('ROTATION_INFLUENCE') &&
-      cfgSardSrc.includes('TETHER_X') && cfgSardSrc.includes('TETHER_Y'));
+      cfgSardSrc.includes('DEADZONE_X') && cfgSardSrc.includes('DEADZONE_Y') &&
+      cfgSardSrc.includes('RECENTER') && cfgSardSrc.includes('CLAMP_MARGIN'));
+    check('config/searchDestroy.js: the world-anchored layout tuning (v4.0.0)',
+      cfgSardSrc.includes('WORLD:') && cfgSardSrc.includes('DEBRIS:') &&
+      cfgSardSrc.includes('HAZARDS:') && cfgSardSrc.includes('PATROL:'));
     check('config/searchDestroy.js: the 3 journey zones (open / boneyard / deep)',
       cfgSardSrc.includes("id: 'open'") && cfgSardSrc.includes("id: 'boneyard'") && cfgSardSrc.includes("id: 'deep'"));
     check('config/searchDestroy.js: the house base tuning (HP / radius / spawn / victory)',
       cfgSardSrc.includes('HOUSE:') && cfgSardSrc.includes('HP:') && cfgSardSrc.includes('radius:') &&
       cfgSardSrc.includes('spawnMin') && cfgSardSrc.includes('victoryScore'));
     check('config/searchDestroy.js: ambient drops + cockpit radar tuning',
-      cfgSardSrc.includes('DROPS:') && cfgSardSrc.includes('RADAR:') && cfgSardSrc.includes('RANGE') && cfgSardSrc.includes('KEY'));
+      cfgSardSrc.includes('DROPS:') && cfgSardSrc.includes('RADAR:') &&
+      cfgSardSrc.includes('RANGE') && cfgSardSrc.includes('KEY'));
     check('config/searchDestroy.js: sarProgress + sarZoneFor helpers',
       cfgSardSrc.includes('export function sarProgress') && cfgSardSrc.includes('export function sarZoneFor'));
     check('config.js: re-exports SAR / sarProgress / sarZoneFor',
       cfgSrc.includes("export { SAR, sarProgress, sarZoneFor } from './config/searchDestroy.js'"));
+
+    // ── v4.0.0 camera model (source gates) ──
+    check('SectorMap: the displacement-accumulator camera (worldX/worldY + dead zone + soft recenter)',
+      mapSrc.includes('this.worldX') && mapSrc.includes('this.worldY') &&
+      mapSrc.includes('DEADZONE_X') && mapSrc.includes('RECENTER'));
+    check('SectorMap: the camera never touches the ship velocity (PlayerFlight sovereign)',
+      !mapSrc.includes('player.vx') && !mapSrc.includes('player.vy'));
+    check('SectorSpawner: world-anchored spawners (anchors + world-locked projection)',
+      spawnSrc.includes('debrisAnchors') && spawnSrc.includes('hazardAnchors') &&
+      spawnSrc.includes('patrolSites') && spawnSrc.includes('worldToScreen'));
 
     // ── Game.js wiring ──
     check('Game.js: imports the SearchAndDestroy facade',
@@ -79,8 +102,8 @@ export default async function run() {
     check('Game.js: victory() method drives the SAR mission-complete',
       gameSrc.includes('victory() {') && gameSrc.includes("this.state = 'victory'"));
 
-    // ── PlayerFlight: classic bounds opt-out ──
-    check('PlayerFlight: p.freeBounds opts out of wrap/bounce (SAR camera tether)',
+    // ── PlayerFlight: classic bounds opt-out (sovereign) ──
+    check('PlayerFlight: p.freeBounds opts out of wrap/bounce (SAR camera layer)',
       flightSrc.includes('if (!p.freeBounds)'));
 
     // ── GameOver: the SAR victory state ──
@@ -118,6 +141,13 @@ export default async function run() {
     // ── Headless behavior (the facade driven directly) ──
     const { default: SearchAndDestroy } = await mod('js/modes/SearchAndDestroy/index.js');
     const { SAR, sarProgress, sarZoneFor } = await mod('js/core/config.js');
+    const sm = await mod('js/modes/SearchAndDestroy/SectorMap.js');
+    const sp = await mod('js/modes/SearchAndDestroy/SectorSpawner.js');
+    const sc = await mod('js/modes/SearchAndDestroy/SectorCombatManager.js');
+    const sr = await mod('js/modes/SearchAndDestroy/RadarManager.js');
+    check('SAR modules stamp VERSION v4.0.0',
+      sm.VERSION === 'v4.0.0' && sp.VERSION === 'v4.0.0' &&
+      sc.VERSION === 'v4.0.0' && sr.VERSION === 'v4.0.0');
 
     // sarProgress / sarZoneFor are pure helpers — verify the math.
     check('headless: sarProgress(start) = 0, sarProgress(house) = 1',
@@ -140,8 +170,8 @@ export default async function run() {
     game.victory = () => { victoryCalled = true; };
 
     const sard = new SearchAndDestroy(game);
-    check('headless: the camera starts at the SAR start coordinates',
-      sard.map.cam.x === SAR.START.x && sard.map.cam.y === SAR.START.y && sard.map.cam.angle === 0);
+    check('headless: the camera starts at the SAR start coordinates (worldX/worldY)',
+      sard.map.worldX === SAR.START.x && sard.map.worldY === SAR.START.y);
     check('headless: the house base is created at full HP in the deep sector',
       sard.combat.house && sard.combat.house.hp === SAR.HOUSE.HP &&
       sard.combat.house.x === SAR.HOUSE.x && sard.combat.house.y === SAR.HOUSE.y);
@@ -158,32 +188,74 @@ export default async function run() {
       Math.abs(sard.map.playerWorld().x - SAR.START.x) < 1 &&
       Math.abs(sard.map.playerWorld().y - SAR.START.y) < 1);
 
-    // Camera pan: a rightward screen velocity scrolls the world right.
-    const camBefore = sard.map.cam.x;
-    game.player.vx = 400;
-    for (let i = 0; i < 10; i++) sard.update(0.016);
-    check('headless: a rightward screen velocity pans the camera right',
-      sard.map.cam.x > camBefore, `cam.x ${camBefore} → ${sard.map.cam.x}`);
-    check('headless: the journey progress advances as the camera pans',
-      sarProgress(sard.map.playerWorld().x) > 0);
+    // ── Displacement accumulator (v4.0.0 camera model) ──
+    // Inside the dead zone the camera holds (the ship flies freely).
+    const wxHold = sard.map.worldX, wyHold = sard.map.worldY;
+    for (let i = 0; i < 5; i++) sard.update(0.016);
+    check('headless: the camera holds inside the dead zone (no velocity)',
+      sard.map.worldX === wxHold && sard.map.worldY === wyHold);
 
-    // Rotational camera: a nonzero heading eases the background rotation.
-    // (50 frames keeps the spawner timers from expiring — no live spawns.)
-    game.player.vx = 0;
-    game.player.angle = Math.PI / 2; // facing down
-    for (let i = 0; i < 50; i++) sard.update(0.016);
-    check('headless: a nonzero heading rotates the background camera',
-      Math.abs(sard.map.cam.angle) > 0.1, `angle=${sard.map.cam.angle}`);
+    // Push the ship 200px past the dead zone: the EXCESS delta is
+    // accumulated into world coordinates and the ship is softly
+    // recentered (pulled back toward the center).
+    const wxBefore = sard.map.worldX;
+    game.player.x = 640 + 1280 * SAR.CAMERA.DEADZONE_X + 200;
+    const pxBefore = game.player.x;
+    sard.update(0.016);
+    check('headless: the excess delta is accumulated into world coordinates',
+      sard.map.worldX > wxBefore, `worldX ${wxBefore} → ${sard.map.worldX}`);
+    check('headless: the ship is softly recentered (pulled back toward the center)',
+      game.player.x < pxBefore, `x ${pxBefore} → ${game.player.x}`);
+
+    // Sustained flight: the world scrolls (displacement accumulates) and
+    // the journey progress advances. (The flight integration is simulated
+    // — PlayerFlight itself is sovereign and never driven here.)
+    const wxSustained0 = sard.map.worldX;
+    let monotonic = true;
+    let wxPrev = wxSustained0;
+    for (let i = 0; i < 30; i++) {
+      game.player.x += 400 * 0.016;
+      sard.update(0.016);
+      if (sard.map.worldX < wxPrev) monotonic = false;
+      wxPrev = sard.map.worldX;
+    }
+    check('headless: sustained flight scrolls the world (displacement accumulates)',
+      sard.map.worldX > wxSustained0 && monotonic,
+      `worldX ${wxSustained0} → ${sard.map.worldX}`);
+    check('headless: the journey progress advances with the world scroll',
+      sarProgress(sard.map.playerWorld().x) > 0);
+    check('headless: the ship stays on screen during the scroll',
+      game.player.x >= 0 && game.player.x <= 1280 && game.player.y >= 0 && game.player.y <= 720);
+
+    // ── World-anchored layout (v4.0.0) ──
+    const boneZone = SAR.ZONES[1];
+    check('headless: the debris anchors are world-anchored in THE BONEYARD',
+      sard.map.debrisAnchors.length === SAR.WORLD.DEBRIS.count &&
+      sard.map.debrisAnchors.every(a => a.x >= boneZone.x0 && a.x <= boneZone.x1 &&
+        a.y >= 0 && a.y <= SAR.SECTOR.H));
+    check('headless: the hazard anchors are world-anchored in THE BONEYARD',
+      sard.map.hazardAnchors.length === SAR.WORLD.HAZARDS.count &&
+      sard.map.hazardAnchors.every(a => a.x >= boneZone.x0 && a.x <= boneZone.x1 &&
+        a.y >= 0 && a.y <= SAR.SECTOR.H));
+    check('headless: the patrol sites are world-anchored per journey zone',
+      sard.map.patrolSites.length === SAR.ZONES.length &&
+      sard.map.patrolSites.every((sites, zi) => sites.length === SAR.WORLD.PATROL.perZone &&
+        sites.every(s => s.x >= SAR.ZONES[zi].x0 && s.x <= SAR.ZONES[zi].x1 &&
+          s.y >= 0 && s.y <= SAR.SECTOR.H)));
+    const sard2 = new SearchAndDestroy(game);
+    check('headless: the world layout is deterministic (seeded PRNG)',
+      sard2.map.debrisAnchors[0].x === sard.map.debrisAnchors[0].x &&
+      sard2.map.hazardAnchors[0].x === sard.map.hazardAnchors[0].x &&
+      sard2.map.patrolSites[1][0].x === sard.map.patrolSites[1][0].x);
 
     // ── House destruction + victory sequence ──
     // Park the camera on the house so the base is on screen (center), then
     // a friendly bullet at the house's screen position lands the killing blow.
     game.player.angle = 0;
-    game.player.vx = 0; game.player.vy = 0;
     game.player.x = 640; game.player.y = 360;
-    sard.map.cam.x = SAR.HOUSE.x;
-    sard.map.cam.y = SAR.HOUSE.y;
-    sard.map.cam.angle = 0;
+    sard.map.worldX = SAR.HOUSE.x;
+    sard.map.worldY = SAR.HOUSE.y;
+    sard.map._accInit = false; // re-anchor the accumulator at the parked camera
     const h = sard.combat.house;
     h.hp = 1;
     game.bullets.length = 0;
