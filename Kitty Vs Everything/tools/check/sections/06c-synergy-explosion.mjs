@@ -1,36 +1,58 @@
 // ═══════════════════════════════════════════════════════════
-//  [6c] v3.47.0 KEY-TRIGGERED SYNERGY EXPLOSION — the meter
-//       (superCharge) holds at 100% and the 'synergy' action fires
-//       superWeapon (P1: T / -, P2 co-op: ,); TestAimbot moved T → F8
+//  [6c] v3.96.0 FLEET ORBIT — the 'synergy' action (T / -) is now
+//       the FLEET ORBIT toggle (docked <-> flat-circle orbit). The
+//       orbiting minis ALWAYS face the main ship's heading no matter
+//       where they are in the orbit (position only — drawMiniPod
+//       rotates by player.angle). The old key-triggered synergy
+//       super-weapon fire (PlayerFleet.js) is GONE; superCharge is
+//       now a HUD color-match read only.
 // ═══════════════════════════════════════════════════════════
 
-import { ROOT, check, makeGame } from '../infra.mjs';
+import { ROOT, check } from '../infra.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
-  const makeRocketGame = () => { const g = makeGame(); g.enemies = []; g.player = { minis: [] }; g.fireZones = []; return g; };
-    const g = makeRocketGame();
 
 export default async function run() {
-console.log('\n[6c] v3.47.0 key-triggered synergy explosion (source gates)');
+console.log('\n[6c] v3.96.0 fleet orbit (source gates)');
 {
   const fleetSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerFleet.js'), 'utf8');
-  check('PlayerFleet: synergy key gate (input.wasPressedAction("synergy"))',
-    fleetSrc.includes("input.wasPressedAction('synergy')"));
-  check('PlayerFleet: fire gated on minis + theme match + superCharge >= 1',
-    fleetSrc.includes('player.minis.length > 0') &&
-    fleetSrc.includes('m.theme === player.theme') &&
-    fleetSrc.includes('player.superCharge >= 1'));
-  check('PlayerFleet: old 10s auto-fire removed (no in-charge superWeapon)',
+  check('PlayerFleet: synergy super-weapon fire REMOVED (no wasPressedAction("synergy"))',
+    !fleetSrc.includes("input.wasPressedAction('synergy')"));
+  check('PlayerFleet: superCharge is a HUD read only (no in-charge superWeapon)',
     !/superCharge\s*>=\s*1\s*\)\s*\{\s*player\.superCharge\s*=\s*0;\s*player\.superWeapon\(\);/.test(fleetSrc));
+  check('PlayerFleet: superCharge still charges on theme match (HUD meter)',
+    fleetSrc.includes('player.superCharge = Math.min(1, player.superCharge + dt / MINI_SHIP.synergyChargeTime)'));
+  const playerSrc = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
+  check('Player: "synergy" action dispatches to toggleFleetOrbit',
+    playerSrc.includes("if (input.wasPressedAction('synergy')) toggleFleetOrbit(this);"));
+  check('Player: imports toggleFleetOrbit from MiniDeploy.js',
+    playerSrc.includes("import { toggleFleetDeploy, updateFleetDeploy, toggleFleetOrbit } from '../levels/MiniDeploy.js';"));
+  check('Player: fleetOrbiting state initialized',
+    playerSrc.includes('this.fleetOrbiting = false;'));
+  const deploySrc = fs.readFileSync(path.join(ROOT, 'js/levels/MiniDeploy.js'), 'utf8');
+  check('MiniDeploy: toggleFleetOrbit exported (T toggle: docked <-> orbit)',
+    deploySrc.includes('export function toggleFleetOrbit(player)'));
+  check('MiniDeploy: entering orbit recalls deploy (2nd T redocks)',
+    deploySrc.includes('player.fleetDeployed = false; // recall deploy so a 2nd T redocks'));
+  const miniSrc = fs.readFileSync(path.join(ROOT, 'js/combat/MiniShip.js'), 'utf8');
+  check('MiniShip: ORBITING branch drives position only (facing stays player.angle)',
+    miniSrc.includes('if (player.fleetOrbiting)') &&
+    miniSrc.includes('const a = player.angle + this.side * (Math.PI / 2) + this.orbitAngle;') &&
+    miniSrc.includes('this.x = player.x + Math.cos(a) * MINI_SHIP.orbitRadius;'));
+  check('MiniShip: orbiting minis fire IN SYNC with the hull (firedThisFrame)',
+    miniSrc.includes('if (player.firedThisFrame) this.fireWeapon(player);'));
+  const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config/player.js'), 'utf8');
+  check('config/player: MINI_SHIP.orbitRadius + orbitSpeed defined',
+    cfgSrc.includes('orbitRadius: 120') && cfgSrc.includes('orbitSpeed: 1.0'));
   const kbSrc = fs.readFileSync(path.join(ROOT, 'js/input/Keybinds.js'), 'utf8');
-  check('Keybinds: synergy action registered (label "Synergy Explosion")',
-    kbSrc.includes("{ id: 'synergy',     label: 'Synergy Explosion' }"));
+  check('Keybinds: synergy action registered (label "Fleet Orbit")',
+    kbSrc.includes("{ id: 'synergy',     label: 'Fleet Orbit' }"));
   check('Keybinds: synergy defaults KeyT / Minus',
     /synergy:\s*\[\s*'KeyT'\s*,\s*'Minus'\s*\]/.test(kbSrc));
   const mkSrc = fs.readFileSync(path.join(ROOT, 'js/input/MenuKeybinds.js'), 'utf8');
-  check('MenuKeybinds: synergy row after ultimate (12 rows total)',
+  check('MenuKeybinds: synergy row after ultimate (12 rows total, label "Fleet Orbit")',
     mkSrc.includes("action: 'ultimate', label: 'Super'") &&
-    mkSrc.includes("action: 'synergy', label: 'Synergy Explosion'") &&
+    mkSrc.includes("action: 'synergy', label: 'Fleet Orbit'") &&
     (mkSrc.match(/\{ kind: '(wsad|action|static)'/g) || []).length === 12);
   const aimSrc = fs.readFileSync(path.join(ROOT, 'js/combat/TestAimbot.js'), 'utf8');
   check('TestAimbot: hotkey moved T → F8 (no KeyT left)',

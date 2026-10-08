@@ -67,7 +67,7 @@ export default class PlayerRenderer {
       const mt = PLAYER_THEMES[m.theme] || PLAYER_THEMES.white_yellow;
       // v3.17.0: arc-bolt coupling tether (DOCKED only) — drawn behind the
       // ships so it reads as a latch keeping the mini coupled to the hull.
-      if (!p.fleetDeployed) drawDockArc(ctx, m, p);
+      if (!p.fleetDeployed && !p.fleetOrbiting) drawDockArc(ctx, m, p);
       drawMiniPod(ctx, m, p, mt);
       // v3.17.0: mini HP now lives in the fire-control panel (HUDFireControl)
       // stacked under the DOCKED label — the old world-space canvas bar is

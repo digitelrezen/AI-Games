@@ -48,7 +48,7 @@ import { updateFlight } from './PlayerFlight.js';
 import { updateWeaponState, tryFire, handleActionKeys, cycleWeapon as cycleWeaponTo } from './PlayerWeapons.js';
 import { addMini as dockMini, updateFleet, clearFleet } from './PlayerFleet.js';
 import { getUpperPawOffsets, getMuzzlePosition, localToWorld } from './PlayerHardpoints.js';
-import { toggleFleetDeploy, updateFleetDeploy } from '../levels/MiniDeploy.js';
+import { toggleFleetDeploy, updateFleetDeploy, toggleFleetOrbit } from '../levels/MiniDeploy.js';
 import { initWeaponAnimState, updateWeaponAnim } from '../combat/WeaponAnim.js';
 import VulcanCannon from '../combat/VulcanCannon.js'; // v3.68.0: modular weapon
 import PulseCannon from '../combat/PulseCannon.js';   // v3.69.0: modular weapon
@@ -101,6 +101,8 @@ export default class Player extends Entity {
     this.muzzleFlash = 0;
     // ─── v3.16.0: FLEET DEPLOY STATE (docked = inert, deployed = orbit) ───
     this.fleetDeployed = false;
+    // ─── v3.96.0: FLEET ORBIT STATE (T toggle: docked <-> flat-circle orbit) ───
+    this.fleetOrbiting = false;
     // ─── v3.16.0: WEAPON ANIMATION STATE (WeaponAnim.js owns the values) ───
     initWeaponAnimState(this); // vulkanSpin / railCharge / plasmaPulse
     // ─── ANIMATION CLOCK (blink / tail idle-wag in the art) ───
@@ -150,6 +152,8 @@ export default class Player extends Entity {
     if (this.muzzleFlash > 0) this.muzzleFlash = Math.max(0, this.muzzleFlash - dt);
     // ─── v3.16.0: FLEET DEPLOY / RECALL (remappable 'deployFleet' action) ───
     if (input.wasPressedAction('deployFleet')) toggleFleetDeploy(this);
+    // ─── v3.96.0: FLEET ORBIT (remappable 'synergy' action, T / - default) ───
+    if (input.wasPressedAction('synergy')) toggleFleetOrbit(this);
 
     // ─── FLIGHT (rotation / thrust / boost / drag / wrap / tail sway) ───
     updateFlight(this, dt, input);
@@ -281,6 +285,7 @@ export default class Player extends Entity {
         this.pawFlashR = 0;
         this.muzzleFlash = 0;
         this.fleetDeployed = false; // v3.16.0: respawn with the fleet docked
+        this.fleetOrbiting = false; // v3.96.0: respawn with the fleet docked (orbit off)
         bus.emit('banner', { text: 'KITTY RESPAWNED! LIVES: ' + this.lives, tone: 'bad', duration: 1.5 });
       }
     }

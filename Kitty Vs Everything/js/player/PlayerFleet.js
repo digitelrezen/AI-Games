@@ -39,9 +39,9 @@ export function addMini(player) {
 
 /**
  * Update docked minis, handle their independent deaths, and charge the
- * color-match synergy meter (superCharge). v3.47.0: the meter HOLDS at
- * 100% — the 'synergy' key (T / - P1, , P2) fires superWeapon() when the
- * fleet is color-matched and the meter is full.
+ * color-match synergy meter (superCharge). v3.96.0: the meter is a HUD
+ * color-match read only — the 'synergy' key (T / -) is now the FLEET ORBIT
+ * toggle (Player.js → MiniDeploy.toggleFleetOrbit), not a super-weapon fire.
  */
 export function updateFleet(player, dt, input) {
   const g = player.game;
@@ -66,18 +66,11 @@ export function updateFleet(player, dt, input) {
   }
 
   // ─── COLOR-MATCH SYNERGY (strict rule ⇒ all minis always match) ───
+  // v3.96.0: the meter is now a HUD color-match read only — it no longer
+  // gates a super-weapon volley. The 'synergy' action (T / -) is the FLEET
+  // ORBIT toggle (Player.js → MiniDeploy.toggleFleetOrbit).
   if (player.minis.length > 0 && player.minis.every(m => m.theme === player.theme)) {
     player.superCharge = Math.min(1, player.superCharge + dt / MINI_SHIP.synergyChargeTime);
-  }
-  // ─── v3.47.0: SYNERGY EXPLOSION (key-triggered — 'synergy' action) ───
-  // The meter holds at 100% once charged; the player fires it with the
-  // synergy key (P1 keyboard T / -, P2 co-op , — local or remote).
-  if (player.minis.length > 0
-      && player.minis.every(m => m.theme === player.theme)
-      && player.superCharge >= 1
-      && input.wasPressedAction('synergy')) {
-    player.superCharge = 0;
-    player.superWeapon();
   }
 }
 
@@ -90,4 +83,5 @@ export function clearFleet(player) {
   player.minis = [];
   player.superCharge = 0;
   player.fleetDeployed = false; // v3.16.0: no fleet ⇒ nothing to deploy
+  player.fleetOrbiting = false; // v3.96.0: no fleet ⇒ nothing to orbit
 }

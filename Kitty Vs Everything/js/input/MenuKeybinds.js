@@ -49,7 +49,7 @@ const ROWS = [
   { kind: 'action', action: 'napalm', label: 'Napalm' },
   { kind: 'action', action: 'cycleWeapon', label: 'Weapon Switch' },
   { kind: 'action', action: 'ultimate', label: 'Super' },
-  { kind: 'action', action: 'synergy', label: 'Synergy Explosion' },
+  { kind: 'action', action: 'synergy', label: 'Fleet Orbit' },
   { kind: 'action', action: 'fire', label: 'Fire Weapon' },
   { kind: 'action', action: 'boost', label: 'Boost' },
   { kind: 'static', keys: ['Esc'], label: 'Menu' },

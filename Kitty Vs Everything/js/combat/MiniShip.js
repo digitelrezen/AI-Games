@@ -102,7 +102,10 @@ export default class MiniShip extends Entity {
   }
 
   /**
-   * Per-frame (v3.17.0 fire-control fix):
+   * Per-frame (v3.17.0 fire-control fix, v3.96.0 orbit mode):
+   *   ORBITING (T toggle) — flat circle around the hull; the mini's facing
+   *   is ALWAYS the player's heading (drawMiniPod rotates by player.angle),
+   *   no matter where it is in the orbit. Fires IN SYNC with the hull.
    *   DOCKED (default) — snap to the player's dock slot and fire IN SYNC
    *   with the hull: mirror the hull's fireTimer (rail charge-up lines up)
    *   and fire the full clone volley the same frame the hull fires
@@ -116,7 +119,20 @@ export default class MiniShip extends Entity {
     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - dt);
     if (this.pawFlash > 0) this.pawFlash = Math.max(0, this.pawFlash - dt);
     if (this.muzzleFlash > 0) this.muzzleFlash = Math.max(0, this.muzzleFlash - dt);
-    if (player.fleetDeployed) {
+    if (player.fleetOrbiting) {
+      // ─── v3.96.0: ORBITING (T toggle) — flat circle around the hull.
+      // POSITION ONLY: the facing is ALWAYS the player's heading
+      // (drawMiniPod rotates by player.angle), no matter where the mini is
+      // in the orbit. Fires IN SYNC with the hull exactly like docked. ───
+      this.orbitAngle += MINI_SHIP.orbitSpeed * dt;
+      const a = player.angle + this.side * (Math.PI / 2) + this.orbitAngle;
+      this.x = player.x + Math.cos(a) * MINI_SHIP.orbitRadius;
+      this.y = player.y + Math.sin(a) * MINI_SHIP.orbitRadius;
+      this.weapon = player.weapon;
+      this.fireTimer = player.fireTimer; // mirror the hull's cooldown/charge
+      if (player.firedThisFrame) this.fireWeapon(player);
+      updateWeaponAnim(this, dt, { active: true, time: this.game.time });
+    } else if (player.fleetDeployed) {
       // ─── DEPLOYED: combat orbit — fire the player's active weapon ───
       this.weapon = player.weapon; // v3.16.0: track the hull's active weapon
       this.fireTimer -= dt;

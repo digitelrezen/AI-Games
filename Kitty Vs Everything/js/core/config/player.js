@@ -111,6 +111,11 @@ export const MINI_SHIP = {
   // and mirror its weapon animation; DEPLOYED minis orbit + fire on cadence.
   deployRadius: 120,       // v3.73.0: combat-orbit radius (was 70) — clears the 2x hull (70px half-length) + the 84px mini (42px half-length)
   deployOrbitSpeed: 1.8,
+  // v3.96.0: ORBIT MODE (T toggle) — a flat circle around the hull. The minis
+  // ALWAYS face the player's heading (drawMiniPod rotates by player.angle), so
+  // these only drive the circle's size and spin — never the facing.
+  orbitRadius: 120,        // flat-circle radius from the hull center (px)
+  orbitSpeed: 1.0,         // orbit angular speed (rad/s) — one rev per ~6.3s
 };
 
 // v3.91.0: HUE-SHIFTED WHITE-BASE CATSHIP SET — the 9 legacy coat-color

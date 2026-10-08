@@ -197,7 +197,7 @@ export default class HUDFireControl {
         const pct = onCooldown ? (1 - p.ultimateCooldown / maxCd) * 100 : charge * 100;
         bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       }
-      this._slotLabel(e.novaSlot, 'synergy'); // v3.47.0: synergy key (T / -)
+      this._slotLabel(e.novaSlot, 'synergy'); // v3.96.0: 'synergy' key (T / -) = FLEET ORBIT toggle
     }
     if (this._keysDirty) {
       this._slotLabel(e.stunSlot, 'stun');

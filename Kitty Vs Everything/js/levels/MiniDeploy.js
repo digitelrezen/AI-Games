@@ -36,6 +36,22 @@ export function toggleFleetDeploy(player) {
 }
 
 /**
+ * v3.96.0: ORBIT MODE (T toggle) — DOCKED <-> ORBITING.
+ * Entering orbit recalls any active deploy (so a second T redocks into the
+ * clamp slots instead of re-deploying) and resets the orbit phase so the
+ * minis start on their dock sides. Exiting orbit returns the minis to their
+ * dock slots (the docked branch in MiniShip.update snaps them back).
+ * Destroyed minis are ignored (they're already filtered from player.minis).
+ */
+export function toggleFleetOrbit(player) {
+  player.fleetOrbiting = !player.fleetOrbiting;
+  if (player.fleetOrbiting) {
+    player.fleetDeployed = false; // recall deploy so a 2nd T redocks
+    player.minis.forEach((m) => { m.orbitAngle = 0; });
+  }
+}
+
+/**
  * Per-frame fleet flight. Docked minis are positioned by MiniShip.update
  * (snap to the dock hardpoint); deployed minis orbit the hull on their
  * dock side. Called from Player.update BEFORE the per-mini update so each
@@ -45,6 +61,7 @@ export function updateFleetDeploy(player, dt) {
   if (!player) return;
   if (player.minis.length === 0) {
     player.fleetDeployed = false;
+    player.fleetOrbiting = false; // v3.96.0: no fleet ⇒ nothing to orbit
     return;
   }
   if (!player.fleetDeployed) return;

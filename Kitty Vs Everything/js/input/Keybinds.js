@@ -33,7 +33,7 @@ export const ACTIONS = [
   { id: 'stun',        label: 'Stun Rockets' },
   { id: 'napalm',      label: 'Napalm Rockets' },
   { id: 'ultimate',    label: 'Ultimate' },
-  { id: 'synergy',     label: 'Synergy Explosion' },
+  { id: 'synergy',     label: 'Fleet Orbit' },
   { id: 'cycleWeapon', label: 'Cycle Weapon' },
   { id: 'deployFleet', label: 'Deploy / Recall Fleet' },
 ];
