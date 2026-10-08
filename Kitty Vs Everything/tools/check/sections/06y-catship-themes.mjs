@@ -25,6 +25,12 @@
 //        glow, SHIP_GEOMETRY hardpoint FX) — PlayerRenderer delegates to it
 //        and the hangar hero preview reuses the SAME pipeline (HANGAR_ZOOM),
 //        so the selection screen renders the ship exactly as in-game.
+//        v3.100.0: the hangar is now a HACKER TERMINAL — a ROSTER grid
+//        (3×3, all 9 Catships by callsign) + a TACTICAL PREVIEW panel that
+//        blits the selected cat_* art at NATIVE 1:1 (no downscale) on the
+//        448×448 stage with a wireframe overlay + digital readouts. The
+//        menu gates now verify the terminal structure (roster grid,
+//        preview canvas, nameplate) and the native 1:1 blit.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
@@ -83,15 +89,15 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1
   check('PlayerRenderer: procedural fallback when no sprite (2x scale)', prSrc.includes('drawMainShip(ctx, p, th.color, th.accent, th.pattern, { scale: MAIN_SHIP_SCALE })'));
   check('PlayerRenderer: menu-icon compat path passes the theme sprite', prSrc.includes('drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s }, sprite)'));
 
-  // v3.85.0: hangar carousel — hero stage + arrows + nameplate, generated
-  // from config.js (replaces the v3.72.1 9-thumbnail ship-select row).
+  // v3.100.0: hangar terminal — ROSTER grid + native 1:1 TACTICAL PREVIEW,
+  // generated from config.js (replaces the v3.85.0 carousel).
   const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const mainSrc = fs.readFileSync(path.join(ROOT, 'js/core/main.js'), 'utf8');
-  check('index.html: hangar carousel stage present (hero canvas + arrows + nameplate)', htmlSrc.includes('id="hangar-canvas"') && htmlSrc.includes('id="hangar-prev"') && htmlSrc.includes('id="hangar-nameplate"'));
-  check('main.js: builds the carousel from PLAYER_THEMES (all 9 themes)', mainSrc.includes('Object.keys(PLAYER_THEMES)') && mainSrc.includes('hangarIndex'));
+  check('index.html: hangar terminal present (roster grid + preview canvas + nameplate)', htmlSrc.includes('id="hangar-canvas"') && htmlSrc.includes('id="hangar-roster"') && htmlSrc.includes('id="hangar-nameplate"'));
+  check('main.js: builds the roster from PLAYER_THEMES (all 9 themes)', mainSrc.includes('Object.keys(PLAYER_THEMES)') && mainSrc.includes('hangarIndex'));
   check('main.js: hero render carries the theme (sprite lookup works)', mainSrc.includes('const mockPlayer = {') && mainSrc.includes('theme: key'));
   check('main.js: re-renders the hero after loadAssets() resolves', mainSrc.includes('loadAssets().then(renderHangar)'));
-  check('main.js: hangar hero reuses the in-game sprite pipeline at HANGAR_ZOOM (v3.95.0)', mainSrc.includes('drawSpriteShip(hangarCtx, sprite, th, mockPlayer, HANGAR_ZOOM)'));
+  check('main.js: hangar preview blits the sprite at native 1:1 (v3.100.0)', mainSrc.includes('hangarCtx.drawImage(sprite, C - sprite.width / 2, C - sprite.height / 2, sprite.width, sprite.height)'));
 
   // PlayerShipArt: optional sprite parameter blits before the procedural hull
   check('PlayerShipArt: drawCatShip accepts an optional sprite parameter', psaSrc.includes('export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null)'));

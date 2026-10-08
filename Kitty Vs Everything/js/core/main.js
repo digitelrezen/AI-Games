@@ -114,13 +114,25 @@
 //          catship at its EXACT in-game scale (70px frame ×
 //          MAIN_SHIP_SCALE, no showcase zoom). Milestone version synced
 //          with package.json.
-export const VERSION = 'v3.99.0';
+// v3.100.0: HACKER TERMINAL HANGAR — the start screen is a terminal/
+//          console UI (charcoal + neon cyan/magenta/green, CRT scanlines,
+//          monospace type). The single-card carousel is replaced by a
+//          ROSTER grid (3×3, all 9 Catships by callsign — PLAYER_THEMES
+//          is the single source of truth) + a TACTICAL PREVIEW panel that
+//          renders the selected ship at NATIVE resolution (1 art pixel =
+//          1 CSS pixel on the 448×448 stage — no downscale, no showcase
+//          zoom) with a wireframe overlay (grid, crosshair, corner
+//          brackets, magenta bounding box + dimension callouts, theme
+//          glow) and a digital readout strip. Keyboard: ←↑↓→/WASD
+//          grid-nav (wraps), ENTER launches the active mode, TAB toggles
+//          CLASSIC ↔ SEARCH & DESTROY. Milestone version synced with
+//          package.json.
+export const VERSION = 'v3.100.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup
 import { loadAssets, getSprite } from './AssetManager.js'; // v3.72.1: re-render icons when sprites land
 import { disableImageSmoothing } from './utils.js'; // v3.89.0: crisp hangar preview
-import { drawSpriteShip } from '../player/PlayerShipArt.js'; // v3.95.0: hangar = in-game sprite pipeline
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer
 import MenuKeybinds from '../input/MenuKeybinds.js'; // v3.23.0: dynamic keybind footer
 
@@ -134,63 +146,150 @@ new MenuKeybinds();
 // v3.20.0: wire the in-game net status HUD (LAN).
 netSettingsUI.showHud(document.getElementById('net-hud'));
 
-// ─── Cat ship theme selection (v3.85.0: HANGAR CAROUSEL) ─────────────
-// v3.85.0: the cramped 9-thumbnail row is replaced by a single hero
-// "hangar" stage that showcases the currently-selected cat ship at large
-// scale, cycled one by one with the ‹/› arrows or the ←/→ keys. The hero
-// canvas, nameplate and dots are generated here from PLAYER_THEMES (all 9
-// themes) — index.html only provides the empty containers, so a new theme
-// in config.js automatically gets a carousel entry.
+// ─── Cat ship theme selection (v3.100.0: HACKER TERMINAL HANGAR) ─────
+// v3.100.0: the v3.85.0 hangar carousel (single hero card + ‹/› arrows +
+// dots) is replaced by a terminal ROSTER grid — one cell per
+// PLAYER_THEMES entry (all 9 Catships, by callsign), generated here so
+// config.js stays the single source of truth — plus a TACTICAL PREVIEW
+// panel that renders the selected ship at NATIVE resolution (1 art
+// pixel = 1 CSS pixel, no downscale) with a wireframe overlay and a
+// digital readout strip. index.html only provides the empty containers.
 let selectedTheme = 'white_yellow';
+// v3.100.0: the launch mode — TAB toggles CLASSIC ↔ SEARCH & DESTROY,
+// ENTER launches the active mode, the mode buttons set it explicitly.
+let launchMode = 'classic';
 
 const hangarCanvas = document.getElementById('hangar-canvas');
 const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;
-// v3.95.0: size the hero buffer at native device-pixel resolution. The
-// canvas CSS size is the square 384×384 showcase stage; on HiDPI displays
-// (DPR > 1) a fixed 384×384 buffer gets upscaled by the browser and the
-// ship looks soft. renderHangar() draws in 384×384 logical units under
-// ctx.scale(HANGAR_DPR).
+// v3.100.0: the preview stage is the square 448×448 showcase (CSS px);
+// the buffer is ×DPR so the native 1:1 blit stays crisp on HiDPI
+// displays (1 art px = 1 CSS px = DPR buffer px). renderHangar() draws
+// in 448×448 logical units under ctx.scale(HANGAR_DPR).
+const HANGAR_STAGE = 448;
 const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
-// v3.95.0: showcase zoom — the sprite renders through the SAME in-game
-// pipeline as PlayerRenderer (70px frame × MAIN_SHIP_SCALE = 2x),
-// multiplied by HANGAR_ZOOM. v3.98.0: HANGAR_ZOOM = 1.0 — the selection
-// screen shows the ship at its EXACT in-game size (2× the 70px frame)
-// with the identical theme glow and hardpoint FX.
-const HANGAR_ZOOM = 1.0;
 if (hangarCanvas) {
-  hangarCanvas.width = Math.round(384 * HANGAR_DPR);
-  hangarCanvas.height = Math.round(384 * HANGAR_DPR);
-  // v3.89.0: nearest-neighbor drawImage on the hero canvas — with
-  // smoothing disabled the pixel-art upscale stays crisp (no bilinear
-  // blur). A canvas.width assignment resets 2D context state, so this
-  // runs AFTER the sizing above.
+  hangarCanvas.width = Math.round(HANGAR_STAGE * HANGAR_DPR);
+  hangarCanvas.height = Math.round(HANGAR_STAGE * HANGAR_DPR);
+  // nearest-neighbor drawImage on the hero canvas — with smoothing
+  // disabled the pixel-art blit stays crisp (no bilinear blur). A
+  // canvas.width assignment resets 2D context state, so this runs
+  // AFTER the sizing above.
   disableImageSmoothing(hangarCtx);
 }
 const hangarNameplate = document.getElementById('hangar-nameplate');
-const hangarDots = document.getElementById('hangar-dots');
+const hangarRoster = document.getElementById('hangar-roster');
+const hangarReadout = document.getElementById('hangar-readout');
+const modeLabel = document.getElementById('menu-mode-label');
 const HANGAR_THEMES = Object.keys(PLAYER_THEMES);
+const HANGAR_COLS = 3;
 let hangarIndex = Math.max(0, HANGAR_THEMES.indexOf(selectedTheme));
 
-// v3.95.0: render the active cat ship through the SAME in-game sprite
-// pipeline (PlayerShipArt.drawSpriteShip) that PlayerRenderer uses —
-// 70px frame × MAIN_SHIP_SCALE × HANGAR_ZOOM, theme shadow-glow, blink
-// alpha and the SHIP_GEOMETRY hardpoint FX (thruster flames + weapon
-// paws + muzzle) identical to gameplay. The ship is centered on the
-// FIXED stage midpoint (192, 192) of the square 384×384 stage — all
-// ships share the identical scale + center, so the carousel is
-// completely stationary (no bounce on selection). Until the sprite
-// decodes (or if it fails), fall back to the procedural hull — ~4.5×
-// the in-game 70px sprite → ~315px tall, static pose: nose up, idle
-// thruster flame, tail straight.
+// v3.100.0: ROSTER grid — one cell per PLAYER_THEMES entry (index +
+// callsign + color chip + status). Clicking a cell selects it; the
+// keyboard grid-nav (hangarMove) drives the same state.
+function renderRoster() {
+  if (!hangarRoster) return;
+  hangarRoster.innerHTML = '';
+  HANGAR_THEMES.forEach((key, i) => {
+    const th = PLAYER_THEMES[key];
+    const cell = document.createElement('div');
+    cell.className = 'roster-cell' + (i === hangarIndex ? ' active' : '');
+    cell.setAttribute('role', 'option');
+    cell.setAttribute('aria-selected', String(i === hangarIndex));
+    const idx = document.createElement('span');
+    idx.className = 'roster-idx';
+    idx.textContent = String(i + 1).padStart(2, '0');
+    const cs = document.createElement('span');
+    cs.className = 'roster-callsign';
+    cs.textContent = th.callsign;
+    const chip = document.createElement('span');
+    chip.className = 'roster-chip';
+    chip.style.background = th.color;
+    const st = document.createElement('span');
+    st.className = 'roster-status';
+    st.textContent = i === hangarIndex ? 'LOCKED' : 'READY';
+    cell.append(idx, cs, chip, st);
+    cell.addEventListener('click', () => { hangarIndex = i; selectedTheme = key; renderHangar(); });
+    hangarRoster.appendChild(cell);
+  });
+}
+
+// v3.100.0: TACTICAL OVERLAY — the wireframe layer drawn BEHIND the ship:
+// faint cyan grid, center crosshair, soft radial theme glow, the native
+// 256×384 frame bounding box (magenta, dashed) with W/H dimension
+// callouts, and neon corner brackets.
+function drawTacticalOverlay(ctx, th) {
+  const S = HANGAR_STAGE;
+  const C = S / 2;
+  ctx.save();
+  // faint grid
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.055)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let g = 32; g < S; g += 32) {
+    ctx.moveTo(g + 0.5, 0); ctx.lineTo(g + 0.5, S);
+    ctx.moveTo(0, g + 0.5); ctx.lineTo(S, g + 0.5);
+  }
+  ctx.stroke();
+  // center crosshair
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.18)';
+  ctx.beginPath();
+  ctx.moveTo(C + 0.5, 0); ctx.lineTo(C + 0.5, S);
+  ctx.moveTo(0, C + 0.5); ctx.lineTo(S, C + 0.5);
+  ctx.stroke();
+  // soft theme glow behind the hull
+  const glow = ctx.createRadialGradient(C, C, 30, C, C, 210);
+  glow.addColorStop(0, th.accent + '2e');
+  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, S, S);
+  // native-frame bounding box (256×384 art centered on the stage)
+  const BW = 256, BH = 384;
+  const x0 = C - BW / 2, y0 = C - BH / 2;
+  ctx.strokeStyle = 'rgba(255, 79, 216, 0.55)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.strokeRect(x0 + 0.5, y0 + 0.5, BW, BH);
+  ctx.setLineDash([]);
+  // dimension callouts
+  ctx.fillStyle = 'rgba(83, 255, 138, 0.9)';
+  ctx.font = "10px 'Cascadia Mono', Consolas, monospace";
+  ctx.fillText('W:256', x0, y0 - 5);
+  ctx.fillText('H:384', x0 + BW + 5, y0 + 10);
+  // corner brackets
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.9)';
+  ctx.lineWidth = 2;
+  const B = 22, M = 6;
+  const bracket = (x, y, dx, dy) => {
+    ctx.beginPath();
+    ctx.moveTo(x + dx * B, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * B);
+    ctx.stroke();
+  };
+  bracket(M, M, 1, 1);
+  bracket(S - M, M, -1, 1);
+  bracket(M, S - M, 1, -1);
+  bracket(S - M, S - M, -1, -1);
+  ctx.restore();
+}
+
+// v3.100.0: render the selected cat ship at NATIVE resolution — the
+// 256×384 cat_* art is blitted 1:1 (1 art pixel = 1 CSS pixel) centered
+// on the fixed stage midpoint (224, 224): no downscale, no showcase
+// zoom, pixel-perfect. The tactical overlay sits behind; the DOM readout
+// strip updates alongside. Until the sprite decodes (or if it fails),
+// fall back to the procedural hull — static pose: nose up, idle flame.
 function renderHangar() {
+  renderRoster();
   if (!hangarCtx) return;
   const key = HANGAR_THEMES[hangarIndex];
   const th = PLAYER_THEMES[key];
-  // v3.95.0: draw in 384×384 logical units (square showcase stage);
-  // the HANGAR_DPR buffer scale keeps the ship crisp on HiDPI displays.
+  const C = HANGAR_STAGE / 2;
+  // draw in 448×448 logical units; the HANGAR_DPR buffer scale keeps the
+  // native 1:1 blit crisp on HiDPI displays.
   hangarCtx.save();
   hangarCtx.scale(HANGAR_DPR, HANGAR_DPR);
-  hangarCtx.clearRect(0, 0, 384, 384);
+  hangarCtx.clearRect(0, 0, HANGAR_STAGE, HANGAR_STAGE);
+  drawTacticalOverlay(hangarCtx, th);
   const sprite = getSprite(PLAYER_THEME_SPRITES[key]);
   const mockPlayer = {
     theme: key,
@@ -206,51 +305,87 @@ function renderHangar() {
     animTime: 1.0,
   };
   if (sprite && sprite.width > 0 && sprite.height > 0) {
-    hangarCtx.translate(192, 192); // v3.95.0: fixed stage midpoint
-    drawSpriteShip(hangarCtx, sprite, th, mockPlayer, HANGAR_ZOOM);
+    // v3.100.0: NATIVE 1:1 blit — the art's own pixels, no rescale.
+    hangarCtx.save();
+    hangarCtx.shadowColor = th.accent;
+    hangarCtx.shadowBlur = 26;
+    hangarCtx.drawImage(sprite, C - sprite.width / 2, C - sprite.height / 2, sprite.width, sprite.height);
+    hangarCtx.restore();
   } else {
     new PlayerRenderer(mockPlayer).drawCatShip(
-      hangarCtx, 192, 192, 4.5, // v3.95.0: fixed stage midpoint + native-frame scale
+      hangarCtx, C, C, 4.5,
       th.color, th.accent, th.pattern
     );
   }
   hangarCtx.restore();
-  if (hangarNameplate) hangarNameplate.textContent = th.name;
-  if (hangarDots) {
-    hangarDots.innerHTML = '';
-    HANGAR_THEMES.forEach((t, i) => {
-      const dot = document.createElement('span');
-      dot.className = 'hangar-dot' + (i === hangarIndex ? ' active' : '');
-      dot.title = PLAYER_THEMES[t].name;
-      dot.addEventListener('click', () => { hangarIndex = i; selectedTheme = t; renderHangar(); });
-      hangarDots.appendChild(dot);
-    });
+  if (hangarNameplate) hangarNameplate.textContent = th.callsign;
+  if (hangarReadout) {
+    hangarReadout.innerHTML = '';
+    const artW = sprite && sprite.width ? sprite.width : 256;
+    const artH = sprite && sprite.height ? sprite.height : 384;
+    const fields = [
+      ['UNIT', th.callsign],
+      ['ART', `${artW}×${artH} @1:1`],
+      ['CORE', th.color],
+      ['ACCENT', th.accent],
+      ['PATTERN', th.pattern.toUpperCase()],
+      ['CLASS', 'CATSHIP-9'],
+    ];
+    for (const [k, v] of fields) {
+      const f = document.createElement('span');
+      f.className = 'ro-field';
+      const b = document.createElement('b');
+      b.textContent = k;
+      f.append(b, document.createTextNode(' ' + v));
+      hangarReadout.appendChild(f);
+    }
   }
 }
 
-// v3.85.0: step the carousel (wraps around) and keep selectedTheme in sync.
-function hangarStep(dir) {
-  hangarIndex = (hangarIndex + dir + HANGAR_THEMES.length) % HANGAR_THEMES.length;
+// v3.100.0: step the ROSTER grid cursor (wraps on every edge) and keep
+// selectedTheme in sync.
+function hangarMove(dx, dy) {
+  const rows = Math.ceil(HANGAR_THEMES.length / HANGAR_COLS);
+  let col = hangarIndex % HANGAR_COLS;
+  let row = Math.floor(hangarIndex / HANGAR_COLS);
+  col = (col + dx + HANGAR_COLS) % HANGAR_COLS;
+  row = (row + dy + rows) % rows;
+  hangarIndex = row * HANGAR_COLS + col;
   selectedTheme = HANGAR_THEMES[hangarIndex];
   renderHangar();
 }
 
-const hangarPrev = document.getElementById('hangar-prev');
-const hangarNext = document.getElementById('hangar-next');
-if (hangarPrev) hangarPrev.addEventListener('click', () => hangarStep(-1));
-if (hangarNext) hangarNext.addEventListener('click', () => hangarStep(1));
+// v3.100.0: TAB toggles the launch mode (CLASSIC ↔ SEARCH & DESTROY);
+// the mode buttons highlight to match and set it explicitly on click.
+const startBtn = document.getElementById('start-btn');
+const sardBtn = document.getElementById('sard-btn');
+function setLaunchMode(mode) {
+  launchMode = mode;
+  if (modeLabel) modeLabel.textContent = mode === 'sard' ? 'MODE: SEARCH & DESTROY [TAB]' : 'MODE: CLASSIC [TAB]';
+  if (startBtn) startBtn.classList.toggle('mode-active', mode === 'classic');
+  if (sardBtn) sardBtn.classList.toggle('mode-active', mode === 'sard');
+}
+function toggleLaunchMode() {
+  setLaunchMode(launchMode === 'classic' ? 'sard' : 'classic');
+}
 renderHangar();
+setLaunchMode('classic');
 // v3.85.0: re-render once the AssetManager sprites are decoded — the first
 // draw runs before the base64 cat_* decode (kicked off in the Game
 // constructor) has landed, so without this the hero would show the
-// procedural hull until the user cycled the carousel.
+// procedural hull until the user cycled the roster.
 loadAssets().then(renderHangar);
 
-// v3.85.0: ←/→ cycle the hangar carousel (only while the menu is up).
+// v3.100.0: ←↑↓→ / WASD grid-nav the ROSTER (only while the menu is up);
+// TAB toggles the launch mode.
 window.addEventListener('keydown', (e) => {
   if (game.state !== 'menu') return;
-  if (e.code === 'ArrowLeft') { hangarStep(-1); e.preventDefault(); }
-  else if (e.code === 'ArrowRight') { hangarStep(1); e.preventDefault(); }
+  const k = e.code;
+  if (k === 'ArrowLeft' || k === 'KeyA') { hangarMove(-1, 0); e.preventDefault(); }
+  else if (k === 'ArrowRight' || k === 'KeyD') { hangarMove(1, 0); e.preventDefault(); }
+  else if (k === 'ArrowUp' || k === 'KeyW') { hangarMove(0, -1); e.preventDefault(); }
+  else if (k === 'ArrowDown' || k === 'KeyS') { hangarMove(0, 1); e.preventDefault(); }
+  else if (k === 'Tab') { toggleLaunchMode(); e.preventDefault(); }
 });
 
 // v3.85.0: collapsible CONTROLS panel — the dense keybind block is tucked
@@ -270,9 +405,9 @@ if (controlsToggle && controlsPanel) {
 // v3.99.0: SEARCH & DESTROY — the SAR button starts the sector-journey
 // mode (game.start with mode 'sard'); retry preserves the active mode so a
 // SAR run retries as SAR and a classic run retries as classic.
-document.getElementById('start-btn').addEventListener('click', () => game.start(selectedTheme));
-const sardBtn = document.getElementById('sard-btn');
-if (sardBtn) sardBtn.addEventListener('click', () => game.start(selectedTheme, { mode: 'sard' }));
+// v3.100.0: the mode buttons also set the launch mode (TAB/ENTER parity).
+document.getElementById('start-btn').addEventListener('click', () => { setLaunchMode('classic'); game.start(selectedTheme); });
+if (sardBtn) sardBtn.addEventListener('click', () => { setLaunchMode('sard'); game.start(selectedTheme, { mode: 'sard' }); });
 document.getElementById('retry-btn').addEventListener('click', () => game.start(selectedTheme, { mode: game.mode === 'sard' ? 'sard' : undefined }));
 
 // v3.14.0: start-screen ⚙ opens the shared settings screen (keybinds + audio)
@@ -280,11 +415,14 @@ document.getElementById('menu-settings-btn').addEventListener('click', () => {
   if (game.settings) game.settings.open();
 });
 
-// Enter key shortcut (v3.99.0: preserves the active mode on game-over retry)
+// Enter key shortcut (v3.100.0: from the menu it launches the ACTIVE
+// launch mode — TAB toggles CLASSIC ↔ SAR; game-over retry preserves the
+// run's mode)
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Enter') {
     if (game.state === 'menu' || game.state === 'gameover') {
-      game.start(selectedTheme, { mode: game.mode === 'sard' ? 'sard' : undefined });
+      const mode = game.state === 'gameover' ? (game.mode === 'sard' ? 'sard' : undefined) : (launchMode === 'sard' ? 'sard' : undefined);
+      game.start(selectedTheme, { mode });
     }
   }
 });

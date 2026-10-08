@@ -42,13 +42,14 @@ import s39 from './sections/06ag-crisp-rendering.mjs';
 import s40 from './sections/06ah-hazards.mjs';
 import s41 from './sections/06ai-admin-gate.mjs';
 import s42 from './sections/06aj-search-destroy.mjs';
+import s43 from './sections/06ak-hangar-terminal.mjs';
 
-const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s41, s42, s35, s34];
+const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s41, s42, s43, s35, s34];
 
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.99.0: SEARCH & DESTROY mode (world-space sector journey — rotational background camera, OPEN SPACE → THE BONEYARD → DEEP SECTOR, Eridath\'s Mom\'s House target base, cockpit radar, full Catship/power-up parity) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.100.0: HACKER TERMINAL HANGAR (terminal start screen — 3×3 ROSTER grid of all 9 Catships by callsign, native 1:1 TACTICAL PREVIEW with wireframe overlay + digital readouts, TAB mode toggle CLASSIC ↔ SEARCH & DESTROY, full keyboard/mouse nav) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

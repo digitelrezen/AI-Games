@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════
-//  [6ag] v3.95.0 CRISP NATIVE CATSHIP HANGAR — IN-GAME SPRITE PIPELINE —
+//  [6ag] v3.100.0 CRISP NATIVE CATSHIP HANGAR — TERMINAL PREVIEW —
 //        (1) style.css: image-rendering: pixelated + crisp-edges is
 //            scoped to #game-canvas AND #hangar-canvas (the v3.88.0
 //            global canvas/.pixel-art/img rule stays reverted).
-//            #hangar-canvas is the square 384×384 showcase stage:
-//            main.js renders the IN-GAME sprite pipeline
-//            (PlayerShipArt.drawSpriteShip) onto a ×DPR buffer, so the
-//            pixelated filter reproduces the art crisply instead of the
-//            v3.88.0 jagged aliasing.
+//            #hangar-canvas is the square 448×448 showcase stage:
+//            main.js blits the cat_* art at NATIVE 1:1 (1 art px =
+//            1 CSS px, no downscale) onto a ×DPR buffer, so the
+//            pixelated filter reproduces the art crisply instead of
+//            the v3.88.0 jagged aliasing.
 //        (2) utils.js: disableImageSmoothing(ctx) helper (standard
 //            imageSmoothingEnabled + webkit/moz/ms vendor-prefixed
 //            fallbacks, null-safe).
@@ -18,14 +18,13 @@
 //            (jewel icon buffer) and main.js (hangar hero canvas —
 //            after its DPR buffer sizing) disable smoothing on their
 //            2D contexts.
-//        (4) main.js: the hangar hero preview reuses the IN-GAME sprite
-//            pipeline (v3.95.0) — PlayerShipArt.drawSpriteShip (70px
-//            frame × MAIN_SHIP_SCALE × HANGAR_ZOOM + theme glow +
-//            SHIP_GEOMETRY hardpoint FX); the stage is the square
-//            384×384 showcase (buffer ×DPR) and the ship is centered on
-//            the FIXED stage midpoint (192, 192) — completely stationary
-//            (no bounce); the procedural PlayerRenderer hull is the
-//            fallback until the sprite decodes.
+//        (4) main.js: the hangar TACTICAL PREVIEW (v3.100.0) blits the
+//            selected cat_* sprite at NATIVE resolution — 1:1, no
+//            downscale, no showcase zoom — centered on the FIXED stage
+//            midpoint (224, 224) of the square 448×448 stage (buffer
+//            ×DPR), over the drawTacticalOverlay wireframe layer; the
+//            procedural PlayerRenderer hull is the fallback until the
+//            sprite decodes.
 //        (5) Intentional one-shot bilinear asset-downscale passes are
 //            preserved: Wasp2Sprite.js + AsteroidSprite.js still opt in
 //            with imageSmoothingEnabled = true on their own offscreen
@@ -39,7 +38,7 @@ import path from 'node:path';
 
 export default async function run() {
 {
-  console.log('\n[6ag] v3.95.0 crisp 256×384 native catship hangar — in-game sprite pipeline (source + headless)');
+  console.log('\n[6ag] v3.100.0 crisp 256×384 native catship hangar — terminal 1:1 preview (source + headless)');
   const cssSrc = fs.readFileSync(path.join(ROOT, 'style.css'), 'utf8');
   const utilsSrc = fs.readFileSync(path.join(ROOT, 'js/core/utils.js'), 'utf8');
   const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
@@ -81,19 +80,22 @@ export default async function run() {
   check('main.js disables smoothing on the hangar hero canvas (v3.90.0)',
     mainSrc.includes('disableImageSmoothing(hangarCtx)'));
 
-  // ── (4) in-game-pipeline hangar blit (v3.95.0: square 384×384 stage) ──
-  check('main.js defines the HANGAR_ZOOM showcase scale (1.0 = exact in-game size, v3.98.0)',
-    mainSrc.includes('const HANGAR_ZOOM = 1.0;'));
-  check('main.js sizes the hangar buffer to the square 384×384 stage (v3.95.0)',
-    mainSrc.includes('hangarCanvas.width = Math.round(384 * HANGAR_DPR);') &&
-    mainSrc.includes('hangarCanvas.height = Math.round(384 * HANGAR_DPR);'));
-  check('style.css: #hangar-canvas is the square 384×384 stage (v3.95.0)',
-    /#hangar-canvas\s*{[^}]*width:\s*384px;[^}]*height:\s*384px;/.test(cssSrc));
-  check('main.js clears the full 384×384 logical stage (v3.95.0)',
-    mainSrc.includes('hangarCtx.clearRect(0, 0, 384, 384)'));
-  check('main.js draws the sprite through the in-game pipeline, centered on (192, 192) (v3.95.0)',
-    mainSrc.includes('hangarCtx.translate(192, 192)') &&
-    mainSrc.includes('drawSpriteShip(hangarCtx, sprite, th, mockPlayer, HANGAR_ZOOM)'));
+  // ── (4) native 1:1 terminal preview blit (v3.100.0: square 448×448 stage) ──
+  check('main.js defines the HANGAR_STAGE 448×448 showcase stage (v3.100.0)',
+    mainSrc.includes('const HANGAR_STAGE = 448;'));
+  check('main.js sizes the hangar buffer to the 448×448 stage ×DPR (v3.100.0)',
+    mainSrc.includes('hangarCanvas.width = Math.round(HANGAR_STAGE * HANGAR_DPR);') &&
+    mainSrc.includes('hangarCanvas.height = Math.round(HANGAR_STAGE * HANGAR_DPR);'));
+  check('style.css: #hangar-canvas is the square 448×448 stage (v3.100.0)',
+    /#hangar-canvas\s*{[^}]*width:\s*448px;[^}]*height:\s*448px;/.test(cssSrc));
+  check('main.js clears the full 448×448 logical stage (v3.100.0)',
+    mainSrc.includes('hangarCtx.clearRect(0, 0, HANGAR_STAGE, HANGAR_STAGE)'));
+  check('main.js blits the sprite at NATIVE 1:1 (no downscale), centered on (224, 224) (v3.100.0)',
+    mainSrc.includes('hangarCtx.drawImage(sprite, C - sprite.width / 2, C - sprite.height / 2, sprite.width, sprite.height)') &&
+    mainSrc.includes('const C = HANGAR_STAGE / 2;'));
+  check('main.js draws the tactical wireframe overlay behind the ship (v3.100.0)',
+    mainSrc.includes('function drawTacticalOverlay(ctx, th)') &&
+    mainSrc.includes('drawTacticalOverlay(hangarCtx, th)'));
   check('main.js keeps the procedural hull as the pre-sprite fallback',
     mainSrc.includes('new PlayerRenderer(mockPlayer).drawCatShip('));
 

@@ -126,16 +126,19 @@ export const MINI_SHIP = {
 // white_red, white_teal, white_yellow. Each theme keeps a distinct color +
 // accent pair that drives the cockpit glass, weapon glow, thruster flame,
 // shield tint and HUD accent.
+// v3.100.0: each theme carries a hacker-terminal CALLSIGN (the roster-grid
+// label on the start screen, e.g. CHROME_KITTY / VOID_RIPPER). The human
+// `name` stays for the in-game surfaces.
 export const PLAYER_THEMES = {
-  white_blue:     { name: 'White Blue Cat',      color: '#3b6fd4', accent: '#8fb8ff', pattern: 'solid' },
-  white_elecblue: { name: 'White Elec Blue Cat', color: '#19c8ff', accent: '#aef4ff', pattern: 'solid' },
-  white_green:    { name: 'White Green Cat',     color: '#3fae4a', accent: '#9fe8a8', pattern: 'solid' },
-  white_orange:   { name: 'White Orange Cat',    color: '#e07a2e', accent: '#ffc07a', pattern: 'striped' },
-  white_pink:     { name: 'White Pink Cat',      color: '#e858a8', accent: '#ffb8e2', pattern: 'solid' },
-  white_purple:   { name: 'White Purple Cat',    color: '#8a4fd0', accent: '#c9a6ff', pattern: 'solid' },
-  white_red:      { name: 'White Red Cat',       color: '#d43b3b', accent: '#ff9d9d', pattern: 'solid' },
-  white_teal:     { name: 'White Teal Cat',      color: '#2aa8a0', accent: '#9fe8e2', pattern: 'solid' },
-  white_yellow:   { name: 'White Yellow Cat',    color: '#e8c832', accent: '#fff08a', pattern: 'striped' },
+  white_blue:     { name: 'White Blue Cat',      callsign: 'AZURE_KITTY',  color: '#3b6fd4', accent: '#8fb8ff', pattern: 'solid' },
+  white_elecblue: { name: 'White Elec Blue Cat', callsign: 'VOLT_STRIKER', color: '#19c8ff', accent: '#aef4ff', pattern: 'solid' },
+  white_green:    { name: 'White Green Cat',     callsign: 'VENOM_FANG',   color: '#3fae4a', accent: '#9fe8a8', pattern: 'solid' },
+  white_orange:   { name: 'White Orange Cat',    callsign: 'EMBER_CLAW',   color: '#e07a2e', accent: '#ffc07a', pattern: 'striped' },
+  white_pink:     { name: 'White Pink Cat',      callsign: 'ROSE_REAPER',  color: '#e858a8', accent: '#ffb8e2', pattern: 'solid' },
+  white_purple:   { name: 'White Purple Cat',    callsign: 'VOID_RIPPER',  color: '#8a4fd0', accent: '#c9a6ff', pattern: 'solid' },
+  white_red:      { name: 'White Red Cat',       callsign: 'CRIMSON_KIT',  color: '#d43b3b', accent: '#ff9d9d', pattern: 'solid' },
+  white_teal:     { name: 'White Teal Cat',      callsign: 'TIDE_CUTTER',  color: '#2aa8a0', accent: '#9fe8e2', pattern: 'solid' },
+  white_yellow:   { name: 'White Yellow Cat',    callsign: 'CHROME_KITTY', color: '#e8c832', accent: '#fff08a', pattern: 'striped' },
 };
 
 // v3.91.0 — Catship sprite art (tools/asset-manifest.json → js/core/AssetSprites.js).
