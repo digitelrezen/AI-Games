@@ -41,13 +41,14 @@ import s38 from './sections/06af-gold-coin-drop.mjs';
 import s39 from './sections/06ag-crisp-rendering.mjs';
 import s40 from './sections/06ah-hazards.mjs';
 import s41 from './sections/06ai-admin-gate.mjs';
+import s42 from './sections/06aj-search-destroy.mjs';
 
-const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s41, s35, s34];
+const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s41, s42, s35, s34];
 
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.98.0: hangar hero at EXACT in-game scale (HANGAR_ZOOM 1.0) + F9 admin panel gated behind the terminal passphrase prompt ("Who is always ready?" — Eridaths Mom / Eridath mom / EM, case-insensitive, no lockouts) — plus version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.99.0: SEARCH & DESTROY mode (world-space sector journey — rotational background camera, OPEN SPACE → THE BONEYARD → DEEP SECTOR, Eridath\'s Mom\'s House target base, cockpit radar, full Catship/power-up parity) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

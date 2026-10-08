@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Kitty Vs Everything — v3.98.0</title>
+  <title>Kitty Vs Everything — v3.99.0</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -190,6 +190,8 @@
       <div id="hangar-dots" class="hangar-dots"></div>
 
       <button id="start-btn">▶ LAUNCH MISSION</button>
+      <!-- v3.99.0: SEARCH & DESTROY — the sector-journey mode (js/modes/SearchAndDestroy/) -->
+      <button id="sard-btn" class="sard-btn" title="Search & Destroy — the sector journey to Eridath's Mom's House">🎯 SEARCH &amp; DESTROY</button>
       <button id="menu-settings-btn" class="menu-settings-btn" title="Settings & keybinds">⚙ SETTINGS</button>
 
       <div class="menu-scores">
@@ -212,7 +214,7 @@
 
     <!-- ─── GAME OVER ─── -->
     <div id="gameover-screen" class="hidden">
-      <h2>MISSION FAILED</h2>
+      <h2 id="go-title">MISSION FAILED</h2>
       <p id="final-score">FINAL SCORE: 0</p>
       <div class="go-scores">
         <h3>TOP PILOTS</h3>
@@ -328,6 +330,13 @@
             <button id="dev-bonus">Random</button>
             <button id="dev-bonus-bone">Bone Yard</button>
             <button id="dev-bonus-internet" class="dev-full">Internet</button>
+          </div>
+        </div>
+        <!-- v3.99.0: MODES — force-start the Search & Destroy sector journey -->
+        <div class="dev-section">
+          <label>Modes</label>
+          <div class="dev-grid">
+            <button id="dev-sard" class="dev-full" title="Start the Search & Destroy sector journey">🎯 Start Search &amp; Destroy</button>
           </div>
         </div>
         <div class="dev-section">

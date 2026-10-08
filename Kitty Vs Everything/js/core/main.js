@@ -56,6 +56,10 @@
 // v3.88.0: Global crisp pixel-art rendering — the hangar hero canvas
 //          disables image smoothing after its DPR buffer sizing (canvas
 //          resize resets context state); style.css forces
+// v3.99.0: SEARCH & DESTROY mode — the SAR start button (index.html
+//          #sard-btn) starts the sector-journey mode via
+//          game.start(theme, { mode: 'sard' }); the retry button + Enter
+//          key preserve the active mode so a SAR run retries as SAR.
 //          image-rendering: pixelated/crisp-edges on all canvas/img
 //          elements. Milestone version synced with package.json.
 //          (REVERTED in v3.88.1 — see below.)
@@ -110,7 +114,7 @@
 //          catship at its EXACT in-game scale (70px frame ×
 //          MAIN_SHIP_SCALE, no showcase zoom). Milestone version synced
 //          with package.json.
-export const VERSION = 'v3.98.0';
+export const VERSION = 'v3.99.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup
@@ -263,18 +267,25 @@ if (controlsToggle && controlsPanel) {
 }
 
 // Start / restart
+// v3.99.0: SEARCH & DESTROY — the SAR button starts the sector-journey
+// mode (game.start with mode 'sard'); retry preserves the active mode so a
+// SAR run retries as SAR and a classic run retries as classic.
 document.getElementById('start-btn').addEventListener('click', () => game.start(selectedTheme));
-document.getElementById('retry-btn').addEventListener('click', () => game.start(selectedTheme));
+const sardBtn = document.getElementById('sard-btn');
+if (sardBtn) sardBtn.addEventListener('click', () => game.start(selectedTheme, { mode: 'sard' }));
+document.getElementById('retry-btn').addEventListener('click', () => game.start(selectedTheme, { mode: game.mode === 'sard' ? 'sard' : undefined }));
 
 // v3.14.0: start-screen ⚙ opens the shared settings screen (keybinds + audio)
 document.getElementById('menu-settings-btn').addEventListener('click', () => {
   if (game.settings) game.settings.open();
 });
 
-// Enter key shortcut
+// Enter key shortcut (v3.99.0: preserves the active mode on game-over retry)
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Enter') {
-    if (game.state === 'menu' || game.state === 'gameover') game.start(selectedTheme);
+    if (game.state === 'menu' || game.state === 'gameover') {
+      game.start(selectedTheme, { mode: game.mode === 'sard' ? 'sard' : undefined });
+    }
   }
 });
 

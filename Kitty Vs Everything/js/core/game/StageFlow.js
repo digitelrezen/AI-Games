@@ -52,9 +52,10 @@ export function startBonusSpecific(game, type) {
   startBonusStage(game, entry);
 }
 
-/** v3.14.0: pause menu "RESTART LEVEL" — full mission reset, keeps theme. */
+/** v3.14.0: pause menu "RESTART LEVEL" — full mission reset, keeps theme.
+ *  v3.99.0: also keeps the active mode (a SAR restart stays SAR). */
 export function restartLevel(game) {
   const theme = game.player ? game.player.theme : 'yellow';
-  game.start(theme);
+  game.start(theme, { mode: game.mode === 'sard' ? 'sard' : undefined });
   game.msglog.log('MISSION RESTARTED', 'warn', game.time);
 }

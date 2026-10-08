@@ -40,7 +40,9 @@
 //          normally; wrong → "That is incorrect. your punishment is
 //          Back of the line!" and the prompt stays up for a retry (no
 //          lockouts, no permanent restrictions).
-export const VERSION = 'v3.98.0';
+// v3.99.0: SEARCH & DESTROY mode — a MODES section with a "Start Search &
+//          Destroy" button (dev-sard) force-restarts the mission in SAR mode.
+export const VERSION = 'v3.99.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -170,6 +172,16 @@ export default class DevPanel {
     if (boneBtn) boneBtn.onclick = () => g.startBonusSpecific('boneyard');
     const internetBtn = document.getElementById('dev-bonus-internet');
     if (internetBtn) internetBtn.onclick = () => g.startBonusSpecific('internet');
+    // ─── v3.99.0: MODES — force-start the Search & Destroy sector journey ───
+    // A full mission restart into SAR mode (keeps the current theme).
+    const sardDevBtn = document.getElementById('dev-sard');
+    if (sardDevBtn) {
+      sardDevBtn.onclick = () => {
+        const theme = g.player ? g.player.theme : 'yellow';
+        g.start(theme, { mode: 'sard' });
+        bus.emit('banner', { text: 'SEARCH & DESTROY — SECTOR JOURNEY START', tone: 'warn', duration: 2.5 });
+      };
+    }
     document.getElementById('dev-clear').onclick = () => {
       g.enemies = [];
       g.bullets = g.bullets.filter(b => b.friendly);

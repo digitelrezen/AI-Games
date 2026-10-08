@@ -239,7 +239,20 @@
 // v3.98.0: HANGAR_ZOOM 1.0 (exact in-game hangar scale) + the F9 admin
 //          panel is gated behind the terminal passphrase prompt
 //          (DevPanel.js). Milestone version synced with package.json.
-export const VERSION = 'v3.98.0';
+// v3.99.0: SEARCH & DESTROY — the new sector-journey game mode
+//          (js/modes/SearchAndDestroy/, E6 nested modules): a large
+//          2D world-space coordinate grid with a rotational background
+//          camera (SectorMap), a sequenced journey — OPEN SPACE → THE
+//          BONEYARD → DEEP SECTOR (SectorSpawner) — anchored by
+//          Eridath's Mom's House, a persistent shootable enemy-spawning
+//          base (SectorCombatManager), and a toggleable cockpit radar
+//          HUD (RadarManager, F1). The mode is a world-space CAMERA
+//          LAYER over the untouched screen-space combat stack — full
+//          parity with all 9 Catships, the Vulcan/Plasma/Rail weapons
+//          and the shared power-up pool. Game.start(theme, { mode:
+//          'sard' }) enters it; the core loop drives game.sard.update
+//          and render() swaps in the sector background + radar HUD.
+export const VERSION = 'v3.99.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -285,6 +298,7 @@ import { advanceStage, startBonusStage, startBonusLevel, startBonusSpecific, res
 import { checkViewportChange, wantsPointerLock, syncCursor, settingsOpen, onPointerLockChange } from './game/DisplayPolicy.js';
 import { gameOver } from './game/GameOver.js';
 import { hitPlayer, destroyAsteroid, checkScoreLives, cleanup, spawnEnemyBullet } from './game/Gameplay.js';
+import SearchAndDestroy from '../modes/SearchAndDestroy/index.js'; // v3.99.0: Search & Destroy mode facade
 
 export default class Game {
   constructor(canvas) {
@@ -322,6 +336,8 @@ export default class Game {
     this.dev = new DevPanel(this);
     this.crosshair = new Crosshair(this); // v3.48.0: procedural aim reticle
     this.state = 'menu';
+    this.mode = 'classic'; // v3.99.0: 'classic' | 'sard' (Search & Destroy)
+    this.sard = null;      // v3.99.0: the SearchAndDestroy facade (live in SAR mode)
     this.score = 0;
     this.multiplier = 1;
     this.time = 0;
@@ -430,8 +446,23 @@ export default class Game {
     this.msglog.log('MISSION START', 'info', this.time);
     this.levelRegistry.reset(); // v3.76.0: restart the stage manifest
     this.waveManager.reset();
-    this.waveManager.startNext();
-    this.activeStage = this.waveManager; // v3.76.0
+    // v3.99.0: MODE BRANCH — Search & Destroy is a sector journey driven by
+    // the SAR facade (camera + spawners + house base + radar); classic runs
+    // the WaveManager stage manifest. SAR also frees the ship from the
+    // classic screen bounds (the camera tether replaces wrap/bounce).
+    if (opts.mode === 'sard') {
+      this.mode = 'sard';
+      if (this.sard) this.sard.destroy();
+      this.sard = new SearchAndDestroy(this);
+      this.activeStage = null; // SAR facade is driven directly in update()
+      this.player.freeBounds = true; // v3.99.0: camera tether, not wrap/bounce
+    } else {
+      this.mode = 'classic';
+      this.sard = null;
+      this.player.freeBounds = false;
+      this.waveManager.startNext();
+      this.activeStage = this.waveManager; // v3.76.0
+    }
     // v3.20.0: LAN / local co-op modes (netSettings.role is the source of truth;
     // opts.role / opts.coop / opts.client are honored as explicit overrides).
     const role = opts.role || (opts.client ? 'client' : (opts.coop ? 'coop' : netSettings.role));
@@ -529,6 +560,11 @@ export default class Game {
       // v3.76.0: the active stage (combat wave or bonus round) is driven
       // through the uniform LevelRegistry interface; completion advances
       // the manifest (Game.advanceStage) — no stage-type branching here.
+      // v3.99.0: SEARCH & DESTROY — the sector journey is driven by the SAR
+      // facade (camera + spawners + house base + radar) instead of the wave
+      // manifest; activeStage stays null in SAR mode so the block below is
+      // a no-op and the classic stage flow is untouched.
+      if (this.mode === 'sard' && this.sard) this.sard.update(dt);
       if (this.activeStage) {
         this.activeStage.update(dt);
         if (this.activeStage.isComplete()) this.advanceStage();
@@ -630,7 +666,11 @@ export default class Game {
     ctx.clearRect(0, 0, this.view.viewW, this.view.viewH);
     ctx.save();
     if (this.shake > 0) ctx.translate(rand(-this.shake, this.shake), rand(-this.shake, this.shake));
-    drawStars(ctx, this.stars);
+    // v3.99.0: SEARCH & DESTROY — the sector map (world-space parallax
+    // starfield + grid + zones + boneyard + house base) replaces the
+    // classic screen-space starfield; classic keeps drawStars.
+    if (this.mode === 'sard' && this.sard) this.sard.renderBackground(ctx);
+    else drawStars(ctx, this.stars);
     if (this.state === 'client') {
       // v3.20.0: LAN client — render the host's mirror world.
       clientMirror.render(ctx);
@@ -654,6 +694,25 @@ export default class Game {
     this.aimbot.draw(ctx); // v3.27.0: easter eggs (Bender + Planet Express ship)
     this.testAimbot.draw(ctx); // v3.14.0: trajectory / reticle readout
     this.hud.draw(ctx);
+    // v3.99.0: SEARCH & DESTROY — the house-base HP HUD + cockpit radar
+    // (screen space, top of the stack, after the classic HUD).
+    if (this.mode === 'sard' && this.sard) this.sard.renderHud(ctx);
     ctx.restore();
+  }
+
+  /**
+   * v3.99.0: SEARCH & DESTROY victory — Eridath's Mom's House is destroyed.
+   * The SAR facade calls this once the victory timer elapses. Reuses the
+   * classic game-over screen as the "MISSION ACCOMPLISHED" state (the
+   * title is swapped by GameOver.js on the SAR branch).
+   */
+  victory() {
+    if (this.state !== 'playing') return;
+    this.state = 'victory';
+    bus.emit('banner', { text: 'MISSION ACCOMPLISHED', tone: 'good', duration: 4 });
+    audio.superWeapon();
+    this.msglog.log('MISSION ACCOMPLISHED — SECTOR CLEARED', 'good', this.time);
+    this._syncCursor();
+    gameOver(this);
   }
 }

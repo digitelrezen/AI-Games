@@ -50,7 +50,10 @@
 //          label bumped with the milestone.
 // v3.98.0: Version label bumped with the exact-scale hangar (HANGAR_ZOOM
 //          1.0) + the F9 admin-panel passphrase gate (no HUD changes).
-export const VERSION = 'v3.98.0';
+// v3.99.0: SEARCH & DESTROY mode — the wave label is owned by the SAR
+//          facade (g.sard.hudLabel(): zone + journey progress) instead of
+//          the wave counter while in SAR mode.
+export const VERSION = 'v3.99.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter
@@ -95,7 +98,11 @@ export default class HUD {
     document.getElementById('multiplier').textContent = 'x' + g.multiplier.toFixed(1);
 
     let waveText;
-    if (g.state === 'bonus') {
+    if (g.mode === 'sard' && g.sard) {
+      // v3.99.0: SEARCH & DESTROY — the SAR facade owns the mode label
+      // (zone + journey progress) instead of the wave counter.
+      waveText = g.sard.hudLabel();
+    } else if (g.state === 'bonus') {
       // v3.76.0: the stage label comes from the LevelRegistry manifest —
       // new bonus stages label themselves without touching the HUD.
       waveText = g.levelRegistry.labelFor(g.levelRegistry.currentEntry) || 'BONUS LEVEL';

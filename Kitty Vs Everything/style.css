@@ -176,6 +176,14 @@ body {
   cursor: pointer; font-weight: bold; font-family: inherit;
 }
 #start-btn:hover { background: #ffe082; transform: scale(1.05); }
+/* v3.99.0: SEARCH & DESTROY mode button — the secondary mode entry point
+   (the sector journey to Eridath's Mom's House). */
+#sard-btn {
+  font-size: 14px; padding: 8px 26px; margin-bottom: 12px;
+  background: #16233f; color: #7fd4ff; border: 1px solid #2f5f8f; border-radius: 4px;
+  cursor: pointer; font-weight: bold; font-family: inherit;
+}
+#sard-btn:hover { background: #21375c; color: #b3e5ff; transform: scale(1.05); }
 .menu-scores { margin-bottom: 6px; text-align: center; } /* v3.90.0: 16 → 6 (menu only) */
 .go-scores { margin-bottom: 16px; text-align: center; }
 .menu-scores h3, .go-scores h3 { font-size: 12px; color: #888; margin-bottom: 6px; }
@@ -196,6 +204,9 @@ body {
   z-index: 40;
 }
 #gameover-screen h2 { font-size: 40px; color: var(--bad); margin-bottom: 12px; }
+/* v3.99.0: SEARCH & DESTROY victory — the game-over screen doubles as the
+   "MISSION ACCOMPLISHED" state (GameOver.js toggles .victory). */
+#gameover-screen.victory h2 { color: var(--good); }
 #final-score { font-size: 20px; margin-bottom: 16px; }
 .go-input { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
 .go-input label { font-size: 12px; }

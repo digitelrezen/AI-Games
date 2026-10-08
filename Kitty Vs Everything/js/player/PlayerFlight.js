@@ -25,7 +25,10 @@
 //          thrust × PLAYER.STRAFE_THRUST_MULT); mouse spin stays fully
 //          active. 'spin': the classic behavior (A/D rotate the nose; mouse
 //          spin only when no rotation key is held).
-export const VERSION = 'v3.78.0';
+// v3.99.0: p.freeBounds opt-out — Search & Destroy disables the classic
+//          wrap/bounce screen bounds (the SAR camera tether keeps the ship
+//          on screen by panning the world instead).
+export const VERSION = 'v3.99.0';
 import { PLAYER } from '../core/config.js';
 import { TAU } from '../core/utils.js';
 import { SETTINGS } from '../ui/Settings.js';
@@ -142,20 +145,25 @@ export function updateFlight(p, dt, input) {
   p.y += p.vy * dt;
 
   // ─── SCREEN BOUNDS (v3.11.0 — SETTINGS.screenBounds admin toggle) ───
-  if (SETTINGS.screenBounds) {
-    // BOUNCE: reflect off the arena edges with a bit of damping.
-    const r = p.radius;
-    if (p.x < r) { p.x = r; if (p.vx < 0) p.vx = -p.vx * 0.6; }
-    if (p.x > p.game.W - r) { p.x = p.game.W - r; if (p.vx > 0) p.vx = -p.vx * 0.6; }
-    if (p.y < r) { p.y = r; if (p.vy < 0) p.vy = -p.vy * 0.6; }
-    if (p.y > p.game.H - r) { p.y = p.game.H - r; if (p.vy > 0) p.vy = -p.vy * 0.6; }
-  } else {
-    // WRAP-AROUND (classic): re-enter on the opposite side.
-    const margin = 30;
-    if (p.x < -margin) p.x += p.game.W + margin * 2;
-    if (p.x > p.game.W + margin) p.x -= p.game.W + margin * 2;
-    if (p.y < -margin) p.y += p.game.H + margin * 2;
-    if (p.y > p.game.H + margin) p.y -= p.game.H + margin * 2;
+  // v3.99.0: p.freeBounds (Search & Destroy) opts out of BOTH — the SAR
+  // camera tether (SectorMap.js) keeps the ship on screen by panning the
+  // world instead of wrapping/bouncing the ship.
+  if (!p.freeBounds) {
+    if (SETTINGS.screenBounds) {
+      // BOUNCE: reflect off the arena edges with a bit of damping.
+      const r = p.radius;
+      if (p.x < r) { p.x = r; if (p.vx < 0) p.vx = -p.vx * 0.6; }
+      if (p.x > p.game.W - r) { p.x = p.game.W - r; if (p.vx > 0) p.vx = -p.vx * 0.6; }
+      if (p.y < r) { p.y = r; if (p.vy < 0) p.vy = -p.vy * 0.6; }
+      if (p.y > p.game.H - r) { p.y = p.game.H - r; if (p.vy > 0) p.vy = -p.vy * 0.6; }
+    } else {
+      // WRAP-AROUND (classic): re-enter on the opposite side.
+      const margin = 30;
+      if (p.x < -margin) p.x += p.game.W + margin * 2;
+      if (p.x > p.game.W + margin) p.x -= p.game.W + margin * 2;
+      if (p.y < -margin) p.y += p.game.H + margin * 2;
+      if (p.y > p.game.H + margin) p.y -= p.game.H + margin * 2;
+    }
   }
 
   // ─── TAIL SWAY ───
