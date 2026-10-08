@@ -269,6 +269,8 @@
 // v3.47.0: Synergy Explosion is key-triggered — MINI_SHIP.synergyChargeTime
 //          now charges the meter to 100% (it holds), and the 'synergy' key
 //          fires it (PlayerFleet.js). TestAimbot hotkey moved T → F8.
+// v3.96.0: the 'synergy' key is now FLEET ORBIT (MiniDeploy.toggleFleetOrbit);
+//          synergyChargeTime still drives the HUD color-match meter.
 // v3.77.0: E6 MODULARIZATION — the config constants/functions moved into
 //          js/core/config/ submodules (viewport / player / weapons /
 //          enemies / drops / stages). This file is now the compatibility

@@ -35,6 +35,8 @@
 //          default) — the Synergy Explosion is key-triggered (PlayerFleet.js)
 //          instead of the old 10s auto-fire. Slot state logic unchanged
 //          (superCharge / ultimateCooldown / nova-ready/-charging/-cooldown).
+// v3.96.0: the 'synergy' action is now FLEET ORBIT — the slot label reads
+//          "Fleet Orbit"; superCharge is a HUD color-match meter only.
 export const VERSION = 'v3.47.0';
 import { WEAPONS, PLAYER, MINI_SHIP } from '../core/config.js';
 import { getBinds, codeLabel } from '../input/Keybinds.js';

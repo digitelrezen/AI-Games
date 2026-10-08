@@ -12,6 +12,10 @@
 //         'synergy' action (P1: T / -, P2 co-op: , — see Keybinds.js /
 //         Player2Controls.js) fires superWeapon() when ready. The old
 //         10s auto-fire is gone.
+// v3.96.0: the 'synergy' action is now FLEET ORBIT (not a super-weapon) —
+//         it toggles the mini fleet between docked and orbiting the hull
+//         (MiniDeploy.toggleFleetOrbit). superCharge is now a HUD color-match
+//         meter only; the old superWeapon() fire is removed.
 export const VERSION = 'v3.71.0';
 import { createMiniShip } from '../combat/CatShipFactory.js'; // v3.71.0: modular combat
 import { MINI_SHIP } from '../core/config.js';

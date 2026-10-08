@@ -29,6 +29,9 @@
 //          superWeapon on the 'synergy' action (T / - default) instead of
 //          the old 10s auto-fire. Release version bump, no Player.js logic
 //          changes.
+// v3.96.0: the 'synergy' action is now FLEET ORBIT — it toggles the mini
+//          fleet between docked and orbiting the hull (MiniDeploy.js); the
+//          old superWeapon fire is gone. Player owns the fleetOrbiting flag.
 // v3.68.0: MODULAR WEAPON ARCHITECTURE (Phase 1) — Player owns a weapons
 //          registry (this.weapons) of js/combat weapon classes:
 //          { vulkan: VulcanCannon }. PlayerWeapons.js delegates fire /

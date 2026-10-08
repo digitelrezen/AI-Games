@@ -20,6 +20,8 @@
 //     table, so they always show their standard labels.
 // v3.47.0: new 'T: Synergy Explosion' row (after 'F: Super') — the
 //          key-triggered Synergy Explosion ('synergy' action, T / -).
+// v3.96.0: that 'synergy' row is now FLEET ORBIT — T toggles the mini fleet
+//          between docked and orbiting the hull (MiniDeploy.toggleFleetOrbit).
 // v3.78.0: WSAD row label is now mode-neutral — A/D strafe or spin depending
 //          on Settings.controlMode (strafe is the default).
 export const VERSION = 'v3.78.0';

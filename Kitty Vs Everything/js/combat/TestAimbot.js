@@ -2,7 +2,7 @@
 // Kitty Vs Everything — v3.47.0
 // DEVELOPER-ONLY test aimbot (debug tooling — NOT gameplay). Toggled from
 // the Dev Panel (TEST AIMBOT button) or the F8 hotkey (v3.47.0 — moved from
-// T, which now triggers the Synergy Explosion); status banner +
+// T, which now triggers Fleet Orbit (v3.96.0); status banner +
 // MessageLog entry on every toggle.
 // While engaged:
 //   • locks onto the NEAREST valid enemy (any tier — bosses included)

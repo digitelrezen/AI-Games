@@ -135,6 +135,8 @@
 // (T / - default, P2 co-op ,) fires PlayerFleet.superWeapon when the
 // color-match meter is full, replacing the old 10s auto-fire. TestAimbot
 // hotkey moved T → F8 (TestAimbot.js).
+// v3.96.0: the 'synergy' action is now FLEET ORBIT — T toggles the mini
+// fleet between docked and orbiting the hull (MiniDeploy.js).
 // v3.43.0: alien UFO pixel-art sprite swap — AlienEnemy.js draws one of two
 // shared UFO PNGs (asset keys ufo1/ufo2) with a random per-instance skin.
 // v3.42.0: crate destruction spills one drop from the shared POWERUP_DROPS
