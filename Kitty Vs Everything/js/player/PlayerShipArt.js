@@ -33,11 +33,15 @@
 //         without drawing the sub-dock glow-orbs.
 // v3.16.0: front-paw hardpoints read the weapon animation state (WeaponAnim.js)
 //         — vulkan spin / rail charge / plasma pulse — passed as `p`.
-export const VERSION = 'v3.16.0';
+// v3.95.0: drawSpriteShip — the in-game SPRITE pipeline (70px frame blit ×
+//         MAIN_SHIP_SCALE, theme shadow-glow, blink alpha, SHIP_GEOMETRY
+//         hardpoint FX) extracted from PlayerRenderer so the hangar hero
+//         preview (main.js) reuses the exact same rendering path.
+export const VERSION = 'v3.95.0';
 import { TAU } from '../core/utils.js';
 import { hexA } from '../core/utils.js';
-import { WEAPONS, SHIP_GEOMETRY } from '../core/config.js';
-import { drawWeaponPaw, drawThrusterPaw, drawMuzzleFlash } from './PlayerShipFx.js';
+import { WEAPONS, SHIP_GEOMETRY, MAIN_SHIP_SCALE } from '../core/config.js';
+import { drawWeaponPaw, drawThrusterPaw, drawThrusterFlame, drawMuzzleFlash } from './PlayerShipFx.js';
 
 /**
  * Draw the main cat hull (H-pose: four limbs on an aerodynamic core).
@@ -414,5 +418,48 @@ export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null) {
       Math.min(1, p.muzzleFlash / 0.18), weaponColor);
   }
 
+  ctx.restore();
+}
+
+// v3.95.0: the in-game SPRITE pipeline — single source of truth for "how
+// the catship sprite is rendered" (PlayerRenderer.draw's sprite branch +
+// the hangar hero preview in main.js). The caller translates to the
+// ship's position first; this draws in the ship's local frame: rotate by
+// heading, scale to MAIN_SHIP_SCALE × zoom, soft theme shadow-glow, the
+// 70px-frame blit centered on the origin, then the SHIP_GEOMETRY
+// hardpoint FX (thruster flames, weapon paws, muzzle flash) re-layered on
+// top so the sprite keeps its firing/thrusting read. zoom = 1 is the exact
+// in-game size; the hangar passes HANGAR_ZOOM.
+export function drawSpriteShip(ctx, sprite, th, p, zoom = 1) {
+  const drawH = 70; // sprite height (px) — matches the procedural hull scale
+  const s = drawH / sprite.height;
+  const dw = sprite.width * s;
+  const dh = sprite.height * s;
+  const blink = p.invuln > 0 && Math.floor(p.invuln * 12) % 2 === 0;
+  ctx.save();
+  ctx.rotate(p.angle + Math.PI / 2);
+  ctx.scale(MAIN_SHIP_SCALE * zoom, MAIN_SHIP_SCALE * zoom); // v3.47.0: 2x main ship (× showcase zoom)
+  ctx.globalAlpha = blink ? 0.35 : 1;
+  // v3.72.1: soft theme glow behind the sprite (replaces the hard
+  // accent-ellipse underlay that read as a circle behind the cat).
+  ctx.shadowColor = th.accent;
+  ctx.shadowBlur = 14;
+  ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh);
+  ctx.shadowBlur = 0;
+  // v3.72.1: re-layer the hardpoint FX on top of the sprite so the
+  // thrusters flame and the muzzles flash exactly where bullets spawn.
+  const flicker = 0.7 + 0.3 * Math.sin(p.engineFlicker);
+  const thrustOn = p.thrusterActive || p.boostActive;
+  const flameFlicker = thrustOn ? (0.7 + 0.3 * Math.sin(p.engineFlicker * 2)) : 0;
+  const boostGlow = p.boostActive ? 1.6 : 1;
+  const weaponColor = (p.weapon && WEAPONS[p.weapon]) ? WEAPONS[p.weapon].color : '#ffffff';
+  drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x, SHIP_GEOMETRY.thrusterL.y, flicker, flameFlicker, boostGlow);
+  drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterR.x, SHIP_GEOMETRY.thrusterR.y, flicker, flameFlicker, boostGlow);
+  drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x, SHIP_GEOMETRY.frontPawL.y, th.color, th.accent, p.pawFlashL || 0, weaponColor, p);
+  drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawR.x, SHIP_GEOMETRY.frontPawR.y, th.color, th.accent, p.pawFlashR || 0, weaponColor, p);
+  if (p.muzzleFlash > 0) {
+    drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x, SHIP_GEOMETRY.muzzle.y,
+      Math.min(1, p.muzzleFlash / 0.18), weaponColor);
+  }
   ctx.restore();
 }

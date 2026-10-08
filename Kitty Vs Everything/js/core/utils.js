@@ -1,5 +1,5 @@
 // Filename: utils.js
-// Kitty Vs Everything — v3.83.0
+// Kitty Vs Everything — v3.95.0
 // Pure math/formatting helpers (no side effects).
 // v3.3.0: Added hexA (hex + alpha → rgba string) for the catship art modules.
 // v3.83.0: Added isOnScreen — live-viewport bounds check shared by the
@@ -17,8 +17,12 @@
 // v3.89.0: the hangar hero canvas (main.js) rejoins the crisp set — its
 //          cat sprites are blitted at the integer HANGAR_K 1:1 scale, so
 //          nearest-neighbor is exact (no blur, no jaggedness).
+// v3.95.0: the hangar hero stays in the crisp set, but the blit is now
+//          the shared in-game sprite pipeline (PlayerShipArt
+//          .drawSpriteShip onto the 384×384 stage ×DPR buffer) — the
+//          HANGAR_K / hangarMetrics / measureHangarSprite path is gone.
 
-export const VERSION = 'v3.89.0';
+export const VERSION = 'v3.95.0';
 
 export const TAU = Math.PI * 2;
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -64,8 +68,10 @@ export function isOnScreen(game, x, y, r = 0) {
  * each buffer resize) and the offscreen sprite-buffer contexts
  * (AssetManager, PowerUp) — the hangar hero canvas (main.js) kept
  * default bilinear smoothing. v3.89.0: the hangar hero canvas rejoins
- * the crisp set — its cat sprites are blitted at the integer HANGAR_K
- * 1:1 scale, so nearest-neighbor is exact (no blur, no jaggedness).
+ * the crisp set; v3.95.0: it now renders the shared in-game sprite
+ * pipeline (PlayerShipArt.drawSpriteShip) onto the 384×384 stage ×DPR
+ * buffer, so the buffer→CSS downsample is a uniform integer block and
+ * nearest-neighbor is exact (no blur, no jaggedness).
  * Intentional one-shot asset downscale passes (Wasp2Sprite /
  * AsteroidSprite) opt back in locally on their own contexts.
  * @param {CanvasRenderingContext2D|null} ctx the 2D context to crisp up

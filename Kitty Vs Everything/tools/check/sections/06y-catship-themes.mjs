@@ -19,7 +19,12 @@
 //        importer's 128px cap no longer applies to cat_* keys (they use the
 //        512px catship ceiling), so the registry carries full native dims
 //        (w: 256, h: 384) and the manifest points at the *-256x384.png
-//        files; the hangar blits them 1:1 on the 320×384 stage (06ag).
+//        files (hangar stage sizing in 06ag).
+//        v3.95.0: the in-game sprite pipeline moved to
+//        PlayerShipArt.drawSpriteShip (70px frame × MAIN_SHIP_SCALE, theme
+//        glow, SHIP_GEOMETRY hardpoint FX) — PlayerRenderer delegates to it
+//        and the hangar hero preview reuses the SAME pipeline (HANGAR_ZOOM),
+//        so the selection screen renders the ship exactly as in-game.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
@@ -31,7 +36,7 @@ const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 const spritesSrc = fs.readFileSync(path.join(ROOT, 'js/core/AssetSprites.js'), 'utf8');
 
 export default async function run() {
-console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1 render/menu fixes + v3.90.0 native 256×384 art');
+console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1 render/menu fixes + v3.90.0 native 256×384 art + v3.95.0 shared sprite pipeline');
 {
   const { PLAYER_THEMES, PLAYER_THEME_SPRITES } = await mod('js/core/config.js');
   const prSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerRenderer.js'), 'utf8');
@@ -60,15 +65,21 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1
     Object.values(PLAYER_THEME_SPRITES).every(k => manifest.assets[k] && fs.existsSync(path.join(ASSET_DIR, manifest.assets[k]))),
     `missing: ${Object.values(PLAYER_THEME_SPRITES).filter(k => !manifest.assets[k] || !fs.existsSync(path.join(ASSET_DIR, manifest.assets[k]))).join(', ')}`);
 
-  // PlayerRenderer: sprite blit path + procedural fallback
+  // v3.95.0: the sprite blit path moved to the shared PlayerShipArt.
+  // drawSpriteShip pipeline - PlayerRenderer only resolves the sprite,
+  // translates to the ship, and delegates; the hangar hero preview
+  // reuses the same pipeline (HANGAR_ZOOM).
   check('PlayerRenderer: resolves the theme sprite (PLAYER_THEME_SPRITES + getSprite)', prSrc.includes('PLAYER_THEME_SPRITES[p.theme]') && prSrc.includes('getSprite('));
-  check('PlayerRenderer: blits the sprite at a fixed 70px height', prSrc.includes('const drawH = 70') && prSrc.includes('ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh)'));
+  check('drawSpriteShip: blits the sprite at a fixed 70px height (v3.95.0 shared pipeline)', psaSrc.includes('const drawH = 70') && psaSrc.includes('ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh)'));
   // v3.72.1: the blit must happen in the ship's LOCAL frame — the v3.72.0
   // build drew at raw (0,0) and the hull vanished off-screen while weapons
-  // kept firing (the reported "circle floating in space" bug).
-  check('PlayerRenderer: sprite blit translated + rotated to the ship (v3.72.1 transform fix)', prSrc.includes('ctx.translate(p.x, p.y)') && prSrc.includes('ctx.rotate(p.angle + Math.PI / 2)'));
-  check('PlayerRenderer: soft theme shadow-glow + blink alpha, no hard ellipse underlay (v3.72.1)', prSrc.includes('ctx.shadowColor = th.accent') && prSrc.includes('blink ? 0.35 : 1') && !prSrc.includes('ctx.ellipse(0, 0, dw * 0.62'));
-  check('PlayerRenderer: hardpoint FX re-layered on the sprite (paws/thrusters/muzzle at SHIP_GEOMETRY)', prSrc.includes('drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x') && prSrc.includes('drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x') && prSrc.includes('drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x'));
+  // kept firing (the reported "circle floating in space" bug). v3.95.0:
+  // the translate lives in PlayerRenderer, the rotate + blit in the shared
+  // drawSpriteShip pipeline.
+  check('PlayerRenderer: sprite branch delegates to the shared drawSpriteShip pipeline (v3.95.0)', prSrc.includes('ctx.translate(p.x, p.y)') && prSrc.includes('drawSpriteShip(ctx, sprite, th, p)'));
+  check('drawSpriteShip: sprite blit rotated to the ship heading (v3.72.1 transform fix)', psaSrc.includes('ctx.rotate(p.angle + Math.PI / 2)'));
+  check('drawSpriteShip: soft theme shadow-glow + blink alpha, no hard ellipse underlay (v3.72.1)', psaSrc.includes('ctx.shadowColor = th.accent') && psaSrc.includes('blink ? 0.35 : 1') && !psaSrc.includes('ctx.ellipse(0, 0, dw * 0.62'));
+  check('drawSpriteShip: hardpoint FX re-layered on the sprite (paws/thrusters/muzzle at SHIP_GEOMETRY)', psaSrc.includes('drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x') && psaSrc.includes('drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x') && psaSrc.includes('drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x'));
   check('PlayerRenderer: procedural fallback when no sprite (2x scale)', prSrc.includes('drawMainShip(ctx, p, th.color, th.accent, th.pattern, { scale: MAIN_SHIP_SCALE })'));
   check('PlayerRenderer: menu-icon compat path passes the theme sprite', prSrc.includes('drawMainShip(ctx, this.player, c, a, pattern, { x, y, scale: s }, sprite)'));
 
@@ -80,6 +91,7 @@ console.log('\n[6y] v3.72.0 catship sprite themes (9 cat-on-back PNGs) + v3.72.1
   check('main.js: builds the carousel from PLAYER_THEMES (all 9 themes)', mainSrc.includes('Object.keys(PLAYER_THEMES)') && mainSrc.includes('hangarIndex'));
   check('main.js: hero render carries the theme (sprite lookup works)', mainSrc.includes('const mockPlayer = {') && mainSrc.includes('theme: key'));
   check('main.js: re-renders the hero after loadAssets() resolves', mainSrc.includes('loadAssets().then(renderHangar)'));
+  check('main.js: hangar hero reuses the in-game sprite pipeline at HANGAR_ZOOM (v3.95.0)', mainSrc.includes('drawSpriteShip(hangarCtx, sprite, th, mockPlayer, HANGAR_ZOOM)'));
 
   // PlayerShipArt: optional sprite parameter blits before the procedural hull
   check('PlayerShipArt: drawCatShip accepts an optional sprite parameter', psaSrc.includes('export function drawCatShip(ctx, p, c, a, pattern, opts = {}, sprite = null)'));

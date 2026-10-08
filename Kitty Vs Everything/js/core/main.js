@@ -95,12 +95,22 @@
 //          image-rendering: pixelated scoped to #hangar-canvas only
 //          (safe now — the buffer→CSS downsample is a uniform integer
 //          block). Milestone version synced with package.json.
-export const VERSION = 'v3.94.0';
+// v3.95.0: HANGAR = IN-GAME PIPELINE — the hero preview no longer runs a
+//          separate 1:1 content-box blit (HANGAR_K / hangarMetrics /
+//          measureHangarSprite are gone). renderHangar now draws through
+//          PlayerShipArt.drawSpriteShip — the exact sprite pipeline
+//          PlayerRenderer uses in-game (70px frame × MAIN_SHIP_SCALE ×
+//          HANGAR_ZOOM, theme shadow-glow, SHIP_GEOMETRY hardpoint FX) —
+//          centered on the fixed midpoint of the square 384×384 stage
+//          (192, 192). The selection screen now shows the ship exactly
+//          as it flies. Milestone version synced with package.json.
+export const VERSION = 'v3.95.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
-import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar 1:1 sprite blit
+import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup
 import { loadAssets, getSprite } from './AssetManager.js'; // v3.72.1: re-render icons when sprites land
-import { disableImageSmoothing } from './utils.js'; // v3.89.0: crisp 1:1 hangar preview
+import { disableImageSmoothing } from './utils.js'; // v3.89.0: crisp hangar preview
+import { drawSpriteShip } from '../player/PlayerShipArt.js'; // v3.95.0: hangar = in-game sprite pipeline
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer
 import MenuKeybinds from '../input/MenuKeybinds.js'; // v3.23.0: dynamic keybind footer
 
@@ -125,24 +135,25 @@ let selectedTheme = 'white_yellow';
 
 const hangarCanvas = document.getElementById('hangar-canvas');
 const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;
-// v3.87.0: size the hero buffer at native device-pixel resolution. The
-// canvas CSS size stays 320×384 (v3.90.0: the native 256×384 frame); on
-// HiDPI displays (DPR > 1) a fixed 320×384 buffer gets upscaled by the
-// browser and the ship looks soft. renderHangar() draws in 320×384
-// logical units under ctx.scale(HANGAR_DPR).
+// v3.95.0: size the hero buffer at native device-pixel resolution. The
+// canvas CSS size is the square 384×384 showcase stage; on HiDPI displays
+// (DPR > 1) a fixed 384×384 buffer gets upscaled by the browser and the
+// ship looks soft. renderHangar() draws in 384×384 logical units under
+// ctx.scale(HANGAR_DPR).
 const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
-// v3.89.0: crisp 1:1 preview scale — integer buffer pixels per native
-// sprite pixel (1 at DPR 1, 2 at DPR 2). The blit destination is sized so
-// every sprite pixel lands on exactly one CSS pixel: with smoothing
-// disabled, nearest-neighbor is EXACT (no blur, no jaggedness).
-const HANGAR_K = Math.max(1, Math.round(HANGAR_DPR));
+// v3.95.0: showcase zoom — the sprite renders through the SAME in-game
+// pipeline as PlayerRenderer (70px frame × MAIN_SHIP_SCALE = 2x),
+// multiplied by HANGAR_ZOOM so the selection screen shows the ship at
+// 2× its in-game size (4× the 70px frame) with the identical theme glow
+// and hardpoint FX.
+const HANGAR_ZOOM = 2.0;
 if (hangarCanvas) {
-  hangarCanvas.width = Math.round(320 * HANGAR_DPR);
-  hangarCanvas.height = Math.round(384 * HANGAR_DPR); // v3.90.0: 220 → 384 (native frame)
-  // v3.89.0: nearest-neighbor drawImage on the hero canvas — the v3.88.1
-  // bilinear default is gone now that the blit is a 1:1 integer mapping.
-  // A canvas.width assignment resets 2D context state, so this runs
-  // AFTER the sizing above.
+  hangarCanvas.width = Math.round(384 * HANGAR_DPR);
+  hangarCanvas.height = Math.round(384 * HANGAR_DPR);
+  // v3.89.0: nearest-neighbor drawImage on the hero canvas — with
+  // smoothing disabled the pixel-art upscale stays crisp (no bilinear
+  // blur). A canvas.width assignment resets 2D context state, so this
+  // runs AFTER the sizing above.
   disableImageSmoothing(hangarCtx);
 }
 const hangarNameplate = document.getElementById('hangar-nameplate');
@@ -150,85 +161,46 @@ const hangarDots = document.getElementById('hangar-dots');
 const HANGAR_THEMES = Object.keys(PLAYER_THEMES);
 let hangarIndex = Math.max(0, HANGAR_THEMES.indexOf(selectedTheme));
 
-// v3.89.0: per-ship CONTENT bounding boxes (native sprite pixels). The
-// cat_* frames carry uneven transparent padding (77–88px wide frames),
-// so the CONTENT — not the frame — is centered in the shared preview box.
-// Measured lazily on the first sprite render per ship (renderHangar runs
-// at module init before loadAssets resolves, so the cache must be lazy);
-// null → the procedural fallback in renderHangar below.
-let hangarMetrics = null;
-function measureHangarSprite(sprite) {
-  try {
-    const c = document.createElement('canvas');
-    c.width = sprite.width;
-    c.height = sprite.height;
-    const mctx = c.getContext ? c.getContext('2d', { willReadFrequently: true }) : null;
-    if (!mctx) return null;
-    mctx.drawImage(sprite, 0, 0);
-    const data = mctx.getImageData(0, 0, sprite.width, sprite.height).data;
-    let minX = sprite.width, minY = sprite.height, maxX = -1, maxY = -1;
-    for (let y = 0; y < sprite.height; y++) {
-      for (let x = 0; x < sprite.width; x++) {
-        if (data[(y * sprite.width + x) * 4 + 3] > 0) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-    if (maxX < 0) return null; // fully transparent — procedural fallback
-    return { sx: minX, sy: minY, sw: maxX - minX + 1, sh: maxY - minY + 1 };
-  } catch (err) { return null; }
-}
-
-// v3.85.0: render the active cat ship (same PlayerRenderer used in-game)
-// into the hero stage at large scale so the pixel-art details and colors
-// truly pop, then refresh the nameplate + dot indicators.
+// v3.95.0: render the active cat ship through the SAME in-game sprite
+// pipeline (PlayerShipArt.drawSpriteShip) that PlayerRenderer uses —
+// 70px frame × MAIN_SHIP_SCALE × HANGAR_ZOOM, theme shadow-glow, blink
+// alpha and the SHIP_GEOMETRY hardpoint FX (thruster flames + weapon
+// paws + muzzle) identical to gameplay. The ship is centered on the
+// FIXED stage midpoint (192, 192) of the square 384×384 stage — all
+// ships share the identical scale + center, so the carousel is
+// completely stationary (no bounce on selection). Until the sprite
+// decodes (or if it fails), fall back to the procedural hull — ~4.5×
+// the in-game 70px sprite → ~315px tall, static pose: nose up, idle
+// thruster flame, tail straight.
 function renderHangar() {
   if (!hangarCtx) return;
   const key = HANGAR_THEMES[hangarIndex];
   const th = PLAYER_THEMES[key];
-  // v3.87.0: draw in 320×384 logical units (v3.90.0: native frame size);
+  // v3.95.0: draw in 384×384 logical units (square showcase stage);
   // the HANGAR_DPR buffer scale keeps the ship crisp on HiDPI displays.
   hangarCtx.save();
   hangarCtx.scale(HANGAR_DPR, HANGAR_DPR);
-  hangarCtx.clearRect(0, 0, 320, 384);
-  // v3.90.0: crisp 1:1 preview of the native 256×384 art — blit the
-  // sprite's CONTENT box at the integer HANGAR_K scale (one native pixel
-  // = exactly one CSS pixel), content-centered on the FIXED stage
-  // midpoint (160, 192). All ships share the identical scale + center —
-  // the midpoint never moves between ships, so the carousel is
-  // completely stationary (no bounce on selection). Until the sprite
-  // decodes (or if it fails), fall back to the procedural hull — ~4.5×
-  // the in-game 70px sprite → ~315px tall, static pose: nose up, idle
-  // thruster flame, tail straight.
+  hangarCtx.clearRect(0, 0, 384, 384);
   const sprite = getSprite(PLAYER_THEME_SPRITES[key]);
-  if (!hangarMetrics) hangarMetrics = {};
-  let m = hangarMetrics[key];
-  if (sprite && sprite.width > 0 && sprite.height > 0 && !m) {
-    hangarMetrics[key] = m = measureHangarSprite(sprite);
-  }
-  if (m && m.sw > 0) {
-    const s = HANGAR_K / HANGAR_DPR; // logical px per native px (1 at DPR 1/2)
-    const dw = m.sw * s, dh = m.sh * s;
-    hangarCtx.drawImage(sprite, m.sx, m.sy, m.sw, m.sh, 160 - dw / 2, 192 - dh / 2, dw, dh); // v3.90.0: fixed stage midpoint (160, 192)
+  const mockPlayer = {
+    theme: key,
+    angle: -Math.PI / 2,
+    engineFlicker: 0.8,
+    thrusterActive: true,
+    boostActive: false,
+    tailSway: 0,
+    weapon: 'vulkan',
+    pawFlashL: 0,
+    pawFlashR: 0,
+    muzzleFlash: 0,
+    animTime: 1.0,
+  };
+  if (sprite && sprite.width > 0 && sprite.height > 0) {
+    hangarCtx.translate(192, 192); // v3.95.0: fixed stage midpoint
+    drawSpriteShip(hangarCtx, sprite, th, mockPlayer, HANGAR_ZOOM);
   } else {
-    const mockPlayer = {
-      theme: key,
-      angle: -Math.PI / 2,
-      engineFlicker: 0.8,
-      thrusterActive: true,
-      boostActive: false,
-      tailSway: 0,
-      weapon: 'vulkan',
-      pawFlashL: 0,
-      pawFlashR: 0,
-      muzzleFlash: 0,
-      animTime: 1.0,
-    };
     new PlayerRenderer(mockPlayer).drawCatShip(
-      hangarCtx, 160, 192, 4.5, // v3.90.0: fixed stage midpoint + native-frame scale
+      hangarCtx, 192, 192, 4.5, // v3.95.0: fixed stage midpoint + native-frame scale
       th.color, th.accent, th.pattern
     );
   }

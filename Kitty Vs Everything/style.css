@@ -155,14 +155,14 @@ body {
   justify-content: flex-start; /* v3.90.0: center → flex-start (auto-margin centering below) */
   background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0e1a 70%);
   z-index: 40;
-  overflow-y: auto; /* v3.90.0: safety net — scroll rather than clip the 320×384 hero */
+  overflow-y: auto; /* v3.90.0: safety net — scroll rather than clip the tall hangar hero (384×384 stage in v3.95.0) */
 }
 /* v3.90.0: auto margins center the menu when it fits the 720px stage and
    collapse to 0 when it overflows (top stays reachable via the scroll). */
 #menu-screen > :first-child { margin-top: auto; }
 #menu-screen > :last-child { margin-bottom: auto; }
 #menu-screen h1 {
-  font-size: 40px; /* v3.90.0: 52 → 40 — compacted for the 320×384 hangar hero */
+  font-size: 40px; /* v3.90.0: 52 → 40 — compacted for the tall hangar hero (384×384 stage in v3.95.0) */
   text-align: center;
   color: var(--accent);
   text-shadow: 0 0 30px rgba(255,213,79,0.4);
@@ -171,7 +171,7 @@ body {
 }
 .tagline { color: #888; margin-bottom: 6px; font-size: 14px; } /* v3.90.0: 24 → 6 */
 #start-btn {
-  font-size: 16px; padding: 10px 32px; margin-bottom: 6px; /* v3.90.0: compacted for the 320×384 hero */
+  font-size: 16px; padding: 10px 32px; margin-bottom: 6px; /* v3.90.0: compacted for the tall hangar hero (384×384 stage in v3.95.0) */
   background: var(--accent); color: #000; border: none; border-radius: 4px;
   cursor: pointer; font-weight: bold; font-family: inherit;
 }
@@ -264,19 +264,17 @@ body {
   box-shadow:
     inset 0 0 40px rgba(90, 140, 255, 0.12),
     0 0 30px rgba(255, 180, 40, 0.12);
-  padding: 6px 14px 8px; /* v3.90.0: 10/16/12 → 6/14/8 — compacted for the 320×384 hero */
+  padding: 6px 14px 8px; /* v3.90.0: 10/16/12 → 6/14/8 — compacted for the tall hangar hero (384×384 stage in v3.95.0) */
 }
 #hangar-canvas {
   display: block;
-  width: 320px;
-  height: 384px; /* v3.90.0: 220 → 384 — sized to the native 256×384 catship frame */
-  /* v3.90.0: crisp 1:1 hero preview of the native 256×384 art —
-     nearest-neighbor buffer→CSS scaling. main.js blits each cat sprite
-     at the integer HANGAR_K scale (one native pixel = one CSS pixel,
-     2×2 blocks at DPR 2): the downsample is a uniform integer block, so
-     the browser's pixelated filter reproduces the art exactly instead of
-     the v3.88.0 jagged aliasing. Scoped to this canvas only (the
-     v3.88.1 #game-canvas rule is untouched). */
+  width: 384px; /* v3.95.0: 320 → 384 — square showcase stage */
+  height: 384px; /* v3.95.0: 384×384 square showcase stage (v3.90.0: 220 → 384) */
+  /* v3.95.0: crisp hero preview — main.js renders the IN-GAME sprite
+     pipeline (drawSpriteShip: 70px frame × MAIN_SHIP_SCALE × HANGAR_ZOOM)
+     onto a ×DPR buffer; nearest-neighbor buffer→CSS scaling keeps the
+     pixel art crisp. Scoped to this canvas only (the #game-canvas rule
+     is untouched). */
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }

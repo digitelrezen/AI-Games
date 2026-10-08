@@ -28,12 +28,16 @@
 // v3.73.0: SHIELD_BUBBLE_RADIUS 100 → 110 — the v3.73.0 sprite-clone minis
 //          (84px tall, docked at ±36 local) reach ~98px from the hull
 //          center, so the bubble grows to keep covering both flanks.
-export const VERSION = 'v3.73.0';
-import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES, SHIP_GEOMETRY, WEAPONS, MAIN_SHIP_SCALE } from '../core/config.js';
+// v3.95.0: the sprite branch now delegates to PlayerShipArt.drawSpriteShip
+//          — the shared in-game sprite pipeline (70px frame × MAIN_SHIP_SCALE
+//          + theme glow + SHIP_GEOMETRY hardpoint FX) that the hangar hero
+//          preview (main.js) reuses, so the selection screen renders the
+//          ship exactly as it flies in-game.
+export const VERSION = 'v3.95.0';
+import { TAU, PLAYER_THEMES, PLAYER_THEME_SPRITES, MAIN_SHIP_SCALE } from '../core/config.js';
 import { getSprite } from '../core/AssetManager.js';
-import { drawCatShip as drawMainShip } from './PlayerShipArt.js';
+import { drawCatShip as drawMainShip, drawSpriteShip } from './PlayerShipArt.js';
 import { drawMiniPod, drawDockArc } from './PlayerMiniArt.js';
-import { drawWeaponPaw, drawThrusterPaw, drawThrusterFlame, drawMuzzleFlash } from './PlayerShipFx.js';
 
 // v3.45.0: yellow shield-bubble radius (px). Sized to cover the hull AND both
 // docked minis (they dock within ~40px of the hull center).
@@ -105,36 +109,11 @@ export default class PlayerRenderer {
     const spriteKey = PLAYER_THEME_SPRITES[p.theme];
     const sprite = spriteKey ? getSprite(spriteKey) : null;
     if (sprite && sprite.width && sprite.height) {
-      const drawH = 70; // sprite height (px) — matches the procedural hull scale
-      const s = drawH / sprite.height;
-      const dw = sprite.width * s;
-      const dh = sprite.height * s;
+      // v3.95.0: the shared in-game sprite pipeline (PlayerShipArt.
+      // drawSpriteShip) — the hangar hero preview reuses this exact path.
       ctx.save();
       ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle + Math.PI / 2);
-      ctx.scale(MAIN_SHIP_SCALE, MAIN_SHIP_SCALE); // v3.47.0: 2x main ship
-      ctx.globalAlpha = blink ? 0.35 : 1;
-      // v3.72.1: soft theme glow behind the sprite (replaces the hard
-      // accent-ellipse underlay that read as a circle behind the cat).
-      ctx.shadowColor = th.accent;
-      ctx.shadowBlur = 14;
-      ctx.drawImage(sprite, -dw / 2, -dh / 2, dw, dh);
-      ctx.shadowBlur = 0;
-      // v3.72.1: re-layer the hardpoint FX on top of the sprite so the
-      // thrusters flame and the muzzles flash exactly where bullets spawn.
-      const flicker = 0.7 + 0.3 * Math.sin(p.engineFlicker);
-      const thrustOn = p.thrusterActive || p.boostActive;
-      const flameFlicker = thrustOn ? (0.7 + 0.3 * Math.sin(p.engineFlicker * 2)) : 0;
-      const boostGlow = p.boostActive ? 1.6 : 1;
-      const weaponColor = (p.weapon && WEAPONS[p.weapon]) ? WEAPONS[p.weapon].color : '#ffffff';
-      drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterL.x, SHIP_GEOMETRY.thrusterL.y, flicker, flameFlicker, boostGlow);
-      drawThrusterFlame(ctx, SHIP_GEOMETRY.thrusterR.x, SHIP_GEOMETRY.thrusterR.y, flicker, flameFlicker, boostGlow);
-      drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawL.x, SHIP_GEOMETRY.frontPawL.y, th.color, th.accent, p.pawFlashL || 0, weaponColor, p);
-      drawWeaponPaw(ctx, SHIP_GEOMETRY.frontPawR.x, SHIP_GEOMETRY.frontPawR.y, th.color, th.accent, p.pawFlashR || 0, weaponColor, p);
-      if (p.muzzleFlash > 0) {
-        drawMuzzleFlash(ctx, SHIP_GEOMETRY.muzzle.x, SHIP_GEOMETRY.muzzle.y,
-          Math.min(1, p.muzzleFlash / 0.18), weaponColor);
-      }
+      drawSpriteShip(ctx, sprite, th, p);
       ctx.restore();
     } else {
       drawMainShip(ctx, p, th.color, th.accent, th.pattern, { scale: MAIN_SHIP_SCALE });
