@@ -1,5 +1,5 @@
 // Filename: EasterEgg.js
-// Kitty Vs Everything — v3.83.0
+// Kitty Vs Everything — v4.1.0
 // Easter egg manager: one slot per egg, all can be alive at the same time.
 //   • BenderEasterEgg (v3.24.0, resized v3.28.0, kill-based v3.29.0) —
 //     the rare 'robot' power-up (dropped by the destroyed Planet Express
@@ -36,6 +36,18 @@
 //     fires a brake-light bolt stream at the player, and on destruction
 //     explodes into a treasure-chest jackpot — ONE of EVERY power-up type
 //     (SpaceballsOneLoot.spawnTreasureChest).
+//   • RnMShip (v4.1.0) — the rare easter-egg INTERCEPTOR (js/modes/
+//     EasterEggs/RnMShip/): a rare time-based roll in the manager's
+//     update (RNMSHIP.spawnChance per roll window, capped at
+//     RNMSHIP.maxPerRun per mission — maybeSpawnRnMShip) gated on
+//     game.state === 'playing', so it works in BOTH classic wave mode
+//     and Search & Destroy mode (one code path). The ship (.assets/
+//     RnMship-256x256.png, key `rnms`) enters off-screen left flying
+//     right, turns around (sprite mirror) fully off-screen right and
+//     patrols back left, looping until destroyed (RNMSHIP.hp). Friendly
+//     bullets damage it; on destruction it explodes and drops a
+//     GUARANTEED Frenzy power-up at its death coordinates
+//     (spawnGuaranteedDrop — bypasses DROP_POLICY).
 // API: `game.aimbot` is the manager (default export). The v3.24.0 surface
 //      is preserved — `active`/`onScreen`/`killCount`/`t`/`quip` proxy the
 //      Bender egg (MiniShip/PlayerWeapons aim-assist gate, HUD "BENDER x/4"
@@ -45,7 +57,8 @@
 //      run all eggs. `game.eggs = { bender, ship, spaceballs }` exposes the
 //      slots for the debug snapshot; `switchEgg(game, type)` spawns/replaces
 //      an egg ('bender' | 'ship' | 'spaceballs' | null);
-//      `maybeSpawnSpaceballs(game)` is the rare per-wave roll (v3.81.0).
+//      `maybeSpawnSpaceballs(game)` is the rare per-wave roll (v3.81.0);
+//      `maybeSpawnRnMShip(game)` is the rare time-based roll (v4.1.0).
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
 import {
@@ -61,8 +74,9 @@ import {
 } from './BenderSprite.js';
 import { getShip, SHIP_W, SHIP_H } from './ShipSprite.js'; // v3.27.0
 import { SpaceballsOne, SPACEBALLS_ONE } from '../modes/EasterEggs/SpaceballsOne/index.js'; // v3.81.0
+import { RnMShip, RNMSHIP } from '../modes/EasterEggs/RnMShip/index.js'; // v4.1.0
 import { spawnGuaranteedDrop } from './DropManager.js'; // v3.83.0: flyby 'robot' drop
-import { TAU, clamp } from './utils.js';
+import { TAU, clamp, rand } from './utils.js';
 
 export const BENDER_KILLS = 4; // v3.29.0: friendly kills that end the egg (HUD "BENDER x/4")
 const BENDER_INTRO_DELAY = 2; // v3.29.0: s between "I'm your Aimbot." and "Shoot that guy!"
@@ -384,13 +398,18 @@ export function switchEgg(game, type) {
   } else if (type === 'spaceballs') { // v3.81.0: force-spawn (dev button)
     if (e.spaceballs) e.spaceballs.alive = false; // replace one still racing
     e.spaceballs = new SpaceballsOne(game);
+  } else if (type === 'rnms') { // v4.1.0: force-spawn (dev button)
+    if (e.rnms) e.rnms.alive = false; // replace one still patrolling
+    e.rnms = new RnMShip(game);
   } else {
     if (e.bender) e.bender.reset();
     if (e.ship) e.ship.alive = false;
     if (e.spaceballs) e.spaceballs.alive = false; // v3.81.0
+    if (e.rnms) e.rnms.alive = false; // v4.1.0
     e.bender = null;
     e.ship = null;
     e.spaceballs = null; // v3.81.0
+    e.rnms = null; // v4.1.0
   }
 }
 
@@ -414,6 +433,27 @@ export function maybeSpawnSpaceballs(game) {
 }
 
 /**
+ * v4.1.0: the rare time-based roll — EasterEgg.update() calls this when a
+ * roll window elapses (RNMSHIP.firstRollDelay after mission start, then
+ * every RNMSHIP.rollIntervalMin–Max seconds), gated on
+ * game.state === 'playing' so it works in BOTH classic wave mode and
+ * Search & Destroy mode. Spawns the RnM ship interceptor when the roll
+ * hits AND the per-mission cap (RNMSHIP.maxPerRun) hasn't been reached.
+ * @returns {boolean} true when the RnM ship was spawned
+ */
+export function maybeSpawnRnMShip(game) {
+  const mgr = game.aimbot;
+  if (!mgr || !game.eggs) return false;
+  if (game.eggs.rnms) return false; // one at a time
+  if (mgr.rnmsCount >= RNMSHIP.maxPerRun) return false; // per-mission cap
+  if (Math.random() >= RNMSHIP.spawnChance) return false; // rare
+  mgr.rnmsCount++;
+  switchEgg(game, 'rnms');
+  bus.emit('banner', { text: 'RnM SHIP INTERCEPTOR INBOUND — SHOOT IT DOWN FOR FRENZY!', tone: 'warn', duration: 3 });
+  return true;
+}
+
+/**
  * v3.27.0: manager — one slot per egg (`game.eggs`), both can be alive.
  * Preserves the v3.24.0 `game.aimbot` surface: `active`/`onScreen`/
  * `killCount`/`t`/`quip` proxy the Bender egg, `trigger()` spawns Bender,
@@ -423,8 +463,10 @@ export function maybeSpawnSpaceballs(game) {
 export default class EasterEgg {
   constructor(game) {
     this.game = game;
-    this.eggs = { bender: null, ship: null, spaceballs: null }; // v3.81.0: + spaceballs slot
+    this.eggs = { bender: null, ship: null, spaceballs: null, rnms: null }; // v4.1.0: + rnms slot
     this.spaceballsCount = 0; // v3.81.0: per-mission spawn counter (cap)
+    this.rnmsCount = 0; // v4.1.0: per-mission spawn counter (cap)
+    this.rnmsRollTimer = RNMSHIP.firstRollDelay; // v4.1.0: s until the first roll
     game.eggs = this.eggs; // v3.27.0: debug snapshot + switchEgg target
   }
 
@@ -450,10 +492,14 @@ export default class EasterEgg {
     if (this.eggs.bender) this.eggs.bender.reset();
     if (this.eggs.ship) this.eggs.ship.alive = false;
     if (this.eggs.spaceballs) this.eggs.spaceballs.alive = false; // v3.81.0
+    if (this.eggs.rnms) this.eggs.rnms.alive = false; // v4.1.0
     this.eggs.bender = null;
     this.eggs.ship = null;
     this.eggs.spaceballs = null; // v3.81.0
+    this.eggs.rnms = null; // v4.1.0
     this.spaceballsCount = 0; // v3.81.0: per-mission cap resets
+    this.rnmsCount = 0; // v4.1.0: per-mission cap resets
+    this.rnmsRollTimer = RNMSHIP.firstRollDelay; // v4.1.0: roll clock resets
   }
 
   update(dt) {
@@ -470,6 +516,22 @@ export default class EasterEgg {
       e.spaceballs.update(dt);
       if (!e.spaceballs.alive) e.spaceballs = null; // exited or destroyed — free the slot
     }
+    if (e.rnms) { // v4.1.0
+      e.rnms.update(dt);
+      if (!e.rnms.alive) e.rnms = null; // destroyed — free the slot
+    }
+    // v4.1.0: RnM ship — rare time-based roll. Gated on 'playing' so it
+    // runs in BOTH classic wave mode and Search & Destroy mode (this
+    // manager updates in both — Game.update calls aimbot.update every
+    // frame); bonus rounds / menus / game-over never roll.
+    if (this.game.state === 'playing' && !e.rnms &&
+        this.rnmsCount < RNMSHIP.maxPerRun) {
+      this.rnmsRollTimer -= dt;
+      if (this.rnmsRollTimer <= 0) {
+        this.rnmsRollTimer = rand(RNMSHIP.rollIntervalMin, RNMSHIP.rollIntervalMax);
+        maybeSpawnRnMShip(this.game);
+      }
+    }
   }
 
   draw(ctx) {
@@ -477,5 +539,6 @@ export default class EasterEgg {
     if (e.bender) e.bender.draw(ctx);
     if (e.ship) e.ship.draw(ctx);
     if (e.spaceballs) e.spaceballs.draw(ctx); // v3.81.0
+    if (e.rnms) e.rnms.draw(ctx); // v4.1.0
   }
 }

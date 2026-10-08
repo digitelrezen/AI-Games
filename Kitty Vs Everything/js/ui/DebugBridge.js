@@ -12,6 +12,8 @@
 // public method (pauseMenu, start, msglog, testAimbot, …).
 // v3.81.0: `spaceballs` slot in the snapshot — Spaceballs One easter-egg
 //          (alive/hp/x/y/destroyed), null-guarded when not on screen.
+// v4.1.0: `rnms` slot in the snapshot — RnM ship interceptor easter-egg
+//          (alive/hp/x/y/dir/destroyed), null-guarded when not on screen.
 // v3.29.0: bender slot in the snapshot — kill-based fields
 //          (aimbotActive/killCount/dialogueStage) replace the v3.24.0
 //          timeLeft countdown (Bender's dialogue is now kill-driven).
@@ -95,6 +97,14 @@ export default class DebugBridge {
           x: Math.round(g.eggs.spaceballs.x),
           y: Math.round(g.eggs.spaceballs.y),
           destroyed: g.eggs.spaceballs.destroyed,
+        } : null,
+        rnms: g.eggs.rnms ? { // v4.1.0: RnM ship interceptor
+          alive: g.eggs.rnms.alive,
+          hp: Math.max(0, Math.round(g.eggs.rnms.hp)),
+          x: Math.round(g.eggs.rnms.x),
+          y: Math.round(g.eggs.rnms.y),
+          dir: g.eggs.rnms.dir,
+          destroyed: g.eggs.rnms.destroyed,
         } : null,
       } : null,
       testAimbot: {

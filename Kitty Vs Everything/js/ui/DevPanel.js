@@ -226,6 +226,18 @@ export default class DevPanel {
         bus.emit('banner', { text: 'SPACEBALLS ONE INBOUND — WE BRAKE FOR NOBODY!', tone: 'warn', duration: 2.5 });
       };
     }
+    // ─── v4.1.0: RnM Ship — the rare easter-egg interceptor ───
+    // Force-spawns the ship (no roll): enters off-screen left flying right,
+    // turns around off-screen right and patrols back (looping until
+    // destroyed); friendly bullets damage it and destruction drops a
+    // GUARANTEED Frenzy power-up at its death coordinates.
+    const rnmsBtn = document.getElementById('dev-rnms');
+    if (rnmsBtn) {
+      rnmsBtn.onclick = () => {
+        switchEgg(g, 'rnms'); // force-spawn (EasterEgg manager slot)
+        bus.emit('banner', { text: 'RnM SHIP INTERCEPTOR INBOUND — SHOOT IT DOWN FOR FRENZY!', tone: 'warn', duration: 2.5 });
+      };
+    }
     // ─── v3.97.0: Hazards — force-spawn a random drifting hazard ───
     // One hazard from a random edge on the HazardManager's own field
     // (independent of the wave spawner) — test the drift + pop + blast.

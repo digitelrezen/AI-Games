@@ -43,13 +43,14 @@ import s40 from './sections/06ah-hazards.mjs';
 import s41 from './sections/06ai-admin-gate.mjs';
 import s42 from './sections/06aj-search-destroy.mjs';
 import s43 from './sections/06ak-hangar-terminal.mjs';
+import s44 from './sections/06al-rnm-ship.mjs';
 
-const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s41, s42, s43, s35, s34];
+const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s41, s42, s43, s44, s35, s34];
 
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v4.0.0: SEARCH & DESTROY (displacement-accumulator camera — dead-zone + excess-delta world accumulation + soft recentering; world-anchored debris/hazard/patrol layout; OPEN SPACE → THE BONEYARD → DEEP SECTOR journey to Eridath\'s Mom\'s House, the 512px shootable base; F1 cockpit radar) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v4.1.0: RnM SHIP INTERCEPTOR (rare easter-egg ship — off-screen entry, right-edge turnaround + mirrored patrol loop, friendly-bullet damage, guaranteed Frenzy drop at death coordinates) — plus SEARCH & DESTROY (displacement-accumulator camera — dead-zone + excess-delta world accumulation + soft recentering; world-anchored debris/hazard/patrol layout; OPEN SPACE → THE BONEYARD → DEEP SECTOR journey to Eridath\'s Mom\'s House, the 512px shootable base; F1 cockpit radar) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }
