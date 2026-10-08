@@ -46,7 +46,9 @@
 //          HUD changes — the fix lives in main.js + style.css).
 // v3.95.0: Version label bumped with the in-game-pipeline hangar hero
 //          preview (no HUD changes — the fix lives in main.js + style.css).
-export const VERSION = 'v3.96.0';
+// v3.97.0: HAZARDS — independent hazard field (js/hazards/); version
+//          label bumped with the milestone.
+export const VERSION = 'v3.97.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

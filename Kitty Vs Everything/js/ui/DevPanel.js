@@ -190,6 +190,16 @@ export default class DevPanel {
         bus.emit('banner', { text: 'SPACEBALLS ONE INBOUND — WE BRAKE FOR NOBODY!', tone: 'warn', duration: 2.5 });
       };
     }
+    // ─── v3.97.0: Hazards — force-spawn a random drifting hazard ───
+    // One hazard from a random edge on the HazardManager's own field
+    // (independent of the wave spawner) — test the drift + pop + blast.
+    const hazardBtn = document.getElementById('dev-hazard');
+    if (hazardBtn) {
+      hazardBtn.onclick = () => {
+        const hz = g.hazards.spawnRandom(g);
+        bus.emit('banner', { text: hz.spec.name.toUpperCase() + ' INBOUND — SHOOT IT DOWN!', tone: 'warn', duration: 2 });
+      };
+    }
     // ─── v3.11.0: screen bounds toggle (classic wrap vs bounce) ───
     const boundsBtn = document.getElementById('dev-bounds');
     if (boundsBtn) {

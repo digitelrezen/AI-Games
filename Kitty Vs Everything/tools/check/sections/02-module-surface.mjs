@@ -87,7 +87,8 @@ const keys = Object.keys(manifest.assets || {});
 //          cat_white_teal / cat_white_yellow (White-*-Catship-256x384.png).
 // v3.81.0: + spaceballs_one (Spaceballs One easter-egg ship art — "We Brake For Nobody").
 // v3.86.0: + goldcoin (gold coin drop pixel-art — "GoldCoinPowerup-Points").
-const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_white_blue', 'cat_white_elecblue', 'cat_white_green', 'cat_white_orange', 'cat_white_pink', 'cat_white_purple', 'cat_white_red', 'cat_white_teal', 'cat_white_yellow', 'spaceballs_one', 'goldcoin'];
+// v3.97.0: + 10 hazard_* (independent hazard field — js/hazards/, Hazards/ subfolder).
+const EXPECTED_KEYS = ['health', 'extralife', 'shield', 'frenzy', 'wasp', 'butterfly', 'rat', 'crate', 'ufo1', 'ufo2', 'shuttle', 'moth', 'beetle', 'femur', 'profile_bone', 'skeleton', 'skull', 'spider', 'snake', 'wanted', 'wolf', 'lizard', 'dragon', 'falcon', 'bat', 'squirrel', 'cat_white_blue', 'cat_white_elecblue', 'cat_white_green', 'cat_white_orange', 'cat_white_pink', 'cat_white_purple', 'cat_white_red', 'cat_white_teal', 'cat_white_yellow', 'spaceballs_one', 'goldcoin', 'hazard_biobarrel', 'hazard_biobomb', 'hazard_clusterbomb', 'hazard_depletedshell', 'hazard_firebarrel', 'hazard_firemine', 'hazard_magnetmine', 'hazard_nuke', 'hazard_nukebarrel', 'hazard_proxmine'];
 check('asset-manifest.json has the expected asset keys',
   keys.length === EXPECTED_KEYS.length && EXPECTED_KEYS.every(k => keys.includes(k)),
   `got ${keys.length}: ${keys.join(', ')}`);

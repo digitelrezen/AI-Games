@@ -16,13 +16,13 @@ Modular refactor timeline (4 phases, complete as of v3.77.0):
                      Game.js/HUD.js/index.html), check.mjs [6aa] version-sync gate,
                      docs restructured, final build
 
-File counts: ~130 files total
-  js/   110 ES modules across 8 top-level subfolders (core 29 = 19 root + config/ 6
+File counts: ~133 files total
+  js/   113 ES modules across 9 top-level subfolders (core 29 = 19 root + config/ 6
         + game/ 4, player 9, player/variants 5, combat 18, enemies 19,
-        enemies/sprites 1, bosses 6, levels 9, input 3, ui 11)
+        enemies/sprites 1, bosses 6, levels 9, hazards 3 (v3.97.0), input 3, ui 11)
   net/  14 files (11 modules + net/data/ 3 E6 data files)
   root  index.html, style.css, build.mjs, package.json, ARCHITECTURE.md, ARCHITECTURE_INDEX.txt
-  tools (shared C:\Dev\AI-GAMES\tools): check.mjs (34 gate sections under check/sections/),
+  tools (shared C:\Dev\AI-GAMES\tools): check.mjs (40 gate sections under check/sections/),
         validate.mjs, smoke.mjs, harness.mjs, import-assets.mjs, derive-cat-sprites.mjs,
         asset-manifest.json
 
@@ -364,6 +364,48 @@ MiniDeploy.js         Pure-logic fleet deploy/recall: toggleFleetDeploy(player) 
                       deployed-mini position).
 MiniPosterSprite.js   Sprite pipeline for the mini-ship power-up: an "Adopt Me!"
                       WANTED poster (a cat behind bars) rendered as 28x28 pixel art.
+
+=====================================================================
+js/hazards/ - HAZARD FIELD (3 files, v3.97.0)
+=====================================================================
+HazardBase.js         Base class for all 10 hazard types (HAZARD_TYPES in
+                      js/core/config/hazards.js): non-lootable, shootable
+                      environmental obstacles. Continuous drift along a FIXED
+                      heading (no steering/AI) until (a) shot down by the
+                      player (Collisions.js friendly-bullet loop ->
+                      HazardManager.explode, byPlayer -> score, ZERO loot),
+                      (b) proximity-fuse trigger (Prox Mine) or direct
+                      contact with the player fleet -> _detonate (byPlayer
+                      false: blast + AoE damage, no score), or (c) drifts
+                      fully off-screen -> silent despawn (no explosion, no
+                      score). applyDamage() honors the v3.83.0 off-screen
+                      kill gate (utils.isOnScreen) exactly like EnemyBase -
+                      hazards only take damage while visible. Rendering: the
+                      256x256 hazard PNG (key "hazard_<type>", embedded
+                      128x128 via tools/import-assets.mjs) through the
+                      AssetManager pipeline, procedural drum/bomb glyph
+                      fallback, durability arc once hit, proximity warning
+                      ring.
+HazardFactory.js      createHazard() + pickSpawnVector(): the "enter from ANY
+                      direction" rule - random edge (top/right/bottom/left),
+                      a random point fully off-screen past HAZARD.EDGE_MARGIN,
+                      and a random interior target so the heading always
+                      crosses the playfield (straight or diagonal).
+HazardManager.js      THE independent spawner + per-frame driver (game.hazards):
+                      owns its own list/rings/pools/flash state and spawn
+                      timer (HAZARD.SPAWN_MIN..MAX, capped at
+                      HAZARD.MAX_CONCURRENT), active during combat waves only
+                      (bonus rounds stay hazard-free). explode(game, hz,
+                      {byPlayer}) detonates per HAZARD_TYPES[type].explosion:
+                      bio (green splatter + toxic pool), fire (orange burst +
+                      fire pool), ash (gray + long low-dps pool), cluster (N
+                      sub-bursts + mini shockwaves), magnet (EM burst +
+                      clears enemy bullets in the field), nuke (massive blast,
+                      double shockwave, full-screen flash), prox (tight
+                      high-damage burst). Every explosion: particle bursts,
+                      expanding shockwave ring, screen shake, audio, and AoE
+                      damage to every live player inside the blast radius.
+                      ZERO LOOT: the module never imports the DropManager.
 
 =====================================================================
 js/ui/ - HUD / UI / META (11 files)

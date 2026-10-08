@@ -39,13 +39,14 @@ import s36 from './sections/06ad-drop-rarity.mjs';
 import s37 from './sections/06ae-spaceballs-one.mjs';
 import s38 from './sections/06af-gold-coin-drop.mjs';
 import s39 from './sections/06ag-crisp-rendering.mjs';
+import s40 from './sections/06ah-hazards.mjs';
 
-const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s35, s34];
+const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31, s32, s33, s36, s37, s38, s39, s40, s35, s34];
 
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v3.96.0: fleet orbit (T toggle) renders through the shared in-game sprite pipeline, orbiting minis always face the main ship, version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v3.97.0: independent hazard field (js/hazards/) — 10 non-lootable, shootable obstacles drift in from any edge, per-type explosions, zero DropManager contact — plus version sync, LevelRegistry surface, asset pipeline (LF registry byte-identical to committed), and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

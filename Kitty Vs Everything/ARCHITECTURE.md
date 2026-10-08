@@ -22,6 +22,7 @@ Kitty Vs Everything/
 │   │   └── sprites/   1   enemy sprite pipeline (Wasp2Sprite)
 │   ├── bosses/        6   boss art + behavior (Black Cat, Pink Cat)
 │   ├── levels/        9   stage flow + bonus levels (LevelRegistry, BonusLevel, BoneYard, Internet, asteroids)
+│   ├── hazards/       3   hazard field (v3.97.0: HazardBase, HazardFactory, HazardManager — 10 non-lootable obstacles)
 │   ├── input/         3   input (InputManager, Keybinds, MenuKeybinds)
 │   └── ui/           11   HUD / panels / settings (HUD, HUDFireControl, DevPanel, SettingsScreen, …)
 └── net/             11   LAN co-op modules + net/data/ (3 E6 files)
@@ -34,6 +35,7 @@ index.html ─▶ js/core/main.js ─▶ js/core/Game.js (thin public shell / or
 Game.js ─▶ js/core/game/ (StageFlow / DisplayPolicy / GameOver / Gameplay — v3.77.0)
         ─▶ LevelRegistry (STAGE_SEQUENCE + BONUS_STAGES — v3.76.0)
         ─▶ WaveManager (combat stage: completion signal) ─▶ EnemyFactory ─▶ EnemyBase ─▶ 17 species (+ sprites/)
+        ─▶ HazardManager (independent hazard field — v3.97.0) ─▶ HazardFactory ─▶ HazardBase
         ─▶ BonusLevel (adapter) ─▶ BoneYardBonus / InternetBonus
         ─▶ InternetBonus ─▶ BlackCatEntourage / RealTimeClock ─▶ js/bosses (Black Cat / Pink Cat)
         ─▶ CatShipFactory ─▶ Player ─▶ js/player/variants (5 cat variants)
@@ -186,6 +188,15 @@ v3.74.0 (Phase 1): boss art + behavior isolated from `js/enemies/` — the boss 
 - **AsteroidSprite.js** — v3.22.0 asteroid sprite pipeline: base64-embedded PNG (241×217, transparent) → tight-cropped → 128-px sprite → 8 seeded jagged shard sub-sprites; procedural jittered rock fallback.
 - **MiniDeploy.js** — v3.16.0 pure-logic fleet deploy/recall: `toggleFleetDeploy(player)` flips `player.fleetDeployed`; `updateFleetDeploy(player, dt)` places deployed minis in a combat orbit (the ONLY source of deployed-mini position).
 - **MiniPosterSprite.js** — Sprite pipeline for the mini-ship power-up: an "Adopt Me!" WANTED poster (a cat behind bars) rendered as 28×28 pixel art.
+
+## 7a. js/hazards/ — Hazard Field (3 files, v3.97.0)
+
+INDEPENDENT from `WaveManager`, `DropManager`, enemies and easter eggs: the hazard field has its own spawner, its own list, and ZERO loot.
+
+- **HazardBase.js** — Base class for the 10 hazard types (`HAZARD_TYPES` in `js/core/config/hazards.js`): non-lootable, shootable environmental obstacles. Drifts CONTINUOUSLY along a fixed heading (no steering/AI) until (a) shot down by the player (Collisions.js friendly-bullet loop → `HazardManager.explode` with `byPlayer: true` → score, ZERO loot), (b) proximity-fuse trigger (Prox Mine) or direct contact with the player fleet → `_detonate()` (blast + AoE damage, no score), or (c) drifts fully off-screen → silent despawn. `applyDamage()` honors the v3.83.0 off-screen kill gate (`utils.isOnScreen`) exactly like `EnemyBase`. Rendering: the 256×256 hazard PNG (key `hazard_<type>`, embedded 128×128 via `tools/import-assets.mjs`) through the AssetManager pipeline, procedural drum/bomb glyph fallback, durability arc once hit, proximity warning ring.
+- **HazardFactory.js** — `createHazard()` + `pickSpawnVector()`: the "enter from ANY direction" rule — random edge (top/right/bottom/left), a random point fully off-screen past `HAZARD.EDGE_MARGIN`, and a random interior target so the heading always crosses the playfield (straight or diagonal).
+- **HazardManager.js** — The independent spawner + per-frame driver (`game.hazards`): owns its own list/rings/pools/flash state and spawn timer (`HAZARD.SPAWN_MIN..MAX`, capped at `HAZARD.MAX_CONCURRENT`), active during combat waves only (bonus rounds stay hazard-free). `explode(game, hz, {byPlayer})` detonates per `HAZARD_TYPES[type].explosion`: bio (green splatter + toxic pool), fire (orange burst + fire pool), ash (gray + long low-dps pool), cluster (N sub-bursts + mini shockwaves), magnet (EM burst + clears enemy bullets in the field), nuke (massive blast, double shockwave, full-screen flash), prox (tight high-damage burst). Every explosion: particle bursts, expanding shockwave ring, screen shake, audio, and AoE damage to every live player inside the blast radius. **ZERO LOOT: the module never imports the DropManager.**
+- Tunables: `HAZARD_TYPES` (per-type speed/hp/radius/score/proximityFuse/explosion) + `HAZARD` (spawner cadence + weighted table) in `js/core/config/hazards.js`, re-exported by `config.js`. Dev panel "Drop Hazard" button (`#dev-hazard`) force-spawns one.
 
 ## 8. js/ui/ — HUD / UI / Meta (11 files)
 

@@ -228,7 +228,15 @@
 //          center (160, 110); the gameplay canvas is unchanged.
 //          Milestone version synced across package.json, config.js,
 //          main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v3.96.0';
+// v3.97.0: HAZARDS — new independent hazard field (js/hazards/): 10
+//          non-lootable, shootable environmental obstacles drift in from
+//          any edge on the HazardManager's own spawner (separate from
+//          enemy waves, power-ups and easter eggs); Game.js ticks
+//          game.hazards.update() in the core loop and game.hazards.draw()
+//          in render (pools → sprites → shockwaves → nuke flash);
+//          Collisions.js routes friendly bullets into the hazard list
+//          (pop early → per-type explosion → ZERO loot).
+export const VERSION = 'v3.97.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -249,6 +257,7 @@ import { stunRockets } from '../combat/StunRockets.js'; // v3.70.0: modular stun
 import { napalmRockets } from '../combat/NapalmRockets.js'; // v3.70.0: modular napalm rockets (E/J)
 import { drawAttackTelegraph } from '../enemies/EnemyAttackModule.js'; // v3.84.0: telegraphed enemy attacks
 import { updateEnemyHazards, drawEnemyHazards } from '../enemies/EnemyHazard.js'; // v3.84.0: on-death hazards
+import HazardManager from '../hazards/HazardManager.js'; // v3.97.0: independent hazard field
 import { initStars, updateStars, drawStars } from './Starfield.js';
 import { bus } from './EventBus.js';
 import { audio } from './AudioSystem.js';
@@ -323,6 +332,7 @@ export default class Game {
     this.bonusTargets = [];
     this.fireZones = [];   // v3.11.0: lingering napalm pools (FireZone.js)
     this.enemyHazards = [];   // v3.84.0: on-death hazards (EnemyHazard.js)
+    this.hazards = new HazardManager(this); // v3.97.0: independent hazard field (js/hazards/)
     this.shake = 0;
     this.godMode = false;
     this.paused = false;
@@ -394,6 +404,7 @@ export default class Game {
     this.bonusTargets = [];
     this.fireZones = [];
     this.enemyHazards = [];   // v3.84.0
+    this.hazards.reset(); // v3.97.0: fresh hazard field per mission
     this.player = createCatShip(theme, this);
     this.player.score = 0;        // v3.20.0: per-player score
     this.players = [this.player]; // v3.20.0: P1 always
@@ -510,6 +521,7 @@ export default class Game {
       for (const p of this.powerups) p.update(dt);
       for (const z of this.fireZones) z.update(dt); // v3.11.0: napalm pool DoT
       updateEnemyHazards(this, dt); // v3.84.0: on-death hazard pools/bombs (self-culls)
+      this.hazards.update(this, dt); // v3.97.0: hazard field (own spawner; combat levels only)
       for (const bt of this.bonusTargets) bt.update(dt);
       // v3.76.0: the active stage (combat wave or bonus round) is driven
       // through the uniform LevelRegistry interface; completion advances
@@ -628,6 +640,7 @@ export default class Game {
     drawEnemyHazards(this, ctx); // v3.84.0: on-death hazards under enemies
     this.bonus.draw(ctx); // v3.54.0 → v3.60.0: bonus stage draw hook (Bone Yard bones are destructible bonusTargets)
     for (const pw of this.powerups) pw.draw(ctx);
+    this.hazards.draw(this, ctx); // v3.97.0: hazard pools → sprites → shockwaves → nuke flash
     for (const bt of this.bonusTargets) bt.draw(ctx);
     for (const e of this.enemies) { e.draw(ctx); drawAttackTelegraph(e, ctx); } // v3.84.0: telegraph after sprite
     if (this.player && !this.player.dead) this.player.draw(ctx);

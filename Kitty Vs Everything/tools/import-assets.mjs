@@ -15,6 +15,9 @@
 // to tools/asset-manifest.json and re-run. No game code changes needed.
 //
 // Per-key resolution (robust against renames / case / separator drift):
+//   0. subfolder prefix — a value like "Hazards/BioBarrel-256x256.png"
+//      (v3.97.0) resolves the base name inside .assets/Hazards/ instead of
+//      the .assets root (same exact → case-insensitive → fuzzy ladder)
 //   1. exact file name in .assets
 //   2. normalized fuzzy match (lowercase, spaces / - / _ stripped) —
 //      must be UNAMBIGUOUS (exactly one hit) or it errors
@@ -218,22 +221,36 @@ if (keys.length === 0) {
   bad('manifest has no assets — nothing to import');
   process.exit(1);
 }
-const listing = fs.readdirSync(ASSET_DIR).filter((f) => f.toLowerCase().endsWith('.png'));
-console.log(`[import-assets] ${listing.length} PNGs available, ${keys.length} manifest keys\n`);
+const ROOT_LISTING = fs.readdirSync(ASSET_DIR).filter((f) => f.toLowerCase().endsWith('.png'));
+// v3.97.0: subfolder support — a manifest value may carry a folder prefix
+// ("Hazards/BioBarrel-256x256.png"); the base name is then resolved inside
+// that subfolder of .assets with the same exact → case → fuzzy ladder.
+const listingFor = (wanted) => {
+  const sep = wanted.indexOf('/');
+  if (sep < 0) return { dir: '', base: wanted, listing: ROOT_LISTING };
+  const dir = wanted.slice(0, sep).replace(/\\/g, '/');
+  const sub = path.join(ASSET_DIR, dir);
+  if (!fs.existsSync(sub) || !fs.statSync(sub).isDirectory()) {
+    return { dir, base: wanted.slice(sep + 1), listing: [] };
+  }
+  return { dir, base: wanted.slice(sep + 1), listing: fs.readdirSync(sub).filter((f) => f.toLowerCase().endsWith('.png')) };
+};
+console.log(`[import-assets] ${ROOT_LISTING.length} PNGs in .assets root, ${keys.length} manifest keys\n`);
 
 const imported = {}; // key → { b64, w, h, source, srcW, srcH, sha12, how }
 for (const key of keys) {
   const wanted = manifest.assets[key];
-  const res = resolveAssetFile(wanted, listing);
+  const { dir, base, listing } = listingFor(wanted);
+  const res = resolveAssetFile(base, listing);
   if (res.missing) {
-    bad(`${key}: "${wanted}" not found in .assets — available: ${listing.join(', ')}`);
+    bad(`${key}: "${wanted}" not found in .assets${dir ? '/' + dir : ''} — available: ${listing.join(', ') || '(empty folder)'}`);
     continue;
   }
   if (res.ambiguous) {
     bad(`${key}: "${wanted}" is ambiguous — matches: ${res.ambiguous.join(', ')}`);
     continue;
   }
-  const file = res.file;
+  const file = dir ? dir + '/' + res.file : res.file;
   const buf = fs.readFileSync(path.join(ASSET_DIR, file));
   let png;
   try {

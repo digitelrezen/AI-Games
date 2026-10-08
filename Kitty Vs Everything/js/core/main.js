@@ -104,7 +104,9 @@
 //          centered on the fixed midpoint of the square 384×384 stage
 //          (192, 192). The selection screen now shows the ship exactly
 //          as it flies. Milestone version synced with package.json.
-export const VERSION = 'v3.96.0';
+// v3.97.0: HAZARDS — independent hazard field (js/hazards/) added;
+//          milestone version synced with package.json.
+export const VERSION = 'v3.97.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup

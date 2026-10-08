@@ -29,6 +29,26 @@ export function runCollisions(game) {
       }
     }
     if (b.alive) {
+      // v3.97.0: HAZARDS — shootable environmental obstacles (js/hazards/).
+      // Bullets are consumed on impact; a killing shot detonates the
+      // hazard (per-type explosion, ZERO loot — HazardManager.explode).
+      const hzList = game.hazards && game.hazards.list;
+      if (hzList) for (const hz of hzList) {
+        if (!hz.alive) continue;
+        const rr = b.radius + hz.radius;
+        if (dist2(b.x, b.y, hz.x, hz.y) < rr * rr) {
+          hz.flash = 0.15;
+          hz.applyDamage(b.damage);
+          b.alive = false;
+          game.particles.burst(b.x, b.y, { count: 6, color: hz.color, speed: 120, life: 0.25 });
+          if (!hz.alive && !hz.deathHandled) {
+            game.hazards.explode(game, hz, { byPlayer: true }); // sets deathHandled
+          }
+          break;
+        }
+      }
+    }
+    if (b.alive) {
       for (const bt of game.bonusTargets) {
         if (!bt.alive) continue;
         const rr = b.radius + bt.radius;
