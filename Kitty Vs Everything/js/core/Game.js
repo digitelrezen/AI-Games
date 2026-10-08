@@ -236,7 +236,10 @@
 //          in render (pools → sprites → shockwaves → nuke flash);
 //          Collisions.js routes friendly bullets into the hazard list
 //          (pop early → per-type explosion → ZERO loot).
-export const VERSION = 'v3.97.0';
+// v3.98.0: HANGAR_ZOOM 1.0 (exact in-game hangar scale) + the F9 admin
+//          panel is gated behind the terminal passphrase prompt
+//          (DevPanel.js). Milestone version synced with package.json.
+export const VERSION = 'v3.98.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

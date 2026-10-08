@@ -106,7 +106,11 @@
 //          as it flies. Milestone version synced with package.json.
 // v3.97.0: HAZARDS — independent hazard field (js/hazards/) added;
 //          milestone version synced with package.json.
-export const VERSION = 'v3.97.0';
+// v3.98.0: HANGAR_ZOOM 2.0 → 1.0 — the hangar hero now renders the
+//          catship at its EXACT in-game scale (70px frame ×
+//          MAIN_SHIP_SCALE, no showcase zoom). Milestone version synced
+//          with package.json.
+export const VERSION = 'v3.98.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup
@@ -145,10 +149,10 @@ const hangarCtx = hangarCanvas ? hangarCanvas.getContext('2d') : null;
 const HANGAR_DPR = Math.max(1, window.devicePixelRatio || 1);
 // v3.95.0: showcase zoom — the sprite renders through the SAME in-game
 // pipeline as PlayerRenderer (70px frame × MAIN_SHIP_SCALE = 2x),
-// multiplied by HANGAR_ZOOM so the selection screen shows the ship at
-// 2× its in-game size (4× the 70px frame) with the identical theme glow
-// and hardpoint FX.
-const HANGAR_ZOOM = 2.0;
+// multiplied by HANGAR_ZOOM. v3.98.0: HANGAR_ZOOM = 1.0 — the selection
+// screen shows the ship at its EXACT in-game size (2× the 70px frame)
+// with the identical theme glow and hardpoint FX.
+const HANGAR_ZOOM = 1.0;
 if (hangarCanvas) {
   hangarCanvas.width = Math.round(384 * HANGAR_DPR);
   hangarCanvas.height = Math.round(384 * HANGAR_DPR);

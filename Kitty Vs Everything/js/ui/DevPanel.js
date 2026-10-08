@@ -33,7 +33,14 @@
 //          (Settings.js LIMITS is the source of truth; setSetting clamps).
 // v3.81.0: "Spaceballs One" dev button — force-spawns the rare
 //          unstoppable easter-egg ship (switchEgg(game, 'spaceballs')).
-export const VERSION = 'v3.82.0';
+// v3.98.0: ADMIN PASSPHRASE GATE — F9 / backquote no longer opens the
+//          panel directly: a terminal-style overlay asks "Who is always
+//          ready?" and the typed answer is validated case-insensitively
+//          (Eridaths Mom / Eridath mom / EM). Correct → the panel opens
+//          normally; wrong → "That is incorrect. your punishment is
+//          Back of the line!" and the prompt stays up for a retry (no
+//          lockouts, no permanent restrictions).
+export const VERSION = 'v3.98.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -43,14 +50,31 @@ import { bus } from '../core/EventBus.js';
 import { SETTINGS, setSetting } from './Settings.js';
 import { computeViewport, describeViewport } from '../core/Viewport.js'; // v3.34.0: footer readout
 
+// ─── v3.98.0: ADMIN PASSPHRASE GATE (terminal-style prompt, F9/backquote) ───
+// The admin panel is gated behind a playful terminal prompt: "Who is
+// always ready?" The typed answer is validated case-insensitively
+// (surrounding whitespace trimmed). Correct → the panel opens normally;
+// wrong → the punishment line shows and the prompt stays up for a retry —
+// no lockouts, no permanent restrictions.
+const ADMIN_PASSPHRASES = ['eridaths mom', 'eridath mom', 'em'];
+export function verifyAdminPassphrase(input) {
+  return ADMIN_PASSPHRASES.includes(String(input ?? '').trim().toLowerCase());
+}
+
 export default class DevPanel {
   constructor(game) {
     this.game = game;
     this.el = document.getElementById('dev-panel');
+    // v3.98.0: the passphrase gate wraps the toggle — F9 / backquote with
+    // the panel closed opens the terminal prompt (not the panel); with the
+    // gate up it cancels the gate; with the panel up it closes the panel.
+    this.gate = this.buildGate();
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Backquote' || e.code === 'F9') {
         e.preventDefault();
-        this.el.classList.toggle('hidden');
+        if (!this.gate.classList.contains('hidden')) { this.closeGate(); return; }
+        if (this.el.classList.contains('hidden')) this.openGate();
+        else this.el.classList.add('hidden');
       }
     });
     document.getElementById('dev-close').onclick = () => this.el.classList.add('hidden');
@@ -237,6 +261,64 @@ export default class DevPanel {
       document.addEventListener('fullscreenchange', refreshFs);
       refreshFs();
     }
+  }
+  /** v3.98.0: build the terminal-style passphrase gate. It lives in
+      #game-root (the panel's parent) so it scales with the stage. */
+  buildGate() {
+    const host = this.el.parentElement || document.body;
+    const gate = document.createElement('div');
+    gate.id = 'admin-gate';
+    gate.className = 'hidden';
+    gate.innerHTML =
+      '<div class="admin-gate-term">' +
+      '<div class="admin-gate-bar">ADMIN ACCESS — TERMINAL</div>' +
+      '<div class="admin-gate-line">&gt; Who is always ready?</div>' +
+      '<div class="admin-gate-input-row">' +
+      '<span class="admin-gate-prompt">&gt;</span>' +
+      '<input id="admin-gate-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" />' +
+      '</div>' +
+      '<div id="admin-gate-msg" class="admin-gate-msg hidden"></div>' +
+      '</div>';
+    host.appendChild(gate);
+    const input = gate.querySelector('#admin-gate-input');
+    const msg = gate.querySelector('#admin-gate-msg');
+    input.addEventListener('keydown', (e) => {
+      // v3.98.0: swallow every key while the gate owns the input so the
+      // game's InputManager (window keydown) never sees typed characters.
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const answer = input.value;
+        input.value = '';
+        if (verifyAdminPassphrase(answer)) {
+          this.closeGate();
+          this.el.classList.remove('hidden'); // correct → panel opens normally
+        } else {
+          msg.textContent = 'That is incorrect. your punishment is Back of the line!';
+          msg.classList.remove('hidden');
+          input.focus(); // retry — no lockouts
+        }
+      } else if (e.key === 'Escape' || e.code === 'F9' || e.code === 'Backquote') {
+        e.preventDefault();
+        this.closeGate(); // cancel the gate (the panel stays closed)
+      }
+    });
+    gate.addEventListener('click', () => input.focus());
+    return gate;
+  }
+  /** v3.98.0: show the terminal prompt and hand focus to the input. */
+  openGate() {
+    const input = this.gate.querySelector('#admin-gate-input');
+    const msg = this.gate.querySelector('#admin-gate-msg');
+    input.value = '';
+    msg.textContent = '';
+    msg.classList.add('hidden');
+    this.gate.classList.remove('hidden');
+    input.focus();
+  }
+  /** v3.98.0: hide the gate (cancel) without touching the panel. */
+  closeGate() {
+    this.gate.classList.add('hidden');
   }
   /** Dock a mini (v3.3.0: always clones the player's current theme). */
   addMini() {

@@ -239,6 +239,66 @@ body {
   overflow: hidden;
 }
 
+/* ─── ADMIN PASSPHRASE GATE (v3.98.0) ───
+   Terminal-style overlay that intercepts F9 / backquote BEFORE the admin
+   panel opens: it asks "Who is always ready?" and validates the typed
+   answer case-insensitively (DevPanel.js). It lives in #game-root, so it
+   scales with the stage like the panel itself; z-index 60 sits above
+   #dev-panel (50). */
+#admin-gate {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 8, 16, 0.72);
+  z-index: 60;
+}
+.admin-gate-term {
+  width: 460px;
+  max-width: calc(100% - 40px);
+  background: rgba(10, 14, 20, 0.97);
+  border: 1px solid #2f4f3a;
+  border-radius: 8px;
+  box-shadow: 0 0 32px rgba(60, 255, 140, 0.14), 0 8px 28px rgba(0,0,0,0.6);
+  font-family: 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  font-size: 14px;
+  color: #7dffa8;
+  overflow: hidden;
+}
+.admin-gate-bar {
+  padding: 8px 12px;
+  background: rgba(60, 255, 140, 0.08);
+  border-bottom: 1px solid rgba(60, 255, 140, 0.25);
+  letter-spacing: 2px;
+  font-size: 11px;
+  color: rgba(125, 255, 168, 0.85);
+}
+.admin-gate-line { padding: 14px 14px 0; }
+.admin-gate-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 4px;
+}
+.admin-gate-prompt { color: #7dffa8; }
+#admin-gate-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(125, 255, 168, 0.4);
+  color: #d6ffe3;
+  font: inherit;
+  padding: 4px 2px;
+  outline: none;
+}
+#admin-gate-input:focus { border-bottom-color: #7dffa8; }
+.admin-gate-msg {
+  padding: 8px 14px 14px;
+  color: #ff9d6b;
+  text-shadow: 0 0 10px rgba(255, 120, 60, 0.35);
+}
+
 /* ── Hangar carousel (v3.85.0; v3.87.0: this block was stranded inside an
      unclosed #dev-panel rule and the browser silently discarded it — arrows
      stacked vertically and the nameplate was clipped. Restored here as a

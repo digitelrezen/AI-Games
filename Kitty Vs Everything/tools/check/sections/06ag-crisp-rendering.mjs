@@ -82,8 +82,8 @@ export default async function run() {
     mainSrc.includes('disableImageSmoothing(hangarCtx)'));
 
   // ── (4) in-game-pipeline hangar blit (v3.95.0: square 384×384 stage) ──
-  check('main.js defines the HANGAR_ZOOM showcase scale (2× in-game)',
-    mainSrc.includes('const HANGAR_ZOOM = 2.0;'));
+  check('main.js defines the HANGAR_ZOOM showcase scale (1.0 = exact in-game size, v3.98.0)',
+    mainSrc.includes('const HANGAR_ZOOM = 1.0;'));
   check('main.js sizes the hangar buffer to the square 384×384 stage (v3.95.0)',
     mainSrc.includes('hangarCanvas.width = Math.round(384 * HANGAR_DPR);') &&
     mainSrc.includes('hangarCanvas.height = Math.round(384 * HANGAR_DPR);'));

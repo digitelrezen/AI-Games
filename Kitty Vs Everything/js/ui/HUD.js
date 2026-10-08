@@ -48,7 +48,9 @@
 //          preview (no HUD changes — the fix lives in main.js + style.css).
 // v3.97.0: HAZARDS — independent hazard field (js/hazards/); version
 //          label bumped with the milestone.
-export const VERSION = 'v3.97.0';
+// v3.98.0: Version label bumped with the exact-scale hangar (HANGAR_ZOOM
+//          1.0) + the F9 admin-panel passphrase gate (no HUD changes).
+export const VERSION = 'v3.98.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter
