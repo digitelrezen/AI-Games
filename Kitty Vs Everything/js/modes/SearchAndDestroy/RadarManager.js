@@ -1,5 +1,5 @@
 // Filename: RadarManager.js
-// Kitty Vs Everything — v4.0.0
+// Kitty Vs Everything — v4.3.0
 // SEARCH & DESTROY — avionics: the cockpit radar HUD.
 //
 // A toggleable cockpit overlay (F1 — SAR.RADAR.KEY, DevPanel-style window
@@ -20,7 +20,7 @@
 // (#fc-radar, right column — where the old SPD readout lived) instead of
 // the standalone bottom-right screen panel; the screen radar is hidden in
 // that state. Panel minimized/hidden → the classic standalone scope.
-export const VERSION = 'v4.0.0';
+export const VERSION = 'v4.3.0';
 import { SAR, sarProgress } from '../../core/config.js';
 import { TAU, clamp } from '../../core/utils.js';
 

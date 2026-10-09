@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════
-//  [6aj] v4.0.0 SEARCH & DESTROY — the world-space sector-journey
+//  [6aj] v4.3.0 SEARCH & DESTROY — the world-space sector-journey
 //        mode (js/modes/SearchAndDestroy/, E6 nested modules). The
 //        player flies in SCREEN space (full Catship/weapon/drop
 //        parity — the classic combat stack is untouched, PlayerFlight
 //        stays sovereign) while the DISPLACEMENT-ACCUMULATOR camera
 //        (SectorMap) tracks the player's screen offset against a dead
 //        zone, accumulates the EXCESS delta into world coordinates
-//        (worldX/worldY) and softly recenter the ship — the world
+//        (worldX/worldY) and softly recenters the ship — the world
 //        scrolls fluidly around the combat layer. Debris, hazards and
 //        regional patrols are WORLD-ANCHORED at absolute world
 //        coordinates (deterministic seeded layout). The journey runs
@@ -16,9 +16,26 @@
 //        enemy-spawning base (the objective). A cockpit radar
 //        (RadarManager, F1) tracks enemies / power-ups / the house.
 //        Destroying the house = victory.
+//
+//  v4.3.0 additions gated here:
+//    • SAR.STARFIELD (config/searchDestroy.js) — the multi-layer
+//      parallax starfield (FAR / MID / NEAR tiled star layers, NEBULA
+//      mid-depth dust, TRAILS foreground streaks, per-layer parallax
+//      factor f + autonomous wind drift, modulo-wrapped tiles).
+//    • SectorMap starfield — _makeStarLayers / _makeNebula /
+//      _makeTrails + _updateStarfield / _drawStarfield (tiled layers,
+//      constant visible density across the 64 km sector).
+//    • SectorSpawner.worldMotion — the autonomous world-motion
+//      registry: drops / asteroids / chasing enemies integrate in
+//      screen space, the registry treats their screen-space delta as
+//      world motion (capped per frame) and re-projects them back to
+//      screen after the camera accumulator advances, so nothing
+//      drifts relative to the world while the camera scrolls — and
+//      drops keep falling while the ship holds still.
 //        Headless: the facade is driven directly (displacement
 //        accumulator, world-anchored layout, zone entry, house state,
-//        hudLabel, sarProgress/sarZoneFor).
+//        hudLabel, sarProgress/sarZoneFor, starfield layers,
+//        world-motion registry).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod, makeGame } from '../infra.mjs';
@@ -26,7 +43,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export default async function run() {
-  console.log('\n[6aj] v4.0.0 search & destroy (displacement-accumulator camera + world-anchored journey)');
+  console.log('\n[6aj] v4.3.0 search & destroy (parallax starfield + autonomous world motion)');
   {
     // ── Module existence (E6 nested mode) ──
     for (const f of [
@@ -75,6 +92,18 @@ export default async function run() {
     check('config.js: re-exports SAR / sarProgress / sarZoneFor',
       cfgSrc.includes("export { SAR, sarProgress, sarZoneFor } from './config/searchDestroy.js'"));
 
+    // ── v4.3.0 starfield config (SAR.STARFIELD) ──
+    check('config/searchDestroy.js: SAR.STARFIELD block (v4.3.0)',
+      cfgSardSrc.includes('STARFIELD:'));
+    check('config/searchDestroy.js: STARFIELD.FAR / MID / NEAR star layers',
+      cfgSardSrc.includes('FAR:') && cfgSardSrc.includes('MID:') && cfgSardSrc.includes('NEAR:'));
+    check('config/searchDestroy.js: STARFIELD.NEBULA mid-depth dust',
+      cfgSardSrc.includes('NEBULA:') && cfgSardSrc.includes('rMin') && cfgSardSrc.includes('rMax'));
+    check('config/searchDestroy.js: STARFIELD.TRAILS foreground streaks',
+      cfgSardSrc.includes('TRAILS:') && cfgSardSrc.includes('maxLen') && cfgSardSrc.includes('speedRef'));
+    check('config/searchDestroy.js: per-layer parallax factor + wind drift',
+      cfgSardSrc.includes('f: 0.22') && cfgSardSrc.includes('windX') && cfgSardSrc.includes('windY'));
+
     // ── v4.0.0 camera model (source gates) ──
     check('SectorMap: the displacement-accumulator camera (worldX/worldY + dead zone + soft recenter)',
       mapSrc.includes('this.worldX') && mapSrc.includes('this.worldY') &&
@@ -84,6 +113,39 @@ export default async function run() {
     check('SectorSpawner: world-anchored spawners (anchors + world-locked projection)',
       spawnSrc.includes('debrisAnchors') && spawnSrc.includes('hazardAnchors') &&
       spawnSrc.includes('patrolSites') && spawnSrc.includes('worldToScreen'));
+
+    // ── v4.3.0 starfield (SectorMap source gates) ──
+    check('SectorMap: starfield layer builders (_makeStarLayers / _makeNebula / _makeTrails)',
+      mapSrc.includes('_makeStarLayers') && mapSrc.includes('_makeNebula') && mapSrc.includes('_makeTrails'));
+    check('SectorMap: starfield renderers (_drawStarLayer / _drawNebula / _drawStarTrails)',
+      mapSrc.includes('_drawStarLayer') && mapSrc.includes('_drawNebula') && mapSrc.includes('_drawStarTrails'));
+    check('SectorMap: tiled star layers (tile + mod wrap for constant density)',
+      mapSrc.includes('tile') && mapSrc.includes('mod(st.x - offX, t)'));
+    check('SectorMap: per-layer parallax factor (f) + autonomous wind drift',
+      mapSrc.includes('f: s.f') && mapSrc.includes('windX') && mapSrc.includes('windY') &&
+      mapSrc.includes('this.worldX * layer.f'));
+    check('SectorMap: TRAILS streak opposite the player movement vector',
+      mapSrc.includes('p.vx') && mapSrc.includes('p.vy') && mapSrc.includes('-pvx / speed'));
+
+    // ── v4.3.0 autonomous world motion (SectorSpawner source gates) ──
+    check('SectorSpawner: worldMotion registry (entity → world state)',
+      spawnSrc.includes('worldMotion') && spawnSrc.includes('new Map()'));
+    check('SectorSpawner: adoption pass (_adoptWorldEntities + _adoptWorld)',
+      spawnSrc.includes('_adoptWorldEntities') && spawnSrc.includes('_adoptWorld'));
+    check('SectorSpawner: world-motion step (_updateWorldMotion)',
+      spawnSrc.includes('_updateWorldMotion'));
+    check('SectorSpawner: auto mode (screen delta = world motion)',
+      spawnSrc.includes("'auto'") && spawnSrc.includes('w.wx +=') && spawnSrc.includes('w.wy +='));
+    check('SectorSpawner: drift mode (registry-owned world velocity)',
+      spawnSrc.includes("'drift'") && spawnSrc.includes('w.vx * dt') && spawnSrc.includes('w.vy * dt'));
+    check('SectorSpawner: per-frame delta cap (WORLD_MOTION_MAX_STEP)',
+      spawnSrc.includes('WORLD_MOTION_MAX_STEP') && spawnSrc.includes('clamp('));
+    check('SectorSpawner: re-projection after the camera (worldToScreen)',
+      spawnSrc.includes('worldToScreen(w.wx, w.wy)'));
+    check('SectorSpawner: adoption back-projection (screenToWorld)',
+      spawnSrc.includes('screenToWorld(entity.x, entity.y)'));
+    check('SectorSpawner: registry wired into update() (adoption + step)',
+      spawnSrc.includes('this._adoptWorldEntities()') && spawnSrc.includes('this._updateWorldMotion(dt)'));
 
     // ── Game.js wiring ──
     check('Game.js: imports the SearchAndDestroy facade',
@@ -139,15 +201,16 @@ export default async function run() {
       flowSrc.includes("game.mode === 'sard' ? 'sard' : undefined"));
 
     // ── Headless behavior (the facade driven directly) ──
-    const { default: SearchAndDestroy } = await mod('js/modes/SearchAndDestroy/index.js');
+    const si = await mod('js/modes/SearchAndDestroy/index.js');
+    const SearchAndDestroy = si.default;
     const { SAR, sarProgress, sarZoneFor } = await mod('js/core/config.js');
     const sm = await mod('js/modes/SearchAndDestroy/SectorMap.js');
     const sp = await mod('js/modes/SearchAndDestroy/SectorSpawner.js');
     const sc = await mod('js/modes/SearchAndDestroy/SectorCombatManager.js');
     const sr = await mod('js/modes/SearchAndDestroy/RadarManager.js');
-    check('SAR modules stamp VERSION v4.0.0',
-      sm.VERSION === 'v4.0.0' && sp.VERSION === 'v4.0.0' &&
-      sc.VERSION === 'v4.0.0' && sr.VERSION === 'v4.0.0');
+    check('SAR modules stamp VERSION v4.3.0',
+      si.VERSION === 'v4.3.0' && sm.VERSION === 'v4.3.0' && sp.VERSION === 'v4.3.0' &&
+      sc.VERSION === 'v4.3.0' && sr.VERSION === 'v4.3.0');
 
     // sarProgress / sarZoneFor are pure helpers — verify the math.
     check('headless: sarProgress(start) = 0, sarProgress(house) = 1',
@@ -187,6 +250,104 @@ export default async function run() {
     check('headless: the player world position starts at the SAR start coordinates',
       Math.abs(sard.map.playerWorld().x - SAR.START.x) < 1 &&
       Math.abs(sard.map.playerWorld().y - SAR.START.y) < 1);
+
+    // ── v4.3.0 starfield: all layers built (tiled, parallax, wind) ──
+    const map = sard.map;
+    check('headless: the starfield has 3 star layers (FAR / MID / NEAR)',
+      Array.isArray(map.layers) && map.layers.length === 3);
+    check('headless: each star layer is tiled with stars + parallax factor + wind',
+      map.layers.every(l => l.tile > 0 && l.stars.length > 0 && typeof l.f === 'number' &&
+        l.f >= 0 && l.f <= 1 && typeof l.windX === 'number' && typeof l.windY === 'number'));
+    check('headless: the parallax factors increase with depth (FAR < MID < NEAR)',
+      map.layers[0].f < map.layers[1].f && map.layers[1].f < map.layers[2].f);
+    check('headless: the NEBULA dust layer is built (tiled puffs + parallax)',
+      map.nebula && map.nebula.tile > 0 && map.nebula.puffs.length > 0 &&
+      typeof map.nebula.f === 'number');
+    check('headless: the TRAILS foreground layer is built (tiled streaks)',
+      map.trails && map.trails.tile > 0 && map.trails.trails.length > 0);
+    check('headless: the starfield is deterministic (seeded PRNG)',
+      new sm.default(game).layers[0].stars[0].x === map.layers[0].stars[0].x);
+
+    // ── v4.3.0 autonomous world motion: drops fall, nothing drifts ──
+    const spawner = sard.spawner;
+    check('headless: the worldMotion registry is a Map', spawner.worldMotion instanceof Map);
+    // A synthetic drop at the screen center (classic falling: y += vy·dt).
+    const drop = { x: 640, y: 300, vy: 70, alive: true, t: 0 };
+    game.powerups.push(drop);
+    spawner._adoptWorldEntities();
+    check('headless: the drop is adopted into worldMotion', spawner.worldMotion.has(drop));
+    const dw0 = spawner.worldMotion.get(drop);
+    const dwx0 = dw0.wx, dwy0 = dw0.wy;
+    // Frame 1: the classic layer integrates the fall (screen space), then
+    // the registry advances the world position by that delta and
+    // re-projects (camera stationary — the screen position is unchanged
+    // by the re-projection, so the drop simply keeps falling).
+    const dt = 0.016;
+    drop.y += drop.vy * dt;
+    spawner._updateWorldMotion(dt);
+    check('headless: the drop keeps falling while the ship holds still',
+      drop.y > 300 + drop.vy * dt * 0.9, `y=${drop.y}`);
+    check('headless: the drop world-y advanced by its fall',
+      spawner.worldMotion.get(drop).wy > dwy0);
+    // Frame 2: the camera scrolls right by 100px (the displacement
+    // accumulator) — the drop's world position must NOT jump, and its
+    // screen position must shift LEFT (world-pinned, no drift).
+    const sxBefore = drop.x;
+    map.worldX += 100;
+    spawner._updateWorldMotion(dt);
+    check('headless: the drop stays world-pinned during camera scroll (no drift)',
+      drop.x < sxBefore - 90 && drop.x > sxBefore - 110,
+      `x ${sxBefore} → ${drop.x}`);
+    check('headless: the drop world-x is unchanged by the camera scroll',
+      Math.abs(spawner.worldMotion.get(drop).wx - dwx0) < 1,
+      `wx ${dwx0} → ${spawner.worldMotion.get(drop).wx}`);
+
+    // A synthetic chasing enemy: its own screen delta is world motion.
+    const enemy = { x: 400, y: 400, alive: true, vx: 0, vy: 0 };
+    game.enemies.push(enemy);
+    spawner._adoptWorldEntities();
+    check('headless: the enemy is adopted into worldMotion', spawner.worldMotion.has(enemy));
+    // The enemy chases: a screen-space delta of +20x this frame.
+    enemy.x += 20;
+    const ewxBefore = spawner.worldMotion.get(enemy).wx;
+    spawner._updateWorldMotion(dt);
+    check('headless: the enemy world-x advanced by its screen delta',
+      spawner.worldMotion.get(enemy).wx > ewxBefore);
+    // Camera scroll: the enemy re-projects (shifts left), world unchanged.
+    const exBefore = enemy.x;
+    map.worldX += 50;
+    spawner._updateWorldMotion(dt);
+    check('headless: the enemy stays world-pinned during camera scroll',
+      enemy.x < exBefore - 40 && enemy.x > exBefore - 60,
+      `x ${exBefore} → ${enemy.x}`);
+    // A boss-wrap artifact (a 1300px screen jump) must be capped: the
+    // world position may advance at most WORLD_MOTION_MAX_STEP per frame.
+    enemy.x += 1300;
+    const ewxWrap = spawner.worldMotion.get(enemy).wx;
+    spawner._updateWorldMotion(dt);
+    check('headless: a wrap/teleport jump is capped (no world artifact)',
+      spawner.worldMotion.get(enemy).wx - ewxWrap <= 48,
+      `wx ${ewxWrap} → ${spawner.worldMotion.get(enemy).wx}`);
+
+    // v4.3.0 regression: SUSTAINED camera scroll (many consecutive frames)
+    // must not corrupt the world position — the camera's own re-projection
+    // shift is never counted as entity motion (prevX/prevY track the
+    // re-projected screen position, so next frame's delta is the entity's
+    // own classic motion only).
+    const pinned = { x: 400, y: 400, alive: true, vx: 0, vy: 0 };
+    game.enemies.push(pinned);
+    spawner._adoptWorldEntities();
+    const pinWx0 = spawner.worldMotion.get(pinned).wx;
+    for (let i = 0; i < 12; i++) {
+      map.worldX += 50; // the camera scrolls right, every frame
+      spawner._updateWorldMotion(dt);
+    }
+    check('headless: sustained camera scroll does not corrupt the world position (no drift)',
+      Math.abs(spawner.worldMotion.get(pinned).wx - pinWx0) < 0.001,
+      `wx ${pinWx0} → ${spawner.worldMotion.get(pinned).wx}`);
+    check('headless: the pinned enemy tracks the camera exactly (screen == worldToScreen)',
+      Math.abs(pinned.x - (spawner.worldMotion.get(pinned).wx - sard.map.worldX + 640)) < 0.001,
+      `x=${pinned.x}`);
 
     // ── Displacement accumulator (v4.0.0 camera model) ──
     // Inside the dead zone the camera holds (the ship flies freely).

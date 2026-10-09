@@ -1,5 +1,5 @@
 // Filename: SectorSpawner.js
-// Kitty Vs Everything — v4.0.0
+// Kitty Vs Everything — v4.3.0
 // SEARCH & DESTROY — journey progression + world-anchored spawners.
 //
 // The sequenced journey: the player starts in OPEN SPACE, must navigate
@@ -30,12 +30,31 @@
 //   • drops    — the shared POWERUP_DROPS pool (DropManager) + asteroids,
 //                fully off-screen, every zone (classic lifecycle).
 //
+// AUTONOMOUS WORLD MOTION (v4.3.0): drops, asteroids and chasing enemies
+// integrate in SCREEN space (the classic combat stack), while the
+// displacement-accumulator camera scrolls WORLD space — left alone they
+// drift relative to the world (a stationary drop "rises" off the sector
+// floor as the camera scrolls). The worldMotion registry (a Map keyed by
+// entity, alongside the worldLocked registry) fixes that:
+//   • auto  — the entity's own screen-space delta is treated as world
+//             motion: its world position advances by the delta (capped at
+//             WORLD_MOTION_MAX_STEP per frame — boss wrap / teleport
+//             artifacts never reach the world layer), and the world
+//             position is re-projected back to screen after the camera
+//             accumulator advances (worldToScreen), so the entity stays
+//             pinned to the world while keeping its own flight;
+//   • drift — the registry owns a fixed world velocity (the worldLocked
+//             pattern, generalized for non-anchored entities).
+// Adoption runs at the end of update() (after every spawn source) and
+// re-projection runs after SectorMap.update, so drops keep falling while
+// the ship holds still and nothing drifts while the camera scrolls.
+//
 // PlayerFlight stays sovereign: nothing here touches the ship's
 // velocity, input integration or weapon collision — only the world
 // layer around it.
-export const VERSION = 'v4.0.0';
+export const VERSION = 'v4.3.0';
 import { SAR, rollPowerUpDrop, rollHazardType } from '../../core/config.js';
-import { TAU, rand, pick, dist2, isOnScreen } from '../../core/utils.js';
+import { TAU, rand, pick, dist2, isOnScreen, clamp } from '../../core/utils.js';
 import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 import { createEnemy } from '../../enemies/EnemyFactory.js';
@@ -47,6 +66,12 @@ import { createHazard } from '../../hazards/HazardFactory.js';
 // Zone difficulty ramp (EnemyBase difficulty scales HP + damage).
 const ZONE_DIFFICULTY = [1, 1.5, 2.0];
 
+// v4.3.0: per-frame cap on the world-space delta an adopted entity may
+// take on (px). Far above any legitimate enemy / drop / asteroid speed
+// (a few px per frame) — it only blocks boss-wrap and teleport artifacts
+// (a 1300px screen jump) from reaching the world layer.
+const WORLD_MOTION_MAX_STEP = 48;
+
 export default class SectorSpawner {
   constructor(game, map) {
     this.game = game;
@@ -55,6 +80,10 @@ export default class SectorSpawner {
     this.dropTimer = 4;
     this.asteroidTimer = 2;
     this.worldLocked = []; // { anchor, entity, wx, wy, vx, vy }
+    // v4.3.0: autonomous world-motion registry (entity → { wx, wy,
+    // prevX, prevY, mode, vx, vy }) — drops / asteroids / chasing
+    // enemies pinned to the world (see the file header).
+    this.worldMotion = new Map();
   }
 
   /** Fresh journey per mission. */
@@ -63,6 +92,7 @@ export default class SectorSpawner {
     this.dropTimer = 4;
     this.asteroidTimer = 2;
     this.worldLocked = [];
+    this.worldMotion = new Map();
   }
 
   /** Per-frame driver (SearchAndDestroy.update). */
@@ -97,6 +127,90 @@ export default class SectorSpawner {
     // ─── CULL: boneyard debris that drifted below the screen ───
     for (const bt of g.bonusTargets) {
       if (bt.alive && bt.y > g.viewH + 120) bt.alive = false;
+    }
+
+    // ─── AUTONOMOUS WORLD MOTION (v4.3.0) ───
+    // After every spawn source this frame: adopt new drops / asteroids /
+    // enemies into the worldMotion registry, advance their world
+    // positions, and re-project them back to screen (SectorMap.update
+    // already advanced the camera accumulator this frame, so the
+    // re-projection sees the new view).
+    this._adoptWorldEntities();
+    this._updateWorldMotion(dt);
+  }
+
+  /**
+   * v4.3.0 — adopt one entity into the worldMotion registry. The world
+   * position is back-projected from the entity's current screen position
+   * (screenToWorld), so adoption is seamless: the entity is pinned to
+   * the world point it currently occupies. mode 'auto' = the entity's
+   * own screen-space delta is world motion; mode 'drift' = the registry
+   * owns a fixed world velocity (vx, vy) — the worldLocked pattern.
+   */
+  _adoptWorld(entity, mode) {
+    if (!entity || this.worldMotion.has(entity)) return;
+    const w = this.map.screenToWorld(entity.x, entity.y);
+    this.worldMotion.set(entity, {
+      wx: w.x, wy: w.y,          // world position (the source of truth)
+      prevX: entity.x, prevY: entity.y, // last re-projected screen pos
+      mode,
+      vx: 0, vy: 0,              // drift-mode world velocity
+    });
+  }
+
+  /**
+   * v4.3.0 — adopt every live drop / asteroid / enemy not yet in the
+   * registry (all three live in game.powerups / game.enemies — see
+   * AsteroidBonus: asteroids are PowerUp-shaped, destructible=true).
+   * Runs at the end of update(), after every spawn source, so nothing
+   * escapes adoption for a frame.
+   */
+  _adoptWorldEntities() {
+    const g = this.game;
+    for (const pw of g.powerups) {
+      if (pw.alive) this._adoptWorld(pw, 'auto');
+    }
+    for (const e of g.enemies) {
+      if (e.alive) this._adoptWorld(e, 'auto');
+    }
+  }
+
+  /**
+   * v4.3.0 — advance every adopted entity's world position and re-project
+   * it back to screen. auto: the entity's own screen-space delta since the
+   * last re-projection is treated as world motion (capped at
+   * WORLD_MOTION_MAX_STEP per frame — a boss wrap or teleport never drags
+   * the world position with it). drift: the registry's fixed world velocity
+   * integrates the world position directly. prevX/prevY always hold the
+   * last RE-PROJECTED screen position, so the camera's own shift is never
+   * counted as entity motion (no drift on sustained scroll). Dead entities
+   * are dropped from the registry (the classic cull already removed them).
+   */
+  _updateWorldMotion(dt) {
+    for (const [entity, w] of this.worldMotion) {
+      if (!entity.alive) {
+        this.worldMotion.delete(entity);
+        continue;
+      }
+      if (w.mode === 'drift') {
+        w.wx += w.vx * dt;
+        w.wy += w.vy * dt;
+      } else {
+        // auto — the entity's own screen-space delta is world motion.
+        const dx = entity.x - w.prevX;
+        const dy = entity.y - w.prevY;
+        w.wx += clamp(dx, -WORLD_MOTION_MAX_STEP, WORLD_MOTION_MAX_STEP);
+        w.wy += clamp(dy, -WORLD_MOTION_MAX_STEP, WORLD_MOTION_MAX_STEP);
+      }
+      // Re-project world → screen (the camera accumulator already
+      // advanced this frame in SectorMap.update). prevX/prevY track the
+      // re-projected position so next frame's delta is the entity's own
+      // classic motion only — the camera shift is never double-counted.
+      const s = this.map.worldToScreen(w.wx, w.wy);
+      entity.x = s.x;
+      entity.y = s.y;
+      w.prevX = s.x;
+      w.prevY = s.y;
     }
   }
 

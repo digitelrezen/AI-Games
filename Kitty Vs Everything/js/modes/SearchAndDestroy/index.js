@@ -1,5 +1,5 @@
 // Filename: index.js
-// Kitty Vs Everything — v4.0.0
+// Kitty Vs Everything — v4.3.0
 // SEARCH & DESTROY subsystem barrel (E6 nested module) — the single import
 // surface for js/modes/SearchAndDestroy/. Game.js imports the
 // SearchAndDestroy facade from here; the submodules are re-exported for
@@ -37,6 +37,8 @@ import { SAR, sarProgress } from '../../core/config.js';
 import { bus } from '../../core/EventBus.js';
 import { audio } from '../../core/AudioSystem.js';
 
+export const VERSION = 'v4.3.0';
+
 export default class SearchAndDestroy {
   constructor(game) {
     this.game = game;
@@ -48,12 +50,12 @@ export default class SearchAndDestroy {
     this.spawner.reset();
     this.map.reset();
     bus.emit('banner', {
-      text: "SEARCH & DESTROY v4.0.0 — FIND ERIDATH'S MOM'S HOUSE",
+      text: "SEARCH & DESTROY v4.3.0 — FIND ERIDATH'S MOM'S HOUSE",
       tone: 'warn',
       duration: 4,
     });
     audio.banner();
-    game.msglog.log('SEARCH & DESTROY v4.0.0 MISSION START', 'warn', game.time);
+    game.msglog.log('SEARCH & DESTROY v4.3.0 MISSION START', 'warn', game.time);
     game.msglog.log('OBJECTIVE: cross the sector, clear The Boneyard, destroy the base', 'info', game.time);
     game.msglog.log('F1 toggles the cockpit radar', 'info', game.time);
   }

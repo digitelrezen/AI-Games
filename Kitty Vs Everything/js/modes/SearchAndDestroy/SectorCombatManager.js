@@ -1,5 +1,5 @@
 // Filename: SectorCombatManager.js
-// Kitty Vs Everything — v4.0.0
+// Kitty Vs Everything — v4.3.0
 // SEARCH & DESTROY — combat & roster parity + the target base.
 //
 // ROSTER PARITY: the SAR mode reuses the ENTIRE classic combat stack —
@@ -16,7 +16,7 @@
 //     classic Collisions.js is untouched)
 //   • the base's spawn volleys (the "persistent enemy-spawning base")
 //   • the victory sequence (house destroyed → mission accomplished)
-export const VERSION = 'v4.0.0';
+export const VERSION = 'v4.3.0';
 import { SAR } from '../../core/config.js';
 import { rand, randInt, clamp, dist2, isOnScreen } from '../../core/utils.js';
 import { bus } from '../../core/EventBus.js';

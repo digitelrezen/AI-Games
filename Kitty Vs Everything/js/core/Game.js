@@ -262,7 +262,7 @@
 //          sovereign); debris, hazards and regional patrols are
 //          WORLD-ANCHORED at absolute world coordinates. Milestone
 //          version synced with package.json.
-export const VERSION = 'v4.2.0';
+export const VERSION = 'v4.3.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

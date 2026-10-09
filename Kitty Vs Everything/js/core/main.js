@@ -135,7 +135,7 @@
 //          recentered — PlayerFlight stays sovereign); debris, hazards
 //          and regional patrols are WORLD-ANCHORED at absolute world
 //          coordinates. Milestone version synced with package.json.
-export const VERSION = 'v4.2.0';
+export const VERSION = 'v4.3.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup

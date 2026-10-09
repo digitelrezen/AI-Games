@@ -1,7 +1,8 @@
 // Filename: SectorMap.js
-// Kitty Vs Everything — v4.0.0
+// Kitty Vs Everything — v4.3.0
 // SEARCH & DESTROY — the sector map: a true 2D world-space coordinate
-// grid + the DISPLACEMENT-ACCUMULATOR camera (v4.0.0).
+// grid + the DISPLACEMENT-ACCUMULATOR camera (v4.0.0) + the DEEP
+// PARALLAX STARFIELD (v4.3.0).
 //
 // Camera model (displacement accumulator): the camera owns a world
 // position (worldX, worldY) — the world coordinate at the screen
@@ -23,10 +24,28 @@
 //                 ease, CAMERA.RECENTER — no hard clamp, no velocity
 //                 change) + a screen-edge backstop as a safety net;
 //   4. CLAMP    — the camera stays inside the sector bounds.
-// The background (3-layer parallax starfield, reference planets,
-// sector grid, journey zone bands, boneyard debris texture, the house
-// base) renders in world space through the camera transform; gameplay
+// The background (DEEP PARALLAX STARFIELD — v4.3.0: far micro-stars
+// with slow autonomous drift, mid-depth stellar dust / nebula puffs,
+// near stars, and foreground star trails streaking opposite the
+// ship's movement vector; plus reference planets, sector grid,
+// journey zone bands, boneyard debris texture, the house base)
+// renders in world space through the camera transform; gameplay
 // entities render in screen space above it (Game.render).
+//
+// DEEP PARALLAX STARFIELD (v4.3.0): the v4.0.0 field spread its stars
+// across the whole 64 km sector and sampled them at worldX·f — the
+// on-screen window (1280×720 of layer space) expected ≈ 0.3 visible
+// stars: an empty sky. The v4.3.0 field TILES each layer (tile px of
+// layer space, mod-wrapped) so the on-screen density is constant
+// across the journey, and every layer carries its own slow autonomous
+// WIND drift (px/s) on top of the per-layer parallax factor f
+// (0 = pinned far, 1 = full camera lock) — the sky keeps moving even
+// when the ship holds still. The NEBULA layer adds soft mid-depth
+// stellar-dust puffs (radial gradients) and the TRAILS layer
+// (f = 1, full camera lock + its own drift) streaks opposite the
+// player's movement vector — streak length = min(maxLen, speed·gain),
+// alpha ∝ speed/speedRef (quiet points while the ship holds still).
+// Tunables: SAR.STARFIELD (config/searchDestroy.js).
 //
 // World-anchored layout (v4.0.0): the sector's debris anchors, hazard
 // anchors and regional patrol sites are generated once from a seeded
@@ -37,7 +56,7 @@
 // Pure camera + layout + rendering — no gameplay state. The house's
 // live state (hp / flash / alive) is passed in from SectorCombatManager
 // at draw time.
-export const VERSION = 'v4.0.0';
+export const VERSION = 'v4.3.0';
 import { SAR } from '../../core/config.js';
 import { TAU, clamp } from '../../core/utils.js';
 import { getSprite } from '../../core/AssetManager.js';
@@ -54,13 +73,14 @@ function mulberry32(seed) {
   };
 }
 
-// Parallax starfield layers: f = parallax factor (0 = pinned far, 1 =
-// full camera lock). Far layers drift less — depth for free.
-const STAR_LAYERS = [
-  { f: 0.25, n: 240, size: 1.4, alpha: 0.45 },
-  { f: 0.5, n: 170, size: 2.0, alpha: 0.65 },
-  { f: 0.8, n: 120, size: 2.6, alpha: 0.85 },
-];
+/** Positive modulo (JS % keeps the sign of the dividend). */
+const mod = (v, m) => ((v % m) + m) % m;
+
+// v4.3.0: the starfield layers are built from SAR.STARFIELD
+// (config/searchDestroy.js) — FAR / MID / NEAR star layers (tiled,
+// per-layer parallax factor f + autonomous wind drift), the NEBULA
+// mid-depth dust layer and the TRAILS foreground layer. The layer
+// builders live below (_makeStarLayers / _makeNebula / _makeTrails).
 
 export default class SectorMap {
   constructor(game) {
@@ -77,7 +97,10 @@ export default class SectorMap {
     this.prevClY = 0;
     this.prevNudgeX = 0;
     this.prevNudgeY = 0;
+    // Starfield (v4.3.0 deep parallax — see the file header).
     this.layers = this._makeStarLayers();
+    this.nebula = this._makeNebula();
+    this.trails = this._makeTrails();
     this.planets = this._makePlanets();
     this.boneMarks = this._makeBoneMarks();
     // ── WORLD-ANCHORED LAYOUT (deterministic, absolute world px) ──
@@ -94,15 +117,68 @@ export default class SectorMap {
     this._accInit = false;
   }
 
+  /**
+   * v4.3.0 star layers — built from SAR.STARFIELD (FAR / MID / NEAR).
+   * Each layer is TILED (spec.tile px of layer space): stars are
+   * distributed inside one tile and mod-wrapped at draw time, so the
+   * on-screen density is constant across the whole 64 km sector.
+   * spec.f = parallax factor (0 = pinned far, 1 = full camera lock);
+   * spec.windX/Y = the layer's autonomous drift (px/s, layer space) —
+   * the sky keeps moving even when the ship holds still.
+   */
   _makeStarLayers() {
-    return STAR_LAYERS.map((spec, li) => {
-      const rng = mulberry32(0xC0FFEE + li * 7919);
+    const spec = (key, seed) => {
+      const s = SAR.STARFIELD[key];
+      const rng = mulberry32(seed);
       const stars = [];
-      for (let i = 0; i < spec.n; i++) {
-        stars.push({ x: rng() * SAR.SECTOR.W, y: rng() * SAR.SECTOR.H, tw: rng() * TAU });
+      for (let i = 0; i < s.n; i++) {
+        stars.push({ x: rng() * s.tile, y: rng() * s.tile, tw: rng() * TAU, c: rng() });
       }
-      return { f: spec.f, size: spec.size, alpha: spec.alpha, stars };
-    });
+      return { f: s.f, tile: s.tile, size: s.size, alpha: s.alpha, windX: s.windX, windY: s.windY, stars };
+    };
+    return [spec('FAR', 0xC0FFEE), spec('MID', 0xC0FFEE + 7919), spec('NEAR', 0xC0FFEE + 15838)];
+  }
+
+  /**
+   * v4.3.0 mid-depth nebula / stellar-dust layer (SAR.STARFIELD.NEBULA):
+   * soft radial-gradient puffs, tiled like the star layers, with its own
+   * parallax factor + wind drift.
+   */
+  _makeNebula() {
+    const s = SAR.STARFIELD.NEBULA;
+    const rng = mulberry32(0x5EEDB1);
+    const hues = [210, 265, 180, 320];
+    const puffs = [];
+    for (let i = 0; i < s.n; i++) {
+      puffs.push({
+        x: rng() * s.tile, y: rng() * s.tile,
+        r: s.rMin + rng() * (s.rMax - s.rMin),
+        hue: hues[i % hues.length],
+        a: 0.6 + rng() * 0.4,
+      });
+    }
+    return { f: s.f, tile: s.tile, alpha: s.alpha, windX: s.windX, windY: s.windY, puffs };
+  }
+
+  /**
+   * v4.3.0 foreground star trails (SAR.STARFIELD.TRAILS): full camera
+   * lock (f = 1) + each star's own slow drift — at draw time the streak
+   * points OPPOSITE the player's movement vector (length ∝ ship speed).
+   */
+  _makeTrails() {
+    const s = SAR.STARFIELD.TRAILS;
+    const rng = mulberry32(0x7A115);
+    const trails = [];
+    for (let i = 0; i < s.n; i++) {
+      const a = rng() * TAU;
+      const sp = s.drift * (0.4 + rng() * 0.6);
+      trails.push({
+        x: rng() * s.tile, y: rng() * s.tile,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+        c: 0.6 + rng() * 0.4,
+      });
+    }
+    return { tile: s.tile, trails };
   }
 
   _makePlanets() {
@@ -319,22 +395,15 @@ export default class SectorMap {
   renderBackground(ctx, house) {
     const g = this.game;
     const W = g.viewW, H = g.viewH;
-    // ── PARALLAX STARFIELD (3 layers, world-anchored, per-layer parallax) ──
-    for (const layer of this.layers) {
-      const f = layer.f;
-      const cx = this.worldX * f;
-      const cy = this.worldY * f;
-      for (const st of layer.stars) {
-        const sx = W / 2 + (st.x - cx);
-        const sy = H / 2 + (st.y - cy);
-        if (sx < -4 || sx > W + 4 || sy < -4 || sy > H + 4) continue;
-        const tw = 0.7 + 0.3 * Math.sin(this.time * 2 + st.tw);
-        ctx.globalAlpha = layer.alpha * tw;
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(sx, sy, layer.size, layer.size);
-      }
-    }
-    ctx.globalAlpha = 1;
+    // ── DEEP PARALLAX STARFIELD (v4.3.0) ──
+    // Far micro-stars (slow autonomous drift) → mid nebula dust → mid
+    // motes → near stars → foreground star trails (streak opposite the
+    // ship's movement vector). Each layer is tiled + parallaxed.
+    this._drawStarLayer(ctx, W, H, this.layers[0]);
+    this._drawNebula(ctx, W, H);
+    this._drawStarLayer(ctx, W, H, this.layers[1]);
+    this._drawStarLayer(ctx, W, H, this.layers[2]);
+    this._drawStarTrails(ctx, W, H);
     // ── WORLD-SPACE PASS (planets → grid → zones → boneyard → house) ──
     ctx.save();
     ctx.translate(W / 2 - this.worldX, H / 2 - this.worldY);
@@ -345,6 +414,116 @@ export default class SectorMap {
     this._drawBoneMarks(ctx, rect);
     this._drawHouse(ctx, house);
     ctx.restore();
+  }
+
+  /**
+   * v4.3.0 tiled star layer. Layer-space offset = worldX·f (parallax)
+   * + the layer's autonomous wind drift (time·wind — the sky moves even
+   * when the ship holds still); stars mod-wrap into the tile, and up to
+   * 3×3 tile candidates are tested per star so ultra-wide views stay
+   * covered.
+   */
+  _drawStarLayer(ctx, W, H, layer) {
+    const t = layer.tile, ht = t / 2;
+    const offX = this.worldX * layer.f - layer.windX * this.time;
+    const offY = this.worldY * layer.f - layer.windY * this.time;
+    for (const st of layer.stars) {
+      const bx = W / 2 + mod(st.x - offX, t) - ht;
+      const by = H / 2 + mod(st.y - offY, t) - ht;
+      for (let ox = -t; ox <= t; ox += t) {
+        const sx = bx + ox;
+        if (sx < -4 || sx > W + 4) continue;
+        for (let oy = -t; oy <= t; oy += t) {
+          const sy = by + oy;
+          if (sy < -4 || sy > H + 4) continue;
+          const tw = 0.7 + 0.3 * Math.sin(this.time * 2 + st.tw);
+          ctx.globalAlpha = layer.alpha * tw;
+          ctx.fillStyle = st.c < 0.75 ? '#ffffff' : (st.c < 0.9 ? '#cfe8ff' : '#ffe9c4');
+          ctx.fillRect(sx, sy, layer.size, layer.size);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * v4.3.0 mid-depth nebula / stellar dust: soft radial-gradient puffs,
+   * tiled + parallaxed + wind-drifted like the star layers.
+   */
+  _drawNebula(ctx, W, H) {
+    const nb = this.nebula;
+    const t = nb.tile, ht = t / 2;
+    const offX = this.worldX * nb.f - nb.windX * this.time;
+    const offY = this.worldY * nb.f - nb.windY * this.time;
+    for (const p of nb.puffs) {
+      const bx = W / 2 + mod(p.x - offX, t) - ht;
+      const by = H / 2 + mod(p.y - offY, t) - ht;
+      for (let ox = -t; ox <= t; ox += t) {
+        const sx = bx + ox;
+        if (sx + p.r < 0 || sx - p.r > W) continue;
+        for (let oy = -t; oy <= t; oy += t) {
+          const sy = by + oy;
+          if (sy + p.r < 0 || sy - p.r > H) continue;
+          const a = nb.alpha * p.a;
+          const grd = ctx.createRadialGradient(sx, sy, p.r * 0.1, sx, sy, p.r);
+          grd.addColorStop(0, `hsla(${p.hue}, 60%, 60%, ${a})`);
+          grd.addColorStop(1, `hsla(${p.hue}, 60%, 40%, 0)`);
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(sx, sy, p.r, 0, TAU);
+          ctx.fill();
+        }
+      }
+    }
+  }
+
+  /**
+   * v4.3.0 foreground star trails — full camera lock (f = 1) + each
+   * star's own slow drift. The streak points OPPOSITE the player's
+   * movement vector: length = min(maxLen, speed·gain), alpha ∝
+   * speed/speedRef; while the ship holds still the layer rests as quiet
+   * points. (Reads the ship's velocity vector for the streak direction
+   * only — the camera accumulator is untouched.)
+   */
+  _drawStarTrails(ctx, W, H) {
+    const s = SAR.STARFIELD.TRAILS;
+    const t = this.trails.tile, ht = t / 2;
+    const p = this.game.player;
+    const pvx = p && !p.dead ? (p.vx || 0) : 0;
+    const pvy = p && !p.dead ? (p.vy || 0) : 0;
+    const speed = Math.hypot(pvx, pvy);
+    const L = Math.min(s.maxLen, speed * s.gain);
+    const a = Math.min(1, speed / s.speedRef);
+    const ux = speed > 1 ? -pvx / speed : 0;
+    const uy = speed > 1 ? -pvy / speed : 0;
+    for (const st of this.trails.trails) {
+      const bx = W / 2 + mod(st.x + st.vx * this.time - this.worldX, t) - ht;
+      const by = H / 2 + mod(st.y + st.vy * this.time - this.worldY, t) - ht;
+      for (let ox = -t; ox <= t; ox += t) {
+        const sx = bx + ox;
+        if (sx < -4 || sx > W + 4) continue;
+        for (let oy = -t; oy <= t; oy += t) {
+          const sy = by + oy;
+          if (sy < -4 || sy > H + 4) continue;
+          if (L < 6) {
+            ctx.globalAlpha = s.idle * st.c;
+            ctx.fillStyle = '#dff2ff';
+            ctx.fillRect(sx, sy, 2, 2);
+          } else {
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = `rgba(214, 240, 255, ${(0.25 + 0.5 * a) * st.c})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(sx + ux * L, sy + uy * L);
+            ctx.stroke();
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + 0.4 * a})`;
+            ctx.fillRect(sx - 1, sy - 1, 2, 2);
+          }
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
   }
 
   _drawPlanets(ctx, rect) {

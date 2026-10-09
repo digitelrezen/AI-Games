@@ -1,5 +1,5 @@
 // Filename: config/searchDestroy.js
-// Kitty Vs Everything — v4.0.0
+// Kitty Vs Everything — v4.3.0
 // SEARCH & DESTROY (SAR) mode — the single tuning surface for the
 // sector-journey mode (js/modes/SearchAndDestroy/, E6 nested modules).
 //
@@ -110,6 +110,26 @@ export const SAR = {
   // Every zone streams the shared POWERUP_DROPS pool (DropManager) +
   // asteroids, fully off-screen — the classic drop lifecycle is reused.
   DROPS: { min: 6, max: 11, asteroidMin: 3, asteroidMax: 6 },
+  // ─── DEEP PARALLAX STARFIELD (SectorMap.js, v4.3.0) ───
+  // The multi-layered sector sky. Each star layer is TILED (tile px of
+  // layer space, mod-wrapped) so the on-screen density stays constant
+  // across the 64 km sector (the v4.0.0 field spread its stars across
+  // the whole sector and sampled them at worldX·f — an empty sky). On
+  // top of the per-layer parallax factor f (0 = pinned far, 1 = full
+  // camera lock), every layer carries its own slow autonomous WIND
+  // drift (px/s, layer space) — the sky keeps moving even when the
+  // ship holds still. NEBULA adds the mid-depth stellar dust (soft
+  // radial-gradient puffs) and TRAILS is the foreground layer: f = 1
+  // (full camera lock) + its own drift, streaking OPPOSITE the
+  // player's movement vector — streak length = min(maxLen, speed·gain),
+  // alpha ∝ speed/speedRef (quiet points while the ship holds still).
+  STARFIELD: {
+    FAR:    { f: 0.22, tile: 2048, n: 130, size: 1.4, alpha: 0.55, windX: -6,  windY: -3 },
+    MID:    { f: 0.5,  tile: 2048, n: 64,  size: 2.0, alpha: 0.45, windX: -11, windY: -6 },
+    NEAR:   { f: 0.8,  tile: 2048, n: 44,  size: 2.8, alpha: 0.8,  windX: -18, windY: -9 },
+    NEBULA: { f: 0.5,  tile: 4096, n: 10, rMin: 90, rMax: 240, alpha: 0.09, windX: -8, windY: -4 },
+    TRAILS: { n: 44, tile: 2048, drift: 34, maxLen: 90, gain: 0.3, speedRef: 320, idle: 0.4 },
+  },
   // ─── COCKPIT RADAR (RadarManager.js) ───
   RADAR: {
     RANGE: 2200,             // world px shown at the radar rim
