@@ -18,7 +18,8 @@ BONEYARD -> DEEP SECTOR, where Eridath's Mom's House (the 512px
 .assets/Eridaths-Moms-House PNG, manifest key eridath_moms_house) anchors
 the deep sector as a persistent, shootable, enemy-spawning base - destroying
 it wins the mission (game.victory() -> GameOver "MISSION ACCOMPLISHED").
-Cockpit radar: RadarManager (F1 toggle). Tuning: js/core/config/
+Cockpit radar: RadarManager (F1 toggle; v4.2.0: embedded in the fire-control
+panel's right column while it is expanded). Tuning: js/core/config/
 searchDestroy.js (SAR / sarProgress / sarZoneFor, re-exported by config.js).
 Pinned by check.mjs [6aa] (version sync) + [6aj] (SAR gate).
 
@@ -475,7 +476,10 @@ SectorCombatManager.js The target base + victory sequence: Eridath's Mom's
 RadarManager.js       The cockpit radar HUD (F1 toggle, SAR.RADAR): a
                       rotating sweep, enemy/power-up/house blips projected
                       from world space, and the "AVIONICS - SEARCH &
-                      DESTROY" readout.
+                      DESTROY" readout. v4.2.0: renders into the FC panel's
+                      embedded #fc-radar canvas while the panel is expanded
+                      (the standalone bottom-right screen radar is hidden);
+                      panel minimized/hidden -> the classic standalone scope.
 Tunables: SAR / sarProgress / sarZoneFor in js/core/config/searchDestroy.js
 (re-exported by config.js). Pinned by tools/check/sections/
 06aj-search-destroy.mjs (displacement-accumulator headless drive:
@@ -493,9 +497,13 @@ HUD.js                DOM top bar: score, lives, wave, HP/shield bars, banners,
 HUDConsole.js         Combat message console panel: renders the MessageLog ring
                       buffer into the DOM console.
 HUDFireControl.js     Bottom sci-fi fire-control dashboard: hull/shield meters,
-                      speed, weapon label + thermal readout, stun/napalm/nova slots
-                      (single source of truth for ability state), FLEET strip (docked
-                      mini HP bars).
+                      weapon label + thermal readout, 2x2 action-slot grid
+                      (STUN / NAPALM / SUPER - the ultimate's F-key cooldown
+                      timer / ORBIT - the undock/redock toggle state), FLEET
+                      strip (docked mini HP bars). v4.2.0: the SPD readout is
+                      gone - its slot hosts the embedded radar scope
+                      (#fc-radar); draws the idle NO SIGNAL / RADAR OFF scope
+                      when the live SAR radar is not active.
 Crosshair.js          Procedural canvas crosshair (aim reticle) for the local player
                       ship.
 DevPanel.js           Backtick/F9 admin panel: spawn species/tier, weapon override,

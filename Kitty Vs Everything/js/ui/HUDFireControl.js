@@ -37,10 +37,20 @@
 //          (superCharge / ultimateCooldown / nova-ready/-charging/-cooldown).
 // v3.96.0: the 'synergy' action is now FLEET ORBIT — the slot label reads
 //          "Fleet Orbit"; superCharge is a HUD color-match meter only.
-export const VERSION = 'v3.47.0';
-import { WEAPONS, PLAYER, MINI_SHIP } from '../core/config.js';
+// v4.2.0: FIRE-CONTROL PANEL REDESIGN — (1) the SPD readout is GONE: its
+//          right-column slot now hosts the embedded radar scope (#fc-radar);
+//          RadarManager renders the live SAR scope there while the panel is
+//          expanded, and this module draws the idle NO SIGNAL / RADAR OFF
+//          scope in every other state (classic mode, radar toggled off).
+//          (2) the lower button array is a 2×2 grid: STUN (Q) / NAPALM (E) /
+//          SUPER (F — the old T-keyed NOVA slot, now keyed to the 'ultimate'
+//          action with a live cooldown timer) / ORBIT (T — the undock/redock
+//          toggle state, DOCKED <-> ORBITING, from player.fleetOrbiting).
+export const VERSION = 'v4.2.0';
+import { WEAPONS, PLAYER, MINI_SHIP, SAR } from '../core/config.js';
 import { getBinds, codeLabel } from '../input/Keybinds.js';
 import { bus } from '../core/EventBus.js';
+import { TAU } from '../core/utils.js';
 
 function byId(id) { return document.getElementById(id); }
 
@@ -51,12 +61,13 @@ export default class HUDFireControl {
     this.els = {
       hpFill: byId('hp-fill'), hpText: byId('hp-text'),
       shieldFill: byId('shield-fill'), shieldText: byId('shield-text'),
-      speed: byId('fc-speed'),
+      radarCanvas: byId('fc-radar'), // v4.2.0: embedded radar scope (replaces the SPD readout)
       time: byId('fc-time'), // v3.17.0: live system time readout
       weaponLabel: byId('weapon-label'),
       weaponStatus: byId('fc-weapon-status'),
       thermal: byId('thermal-indicator'),
-      stunSlot: byId('stun-slot'), napalmSlot: byId('napalm-slot'), novaSlot: byId('nova-slot'),
+      stunSlot: byId('stun-slot'), napalmSlot: byId('napalm-slot'),
+      superSlot: byId('super-slot'), orbitSlot: byId('orbit-slot'), // v4.2.0: 2×2 action matrix
       frenzy: byId('frenzy-indicator'), // v3.33.0: FRENZY indicator (30s all-cooldowns-off)
       fleetRow: byId('fleet-row'), fleetCount: byId('fc-fleet-count'),
       fleetDeploy: byId('fc-fleet-deploy'), // v3.16.0: deploy status
@@ -106,7 +117,7 @@ export default class HUDFireControl {
     // v3.15.0: defensive guard — if the dashboard DOM is missing (e.g. an
     // older index.html), skip instead of throwing. A TypeError here used to
     // kill Game.loop before render(), freezing the whole game.
-    if (!e.hpFill || !e.shieldFill || !e.speed || !e.weaponStatus) return;
+    if (!e.hpFill || !e.shieldFill || !e.weaponStatus) return;
 
     // ─── HULL / SHIELD METERS ───
     const hpPct = Math.max(0, (p.hp / p.maxHp) * 100);
@@ -126,9 +137,8 @@ export default class HUDFireControl {
       e.miniShieldText.textContent = p.maxShield > 0 ? String(Math.max(0, Math.ceil(p.shield))) : '—';
     }
 
-    // ─── SPEED READOUT ───
-    const speed = Math.hypot(p.vx, p.vy);
-    e.speed.textContent = String(Math.round(speed));
+    // ─── v4.2.0: SPEED READOUT REMOVED — the SPD block's slot now hosts
+    // the embedded radar scope (#fc-radar, drawn by RadarManager / below). ───
 
     // ─── v3.17.0: LIVE SYSTEM TIME (re-read ≤1×/s) ───
     // v3.29.0: 12-hour h:MM AM/PM (e.g. "9:41 PM") instead of 24-hour.
@@ -178,32 +188,45 @@ export default class HUDFireControl {
     // ─── SECONDARY SLOTS (cooldown bars + bound keys) ───
     this._updateSlot(e.stunSlot, 'stun', p.stunCooldown, PLAYER.STUN_COOLDOWN);
     this._updateSlot(e.napalmSlot, 'napalm', p.napalmCooldown, PLAYER.NAPALM_COOLDOWN);
-    // v3.45.0: NOVA meter (T slot since v3.47.0) — purple charge/cooldown/
-    // ready. The ship-side gold charge ring + cyan shield ring are gone; this
-    // is the sole Nova display. charge = synergy (superCharge, the old gold
-    // ring); cooldown = ultimate recovery (ultimateCooldown); ready = charged
-    // & off cooldown. v3.47.0: pressing the 'synergy' key (T / -) fires it.
-    if (e.novaSlot) {
+    // ─── v4.2.0: SUPER slot (F) — the ultimate's live cooldown timer.
+    // Renamed from the T-keyed NOVA slot: the key now tracks the 'ultimate'
+    // action (F / C). charge = superCharge (HUD color-match read only since
+    // v3.96.0); cooldown = ultimate recovery (ultimateCooldown); ready =
+    // charged & off cooldown. ───
+    if (e.superSlot) {
       const maxCd = p.ULTIMATE_COOLDOWN || 8;
       const onCooldown = p.ultimateCooldown > 0;
       const charge = Math.max(0, Math.min(1, p.superCharge || 0));
       const ready = !onCooldown && charge >= 1;
       const charging = !onCooldown && !ready;
-      e.novaSlot.classList.toggle('nova-ready', ready);
-      e.novaSlot.classList.toggle('nova-charging', charging);
-      e.novaSlot.classList.toggle('nova-cooldown', onCooldown);
-      const st = e.novaSlot.querySelector('.fc-slot-state');
-      if (st) st.textContent = onCooldown ? 'COOLDOWN' : (ready ? 'READY' : 'CHARGING');
-      const bar = e.novaSlot.querySelector('.fc-slot-bar .fc-slot-fill');
+      e.superSlot.classList.toggle('super-ready', ready);
+      e.superSlot.classList.toggle('super-charging', charging);
+      e.superSlot.classList.toggle('super-cooldown', onCooldown);
+      const st = e.superSlot.querySelector('.fc-slot-state');
+      if (st) st.textContent = onCooldown ? p.ultimateCooldown.toFixed(1) + 's' : (ready ? 'READY' : 'CHARGING');
+      const bar = e.superSlot.querySelector('.fc-slot-bar .fc-slot-fill');
       if (bar) {
         const pct = onCooldown ? (1 - p.ultimateCooldown / maxCd) * 100 : charge * 100;
         bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       }
-      this._slotLabel(e.novaSlot, 'synergy'); // v3.96.0: 'synergy' key (T / -) = FLEET ORBIT toggle
+    }
+    // ─── v4.2.0: ORBIT slot (T) — the undock/redock toggle state.
+    // DOCKED = minis on the flank hardpoints (inert); ORBITING = the flat-
+    // circle combat orbit (MiniDeploy.toggleFleetOrbit, 'synergy' action). ───
+    if (e.orbitSlot) {
+      const orbiting = !!p.fleetOrbiting;
+      e.orbitSlot.classList.toggle('orbit-active', orbiting);
+      e.orbitSlot.classList.toggle('orbit-docked', !orbiting);
+      const st = e.orbitSlot.querySelector('.fc-slot-state');
+      if (st) st.textContent = orbiting ? 'ORBITING' : 'DOCKED';
+      const bar = e.orbitSlot.querySelector('.fc-slot-bar .fc-slot-fill');
+      if (bar) bar.style.width = orbiting ? '100%' : '0%';
     }
     if (this._keysDirty) {
       this._slotLabel(e.stunSlot, 'stun');
       this._slotLabel(e.napalmSlot, 'napalm');
+      this._slotLabel(e.superSlot, 'ultimate');
+      this._slotLabel(e.orbitSlot, 'synergy');
       this._keysDirty = false;
     }
 
@@ -227,6 +250,71 @@ export default class HUDFireControl {
       fill.className = 'fleet-fill ' + (pct > 60 ? 'ok' : pct > 30 ? 'warn' : 'crit');
       el.querySelector('.fleet-num').textContent = String(Math.max(0, Math.ceil(mini.hp)));
     });
+
+    // ─── v4.2.0: EMBEDDED RADAR SCOPE (idle state) ───
+    // While the panel is expanded, the LIVE SAR scope is drawn into the same
+    // canvas by RadarManager (sard.renderHud, later in the same frame) — so
+    // only draw the idle scope when there is no live radar: classic mode
+    // (NO SIGNAL) or SAR with the radar toggled off (RADAR OFF). The
+    // standalone bottom-right screen radar is suppressed in this state.
+    if (e.radarCanvas && this._panelExpanded()) {
+      const radar = (g.mode === 'sard' && g.sard) ? g.sard.radar : null;
+      if (!(radar && radar.visible)) {
+        const ctx = e.radarCanvas.getContext('2d');
+        if (radar) this._drawRadarIdle(ctx, 'RADAR OFF', '[' + SAR.RADAR.KEY + '] TO ENABLE');
+        else this._drawRadarIdle(ctx, 'NO SIGNAL', 'SAR AVIONICS OFFLINE');
+      }
+    }
+  }
+
+  /** v4.2.0: true while the full dashboard columns are on screen. */
+  _panelExpanded() {
+    return !!this.el && !this.el.classList.contains('hidden') && !this.el.classList.contains('minimized');
+  }
+
+  /**
+   * v4.2.0: dimmed idle scope for the embedded radar canvas (#fc-radar).
+   * Same geometry as the live embedded scope (RadarManager._renderEmbedded)
+   * so the two never disagree: R = 62, center (w/2, R + 8).
+   */
+  _drawRadarIdle(ctx, label, hint) {
+    const c = this.els.radarCanvas;
+    const w = c.width, h = c.height;
+    const R = 62, cx = w / 2, cy = R + 8;
+    ctx.clearRect(0, 0, w, h);
+    const bg = ctx.createRadialGradient(cx, cy, R * 0.1, cx, cy, R);
+    bg.addColorStop(0, 'rgba(0, 40, 48, 0.45)');
+    bg.addColorStop(1, 'rgba(0, 20, 26, 0.6)');
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.25)';
+    ctx.lineWidth = 1;
+    for (const f of [0.33, 0.66, 1]) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * f, 0, TAU);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(cx - R, cy);
+    ctx.lineTo(cx + R, cy);
+    ctx.moveTo(cx, cy - R);
+    ctx.lineTo(cx, cy + R);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TAU);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.65)';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, cx, cy + 3);
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText(hint, cx, cy + R + 14);
+    ctx.textAlign = 'left';
   }
 
   _updateSlot(slotEl, action, cooldown, maxCooldown) {

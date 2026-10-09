@@ -58,11 +58,15 @@ console.log('\n[6c] v3.96.0 fleet orbit (source gates)');
   check('TestAimbot: hotkey moved T → F8 (no KeyT left)',
     aimSrc.includes("e.code !== 'F8'") && !aimSrc.includes('KeyT'));
   const hudSrc2 = fs.readFileSync(path.join(ROOT, 'js/ui/HUDFireControl.js'), 'utf8');
-  check('HUDFireControl: NOVA slot key label tracks the synergy action',
-    hudSrc2.includes("this._slotLabel(e.novaSlot, 'synergy')"));
+  check('HUDFireControl: ORBIT slot key label tracks the synergy action (v4.2.0)',
+    hudSrc2.includes("this._slotLabel(e.orbitSlot, 'synergy')"));
   const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  check('index.html: static NOVA slot key is T (was F)',
-    /nova-slot[\s\S]*?fc-slot-key">T</.test(htmlSrc));
+  check('index.html: static ORBIT slot key is T (v4.2.0: undock/redock toggle)',
+    /orbit-slot[\s\S]*?fc-slot-key">T</.test(htmlSrc));
+  check('index.html: static SUPER slot key is F (v4.2.0: ultimate cooldown)',
+    /super-slot[\s\S]*?fc-slot-key">F</.test(htmlSrc));
+  check('index.html: embedded radar scope canvas in the FC panel (v4.2.0)',
+    htmlSrc.includes('id="fc-radar"'));
   const p2Src = fs.readFileSync(path.join(ROOT, 'net/Player2Controls.js'), 'utf8');
   check('Player2Controls: synergy in P2_ACTIONS + default Comma',
     p2Src.includes("'deployFleet', 'synergy'") && /synergy:\s*\[\s*'Comma'\s*\]/.test(p2Src));

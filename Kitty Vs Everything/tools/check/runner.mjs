@@ -50,7 +50,7 @@ const SECTIONS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s1
 export async function runAll() {
   for (const run of SECTIONS) await run();
   console.log(failures === 0
-    ? '\n\x1b[32m[check] ALL GREEN — v4.1.0: RnM SHIP INTERCEPTOR (rare easter-egg ship — off-screen entry, right-edge turnaround + mirrored patrol loop, friendly-bullet damage, guaranteed Frenzy drop at death coordinates) — plus SEARCH & DESTROY (displacement-accumulator camera — dead-zone + excess-delta world accumulation + soft recentering; world-anchored debris/hazard/patrol layout; OPEN SPACE → THE BONEYARD → DEEP SECTOR journey to Eridath\'s Mom\'s House, the 512px shootable base; F1 cockpit radar) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
+    ? '\n\x1b[32m[check] ALL GREEN — v4.2.0: FIRE-CONTROL PANEL REDESIGN (SAR radar embedded in the panel\'s right column — standalone screen radar hidden while the panel is expanded; 2×2 action slots STUN/NAPALM/SUPER(F cooldown)/ORBIT(T undock-redock)) — plus v4.1.0: RnM SHIP INTERCEPTOR (rare easter-egg ship — off-screen entry, right-edge turnaround + mirrored patrol loop, friendly-bullet damage, guaranteed Frenzy drop at death coordinates) — plus SEARCH & DESTROY (displacement-accumulator camera — dead-zone + excess-delta world accumulation + soft recentering; world-anchored debris/hazard/patrol layout; OPEN SPACE → THE BONEYARD → DEEP SECTOR journey to Eridath\'s Mom\'s House, the 512px shootable base; F1 cockpit radar) — plus version sync, LevelRegistry surface, asset pipeline, and headless behavior verified.\x1b[0m'
     : `\n\x1b[31m[check] ${failures} FAILURE(S) — see ✗ lines above.\x1b[0m`);
   process.exit(failures === 0 ? 0 : 1);
 }

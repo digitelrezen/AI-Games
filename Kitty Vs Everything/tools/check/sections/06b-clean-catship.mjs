@@ -25,8 +25,8 @@ console.log('\n[6b] v3.45.0 clean catship (source gates)');
   const hudSrc = fs.readFileSync(path.join(ROOT, 'js/ui/HUDFireControl.js'), 'utf8');
   check('HUDFireControl: Nova meter reads superCharge + ultimateCooldown',
     hudSrc.includes('p.superCharge') && hudSrc.includes('p.ultimateCooldown'));
-  check('HUDFireControl: Nova meter states nova-ready/-charging/-cooldown',
-    hudSrc.includes('nova-ready') && hudSrc.includes('nova-charging') && hudSrc.includes('nova-cooldown'));
+  check('HUDFireControl: Nova meter states super-ready/-charging/-cooldown (v4.2.0: SUPER slot)',
+    hudSrc.includes('super-ready') && hudSrc.includes('super-charging') && hudSrc.includes('super-cooldown'));
   check('HUDFireControl: old minis-based Nova ready flag (novaReady) removed',
     !hudSrc.includes('novaReady'));
 }

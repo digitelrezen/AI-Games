@@ -832,7 +832,8 @@ body {
 .fc-meter-fill.shield { background: #4fc3f7; }
 .fc-meter-fill.crit { background: #e53935; }
 .fc-readout { color: #ffe9a3; font-size: 12px; }
-#fc-speed { color: #ffd54f; }
+/* v4.2.0: #fc-speed removed — the SPD readout's slot now hosts the
+   embedded radar scope (see .fc-radar-block below). */
 #weapon-label { color: #fff; font-weight: bold; letter-spacing: 1px; }
 .fc-weapon-status { font-size: 10px; letter-spacing: 1px; }
 .fc-weapon-status.ready { color: #7ee2a8; }
@@ -847,7 +848,9 @@ body {
   animation: frenzy-pulse 0.5s ease-in-out infinite alternate;
 }
 @keyframes frenzy-pulse { from { opacity: 0.55; } to { opacity: 1; } }
-.fc-slots { display: flex; gap: 10px; } /* v3.18.0: right column — margin-left:auto no longer needed */
+/* v4.2.0: 2×2 action-slot grid (STUN / NAPALM / SUPER / ORBIT) — sits
+   beside the embedded radar scope in the right column without wrapping. */
+.fc-slots { display: grid; grid-template-columns: repeat(2, 74px); gap: 8px; }
 .fc-slot {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   width: 74px; padding: 4px 6px;
@@ -859,18 +862,34 @@ body {
 .fc-slot-bar { width: 100%; height: 4px; background: #101a2e; border-radius: 2px; overflow: hidden; }
 .fc-slot-fill { display: block; height: 100%; width: 100%; background: #ffd54f; }
 
-/* v3.45.0: NOVA meter (F slot) — purple charge/cooldown/ready. The ship-side
-   gold charge ring + cyan shield ring are gone; this is the sole Nova display. */
-#nova-slot { border-color: #3d2f5e; }
-#nova-slot .fc-slot-key { color: #b388ff; }
-#nova-slot.nova-ready { border-color: #7c4dff; box-shadow: 0 0 9px rgba(124, 77, 255, 0.55); }
-#nova-slot.nova-ready .fc-slot-state { color: #d1b3ff; }
-#nova-slot.nova-ready .fc-slot-fill { background: linear-gradient(90deg, #7c4dff, #b388ff); animation: nova-pulse 0.8s ease-in-out infinite alternate; }
-#nova-slot.nova-charging .fc-slot-state { color: #9575cd; }
-#nova-slot.nova-charging .fc-slot-fill { background: linear-gradient(90deg, #4a3d6b, #7c4dff); }
-#nova-slot.nova-cooldown .fc-slot-state { color: #8a93a8; }
-#nova-slot.nova-cooldown .fc-slot-fill { background: #3a2f57; }
+/* v4.2.0: SUPER meter (F slot) — purple ultimate cooldown/charge/ready.
+   The v3.45.0 NOVA slot renamed: the key now tracks the 'ultimate' action
+   (F / C) and the state shows the live cooldown timer. */
+#super-slot { border-color: #3d2f5e; }
+#super-slot .fc-slot-key { color: #b388ff; }
+#super-slot.super-ready { border-color: #7c4dff; box-shadow: 0 0 9px rgba(124, 77, 255, 0.55); }
+#super-slot.super-ready .fc-slot-state { color: #d1b3ff; }
+#super-slot.super-ready .fc-slot-fill { background: linear-gradient(90deg, #7c4dff, #b388ff); animation: nova-pulse 0.8s ease-in-out infinite alternate; }
+#super-slot.super-charging .fc-slot-state { color: #9575cd; }
+#super-slot.super-charging .fc-slot-fill { background: linear-gradient(90deg, #4a3d6b, #7c4dff); }
+#super-slot.super-cooldown .fc-slot-state { color: #8a93a8; }
+#super-slot.super-cooldown .fc-slot-fill { background: #3a2f57; }
+/* v4.2.0: ORBIT slot (T) — the undock/redock toggle (DOCKED <-> ORBITING). */
+#orbit-slot { border-color: #2e4a3d; }
+#orbit-slot .fc-slot-key { color: #69f0ae; }
+#orbit-slot.orbit-active { border-color: #2e7d52; box-shadow: 0 0 8px rgba(105, 240, 174, 0.4); }
+#orbit-slot.orbit-active .fc-slot-state { color: #69f0ae; }
+#orbit-slot.orbit-active .fc-slot-fill { background: #69f0ae; }
+#orbit-slot.orbit-docked .fc-slot-state { color: #8a93a8; }
+#orbit-slot.orbit-docked .fc-slot-fill { background: #3a4256; }
 @keyframes nova-pulse { from { opacity: 0.7; } to { opacity: 1; } }
+
+/* v4.2.0: embedded radar scope — the FC panel's right column hosts the SAR
+   radar (RadarManager.js renders the live scope into #fc-radar while the
+   panel is expanded; HUDFireControl.js draws the idle NO SIGNAL / RADAR OFF
+   scope otherwise). The standalone bottom-right screen radar is hidden. */
+.fc-radar-block { align-items: center; }
+#fc-radar { display: block; }
 
 /* v3.20.0: P2 HUD (co-op / LAN) + net status + LAN settings panel */
 #p2-hud {

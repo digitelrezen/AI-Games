@@ -53,7 +53,7 @@ const tests = [
   ['v3.47.0: shield is a soft yellow GLOW (SHIELD_BUBBLE_RADIUS=110, radial gradient, no hard rim)', /SHIELD_BUBBLE_RADIUS\s*=\s*110/.test(s) && s.includes('createRadialGradient') && s.includes('rgba(255, 213, 79')],
   ['v3.56.0: FC panel + minimized bar yellow theme (scoped amber borders)', s.includes('#fc-dashboard .fc-meter') && s.includes('#5c4a1e') && s.includes('#3d3218')],
   ['v3.45.0: shield-break shatter burst', s.includes('const shieldBefore = this.shield') && s.includes('#ffd54f')],
-  ['v3.45.0: Nova meter (superCharge + ultimateCooldown + nova-ready)', s.includes('p.superCharge') && s.includes('p.ultimateCooldown') && s.includes('nova-ready')],
+  ['v3.45.0: SUPER meter (superCharge + ultimateCooldown + super-ready, v4.2.0: F slot with cooldown timer)', s.includes('p.superCharge') && s.includes('p.ultimateCooldown') && s.includes('super-ready')],
   ['v3.45.0: purple Nova CSS (#7c4dff)', s.includes('#7c4dff')],
   // ── v3.47.0 key-triggered Synergy Explosion (T / - P1, , P2) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
@@ -65,7 +65,8 @@ const tests = [
   ['v3.47.0: Keybinds synergy action (KeyT / Minus)', /synergy:\s*\[\s*['"]KeyT['"]\s*,\s*['"]Minus['"]\s*\]/.test(s)],
   ['v3.47.0: P2 synergy default (Comma)', /synergy:\s*\[\s*['"]Comma['"]\s*\]/.test(s)],
   ['v3.47.0: TestAimbot on F8 (KeyT hotkey gone)', /e\.code\s*!==\s*['"]F8['"]/.test(s) && !/e\.code\s*!==\s*['"]KeyT['"]/.test(s) && s.includes('F8 to disengage')],
-  ['v3.47.0: NOVA slot key label tracks synergy', /this\._slotLabel\(e\.novaSlot,\s*['"]synergy['"]\)/.test(s)],
+  ['v4.2.0: ORBIT slot key label tracks synergy (undock/redock toggle)', /this\._slotLabel\(e\.orbitSlot,\s*['"]synergy['"]\)/.test(s)],
+  ['v4.2.0: embedded radar scope canvas in the bundle', s.includes('fc-radar') && s.includes('_renderEmbedded') && s.includes('_fcPanelVisible')],
   // ── v3.48.0 procedural aim reticle (Crosshair.js) ──
   ['v3.48.0: Crosshair reticle module (circles + dot + ticks)', /Crosshair\s*=\s*class/.test(s) && /R_OUTER\s*=\s*16/.test(s) && /DOT_R\s*=\s*2\.6/.test(s)],
   ['v3.55.0: crosshair defaults (on + 140px offset, 140–340 limits)', /crosshair:\s*true/.test(s) && /crosshairOffset:\s*\{\s*min:\s*140,\s*max:\s*340,\s*def:\s*140/.test(s)],

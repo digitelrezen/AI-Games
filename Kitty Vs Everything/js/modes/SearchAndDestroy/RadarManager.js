@@ -14,6 +14,12 @@
 // position (SectorMap.screenToWorld) projected relative to the player's
 // world position, scaled to the radar range (SAR.RADAR.RANGE world px →
 // SAR.RADAR.R screen px).
+//
+// v4.2.0: EMBEDDED RENDERING — while the fire-control panel (#fc-dashboard)
+// is expanded, the scope renders into the panel's embedded canvas
+// (#fc-radar, right column — where the old SPD readout lived) instead of
+// the standalone bottom-right screen panel; the screen radar is hidden in
+// that state. Panel minimized/hidden → the classic standalone scope.
 export const VERSION = 'v4.0.0';
 import { SAR, sarProgress } from '../../core/config.js';
 import { TAU, clamp } from '../../core/utils.js';
@@ -55,15 +61,50 @@ export default class RadarManager {
   /**
    * Render the cockpit overlay + radar panel (Game.render, after the
    * classic HUD — screen space, top of the stack).
+   * v4.2.0: while the fire-control panel is expanded the scope renders
+   * into the panel's embedded canvas (#fc-radar) and the standalone
+   * bottom-right screen radar is hidden.
    */
   render(ctx) {
     const g = this.game;
     if (!this.visible || !g.player || g.player.dead) return;
     const W = g.viewW, H = g.viewH;
     this._drawCockpit(ctx, W, H);
+    if (this._fcPanelVisible()) {
+      this._renderEmbedded();
+      return;
+    }
     const R = SAR.RADAR.R;
     const cx = W - R - 24;
     const cy = H - R - 24;
+    this._drawPanel(ctx, cx, cy, R);
+    this._drawBlips(ctx, cx, cy, R);
+    this._drawHouseBlip(ctx, cx, cy, R);
+    this._drawReadout(ctx, cx, cy, R);
+  }
+
+  /**
+   * v4.2.0: true while the fire-control dashboard's columns are on screen
+   * (not hidden, not minimized) — the host of the embedded radar canvas.
+   * The standalone screen scope is suppressed in this state.
+   */
+  _fcPanelVisible() {
+    const el = document.getElementById('fc-dashboard');
+    return !!el && !el.classList.contains('hidden') && !el.classList.contains('minimized');
+  }
+
+  /**
+   * v4.2.0: draw the live scope into the panel's embedded canvas
+   * (#fc-radar, 150×168). Same geometry as the idle scope drawn by
+   * HUDFireControl so the two never disagree: R = 62, center (w/2, R + 8).
+   */
+  _renderEmbedded() {
+    const canvas = document.getElementById('fc-radar');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    const R = 62, cx = w / 2, cy = R + 8;
+    ctx.clearRect(0, 0, w, h);
     this._drawPanel(ctx, cx, cy, R);
     this._drawBlips(ctx, cx, cy, R);
     this._drawHouseBlip(ctx, cx, cy, R);
