@@ -365,7 +365,17 @@
 //          image-rendering: pixelated/crisp-edges to #game-canvas +
 //          #hangar-canvas. Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v4.6.0';
+// v4.7.0: RnM SHIP DIALOGUE + SPAWN-RATE BOOST — the RnM interceptor's
+//          generic "RnM SHIP INTERCEPTOR INBOUND" spawn banner is gone:
+//          the ship plays a sequential on-screen Rick & Morty dialogue
+//          (RnMShip.js RNMSHIP_DIALOGUE, #alert-banner 'dialogue' style)
+//          as it crosses into view, and the spawn roll is significantly
+//          boosted (RNMSHIP.spawnChance 0.19, 8–15 s roll windows, 8 s
+//          first roll, 5 per mission) in BOTH classic + Search & Destroy
+//          modes. Destruction still drops the GUARANTEED Frenzy power-up.
+//          Milestone version synced across package.json, config.js,
+//          main.js, Game.js, HUD.js and index.html.
+export const VERSION = 'v4.7.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

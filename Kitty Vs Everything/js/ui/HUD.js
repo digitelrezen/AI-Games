@@ -55,7 +55,10 @@
 //          the wave counter while in SAR mode.
 // v4.6.0: Version label bumped with the multi-track playlist soundtrack
 //          (no HUD changes — the rotation lives in AudioSystem.js).
-export const VERSION = 'v4.6.0';
+// v4.7.0: Version label bumped with the RnM ship dialogue (the
+//          #alert-banner 'dialogue' style renders the interceptor's
+//          sequential Rick & Morty lines — showBanner is unchanged).
+export const VERSION = 'v4.7.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

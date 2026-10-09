@@ -1,5 +1,18 @@
 // Filename: RnMShip.js
 // Kitty Vs Everything — v4.1.0
+// v4.7.0: RICK & MORTY DIALOGUE + SPAWN-RATE BOOST — the generic
+//          "RnM SHIP INTERCEPTOR INBOUND" spawn banner is GONE: the ship
+//          now plays a sequential on-screen dialogue (RNMSHIP_DIALOGUE,
+//          the Bender-egg showLine pattern through the #alert-banner
+//          'dialogue' style) as it crosses into view:
+//            RICK:  "Come on Morty, 20 minutes! In and out!"
+//            MORTY: "Aw geez, Rick, is that a snake?"
+//            RICK:  "Yes Morty, I told you, there's everything in space."
+//          Spawn rate significantly increased (still a capped easter
+//          egg): RNMSHIP.spawnChance 0.03 → 0.19 per roll window, roll
+//          windows every 8–15 s (was 25–45 s), first roll 8 s after
+//          mission start (was 20 s), per-mission cap 2 → 5. Destruction
+//          still drops the GUARANTEED Frenzy power-up.
 // "RnM ship" — the rare easter-egg INTERCEPTOR (v4.1.0).
 //
 // Spawn: a rare time-based roll in the EasterEgg manager (RNMSHIP.spawnChance
@@ -30,18 +43,31 @@ import { audio } from '../../../core/AudioSystem.js';
 import { spawnGuaranteedDrop } from '../../../core/DropManager.js'; // guaranteed Frenzy
 import { rnmsArtDims, drawRnMShip } from './RnMShipArt.js';
 
-/** v4.1.0: RnM ship tuning (single source of truth). */
+/** v4.1.0: RnM ship tuning (single source of truth). v4.7.0: spawn-rate boost. */
 export const RNMSHIP = {
-  spawnChance: 0.03,      // rare roll per roll window (time-based)
-  rollIntervalMin: 25,    // s between roll windows (after the first)
-  rollIntervalMax: 45,
-  firstRollDelay: 20,     // s after mission start before the first roll
-  maxPerRun: 2,           // per-mission cap (EasterEgg manager counts)
+  spawnChance: 0.19,      // v4.7.0: boosted roll per roll window (was 0.03 — ~6x more likely)
+  rollIntervalMin: 8,     // v4.7.0: s between roll windows (was 25)
+  rollIntervalMax: 15,    // v4.7.0: s between roll windows (was 45)
+  firstRollDelay: 8,      // v4.7.0: s after mission start before the first roll (was 20)
+  maxPerRun: 5,           // v4.7.0: per-mission cap (was 2 — EasterEgg manager counts)
   hp: 120,                // shootable durability — ~a few seconds of fire
   speed: 240,             // px/s horizontal patrol (both directions)
   scale: 0.5,             // 256×256 art → 128×128 on screen (uniform scale)
   wobble: 10,             // px amplitude of the vertical bob
 };
+
+/** v4.7.0: sequential RnM dialogue — the iconic interceptor lines, shown
+ *  on-screen (banner 'dialogue' style) as the ship crosses into view:
+ *  line 0 RNMSHIP_FIRST_LINE_DELAY after spawn, then one line every
+ *  RNMSHIP_LINE_INTERVAL (Bender-egg showLine pattern). Replaces the
+ *  v4.1.0 "RnM SHIP INTERCEPTOR INBOUND" spawn banner. */
+export const RNMSHIP_DIALOGUE = [
+  'RICK: "Come on Morty, 20 minutes! In and out!"',
+  'MORTY: "Aw geez, Rick, is that a snake?"',
+  "RICK: \"Yes Morty, I told you, there's everything in space.\"",
+];
+const RNMSHIP_FIRST_LINE_DELAY = 0.8; // s after spawn before line 0 (the ship crossing in)
+const RNMSHIP_LINE_INTERVAL = 3;      // s between dialogue lines
 
 export default class RnMShip {
   constructor(game) {
@@ -60,6 +86,10 @@ export default class RnMShip {
     this.y = (game.viewH - this.h) / 2;
     this.dir = 1; // 1 = flying right, -1 = patrolling back left (mirrored)
     this.wobblePhase = Math.random() * TAU;
+    // v4.7.0: sequential RnM dialogue state (Bender-egg pattern).
+    this.dialogueStage = -1; // index of the last shown line (-1 = none yet)
+    this.dialogueTimer = 0;  // s since spawn (drives the line schedule)
+    this.quip = null;        // current dialogue line (debug snapshot)
   }
 
   /** 0 on entry (left) → 1 on exit of the right edge (debug snapshot). */
@@ -79,7 +109,27 @@ export default class RnMShip {
     } else if (this.dir === -1 && this.x + this.w < 0) {
       this.dir = 1; // fully off-screen left → turn around, patrol right (loop)
     }
+    this.updateDialogue(dt); // v4.7.0: sequential RnM dialogue
     this.checkBullets();
+  }
+
+  /** v4.7.0: sequential RnM dialogue — line 0 RNMSHIP_FIRST_LINE_DELAY
+   *  after spawn (as the ship crosses into view), then one line every
+   *  RNMSHIP_LINE_INTERVAL. One pass per ship (no repeat on patrol). */
+  updateDialogue(dt) {
+    this.dialogueTimer += dt;
+    const next = this.dialogueStage + 1;
+    if (next >= RNMSHIP_DIALOGUE.length) return;
+    const due = RNMSHIP_FIRST_LINE_DELAY + next * RNMSHIP_LINE_INTERVAL;
+    if (this.dialogueTimer >= due) this.showLine(next);
+  }
+
+  /** v4.7.0: show dialogue line i (stylized 'dialogue' banner + audio). */
+  showLine(i) {
+    this.dialogueStage = i;
+    this.quip = RNMSHIP_DIALOGUE[i];
+    bus.emit('banner', { text: this.quip, tone: 'dialogue', duration: RNMSHIP_LINE_INTERVAL });
+    audio.banner();
   }
 
   /** Friendly bullets vs the ship's bounding box (ship-egg pattern). */

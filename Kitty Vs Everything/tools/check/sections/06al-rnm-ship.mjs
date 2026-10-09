@@ -1,13 +1,19 @@
 // ═══════════════════════════════════════════════════════════
-//  [6al] v4.1.0 RnM SHIP INTERCEPTOR — the rare easter-egg
-//        interceptor (js/modes/EasterEggs/RnMShip/): enters
-//        off-screen left flying right, turns around (sprite
-//        mirror) fully off-screen right and patrols back left,
-//        looping until destroyed; friendly bullets damage it
-//        (RNMSHIP.hp); destruction drops a GUARANTEED Frenzy
-//        power-up at its death coordinates (spawnGuaranteedDrop).
-//        The rare time-based roll lives in EasterEgg.update
-//        (gated on state === 'playing' — classic + SAR modes).
+//  [6al] v4.1.0 RnM SHIP INTERCEPTOR (v4.7.0: dialogue +
+//        spawn-rate boost) — the easter-egg interceptor
+//        (js/modes/EasterEggs/RnMShip/): enters off-screen
+//        left flying right, turns around (sprite mirror) fully
+//        off-screen right and patrols back left, looping until
+//        destroyed; friendly bullets damage it (RNMSHIP.hp);
+//        destruction drops a GUARANTEED Frenzy power-up at its
+//        death coordinates (spawnGuaranteedDrop). The time-based
+//        roll lives in EasterEgg.update (gated on state ===
+//        'playing' — classic + SAR modes); v4.7.0: significantly
+//        boosted (spawnChance 0.19, 8–15 s roll windows, 8 s
+//        first roll, cap 5) and the "RnM SHIP INTERCEPTOR
+//        INBOUND" spawn banner is replaced by the ship's
+//        sequential Rick & Morty dialogue (RNMSHIP_DIALOGUE
+//        through the #alert-banner 'dialogue' style).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
@@ -32,11 +38,23 @@ export default async function run() {
   const { RnMShip, RNMSHIP } = await mod('js/modes/EasterEggs/RnMShip/index.js');
   check('RNMSHIP: rare roll + per-mission cap', RNMSHIP.spawnChance > 0 && RNMSHIP.spawnChance < 0.2 && RNMSHIP.maxPerRun >= 1, `got ${JSON.stringify(RNMSHIP)}`);
   check('RNMSHIP: shootable durability + patrol speed + uniform scale', RNMSHIP.hp > 0 && RNMSHIP.speed > 0 && RNMSHIP.scale > 0, `got ${JSON.stringify(RNMSHIP)}`);
+  check('RNMSHIP: v4.7.0 spawn-rate boost (0.19 roll, 8–15 s windows, 8 s first, cap 5)',
+    RNMSHIP.spawnChance >= 0.15 && RNMSHIP.rollIntervalMin <= 10 && RNMSHIP.rollIntervalMax <= 20 &&
+    RNMSHIP.firstRollDelay <= 10 && RNMSHIP.maxPerRun >= 3, `got ${JSON.stringify(RNMSHIP)}`);
+  check('RnMShip: v4.7.0 sequential dialogue lines (Rick → Morty → Rick)',
+    src.includes('Come on Morty, 20 minutes! In and out!') &&
+    src.includes('Aw geez, Rick, is that a snake?') &&
+    src.includes("there's everything in space."));
+  check('RnMShip: v4.7.0 dialogue uses the stylized banner tone', src.includes("tone: 'dialogue'"));
   const eggSrc = fs.readFileSync(path.join(ROOT, 'js/core/EasterEgg.js'), 'utf8');
   check('EasterEgg: rnms slot + maybeSpawnRnMShip roll (spawnChance + maxPerRun cap)', eggSrc.includes('rnms: null') && eggSrc.includes('maybeSpawnRnMShip') && eggSrc.includes('RNMSHIP.spawnChance') && eggSrc.includes('RNMSHIP.maxPerRun'));
   check('EasterEgg: roll gated on state === playing (classic + SAR modes)', eggSrc.includes("this.game.state === 'playing'"));
+  check('EasterEgg: v4.7.0 "INTERCEPTOR INBOUND" spawn banner removed (dialogue plays from the ship)',
+    !eggSrc.includes("bus.emit('banner', { text: 'RnM SHIP INTERCEPTOR INBOUND"));
   const devSrc = fs.readFileSync(path.join(ROOT, 'js/ui/DevPanel.js'), 'utf8');
   check('DevPanel: dev-rnms force-spawn button wired', devSrc.includes("getElementById('dev-rnms')") && devSrc.includes("switchEgg(g, 'rnms')"));
+  check('DevPanel: v4.7.0 "INTERCEPTOR INBOUND" spawn banner removed',
+    !devSrc.includes("bus.emit('banner', { text: 'RnM SHIP INTERCEPTOR INBOUND"));
   const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   check('index.html: dev-rnms button in the Drops section', htmlSrc.includes('id="dev-rnms"'));
   const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/asset-manifest.json'), 'utf8'));
@@ -87,6 +105,12 @@ export default async function run() {
     check('patrols back and turns around again (dir=1 loop)', flipLeftAt !== null && flipLeftAt > flipRightAt, `flipLeftAt=${flipLeftAt && flipLeftAt.toFixed(2)}s`);
     check('still patrolling after 30 s (no pass limit — loops until destroyed)', !!g.eggs.rnms && g.eggs.rnms.alive);
     check('no drop on plain patrol (only destruction drops)', g.powerups.length === 0);
+    check('v4.7.0: sequential RnM dialogue fires in order (Rick → Morty → Rick)',
+      banners.length === 3 &&
+        banners[0].includes('Come on Morty, 20 minutes! In and out!') &&
+        banners[1].includes('Aw geez, Rick, is that a snake?') &&
+        banners[2].includes("there's everything in space."),
+      banners.join(' | '));
   }
 
   // B) destruction: friendly bullets → hp 0 → explosion + GUARANTEED frenzy at death point

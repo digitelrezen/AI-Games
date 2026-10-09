@@ -267,7 +267,11 @@
 //          sovereign); debris, hazards and regional patrols are
 //          WORLD-ANCHORED at absolute world coordinates. Milestone
 //          version synced with package.json.
-export const VERSION = 'v4.6.0';
+// v4.7.0: RnM ship dialogue + spawn-rate boost (RnMShip.js — the
+//          interceptor plays its sequential Rick & Morty dialogue and
+//          spawns regularly in classic + Search & Destroy modes).
+//          Milestone version synced with package.json.
+export const VERSION = 'v4.7.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

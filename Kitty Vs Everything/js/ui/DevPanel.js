@@ -42,6 +42,9 @@
 //          lockouts, no permanent restrictions).
 // v3.99.0: SEARCH & DESTROY mode — a MODES section with a "Start Search &
 //          Destroy" button (dev-sard) force-restarts the mission in SAR mode.
+// v4.7.0: RnM Ship button no longer emits the "RnM SHIP INTERCEPTOR
+//          INBOUND" banner — the force-spawned ship plays its own
+//          sequential Rick & Morty dialogue (RnMShip.js RNMSHIP_DIALOGUE).
 export const VERSION = 'v3.99.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
@@ -230,12 +233,13 @@ export default class DevPanel {
     // Force-spawns the ship (no roll): enters off-screen left flying right,
     // turns around off-screen right and patrols back (looping until
     // destroyed); friendly bullets damage it and destruction drops a
-    // GUARANTEED Frenzy power-up at its death coordinates.
+    // GUARANTEED Frenzy power-up at its death coordinates. v4.7.0: no
+    // spawn banner — the ship plays its own sequential Rick & Morty
+    // dialogue (RnMShip.js RNMSHIP_DIALOGUE).
     const rnmsBtn = document.getElementById('dev-rnms');
     if (rnmsBtn) {
       rnmsBtn.onclick = () => {
         switchEgg(g, 'rnms'); // force-spawn (EasterEgg manager slot)
-        bus.emit('banner', { text: 'RnM SHIP INTERCEPTOR INBOUND — SHOOT IT DOWN FOR FRENZY!', tone: 'warn', duration: 2.5 });
       };
     }
     // ─── v3.97.0: Hazards — force-spawn a random drifting hazard ───

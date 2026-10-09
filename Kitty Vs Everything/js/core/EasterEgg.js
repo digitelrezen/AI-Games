@@ -1,5 +1,11 @@
 // Filename: EasterEgg.js
 // Kitty Vs Everything — v4.1.0
+// v4.7.0: RnM ship — the "RnM SHIP INTERCEPTOR INBOUND" spawn banner is
+//          gone from maybeSpawnRnMShip: the ship plays its sequential
+//          Rick & Morty dialogue itself (RnMShip.js RNMSHIP_DIALOGUE) as
+//          it crosses into view; the spawn roll is significantly
+//          boosted (RNMSHIP.spawnChance 0.19, 8–15 s roll windows,
+//          8 s first roll, cap 5 per mission).
 // Easter egg manager: one slot per egg, all can be alive at the same time.
 //   • BenderEasterEgg (v3.24.0, resized v3.28.0, kill-based v3.29.0) —
 //     the rare 'robot' power-up (dropped by the destroyed Planet Express
@@ -433,12 +439,15 @@ export function maybeSpawnSpaceballs(game) {
 }
 
 /**
- * v4.1.0: the rare time-based roll — EasterEgg.update() calls this when a
+ * v4.1.0: the time-based roll — EasterEgg.update() calls this when a
  * roll window elapses (RNMSHIP.firstRollDelay after mission start, then
  * every RNMSHIP.rollIntervalMin–Max seconds), gated on
  * game.state === 'playing' so it works in BOTH classic wave mode and
  * Search & Destroy mode. Spawns the RnM ship interceptor when the roll
  * hits AND the per-mission cap (RNMSHIP.maxPerRun) hasn't been reached.
+ * v4.7.0: the "RnM SHIP INTERCEPTOR INBOUND" spawn banner is GONE — the
+ * ship plays its sequential Rick & Morty dialogue itself (RnMShip.js
+ * RNMSHIP_DIALOGUE) as it crosses into view.
  * @returns {boolean} true when the RnM ship was spawned
  */
 export function maybeSpawnRnMShip(game) {
@@ -446,10 +455,9 @@ export function maybeSpawnRnMShip(game) {
   if (!mgr || !game.eggs) return false;
   if (game.eggs.rnms) return false; // one at a time
   if (mgr.rnmsCount >= RNMSHIP.maxPerRun) return false; // per-mission cap
-  if (Math.random() >= RNMSHIP.spawnChance) return false; // rare
+  if (Math.random() >= RNMSHIP.spawnChance) return false; // v4.7.0: boosted (0.19)
   mgr.rnmsCount++;
   switchEgg(game, 'rnms');
-  bus.emit('banner', { text: 'RnM SHIP INTERCEPTOR INBOUND — SHOOT IT DOWN FOR FRENZY!', tone: 'warn', duration: 3 });
   return true;
 }
 
