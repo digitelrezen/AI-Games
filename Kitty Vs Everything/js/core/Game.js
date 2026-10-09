@@ -262,7 +262,7 @@
 //          sovereign); debris, hazards and regional patrols are
 //          WORLD-ANCHORED at absolute world coordinates. Milestone
 //          version synced with package.json.
-export const VERSION = 'v4.3.0';
+export const VERSION = 'v4.4.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -305,6 +305,7 @@ import clientMirror from '../../net/ClientMirror.js';
 import netSettings from '../../net/NetSettings.js';
 // ─── v3.77.0: E6 modularization — Game.js submodules (delegates below) ───
 import { advanceStage, startBonusStage, startBonusLevel, startBonusSpecific, restartLevel } from './game/StageFlow.js';
+import { syncMusicMode } from './game/MusicDirector.js'; // v4.4.0: dynamic soundtrack mode
 import { checkViewportChange, wantsPointerLock, syncCursor, settingsOpen, onPointerLockChange } from './game/DisplayPolicy.js';
 import { gameOver } from './game/GameOver.js';
 import { hitPlayer, destroyAsteroid, checkScoreLives, cleanup, spawnEnemyBullet } from './game/Gameplay.js';
@@ -575,6 +576,7 @@ export default class Game {
       // manifest; activeStage stays null in SAR mode so the block below is
       // a no-op and the classic stage flow is untouched.
       if (this.mode === 'sard' && this.sard) this.sard.update(dt);
+      syncMusicMode(this); // v4.4.0: dynamic soundtrack (open/combat/boneyard/boss)
       if (this.activeStage) {
         this.activeStage.update(dt);
         if (this.activeStage.isComplete()) this.advanceStage();
