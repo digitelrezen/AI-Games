@@ -139,7 +139,7 @@
 //          (PauseMenu.js) calls game.returnToHangar() (StageFlow.js): full
 //          session teardown + transition back to this hangar terminal.
 //          Milestone version synced with package.json.
-export const VERSION = 'v4.5.0';
+export const VERSION = 'v4.6.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup
