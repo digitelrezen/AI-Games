@@ -1,5 +1,10 @@
 // Filename: Game.js
 // Kitty Vs Everything — v3.76.0
+// v4.5.0: pause menu "RETURN TO HANGAR" — game.returnToHangar() delegate
+//         (StageFlow.js) tears down the live session (stage, entities,
+//         hazards, particles, ships, co-op/LAN, SAR facade, score, music,
+//         pointer lock) and transitions state back to the hangar terminal
+//         (ship selection).
 // v3.76.0 (LevelRegistry refactor): stage sequencing is data-driven —
 //          the LevelRegistry manifest (STAGE_SEQUENCE) decides what runs
 //          next; Game.advanceStage() consumes it and drives the active
@@ -262,7 +267,7 @@
 //          sovereign); debris, hazards and regional patrols are
 //          WORLD-ANCHORED at absolute world coordinates. Milestone
 //          version synced with package.json.
-export const VERSION = 'v4.4.0';
+export const VERSION = 'v4.5.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -304,7 +309,7 @@ import coopManager from '../../net/CoopManager.js';
 import clientMirror from '../../net/ClientMirror.js';
 import netSettings from '../../net/NetSettings.js';
 // ─── v3.77.0: E6 modularization — Game.js submodules (delegates below) ───
-import { advanceStage, startBonusStage, startBonusLevel, startBonusSpecific, restartLevel } from './game/StageFlow.js';
+import { advanceStage, startBonusStage, startBonusLevel, startBonusSpecific, restartLevel, returnToHangar } from './game/StageFlow.js';
 import { syncMusicMode } from './game/MusicDirector.js'; // v4.4.0: dynamic soundtrack mode
 import { checkViewportChange, wantsPointerLock, syncCursor, settingsOpen, onPointerLockChange } from './game/DisplayPolicy.js';
 import { gameOver } from './game/GameOver.js';
@@ -525,6 +530,11 @@ export default class Game {
   /** v3.14.0: pause menu "RESTART LEVEL" — full mission reset, keeps theme.
    *  v3.77.0 E6: logic lives in js/core/game/StageFlow.js. */
   restartLevel() { restartLevel(this); }
+
+  /** v4.5.0: pause menu "RETURN TO HANGAR" — full session teardown +
+   *  transition to the hangar terminal (Catship selection).
+   *  v4.5.0: logic lives in js/core/game/StageFlow.js. */
+  returnToHangar() { returnToHangar(this); }
 
   /** v3.77.0 E6: the game-over sequence lives in js/core/game/GameOver.js
    *  (co-op continuation guard, leaderboard, DOM overlay, pointer restore). */

@@ -96,7 +96,7 @@ The tunable constants extracted from `config.js` (which became a re-export shim)
 
 The Game.js orchestrator logic extracted into focused modules. Every function takes `game` as its first parameter; `Game.js` delegates with `this`.
 
-- **StageFlow.js** — stage lifecycle: `advanceStage` / `startBonusStage` / `startBonusLevel` / `startBonusSpecific` / `restartLevel`, driven by `LevelRegistry` (`STAGE_SEQUENCE` cadence + `BONUS_STAGES` registry).
+- **StageFlow.js** — stage lifecycle: `advanceStage` / `startBonusStage` / `startBonusLevel` / `startBonusSpecific` / `restartLevel`, driven by `LevelRegistry` (`STAGE_SEQUENCE` cadence + `BONUS_STAGES` registry). v4.5.0: `returnToHangar(game)` — the pause-menu "RETURN TO HANGAR" teardown: active-stage cleanup hook + slot free, all entity arrays, hazard field + particles, player ships (P1/P2), co-op/LAN (`coopManager.stop()` / `clientMirror.stop()` when active), SAR facade (`game.sard.destroy()` + mode → `classic`), score/multiplier/life timer/shake/god mode, dev state (aimbot/test aimbot/floaters/msglog), stage manifest (`levelRegistry.reset()` + `waveManager.reset()`), `audio.stopMusic()`, `game.state = 'menu'`, `syncCursor(game)` (pointer-lock release) and the null-safe DOM swap (HUD/FC dashboard/pause overlay/game-over hidden, `#menu-screen` shown). The permanent rAF loop is untouched — the state machine unloads.
 - **DisplayPolicy.js** — display gating: `checkViewportChange` / `wantsPointerLock` / `syncCursor` / `settingsOpen` / `onPointerLockChange` (pointer lock + cursor + settings-open state).
 - **GameOver.js** — `gameOver(game)`: the game-over sequence (score submission, leaderboard, DOM).
 - **Gameplay.js** — combat housekeeping: `hitPlayer` / `destroyAsteroid` / `checkScoreLives` / `cleanup` / `spawnEnemyBullet`.
@@ -225,7 +225,7 @@ Tunables: `SAR` / `sarProgress` / `sarZoneFor` in `js/core/config/searchDestroy.
 - **DevPanel.js** — Backtick/F9 admin panel: spawn species/tier, weapon override, instant bonus (v3.76.0: routes through `levelRegistry.forceBonus` — random / boneyard / internet), god mode, robot drop (Bender egg), ship drop (Planet Express flyby). v3.34.0: pinned header, scrollable `.dev-body`, pinned footer with a live viewport readout.
 - **Leaderboard.js** — localStorage high scores (top 10): `submit(name, score)`, render into `#menu-scores-list` / `#go-scores-list`.
 - **MessageLog.js** — Combat message console backend: a capped ring buffer of mission events.
-- **PauseMenu.js** — Pause overlay: ESC / P / the HUD ⏸ button; Game.js gates its update loop on it.
+- **PauseMenu.js** — Pause overlay: ESC / P / the HUD ⏸ button; Game.js gates its update loop on it. v4.5.0: the ⌂ `#pause-hangar` button calls `game.returnToHangar()` directly (no `close()` first — avoids the music restart blip + pointer re-lock churn) and tears the session down back to the hangar terminal.
 - **Settings.js** — User-tunable settings (singleton + localStorage, same pattern as EventBus's `bus`).
 - **SettingsScreen.js** — Shared settings panel (opened from the START SCREEN ⚙ button and the PAUSE menu): keybinds, split spin, volumes, FX, screen-bounds mode.
 - **DebugBridge.js** — External debugger helper (dev tooling): exposes a single handle for external tooling.

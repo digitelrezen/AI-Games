@@ -53,7 +53,9 @@
 // v3.99.0: SEARCH & DESTROY mode — the wave label is owned by the SAR
 //          facade (g.sard.hudLabel(): zone + journey progress) instead of
 //          the wave counter while in SAR mode.
-export const VERSION = 'v4.4.0';
+// v4.5.0: Version label bumped with the pause menu RETURN TO HANGAR
+//          (no HUD changes — the transition lives in StageFlow.js).
+export const VERSION = 'v4.5.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

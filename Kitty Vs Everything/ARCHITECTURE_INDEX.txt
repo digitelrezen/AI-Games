@@ -151,7 +151,11 @@ js/core/game/ - GAME ORCHESTRATOR SUBMODULES (4 files, v3.77.0 E6)
 =====================================================================
 StageFlow.js          Stage lifecycle: advanceStage/startBonusStage/startBonusLevel/
                       startBonusSpecific/restartLevel - driven by LevelRegistry
-                      (STAGE_SEQUENCE cadence + BONUS_STAGES registry).
+                      (STAGE_SEQUENCE cadence + BONUS_STAGES registry). v4.5.0:
+                      returnToHangar(game) - pause-menu RETURN TO HANGAR teardown
+                      (stage/entities/hazards/particles/ships/co-op/SAR facade/
+                      score/dev state/manifest + stopMusic + state 'menu' +
+                      null-safe DOM swap to #menu-screen).
 DisplayPolicy.js      Display gating: checkViewportChange/wantsPointerLock/syncCursor/
                       settingsOpen/onPointerLockChange (pointer lock + cursor +
                       settings-open state).
@@ -517,7 +521,9 @@ Leaderboard.js        localStorage high scores (top 10): submit(name, score), re
 MessageLog.js         Combat message console backend: a capped ring buffer of mission
                       events.
 PauseMenu.js          Pause overlay: ESC / P / the HUD pause button; Game.js gates
-                      its update loop on it.
+                      its update loop on it. v4.5.0: #pause-hangar button calls
+                      game.returnToHangar() (StageFlow.js) - session teardown
+                      back to the hangar terminal.
 Settings.js           User-tunable settings (singleton + localStorage, same pattern
                       as EventBus's bus).
 SettingsScreen.js     Shared settings panel (opened from the START SCREEN gear button
