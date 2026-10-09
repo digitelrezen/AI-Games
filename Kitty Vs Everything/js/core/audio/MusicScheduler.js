@@ -1,5 +1,33 @@
 // Filename: core/audio/MusicScheduler.js
-// Kitty Vs Everything — v4.8.0
+// Kitty Vs Everything — v4.9.0
+// v4.9.0: POLYPHONIC SYNTH OVERHAUL — the scheduler keeps the v4.8.0
+//          single-source-of-truth architecture (ONE lookahead timer, ONE
+//          session graph, start() ALWAYS hard-kills any previous session,
+//          tracked teardown timer, live-source GC) but the session graph
+//          is now a professional effects chain and every voice is built by
+//          the SynthVoice.js polyphonic engine:
+//            • session graph: layer buses (pad/arp/lead/bass/perc/fx) →
+//              session master → core.musicBus, with a soft-clip WaveShaper
+//              on the bass bus (grit), a SIDECHAIN gain on the bass bus
+//              (the classic 4-on-the-floor pump, scheduled per kick), a
+//              DynamicsCompressor on the perc bus (punch), a feedback
+//              delay (dotted-8th, lowpass-filtered) and a convolver
+//              REVERB (procedural stereo impulse — no external .wav) as
+//              sends.
+//            • pads: makeChord() — one 3-osc detuned voice per chord tone
+//              (+ a softer +12 octave layer), slow ADSR, resonant lowpass
+//              sweep, spread stereo image, reverb send.
+//            • leads (Für Elise / Johnny March): 3-osc detuned voice +
+//              sine sub, ADSR, filter, delay + reverb sends, portamento
+//              glide — plus a HARMONY counter-voice (octave double / march
+//              third below) so the melody is never a thin single-note beep.
+//            • bass: saw + sub through a tight lowpass, sidechain-pumped.
+//            • arps: short detuned plucks with delay sends.
+//            • stabs (combat/boss): short detuned chord hits on the
+//              downbeats.
+//            • percussion: transient-sharp kick (sine pitch-drop + click),
+//              snare (bandpass noise + triangle body), hat (highpass
+//              noise) through the punch compressor.
 // v4.8.0: AUDIO MODULARIZATION — the multi-track playlist scheduler,
 //          extracted from the AudioSystem.js monolith. SINGLE SOURCE OF
 //          TRUTH for mission music:
@@ -19,8 +47,13 @@
 //          (PLAYLISTS) of 32-bar songs (SONGS), 1-bar overlap crossfade at
 //          song boundaries, mode changes (setMode) apply at the next bar
 //          boundary with a riser / sub-drop accent.
-export const VERSION = 'v4.8.0';
+export const VERSION = 'v4.9.0';
 import { MUSIC_MODES, SONGS, PLAYLISTS, hz, mulberry32 } from './MusicPlaylists.js';
+import {
+  makeNoiseBuffer, makeImpulse, softClipCurve,
+  makeVoice, makeChord,
+  kick as synthKick, snare as synthSnare, hat as synthHat,
+} from './SynthVoice.js';
 
 const LOOKAHEAD = 0.6;    // schedule 16ths up to 0.6 s ahead of now
 const TICK = 100;         // lookahead re-arm interval (ms)
@@ -47,7 +80,9 @@ export class MusicScheduler {
     this._teardownTimer = null; // fade→disconnect of the old session graph
     // ─── the ONLY session graph (single active stream) ───
     this._master = null;       // session master gain (→ core.musicBus)
-    this._layers = null;       // { pad, arp, bass, perc, fx, delay, wet, fb, dlp, noise }
+    this._layers = null;       // { pad, arp, lead, bass, perc, fx, side,
+                               //   bassShaper, percComp, reverb, revWet,
+                               //   delay, delayWet, fb, dlp, noise }
     this._live = new Set();    // live source nodes (auto-removed on onended)
   }
 
@@ -157,9 +192,17 @@ export class MusicScheduler {
     this._lastLead = {};
   }
 
-  // ─── v4.8.0: session graph management ───
+  // ─── v4.9.0: session graph management ───
 
-  /** Build the session graph: master → core.musicBus + 5 layer buses. */
+  /**
+   * Build the session graph — the v4.9.0 professional effects chain:
+   *   pad/arp/lead/fx ────────────────────────┐
+   *   bass → soft-clip shaper → sidechain gain ─┤
+   *   perc → punch compressor ─────────────────┼→ master → core.musicBus
+   *   (sends) delay + reverb ──────────────────┘
+   * The delay and reverb are SEND destinations (voices connect their
+   * envelope gain to them); the sidechain gain is pumped per kick.
+   */
   _buildGraph() {
     const ctx = this.core.ctx;
     const master = ctx.createGain();
@@ -168,37 +211,77 @@ export class MusicScheduler {
     // Per-layer sub-gains (the scheduler writes into these; the session
     // master + the AudioCore music bus carry the Settings music volume).
     const layers = {};
-    for (const name of ['pad', 'arp', 'bass', 'perc', 'fx']) {
+    for (const name of ['pad', 'arp', 'lead', 'bass', 'perc', 'fx']) {
       const g = ctx.createGain();
       g.gain.value = 1;
-      g.connect(master);
       layers[name] = g;
     }
-    // Space delay (dotted-8th feedback) — the arp/lead + shimmer send that
-    // gives the open-space sweep its depth.
+    layers.pad.connect(master);
+    layers.arp.connect(master);
+    layers.lead.connect(master);
+    layers.fx.connect(master);
+    // Bass bus: soft-clip saturation (grit) → sidechain gain → master.
+    const bassShaper = ctx.createWaveShaper();
+    bassShaper.curve = softClipCurve(2.2);
+    bassShaper.oversample = '2x';
+    const side = ctx.createGain();
+    side.gain.value = 1;
+    layers.bass.connect(bassShaper);
+    bassShaper.connect(side);
+    side.connect(master);
+    // Perc bus: a fast compressor keeps the drums punchy (transient
+    // preservation + glue) instead of clipping the master.
+    const percComp = ctx.createDynamicsCompressor();
+    percComp.threshold.value = -14;
+    percComp.knee.value = 8;
+    percComp.ratio.value = 3;
+    percComp.attack.value = 0.004;
+    percComp.release.value = 0.12;
+    layers.perc.connect(percComp);
+    percComp.connect(master);
+    // Reverb: convolver with a PROCEDURAL stereo impulse (no external
+    // .wav — the single-file build stays dependency-free).
+    const reverb = ctx.createConvolver();
+    reverb.buffer = makeImpulse(ctx, 2.6, 3.0);
+    const revWet = ctx.createGain();
+    revWet.gain.value = 0.35;
+    reverb.connect(revWet);
+    revWet.connect(master);
+    // Delay: dotted-8th feedback through a lowpass (the arp/lead + shimmer
+    // send that gives the mix its depth).
     const delay = ctx.createDelay(2);
     delay.delayTime.value = 0.375;
-    const fb = ctx.createGain(); fb.gain.value = 0.3;
+    const fb = ctx.createGain();
+    fb.gain.value = 0.32;
     const dlp = ctx.createBiquadFilter();
-    dlp.type = 'lowpass'; dlp.frequency.value = 2400;
-    const wet = ctx.createGain(); wet.gain.value = 0.22;
-    delay.connect(dlp); dlp.connect(fb); fb.connect(delay);
-    delay.connect(wet); wet.connect(master);
+    dlp.type = 'lowpass';
+    dlp.frequency.value = 2600;
+    delay.connect(dlp);
+    dlp.connect(fb);
+    fb.connect(delay);
+    const delayWet = ctx.createGain();
+    delayWet.gain.value = 0.24;
+    delay.connect(delayWet);
+    delayWet.connect(master);
     // Shared white-noise buffer (percussion voices + tension sweeps).
-    const noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-    const data = noise.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const noise = makeNoiseBuffer(ctx, 1.2);
     this._master = master;
-    this._layers = { pad: layers.pad, arp: layers.arp, bass: layers.bass, perc: layers.perc, fx: layers.fx, delay, wet, fb, dlp, noise };
+    this._layers = {
+      pad: layers.pad, arp: layers.arp, lead: layers.lead,
+      bass: layers.bass, perc: layers.perc, fx: layers.fx,
+      side, bassShaper, percComp, reverb, revWet, delay, delayWet, fb, dlp, noise,
+    };
   }
 
-  /** Disconnect the whole session graph (master + layers + delay chain). */
+  /** Disconnect the whole session graph (master + layers + effects). */
   _disconnectGraph(master, layers) {
     const kill = (n) => { try { n.disconnect(); } catch (e) { /* noop */ } };
     kill(master);
     if (layers) {
-      for (const k of ['pad', 'arp', 'bass', 'perc', 'fx']) kill(layers[k]);
-      kill(layers.delay); kill(layers.wet); kill(layers.fb); kill(layers.dlp);
+      for (const k of ['pad', 'arp', 'lead', 'bass', 'perc', 'fx']) kill(layers[k]);
+      kill(layers.side); kill(layers.bassShaper); kill(layers.percComp);
+      kill(layers.reverb); kill(layers.revWet);
+      kill(layers.delay); kill(layers.delayWet); kill(layers.fb); kill(layers.dlp);
     }
   }
 
@@ -297,36 +380,52 @@ export class MusicScheduler {
     const arpLift = rng() < 0.3 ? 12 : 0;  // occasional octave lift
     const fill = loopBar === song.chords.length - 1;
 
-    // ─── PAD (once per bar): detuned saws through a sweeping lowpass ───
+    // ─── PAD (once per bar): polyphonic chord — 3-osc detuned voices per
+    //     chord tone + a softer octave layer, slow ADSR, resonant lowpass
+    //     sweep, spread stereo image, reverb send ───
     if (sib === 0) this._schedulePad(chord, t, barLen, song, padSweep, volScale);
 
-    // ─── LEAD: explicit crossover motif OR per-phrase seeded arps ───
+    // ─── LEAD: explicit crossover motif + harmony counter-voice (v4.9.0:
+    //     chords + melody at the same time, never a thin single note) ───
     if (song.lead) {
       const loopStep = songStep % song.lead.loop;
       for (const [ns, midi, len] of song.lead.motif) {
         if (ns === loopStep) this._leadNote(song, midi, t, step * len, volScale);
+      }
+      if (song.harmony) {
+        const hLoop = songStep % song.harmony.loop;
+        for (const [ns, midi, len] of song.harmony.motif) {
+          if (ns === hLoop) this._harmonyNote(song, midi, t, step * len, volScale);
+        }
       }
     } else if (song.arps) {
       const pattern = song.arps[arpIdx];
       const deg = pattern[sib];
       if (deg >= 0) {
         const f = hz(chord[deg] + 12 + arpLift);
-        this._note(f, t, step * 1.8, 'triangle', song.vols.arp * volScale, this._layers.arp, true);
+        this._pluckNote(f, t, step * 1.8, song.vols.arp * volScale, deg);
         // Boss tracks double the arps an octave on the downbeats.
         if (song.octaveDouble && sib % 4 === 0) {
-          this._note(f * 2, t, step * 1.4, 'triangle', song.vols.arp * 0.5 * volScale, this._layers.arp, true);
+          this._pluckNote(f * 2, t, step * 1.4, song.vols.arp * 0.5 * volScale, deg);
         }
       }
     }
 
-    // ─── BASS (per-song line structure) ───
+    // ─── CHORD STAB (combat/boss, v4.9.0): short detuned chord hits on
+    //     the downbeat + the "and" of 3 ───
+    if (song.stab && (sib === 0 || sib === 10)) {
+      this._scheduleStab(chord, t, step, song, volScale, sib === 0 ? 1 : 0.7);
+    }
+
+    // ─── BASS (per-song line structure, sidechain-pumped) ───
     this._scheduleBass(song, chord, sib, t, step, barLen, volScale);
 
-    // ─── PERCUSSION (noise-based; none in open space) ───
+    // ─── PERCUSSION (SynthVoice voices; none in open space) ───
     if (song.perc) {
       const p = song.perc;
       const V = song.vols.perc * volScale;
-      if (p.kick.includes(sib)) this._kick(t, V);
+      const kickHit = p.kick.includes(sib);
+      if (kickHit) this._kick(t, V);
       if (p.snare.includes(sib)) this._snare(t, V);
       if (p.ghostSnare && p.ghostSnare.includes(sib)) this._snare(t, V * 0.35);
       const hatOn = p.hat.includes(sib) || (fill && p.hat.length);
@@ -335,6 +434,10 @@ export class MusicScheduler {
       // 4-on-the-floor tracks, a double kick for the sparse ones.
       if (fill && p.kick.length === 4 && sib === 14) this._snare(t, V);
       if (fill && p.kick.length < 4 && (sib === 14 || sib === 15)) this._kick(t, V);
+      // Sidechain: pump the bass bus on every kick of a driving track.
+      if (kickHit && (song.bass === 'techno' || song.bass === 'sixteenth')) {
+        this._sidechainPump(t, step);
+      }
     }
 
     // ─── SHIMMER (open space only): long pings + a slow 2-bar glide ───
@@ -349,212 +452,253 @@ export class MusicScheduler {
     }
   }
 
+  // ─── v4.9.0: polyphonic voice scheduling (SynthVoice.js builders) ───
+
   /**
-   * v4.6.0: crossover lead voice — two detuned oscillators (saw for the
-   * Für Elise cyber-remix, square for the Johnny industrial march),
-   * optional portamento glide from the previous note, lowpass + delay.
+   * Lush pad — makeChord(): one 3-osc detuned voice per chord tone plus a
+   * softer +12 octave layer, slow ADSR, resonant lowpass sweep, spread
+   * stereo image, reverb send.
+   */
+  _schedulePad(chord, t, barLen, song, sweep, volScale = 1) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const c0 = song.padCutoff * sweep;
+    const v = makeChord(ctx, this._layers.pad, chord, {
+      t,
+      toFreq: hz,
+      type: 'sawtooth',
+      detunes: [-8, 0, 8],
+      cutoff: c0,
+      q: 1.1,
+      sweeps: [
+        [barLen * 0.55, c0 * 1.6],
+        [barLen, c0 * 0.8],
+      ],
+      spread: 0.6,
+      octave: 0.35,
+      adsr: { a: barLen * 0.3, d: barLen * 0.2, s: 0.75, r: barLen * 0.35 },
+      vol: song.vols.pad * volScale,
+      dur: barLen * 0.9,
+      sends: [this._layers.reverb],
+    });
+    for (const s of v.sources) this._track(s);
+  }
+
+  /** Short detuned pluck (the arp voice) with a delay send. */
+  _pluckNote(freq, t, dur, vol, deg = 1) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const v = makeVoice(ctx, this._layers.arp, {
+      t, freq,
+      type: 'triangle',
+      detunes: [-5, 5],
+      cutoff: 3600,
+      q: 0.6,
+      pan: (deg - 1) * 0.35,
+      adsr: { a: 0.004, d: 0.18, s: 0, r: 0.1 },
+      vol, dur,
+      sends: [this._layers.delay],
+    });
+    for (const s of v.sources) this._track(s);
+  }
+
+  /**
+   * Chord stab (combat/boss) — a short detuned chord hit an octave up with
+   * a fast filter sweep, through the lead bus + reverb.
+   */
+  _scheduleStab(chord, t, step, song, volScale, level = 1) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const v = makeChord(ctx, this._layers.lead, chord, {
+      t,
+      toFreq: (m) => hz(m + 12),
+      type: 'sawtooth',
+      detunes: [-7, 0, 7],
+      cutoff: 1800,
+      q: 1.4,
+      sweeps: [[step * 2.5, 700]],
+      spread: 0.5,
+      adsr: { a: 0.006, d: 0.22, s: 0, r: 0.18 },
+      vol: (song.vols.stab || 0.05) * volScale * level,
+      dur: step * 2.2,
+      sends: [this._layers.reverb],
+    });
+    for (const s of v.sources) this._track(s);
+  }
+
+  /**
+   * v4.9.0: crossover lead voice — 3-osc detuned voice + sine sub, ADSR,
+   * resonant lowpass, delay + reverb sends, optional portamento glide from
+   * the previous note. The melody is thick and warm, never a raw buzz.
    */
   _leadNote(song, midi, t, dur, volScale) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
     const cfg = song.lead;
     const freq = hz(midi);
-    const vol = cfg.vol * volScale;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t + 0.015);
-    g.gain.setValueAtTime(Math.max(0.0002, vol * 0.8), t + Math.max(0.02, dur * 0.55));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = cfg.lp || 4000;
-    lp.Q.value = 0.7;
-    g.connect(lp);
-    lp.connect(this._layers.arp); // the lead rides the arp/lead bus
-    lp.connect(this._layers.delay);
     const prev = this._lastLead[song.id];
     const glide = cfg.glide && prev && Math.abs(freq - prev) / prev < 1.2 ? 0.05 : 0;
-    const dets = cfg.detune ? [-cfg.detune, cfg.detune] : [0];
-    for (const det of dets) {
-      const osc = ctx.createOscillator();
-      osc.type = cfg.wave;
-      osc.detune.value = det;
-      if (glide) {
-        osc.frequency.setValueAtTime(prev, t);
-        osc.frequency.exponentialRampToValueAtTime(freq, t + glide);
-      } else {
-        osc.frequency.value = freq;
-      }
-      osc.connect(g);
-      osc.start(t);
-      osc.stop(t + dur + 0.05);
-      this._track(osc);
-    }
+    const v = makeVoice(ctx, this._layers.lead, {
+      t, freq,
+      type: cfg.wave || 'sawtooth',
+      detunes: cfg.detunes || [-9, 0, 9],
+      sub: !!cfg.sub,
+      subLevel: 0.45,
+      cutoff: cfg.lp || 4000,
+      q: cfg.q || 0.9,
+      pan: cfg.pan || 0,
+      adsr: cfg.adsr || { a: 0.012, d: 0.1, s: 0.7, r: 0.14 },
+      vol: (cfg.vol || 0.08) * volScale,
+      dur,
+      glide,
+      prevFreq: glide ? prev : null,
+      sends: [this._layers.delay, this._layers.reverb],
+    });
+    for (const s of v.sources) this._track(s);
     this._lastLead[song.id] = freq;
   }
 
-  /** v4.6.0: per-song bassline (whole/half/eighth/sixteenth/techno/march). */
+  /**
+   * v4.9.0: harmony counter-voice — the crossover tracks' second hand
+   * (Für Elise: octave double below; Johnny March: the classic march
+   * third below). Soft, reverb-soaked, slightly delayed for width.
+   */
+  _harmonyNote(song, midi, t, dur, volScale) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const cfg = song.harmony;
+    const v = makeVoice(ctx, this._layers.lead, {
+      t: t + 0.012,
+      freq: hz(midi),
+      type: cfg.wave || 'triangle',
+      detunes: cfg.detunes || [-6, 6],
+      cutoff: cfg.lp || 2400,
+      q: 0.7,
+      pan: cfg.pan || 0.3,
+      adsr: cfg.adsr || { a: 0.02, d: 0.14, s: 0.55, r: 0.16 },
+      vol: (cfg.vol || 0.05) * volScale,
+      dur,
+      sends: [this._layers.reverb],
+    });
+    for (const s of v.sources) this._track(s);
+  }
+
+  /**
+   * v4.9.0: per-song bassline (whole/half/eighth/sixteenth/techno/march).
+   * Soft styles (open space) use a warm sine; driving styles layer a
+   * detuned saw over a sine sub through a tight lowpass — the bass bus
+   * shaper + sidechain pump add the grit and the 4-on-the-floor bounce.
+   */
   _scheduleBass(song, chord, sib, t, step, barLen, volScale) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
     const style = song.bass;
     const root = Math.max(36, chord[0] - 12);
     const V = song.vols.bass * volScale;
+    if (V <= 0.001) return;
+    let freq, dur, vol, cutoff, q, det, sub, soft;
     if (style === 'whole' && sib === 0) {
-      this._note(hz(root), t, barLen * 0.98, 'sine', V, this._layers.bass, false);
+      freq = hz(root); dur = barLen * 0.98; vol = V; cutoff = 900; q = 0.5; det = [0]; sub = false; soft = true;
     } else if (style === 'half' && (sib === 0 || sib === 8)) {
-      this._note(hz(root), t, step * 7.5, 'sine', V, this._layers.bass, false);
+      freq = hz(root); dur = step * 7.5; vol = V; cutoff = 900; q = 0.5; det = [0]; sub = false; soft = true;
     } else if (style === 'eighth' && sib % 2 === 0) {
-      this._note(hz(root), t, step * 0.9, 'triangle', V, this._layers.bass, false);
+      freq = hz(root); dur = step * 0.9; vol = V; cutoff = 700; q = 0.8; det = [-4, 4]; sub = true; soft = false;
     } else if (style === 'sixteenth') {
-      this._note(hz(root + (sib % 2 === 1 ? 12 : 0)), t, step * 0.85, 'sawtooth', V * 0.8, this._layers.bass, false, 600);
+      // 16th-note pulse, octave up on the offbeats.
+      freq = hz(root + (sib % 2 === 1 ? 12 : 0)); dur = step * 0.85; vol = V * 0.8; cutoff = 600; q = 1.0; det = [-5, 5]; sub = true; soft = false;
     } else if (style === 'techno') {
       // 16th-note sub, sidechain-pumped: the kick steps (0/4/8/12) get a
       // short quiet note, the offbeat 16ths ring out an octave up — the
-      // classic techno pump.
+      // classic techno pump (the bus sidechain adds the bounce).
       const onKick = sib % 4 === 0;
-      const sub = Math.max(36, chord[0] - 12);
-      const f = hz(sub + ((sib % 8) === 2 || (sib % 8) === 6 ? 12 : 0));
-      this._note(f, t, onKick ? step * 0.8 : step * 1.1, 'sine', onKick ? V * 0.35 : V, this._layers.bass, false);
-    } else if (style === 'march') {
-      // Distorted 8th-note pulses (saw through a tight lowpass); the last
-      // 8th of the bar approaches the root from a semitone below.
-      if (sib % 2 === 0) {
-        const f = sib === 14 ? hz(root - 1) : hz(root);
-        this._note(f, t, step * 0.85, 'sawtooth', V, this._layers.bass, false, 380);
-      }
+      freq = hz(root + ((sib % 8) === 2 || (sib % 8) === 6 ? 12 : 0));
+      dur = onKick ? step * 0.8 : step * 1.1;
+      vol = onKick ? V * 0.55 : V;
+      cutoff = 500; q = 1.2; det = [-5, 5]; sub = true; soft = false;
+    } else if (style === 'march' && sib % 2 === 0) {
+      // Distorted 8th-note pulses (saw + sub through a tight lowpass);
+      // the last 8th of the bar approaches the root from a semitone below.
+      freq = sib === 14 ? hz(root - 1) : hz(root);
+      dur = step * 0.85; vol = V; cutoff = 420; q = 1.3; det = [-6, 6]; sub = true; soft = false;
+    } else {
+      return;
     }
+    const v = makeVoice(ctx, this._layers.bass, {
+      t, freq,
+      type: soft ? 'sine' : 'sawtooth',
+      detunes: det,
+      sub: !!sub,
+      subLevel: 0.8,
+      cutoff, q,
+      adsr: soft
+        ? { a: 0.02, d: 0.15, s: 0.85, r: 0.25 }
+        : { a: 0.005, d: 0.09, s: 0.8, r: 0.07 },
+      vol, dur,
+    });
+    for (const s of v.sources) this._track(s);
   }
 
-  /** One short synthesized voice into a music layer (optional delay send). */
-  _note(freq, t, dur, type, vol, layer, sendDelay, lpFreq = 0) {
+  /**
+   * v4.9.0: sidechain pump — dip the bass bus gain on every kick (the
+   * classic 4-on-the-floor bounce). Overlapping pumps simply restart the
+   * dip, which is exactly the desired behavior on dense kick patterns.
+   */
+  _sidechainPump(t, step) {
     if (!this._layers) return;
-    const ctx = this.core.ctx;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t + Math.min(0.02, dur * 0.2));
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    let head = osc;
-    if (lpFreq > 0) {
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = lpFreq;
-      head.connect(lp);
-      head = lp;
-    }
-    head.connect(gain).connect(layer);
-    if (sendDelay) gain.connect(this._layers.delay);
-    osc.start(t);
-    osc.stop(t + dur + 0.05);
-    this._track(osc);
+    const g = this._layers.side.gain;
+    g.setValueAtTime(0.35, t);
+    g.exponentialRampToValueAtTime(1, t + Math.min(0.22, step * 3));
   }
 
-  /** Evolving space pad: 2 detuned saws per chord tone, sweeping lowpass. */
-  _schedulePad(chord, t, barLen, song, sweep, volScale = 1) {
-    if (!this._layers) return;
-    const ctx = this.core.ctx;
-    const filt = ctx.createBiquadFilter();
-    filt.type = 'lowpass';
-    filt.Q.value = 0.8;
-    const c0 = song.padCutoff * sweep;
-    filt.frequency.setValueAtTime(c0, t);
-    filt.frequency.linearRampToValueAtTime(c0 * 1.5, t + barLen * 0.55);
-    filt.frequency.linearRampToValueAtTime(c0 * 0.8, t + barLen);
-    const g = ctx.createGain();
-    const peak = song.vols.pad * volScale;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(peak, t + barLen * 0.25);
-    g.gain.setValueAtTime(peak, t + barLen * 0.8);
-    g.gain.linearRampToValueAtTime(0.0001, t + barLen * 1.15);
-    filt.connect(g).connect(this._layers.pad);
-    for (const m of chord) {
-      for (const det of [-7, 7]) {
-        const osc = ctx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.value = hz(m);
-        osc.detune.value = det;
-        osc.connect(filt);
-        osc.start(t);
-        osc.stop(t + barLen * 1.2);
-        this._track(osc);
-      }
-    }
-  }
-
-  // ─── v4.4.0: noise-based percussion ───
+  // ─── v4.9.0: percussion (SynthVoice voices through the punch comp) ───
 
   _kick(t, vol) {
     if (!this._layers) return;
-    const ctx = this.core.ctx;
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
-    g.gain.setValueAtTime(0.55 * vol, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
-    osc.connect(g).connect(this._layers.perc);
-    osc.start(t);
-    osc.stop(t + 0.3);
-    this._track(osc);
+    for (const s of synthKick(this.core.ctx, this._layers.perc, t, vol, this._layers.noise)) this._track(s);
   }
   _snare(t, vol) {
     if (!this._layers) return;
-    const ctx = this.core.ctx;
-    const src = ctx.createBufferSource();
-    src.buffer = this._layers.noise;
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = 1800;
-    bp.Q.value = 0.9;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.4 * vol, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
-    src.connect(bp).connect(g).connect(this._layers.perc);
-    src.start(t);
-    src.stop(t + 0.16);
-    this._track(src);
+    for (const s of synthSnare(this.core.ctx, this._layers.perc, t, vol, this._layers.noise)) this._track(s);
   }
   _hat(t, vol, open) {
     if (!this._layers) return;
-    const ctx = this.core.ctx;
-    const src = ctx.createBufferSource();
-    src.buffer = this._layers.noise;
-    const hp = ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.value = 7500;
-    const g = ctx.createGain();
-    const dur = open ? 0.12 : 0.035;
-    g.gain.setValueAtTime((open ? 0.16 : 0.11) * vol, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(hp).connect(g).connect(this._layers.perc);
-    src.start(t);
-    src.stop(t + dur + 0.02);
-    this._track(src);
+    for (const s of synthHat(this.core.ctx, this._layers.perc, t, vol, this._layers.noise, open)) this._track(s);
   }
 
   // ─── v4.4.0: open-space shimmer + mode transition accents ───
 
   _shimmerPing(freq, t, dur) {
-    this._note(freq, t, dur, 'sine', 0.035, this._layers.fx, true);
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const v = makeVoice(ctx, this._layers.fx, {
+      t, freq,
+      type: 'sine',
+      detunes: [0],
+      cutoff: 8000,
+      q: 0.4,
+      pan: 0.4,
+      adsr: { a: 0.4, d: 0.8, s: 0.4, r: 1.2 },
+      vol: 0.035, dur,
+      sends: [this._layers.delay, this._layers.reverb],
+    });
+    for (const s of v.sources) this._track(s);
   }
   _shimmerGlide(f0, f1, t, dur) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(f0, t);
-    osc.frequency.linearRampToValueAtTime(f1, t + dur);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(0.03, t + dur * 0.4);
-    g.gain.linearRampToValueAtTime(0.0001, t + dur);
-    osc.connect(g).connect(this._layers.fx);
-    g.connect(this._layers.delay);
-    osc.start(t);
-    osc.stop(t + dur + 0.05);
-    this._track(osc);
+    const v = makeVoice(ctx, this._layers.fx, {
+      t, freq: f0,
+      type: 'triangle',
+      detunes: [0],
+      cutoff: 6000,
+      q: 0.4,
+      pan: -0.3,
+      slideTo: f1,
+      adsr: { a: dur * 0.4, d: 0.3, s: 0.6, r: 0.8 },
+      vol: 0.03, dur,
+      sends: [this._layers.delay, this._layers.reverb],
+    });
+    for (const s of v.sources) this._track(s);
   }
   /** v4.6.0: high-tension atmospheric sweep (bandpass noise riser). */
   _tensionSweep(t, dur, volScale = 1) {

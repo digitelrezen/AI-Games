@@ -1,5 +1,10 @@
 // Filename: core/audio/AudioCore.js
-// Kitty Vs Everything — v4.8.0
+// Kitty Vs Everything — v4.9.0
+// v4.9.0: POLYPHONIC SYNTH OVERHAUL — unchanged surface: the context +
+//          master chain + buses + volumes + mute stay the single source of
+//          truth for every voice; the v4.9.0 SynthVoice.js engine and the
+//          rebuilt MusicScheduler/SoundEffects route through these same
+//          buses.
 // v4.8.0: AUDIO MODULARIZATION — AudioSystem.js monolith split into
 //          js/core/audio/ (this file + SoundEffects.js + MusicScheduler.js
 //          + MusicPlaylists.js; the AudioSystem.js facade keeps the public
@@ -10,7 +15,7 @@
 //          global mute state — every voice in the game routes through this
 //          graph, so volume + mute are enforced in exactly one place
 //          (single source of truth).
-export const VERSION = 'v4.8.0';
+export const VERSION = 'v4.9.0';
 
 const clamp01 = (v) => Math.max(0, Math.min(1, +v || 0));
 

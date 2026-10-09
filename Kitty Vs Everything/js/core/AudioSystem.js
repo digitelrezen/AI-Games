@@ -1,5 +1,12 @@
 // Filename: AudioSystem.js
-// Kitty Vs Everything — v4.8.0
+// Kitty Vs Everything — v4.9.0
+// v4.9.0: POLYPHONIC SYNTH OVERHAUL — the js/core/audio/ tree gains
+//          SynthVoice.js (the polyphonic voice engine: detuned multi-osc
+//          voices + sine subs + soft-clip + ADSR + filter sweeps + stereo
+//          image + delay/reverb sends, makeChord() real polyphony, and
+//          kick/snare/hat percussion) — MusicScheduler.js builds every
+//          music voice with it (pads/leads/harmony/arps/stabs/bass/perc)
+//          and SoundEffects.js builds every SFX voice with it.
 // v4.8.0: AUDIO MODULARIZATION — the ~1000-line monolith is split into a
 //          single-responsibility E6 tree under js/core/audio/:
 //            • AudioCore.js      — Web Audio context (lazy init / resume),
@@ -26,7 +33,7 @@
 //          exact v4.6.0 API (every consumer imports { audio } from
 //          './AudioSystem.js' unchanged) and adds stopAllMusic() /
 //          resetAudioEngine() / setMuted() for explicit teardown.
-export const VERSION = 'v4.8.0';
+export const VERSION = 'v4.9.0';
 import { AudioCore } from './audio/AudioCore.js';
 import { SoundEffects } from './audio/SoundEffects.js';
 import { MusicScheduler } from './audio/MusicScheduler.js';

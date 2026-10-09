@@ -1,11 +1,14 @@
 // ═══════════════════════════════════════════════════════════
-//  [6an] v4.8.0 AUDIO MODULARIZATION — the AudioSystem.js monolith is
+//  [6an] v4.9.0 AUDIO MODULARIZATION — the AudioSystem.js monolith is
 //        split into js/core/audio/ (AudioCore / SoundEffects /
-//        MusicScheduler / MusicPlaylists) with the AudioSystem.js facade
-//        keeping the public `audio` singleton API. Single-source-of-truth
-//        scheduler: ONE lookahead timer, ONE session graph, hard teardown
-//        before every restart (zero overlapping loops), tracked timers +
-//        live-source GC.
+//        MusicScheduler / MusicPlaylists / SynthVoice) with the
+//        AudioSystem.js facade keeping the public `audio` singleton API.
+//        v4.9.0: POLYPHONIC SYNTH OVERHAUL — SynthVoice.js (polyphonic
+//        voice builders + percussion) under the scheduler + SFX; the
+//        scheduler keeps the single-source-of-truth architecture: ONE
+//        lookahead timer, ONE session graph, hard teardown before every
+//        restart (zero overlapping loops), tracked timers + live-source
+//        GC.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -13,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export default async function run() {
-  console.log('\n[6an] v4.8.0 audio modularization');
+  console.log('\n[6an] v4.9.0 audio modularization');
   const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
   // ─── Static layout: the E6 audio tree exists + facade wiring ───
@@ -23,7 +26,7 @@ export default async function run() {
   const facadeSrc = read('js/core/AudioSystem.js');
   check('facade: keeps the public API (audio singleton + VERSION + playlist re-exports)',
     facadeSrc.includes('export const audio = new AudioSystem()')
-    && facadeSrc.includes("export const VERSION = 'v4.8.0'")
+    && facadeSrc.includes("export const VERSION = 'v4.9.0'")
     && facadeSrc.includes("export { MUSIC_MODES, SONGS, PLAYLISTS } from './audio/MusicPlaylists.js'"));
   check('facade: composes AudioCore + SoundEffects + MusicScheduler',
     facadeSrc.includes("import { AudioCore } from './audio/AudioCore.js'")
@@ -51,7 +54,7 @@ export default async function run() {
 
   // ─── Module surface ───
   const coreMod = await mod('js/core/audio/AudioCore.js');
-  check('AudioCore exports the class + VERSION v4.8.0', typeof coreMod.AudioCore === 'function' && coreMod.VERSION === 'v4.8.0');
+  check('AudioCore exports the class + VERSION v4.9.0', typeof coreMod.AudioCore === 'function' && coreMod.VERSION === 'v4.9.0');
   const core = new coreMod.AudioCore();
   check('AudioCore: ensure() is headless-safe (no AudioContext → null, enabled=false)',
     core.ensure() === null && core.enabled === false);
@@ -82,7 +85,7 @@ export default async function run() {
 
   // ─── Facade surface (the public `audio` singleton) ───
   const facade = await mod('js/core/AudioSystem.js');
-  check('facade: VERSION v4.8.0', facade.VERSION === 'v4.8.0');
+  check('facade: VERSION v4.9.0', facade.VERSION === 'v4.9.0');
   check('facade: re-exported playlist data is the module data (same bindings)',
     facade.MUSIC_MODES === plMod.MUSIC_MODES && facade.SONGS === plMod.SONGS && facade.PLAYLISTS === plMod.PLAYLISTS);
   const a = facade.audio;

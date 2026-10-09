@@ -1,5 +1,17 @@
 // Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.8.0
+// Kitty Vs Everything — v4.9.0
+// v4.9.0: POLYPHONIC ARRANGEMENT DATA — the SONGS album now carries full
+//          arrangement data for the SynthVoice.js polyphonic engine:
+//            • lead: { motif, loop, wave, detunes, sub, lp, q, glide, vol,
+//              adsr } — the crossover melody voice config (3-osc detuned
+//              + sine sub + ADSR + filter + delay/reverb sends).
+//            • harmony: { motif, loop, wave, vol, ... } — the counter-
+//              voice: Für Elise plays the motif an OCTAVE BELOW (the
+//              classic two-hand doubling), Johnny March plays the classic
+//              march HARMONY A THIRD BELOW the melody — chords + melody
+//              at the same time, never a thin single-note beep.
+//            • stab: true — combat/boss tracks add short detuned chord
+//              hits on the downbeats (vols.stab).
 // v4.8.0: AUDIO MODULARIZATION — the soundtrack data, extracted verbatim
 //          from the AudioSystem.js monolith. Pure data (no audio nodes,
 //          no timers): the four context modes, the full-length SONGS album
@@ -31,7 +43,7 @@
 //              marching snare accents (backbeat + ghost shuffles),
 //              distorted 8th-note bass pulses, high-tension 2-bar
 //              atmospheric noise sweeps.
-export const VERSION = 'v4.8.0';
+export const VERSION = 'v4.9.0';
 
 // ─── v4.6.0: procedural soundtrack data ───
 // MIDI → Hz (69 = A4 = 440).
@@ -75,6 +87,11 @@ const FUR_ELISE_MOTIF = [
   ...FUR_ELISE_PHRASE.map(([s, m, l]) => [s + 64, m, l]),
 ];
 
+// v4.9.0: the Für Elise counter-voice — the same motif an octave below
+// (the classic two-hand doubling of the cyber-remix; the pad carries the
+// chords, the lead + harmony double the melody).
+const FUR_ELISE_HARMONY = FUR_ELISE_MOTIF.map(([s, m, l]) => [s, m - 12, l]);
+
 // When Johnny Comes Marching Home Again (A minor) — the driving
 // militaristic motif as 8th notes across the 8-bar loop
 // (A A A B C A B C / C C B B A A B G / A B C D E C E D / B B A A G G A F).
@@ -92,6 +109,10 @@ const JOHNNY_MOTIF = [];
 JOHNNY_MELODY.forEach((barNotes, b) => {
   barNotes.forEach((m, i) => JOHNNY_MOTIF.push([b * 16 + i * 2, m, 1]));
 });
+
+// v4.9.0: the classic march harmony — a third below the melody line
+// (A→F#, B→G, C→A, D→B, E→C, G→E, F#→D), the two-part military doubling.
+const JOHNNY_HARMONY = JOHNNY_MOTIF.map(([s, m, l]) => [s, m - 3, l]);
 
 // ─── v4.6.0: the soundtrack album — full-length song definitions ───
 // Each song: bpm, bars (full length, 4× the 8-bar chord loop), chords
@@ -186,12 +207,20 @@ export const SONGS = {
     arps: null,
     lead: {
       motif: FUR_ELISE_MOTIF, loop: 128,
-      wave: 'sawtooth', detune: 9, glide: true, lp: 5200, vol: 0.075,
+      // v4.9.0: 3-osc detuned saw + sine sub, portamento glide, warm
+      // resonant lowpass, delay + reverb sends.
+      wave: 'sawtooth', detunes: [-9, 0, 9], sub: true,
+      lp: 4200, q: 1.0, glide: true, vol: 0.085,
+      adsr: { a: 0.012, d: 0.1, s: 0.7, r: 0.14 },
+    },
+    harmony: {
+      motif: FUR_ELISE_HARMONY, loop: 128,
+      wave: 'triangle', vol: 0.05,
     },
     bass: 'techno', // 16th-note sub, sidechain-pumped on the kick
     perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14] },
     padCutoff: 1100,
-    vols: { pad: 0.05, arp: 0, bass: 0.16, perc: 0.85 },
+    vols: { pad: 0.07, arp: 0, bass: 0.16, perc: 0.85 },
   },
   // ═══ COMBAT — driving engagement ═══
   'combat-engage': {
@@ -213,8 +242,9 @@ export const SONGS = {
     ],
     bass: 'eighth',
     perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14] },
+    stab: true, // v4.9.0: detuned chord hits on the downbeats
     padCutoff: 1000,
-    vols: { pad: 0.055, arp: 0.06, bass: 0.15, perc: 0.8 },
+    vols: { pad: 0.055, arp: 0.06, bass: 0.15, perc: 0.8, stab: 0.05 },
   },
   'combat-vanguard': {
     id: 'combat-vanguard', title: 'Vanguard', bpm: 130, bars: 32, seed: 6,
@@ -235,8 +265,9 @@ export const SONGS = {
     ],
     bass: 'sixteenth',
     perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14] },
+    stab: true, // v4.9.0: detuned chord hits on the downbeats
     padCutoff: 950,
-    vols: { pad: 0.05, arp: 0.06, bass: 0.16, perc: 0.85 },
+    vols: { pad: 0.05, arp: 0.06, bass: 0.16, perc: 0.85, stab: 0.055 },
   },
   // ── CROSSOVER 2: When Johnny Comes Marching Home — 132 BPM industrial remix ──
   'johnny-march': {
@@ -254,7 +285,15 @@ export const SONGS = {
     arps: null,
     lead: {
       motif: JOHNNY_MOTIF, loop: 128,
-      wave: 'square', detune: 7, glide: false, lp: 3200, vol: 0.08,
+      // v4.9.0: gritty 3-osc detuned square + sine sub, tight resonant
+      // lowpass, delay + reverb sends.
+      wave: 'square', detunes: [-7, 0, 7], sub: true,
+      lp: 3200, q: 0.9, glide: false, vol: 0.08,
+      adsr: { a: 0.008, d: 0.12, s: 0.65, r: 0.1 },
+    },
+    harmony: {
+      motif: JOHNNY_HARMONY, loop: 128,
+      wave: 'square', vol: 0.045,
     },
     bass: 'march', // distorted 8th-note pulses
     perc: {
@@ -353,8 +392,9 @@ export const SONGS = {
     bass: 'sixteenth',
     perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
     octaveDouble: true,
+    stab: true, // v4.9.0: detuned chord hits on the downbeats
     padCutoff: 1200,
-    vols: { pad: 0.05, arp: 0.07, bass: 0.17, perc: 1 },
+    vols: { pad: 0.05, arp: 0.07, bass: 0.17, perc: 1, stab: 0.06 },
   },
   'boss-overdrive': {
     id: 'boss-overdrive', title: 'Overdrive', bpm: 144, bars: 32, seed: 12,
@@ -376,8 +416,9 @@ export const SONGS = {
     bass: 'sixteenth',
     perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
     octaveDouble: true,
+    stab: true, // v4.9.0: detuned chord hits on the downbeats
     padCutoff: 1100,
-    vols: { pad: 0.045, arp: 0.07, bass: 0.18, perc: 1 },
+    vols: { pad: 0.045, arp: 0.07, bass: 0.18, perc: 1, stab: 0.06 },
   },
   'boss-redline': {
     id: 'boss-redline', title: 'Redline', bpm: 138, bars: 32, seed: 13,
@@ -399,8 +440,9 @@ export const SONGS = {
     bass: 'sixteenth',
     perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
     octaveDouble: true,
+    stab: true, // v4.9.0: detuned chord hits on the downbeats
     padCutoff: 1200,
-    vols: { pad: 0.05, arp: 0.07, bass: 0.17, perc: 1 },
+    vols: { pad: 0.05, arp: 0.07, bass: 0.17, perc: 1, stab: 0.06 },
   },
 };
 
