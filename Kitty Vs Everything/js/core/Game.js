@@ -271,7 +271,7 @@
 //          interceptor plays its sequential Rick & Morty dialogue and
 //          spawns regularly in classic + Search & Destroy modes).
 //          Milestone version synced with package.json.
-export const VERSION = 'v4.9.0';
+export const VERSION = 'v4.10.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

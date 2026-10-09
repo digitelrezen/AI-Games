@@ -952,8 +952,46 @@ body {
 #net-settings .net-actions button:hover, #net-settings .net-export button:hover { background: #1f3157; }
 #net-settings .net-status { margin-top: 10px; font-size: 11px; color: #7ee2a8; letter-spacing: 1px; }
 #net-settings .net-export { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-#net-settings .settings-hint { font-size: 10px; color: #667; margin-top: 8px; }
-#net-settings .settings-hint code { color: #ffd54f; }
+/* v4.10.0: dedicated "How to Host & Join LAN" guide card (replaces the tiny footer hint) */
+#net-settings .net-guide {
+  margin-top: 14px;
+  border: 1px solid #2f4a7a;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(22,35,63,0.55) 0%, rgba(10,18,32,0.85) 100%);
+  box-shadow: 0 0 12px rgba(127,178,255,0.18), inset 0 0 18px rgba(127,178,255,0.05);
+  overflow: hidden;
+}
+#net-settings .net-guide-head {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 8px 12px;
+  background: rgba(127,178,255,0.08);
+  border: none; border-bottom: 1px solid #22304e;
+  color: #7fb2ff; font-size: 12px; font-weight: bold; letter-spacing: 1.5px;
+  cursor: pointer; text-align: left;
+}
+#net-settings .net-guide-head:hover { background: rgba(127,178,255,0.14); }
+#net-settings .net-guide-title { display: inline-flex; align-items: center; gap: 8px; }
+#net-settings .net-guide-caret { transition: transform 0.2s ease; color: #7fb2ff; }
+#net-settings .net-guide.collapsed .net-guide-caret { transform: rotate(-90deg); }
+#net-settings .net-guide.collapsed .net-guide-body { display: none; }
+#net-settings .net-guide-body { padding: 10px 12px 12px; }
+#net-settings .net-guide-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+#net-settings .net-guide-step { display: flex; gap: 10px; align-items: flex-start; }
+#net-settings .net-guide-num {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #16233f; border: 1px solid #2f4a7a; color: #ffd54f;
+  font-size: 12px; font-weight: bold;
+  box-shadow: 0 0 8px rgba(255,213,79,0.25);
+}
+#net-settings .net-guide-text { font-size: 11px; color: #aab4cc; line-height: 1.5; }
+#net-settings .net-guide-text strong { color: #cfe0ff; letter-spacing: 0.5px; }
+#net-settings .net-guide-text p { margin: 2px 0 0; }
+#net-settings .net-guide-text code {
+  background: #0a1220; border: 1px solid #22304e; border-radius: 3px;
+  padding: 1px 5px; color: #ffd54f; font-size: 11px;
+}
+#net-settings .net-guide-text em { color: #7fb2ff; font-style: normal; font-weight: bold; }
 .fc-slot.ready .fc-slot-fill { background: #4caf50; }
 .fc-fleet { display: flex; flex-direction: row; align-items: center; gap: 6px; } /* v3.18.0: horizontal status row under the mini HP bars */
 #fc-fleet-count { color: #ffe9a3; font-size: 12px; }

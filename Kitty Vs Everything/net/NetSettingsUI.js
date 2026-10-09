@@ -33,6 +33,37 @@ class NetSettingsUI {
     const p1 = playerProfile.get('p1');
     const p2 = playerProfile.get('p2');
     this._container.innerHTML = `
+      <div class="net-guide" id="net-guide">
+        <button type="button" class="net-guide-head" id="net-guide-toggle" aria-expanded="true">
+          <span class="net-guide-title">📡 HOW TO HOST &amp; JOIN LAN</span>
+          <span class="net-guide-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="net-guide-body" id="net-guide-body">
+          <ol class="net-guide-steps">
+            <li class="net-guide-step">
+              <span class="net-guide-num">1</span>
+              <div class="net-guide-text">
+                <strong>Start the relay</strong>
+                <p>On the host's machine, open a terminal and run <code>npm run lan</code> — this starts the signaling relay on port <code>8765</code>. Keep it running.</p>
+              </div>
+            </li>
+            <li class="net-guide-step">
+              <span class="net-guide-num">2</span>
+              <div class="net-guide-text">
+                <strong>Set IP &amp; port</strong>
+                <p>Enter the host's LAN IP in <em>Host IP</em> (e.g. <code>192.168.1.10</code>) — or <code>127.0.0.1</code> if both players share one machine. Keep <em>Port</em> at <code>8765</code>.</p>
+              </div>
+            </li>
+            <li class="net-guide-step">
+              <span class="net-guide-num">3</span>
+              <div class="net-guide-text">
+                <strong>Host or join</strong>
+                <p>The host clicks <em>HOST GAME</em> (flies as <strong>Pilot 1</strong>). The second player clicks <em>JOIN GAME</em> (flies as <strong>Pilot 2</strong>). Both must be on the same network.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
       <label>Mode <span id="net-role-val" class="settings-val">${netSettings.role.toUpperCase()}</span></label>
       <select id="net-role">
         <option value="solo" ${netSettings.role === 'solo' ? 'selected' : ''}>Solo</option>
@@ -62,7 +93,6 @@ class NetSettingsUI {
         <button id="net-import-profiles">IMPORT PROFILES</button>
         <button id="net-import-config">IMPORT CONFIG</button>
       </div>
-      <p class="settings-hint">Host: run <code>npm run lan</code> first, then HOST GAME. Join: enter the host's LAN IP and JOIN GAME.</p>
     `;
     this._statusEl = this._container.querySelector('#net-status');
     this._wire();
@@ -89,6 +119,14 @@ class NetSettingsUI {
     $('net-export-config').addEventListener('click', () => this._download(netSettings.exportText(), 'multiplayer.config.e6'));
     $('net-import-profiles').addEventListener('click', () => this._importFile((text) => playerProfile.importText(text)));
     $('net-import-config').addEventListener('click', () => this._importFile((text) => netSettings.importText(text)));
+    const guideToggle = $('net-guide-toggle');
+    if (guideToggle) {
+      guideToggle.addEventListener('click', () => {
+        const guide = $('net-guide');
+        const collapsed = guide.classList.toggle('collapsed');
+        guideToggle.setAttribute('aria-expanded', String(!collapsed));
+      });
+    }
   }
 
   _host() {
