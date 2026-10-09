@@ -1,5 +1,9 @@
 // Filename: VulcanCannon.js
-// Kitty Vs Everything — v3.68.0 (module v1.0.0)
+// Kitty Vs Everything — v4.11.0 (module v1.1.0)
+// v1.1.0: AUDIO SUITE POLISH — fire() now plays the dedicated
+//   audio.vulkanShot() voice (fast ballistic snap with per-shot pitch
+//   variation) instead of the generic audio.shoot() beep, and the OVERHEAT
+//   lockout plays audio.overheat() (steam hiss) — zero silent triggers.
 // MODULAR WEAPON ARCHITECTURE (Phase 1) — the VULCAN CANNON extracted from
 // PlayerWeapons.firePrimary / updateWeaponState (v3.14.0 fire-control
 // dashboard → v3.17.0 twin-tip Gatling → v3.33.0 FRENZY heat immunity).
@@ -15,7 +19,7 @@
 // State ownership: thermal / lockout live on the owner (Player.thermal /
 // Player.thermalLockout) so HUDFireControl.js, FRENZY and respawn keep
 // reading the canonical player fields; this class only drives them.
-export const VERSION = 'v1.0.0';
+export const VERSION = 'v1.1.0';
 import Bullet from './Bullet.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
@@ -86,12 +90,13 @@ export default class VulcanCannon extends BaseWeapon {
         this.lockout = w.thermalLockout;
         this.thermal = 0;
         bus.emit('dmg', { x: this.owner.x, y: this.owner.y - 30, text: 'OVERHEAT!', color: '#ff5722' });
+        audio.overheat(); // v4.11.0: overheat lockout hiss (zero silent triggers)
         if (this.game.msglog) {
           this.game.msglog.log('VULKAN OVERHEAT — LOCKOUT ' + w.thermalLockout + 's', 'bad', this.game.time);
         }
       }
     }
-    audio.shoot();
+    audio.vulkanShot(); // v4.11.0: dedicated Vulcan ballistic snap (per-shot pitch variation)
     return true;
   }
 

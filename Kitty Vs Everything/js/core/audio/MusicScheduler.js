@@ -1,5 +1,15 @@
 // Filename: core/audio/MusicScheduler.js
-// Kitty Vs Everything — v4.9.0
+// Kitty Vs Everything — v4.11.0
+// v4.11.0: JUKEBOX PREVIEW — the Admin Panel (js/ui/DevPanel.js) music
+//          previewer can audition ANY track from the SONGS album in
+//          isolation: previewSong(id) hard-kills any current session (game
+//          music or another preview), builds a fresh session graph and LOOPS
+//          the chosen track (the 32-bar song wraps at its end instead of
+//          rotating to the next playlist track); stopPreview() fades out;
+//          getPreview() reports the playing preview id (null = none). The
+//          real game start()/stop() clear the preview state, so gameplay
+//          music always takes over cleanly. This reuses the EXISTING
+//          session graph + lookahead timer — no separate playback path.
 // v4.9.0: POLYPHONIC SYNTH OVERHAUL — the scheduler keeps the v4.8.0
 //          single-source-of-truth architecture (ONE lookahead timer, ONE
 //          session graph, start() ALWAYS hard-kills any previous session,
@@ -47,7 +57,7 @@
 //          (PLAYLISTS) of 32-bar songs (SONGS), 1-bar overlap crossfade at
 //          song boundaries, mode changes (setMode) apply at the next bar
 //          boundary with a riser / sub-drop accent.
-export const VERSION = 'v4.9.0';
+export const VERSION = 'v4.11.0';
 import { MUSIC_MODES, SONGS, PLAYLISTS, hz, mulberry32 } from './MusicPlaylists.js';
 import {
   makeNoiseBuffer, makeImpulse, softClipCurve,
@@ -67,6 +77,7 @@ export class MusicScheduler {
     this.playing = false;
     this._mode = 'open';         // active mode (applied at bar boundaries)
     this._pendingMode = 'open';  // requested mode (setMode)
+    this._preview = null;        // v4.11.0: jukebox preview track id (null = none)
     this._musicNext = 0;         // next 16th-note start time (ctx seconds)
     // ─── playlist rotation state ───
     this._song = null;        // active song id (SONGS)
@@ -124,6 +135,8 @@ export class MusicScheduler {
    */
   start() {
     if (this.playing) this.stop({ hard: true }); // singleton: one session only
+    // v4.11.0: gameplay music always takes over from a jukebox preview.
+    this._preview = null;
     this.playing = true;
     const ctx = this.core.ensure();
     if (!ctx || !this.core.musicBus) return;
@@ -154,6 +167,8 @@ export class MusicScheduler {
   stop(opts = {}) {
     const hard = !!opts.hard;
     this.playing = false;
+    // v4.11.0: dropping the session also drops any jukebox preview state.
+    this._preview = null;
     // 1) kill the lookahead timer (the only scheduler timer).
     if (this._timer) { clearTimeout(this._timer); this._timer = null; }
     // 2) cancel a pending teardown (it must never disconnect a graph that
@@ -191,6 +206,48 @@ export class MusicScheduler {
     this._incomingStep = 0;
     this._lastLead = {};
   }
+
+  /**
+   * v4.11.0: JUKEBOX PREVIEW — play ONE track from the SONGS album (the
+   * Admin Panel music previewer). Hard-kills any current session (game
+   * music or another preview), builds a fresh session graph, and LOOPS the
+   * chosen track (the bar-boundary wrap in _scheduleMusic). Returns true
+   * when the preview was armed. Headless-safe: state is armed (playing +
+   * _preview) but no graph is built when there is no AudioContext, exactly
+   * like start(). Reuses the EXISTING session graph + lookahead timer —
+   * no separate playback path.
+   */
+  previewSong(id) {
+    if (!SONGS[id]) return false;
+    if (this.playing) this.stop({ hard: true }); // singleton: one session only
+    this.playing = true;
+    this._preview = id;
+    const ctx = this.core.ensure();
+    if (!ctx || !this.core.musicBus) return false;
+    this._buildGraph();
+    // v4.11.0: preview plays the chosen track in isolation — no mode
+    // rotation, no playlist queue (the wrap in _scheduleMusic loops it).
+    this._mode = this._pendingMode;
+    this._plIdx = {};
+    this._lastLead = {};
+    this._song = id;
+    this._songStep = 0;
+    this._incoming = null;
+    this._incomingStep = 0;
+    this._master.gain.setValueAtTime(1, ctx.currentTime);
+    this._musicNext = ctx.currentTime + 0.15;
+    this._scheduleMusic();
+    return true;
+  }
+
+  /** v4.11.0: stop the jukebox preview (graceful fade-out). */
+  stopPreview() {
+    this._preview = null;
+    this.stop();
+  }
+
+  /** v4.11.0: the track id currently previewing (null = no preview). */
+  getPreview() { return this._preview; }
 
   // ─── v4.9.0: session graph management ───
 
@@ -331,9 +388,14 @@ export class MusicScheduler {
       const step = 60 / song.bpm / 4;
       const total = song.bars * 16;
       // Bar boundary: mode changes + song-end rotations apply here.
+      // v4.11.0: JUKEBOX PREVIEW — while a track is previewing, the song
+      // WRAPS at its end (loops the same track) instead of rotating the
+      // playlist or changing mode.
       if (this._songStep % 16 === 0 && !this._incoming) {
         const finalBar = this._songStep === total - 16;
-        if (this._pendingMode !== this._mode || finalBar) {
+        if (this._preview) {
+          if (this._songStep >= total) this._songStep = 0;
+        } else if (this._pendingMode !== this._mode || finalBar) {
           if (this._pendingMode !== this._mode) this._mode = this._pendingMode;
           this._incoming = this._pickSong(this._mode, this._song);
           this._incomingStep = 0;

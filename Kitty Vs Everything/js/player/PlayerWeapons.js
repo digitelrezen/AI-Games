@@ -44,10 +44,11 @@
 //          fireStunRockets / fireNapalmRockets now delegate the launch to
 //          the module singletons; the paw flash + banner stay in the
 //          secondary firing loop here.
-export const VERSION = 'v3.70.0';
+export const VERSION = 'v4.11.0';
 import { PLAYER, WEAPONS, WEAPON_ORDER, MINI_SHIP } from '../core/config.js';
 import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
+import { audio } from '../core/AudioSystem.js'; // v4.11.0: weaponSwitch SFX
 import { stunRockets } from '../combat/StunRockets.js'; // v3.70.0: modular stun rockets (Q/H)
 import { napalmRockets } from '../combat/NapalmRockets.js'; // v3.70.0: modular napalm rockets (E/J)
 import { getMuzzlePosition } from './PlayerHardpoints.js';
@@ -216,4 +217,5 @@ export function cycleWeapon(p, dir) {
   }
   p.plasmaAlt = 0;
   bus.emit('banner', { text: 'WEAPON: ' + WEAPONS[p.weapon].name, tone: 'good', duration: 0.8 });
+  audio.weaponSwitch(); // v4.11.0: weapon cycle blip (zero silent triggers)
 }

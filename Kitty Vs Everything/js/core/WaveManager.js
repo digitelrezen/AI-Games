@@ -32,7 +32,7 @@
 // v3.83.0: WAVE-CLEAR DROP — the wave-clear power-up now routes through
 //          the DropManager (spawnEventDrop: one shared-pool roll at the
 //          fixed off-screen spawn position, caught as it falls).
-export const VERSION = 'v3.83.0';
+export const VERSION = 'v4.11.0';
 import { ENEMY_TYPES, WAVE, ASTEROID } from './config.js';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js'; // v3.83.0: ambient crate spawner only
@@ -165,6 +165,9 @@ export default class WaveManager {
   spawn(s) {
     const x = rand(120, this.game.viewW - 120); // v3.13.0: live viewport
     this.game.enemies.push(createEnemy({ type: s.type, tier: s.tier, x, y: -50, game: this.game, difficulty: this.difficulty }));
+    if (s.tier === 'boss' || s.tier === 'finalboss') {
+      audio.bossSpawn(); // v4.11.0: boss arrival alarm (zero silent triggers)
+    }
   }
 
   update(dt) {

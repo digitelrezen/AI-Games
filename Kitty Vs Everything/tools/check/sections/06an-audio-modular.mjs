@@ -26,7 +26,7 @@ export default async function run() {
   const facadeSrc = read('js/core/AudioSystem.js');
   check('facade: keeps the public API (audio singleton + VERSION + playlist re-exports)',
     facadeSrc.includes('export const audio = new AudioSystem()')
-    && facadeSrc.includes("export const VERSION = 'v4.9.0'")
+    && facadeSrc.includes("export const VERSION = 'v4.11.0'")
     && facadeSrc.includes("export { MUSIC_MODES, SONGS, PLAYLISTS } from './audio/MusicPlaylists.js'"));
   check('facade: composes AudioCore + SoundEffects + MusicScheduler',
     facadeSrc.includes("import { AudioCore } from './audio/AudioCore.js'")
@@ -54,7 +54,7 @@ export default async function run() {
 
   // ─── Module surface ───
   const coreMod = await mod('js/core/audio/AudioCore.js');
-  check('AudioCore exports the class + VERSION v4.9.0', typeof coreMod.AudioCore === 'function' && coreMod.VERSION === 'v4.9.0');
+  check('AudioCore exports the class + VERSION v4.11.0', typeof coreMod.AudioCore === 'function' && coreMod.VERSION === 'v4.11.0');
   const core = new coreMod.AudioCore();
   check('AudioCore: ensure() is headless-safe (no AudioContext → null, enabled=false)',
     core.ensure() === null && core.enabled === false);
@@ -85,7 +85,7 @@ export default async function run() {
 
   // ─── Facade surface (the public `audio` singleton) ───
   const facade = await mod('js/core/AudioSystem.js');
-  check('facade: VERSION v4.9.0', facade.VERSION === 'v4.9.0');
+  check('facade: VERSION v4.11.0', facade.VERSION === 'v4.11.0');
   check('facade: re-exported playlist data is the module data (same bindings)',
     facade.MUSIC_MODES === plMod.MUSIC_MODES && facade.SONGS === plMod.SONGS && facade.PLAYLISTS === plMod.PLAYLISTS);
   const a = facade.audio;

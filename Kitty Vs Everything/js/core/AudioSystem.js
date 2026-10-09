@@ -1,5 +1,13 @@
 // Filename: AudioSystem.js
-// Kitty Vs Everything — v4.9.0
+// Kitty Vs Everything — v4.11.0
+// v4.11.0: AUDIO SUITE POLISH + ADMIN JUKEBOX — the facade gains the
+//          v4.11.0 weapon SFX (vulkanShot / pulseShot / railShot) + the
+//          zero-silent-trigger action SFX (hullHit / shieldBreak /
+//          bossSpawn / overheat / dock / weaponSwitch) delegating to
+//          SoundEffects.js, and the Admin Panel music jukebox API
+//          (previewSong / stopPreview / getPreviewSong) delegating to the
+//          MusicScheduler.js preview session. The public `audio` singleton
+//          API is otherwise unchanged.
 // v4.9.0: POLYPHONIC SYNTH OVERHAUL — the js/core/audio/ tree gains
 //          SynthVoice.js (the polyphonic voice engine: detuned multi-osc
 //          voices + sine subs + soft-clip + ADSR + filter sweeps + stereo
@@ -33,7 +41,7 @@
 //          exact v4.6.0 API (every consumer imports { audio } from
 //          './AudioSystem.js' unchanged) and adds stopAllMusic() /
 //          resetAudioEngine() / setMuted() for explicit teardown.
-export const VERSION = 'v4.9.0';
+export const VERSION = 'v4.11.0';
 import { AudioCore } from './audio/AudioCore.js';
 import { SoundEffects } from './audio/SoundEffects.js';
 import { MusicScheduler } from './audio/MusicScheduler.js';
@@ -60,6 +68,26 @@ class AudioSystem {
   shoot()       { this.sfxEngine.shoot(); }
   hit()         { this.sfxEngine.hit(); }
   explosion()   { this.sfxEngine.explosion(); }
+  // ─── v4.11.0: weapon-specific SFX (js/core/audio/SoundEffects.js) ───
+  /** v4.11.0: Vulcan Cannon — fast ballistic snap with per-shot pitch variation. */
+  vulkanShot()  { this.sfxEngine.vulkanShot(); }
+  /** v4.11.0: Pulse/Plasma Cannon — rich downward sweep + resonant filter pop. */
+  pulseShot()   { this.sfxEngine.pulseShot(); }
+  /** v4.11.0: Rail Cannon — deep sub-bass transient + electric high-frequency snap. */
+  railShot()    { this.sfxEngine.railShot(); }
+  // ─── v4.11.0: zero-silent-trigger action SFX ───
+  /** v4.11.0: hull chip thud (Player.hit non-lethal). */
+  hullHit()     { this.sfxEngine.hullHit(); }
+  /** v4.11.0: shield shatter (Player.hit shield break). */
+  shieldBreak() { this.sfxEngine.shieldBreak(); }
+  /** v4.11.0: boss alarm + riser (WaveManager boss spawn). */
+  bossSpawn()   { this.sfxEngine.bossSpawn(); }
+  /** v4.11.0: Vulcan overheat lockout hiss. */
+  overheat()    { this.sfxEngine.overheat(); }
+  /** v4.11.0: mini-ship dock confirmation blips (PlayerFleet.addMini). */
+  dock()        { this.sfxEngine.dock(); }
+  /** v4.11.0: weapon cycle click (PlayerWeapons.cycleWeapon). */
+  weaponSwitch() { this.sfxEngine.weaponSwitch(); }
   /** v3.86.0: gold coin pickup: classic two-note arcade coin (B5 to E6). */
   coin()        { this.sfxEngine.coin(); }
   powerup()     { this.sfxEngine.powerup(); }
@@ -83,6 +111,18 @@ class AudioSystem {
   /** v4.6.0: the song currently in rotation (debug / dev panel). */
   getMusicSong() { return this.musicEngine.getSong(); }
   get musicPlaying() { return this.musicEngine.playing; }
+
+  // ─── v4.11.0: Admin Panel music jukebox (MusicScheduler.js preview) ───
+  /**
+   * v4.11.0: JUKEBOX PREVIEW — play ONE track from the SONGS album in
+   * isolation (the Admin Panel music previewer). Hard-kills any current
+   * session and loops the chosen track. Returns true when armed.
+   */
+  previewSong(id) { return this.musicEngine.previewSong(id); }
+  /** v4.11.0: stop the jukebox preview (graceful fade-out). */
+  stopPreview() { this.musicEngine.stopPreview(); }
+  /** v4.11.0: the track id currently previewing (null = no preview). */
+  getPreviewSong() { return this.musicEngine.getPreview(); }
 
   /**
    * v4.8.0: explicit full-music teardown — kill the scheduler (lookahead

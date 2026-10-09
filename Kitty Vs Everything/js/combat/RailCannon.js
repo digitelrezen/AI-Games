@@ -1,5 +1,9 @@
 // Filename: RailCannon.js
-// Kitty Vs Everything — v3.69.0 (module v1.0.0)
+// Kitty Vs Everything — v4.11.0 (module v1.1.0)
+// v1.1.0: AUDIO SUITE POLISH — fire() now plays the dedicated
+//   audio.railShot() voice (deep sub-bass transient + electric
+//   high-frequency snap + rail discharge sweep) instead of the generic
+//   audio.tone(200→800) sawtooth — immense power for the piercing beam.
 // MODULAR WEAPON ARCHITECTURE (Phase 2) — the RAIL CANNON extracted from
 // PlayerWeapons.firePrimary (piercing beam) + updateWeaponState (charge-up
 // visual).
@@ -20,7 +24,7 @@
 // still clears the owner's thermal/lockout so switching away from an
 // overheated Vulcan never carries its lockout into this weapon (v3.67.0
 // cycleWeapon invariant, preserved).
-export const VERSION = 'v1.0.0';
+export const VERSION = 'v1.1.0';
 import Bullet from './Bullet.js';
 import { audio } from '../core/AudioSystem.js';
 import { getMuzzlePosition } from '../player/PlayerHardpoints.js';
@@ -73,7 +77,7 @@ export default class RailCannon extends BaseWeapon {
     this.game.particles.burst(muzzle.x, muzzle.y, { count: 12, color: '#d1c4e9', speed: 200, life: 0.3, size: 3 });
     this.game.shake = Math.max(this.game.shake, 5);
     this.owner.muzzleFlash = 0.18;
-    audio.tone(200, 0.15, 'sawtooth', 0.08, 800);
+    audio.railShot(); // v4.11.0: dedicated rail cannon sub-bass + electric snap
     return true;
   }
 

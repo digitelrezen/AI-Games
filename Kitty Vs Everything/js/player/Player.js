@@ -40,7 +40,7 @@
 // v3.69.0: MODULAR WEAPON ARCHITECTURE (Phase 2) — the registry now holds
 //          ALL THREE primary weapons: { vulkan: VulcanCannon, plasma:
 //          PulseCannon, rail: RailCannon }. Respawn resets all three.
-export const VERSION = 'v3.71.0';
+export const VERSION = 'v4.11.0';
 import Entity from '../core/Entity.js';
 import { PLAYER, PLAYER_THEMES } from '../core/config.js';
 import { bus } from '../core/EventBus.js';
@@ -248,9 +248,14 @@ export default class Player extends Entity {
     // while shield > 0, so it vanishes the frame the shield hits 0; this
     // one-shot shatter burst makes the break read cleanly.
     const shieldBefore = this.shield;
+    const hpBefore = this.hp;
     this.applyDamage(damage);
     if (shieldBefore > 0 && this.shield <= 0) {
       this.game.particles.burst(this.x, this.y, { count: 26, color: '#ffd54f', speed: 320, life: 0.45 });
+      audio.shieldBreak(); // v4.11.0: shield shatter (zero silent triggers)
+    }
+    if (this.hp > 0 && this.hp < hpBefore) {
+      audio.hullHit(); // v4.11.0: non-lethal hull impact thud (death keeps audio.explosion())
     }
     if (this.hp <= 0) {
       this.lives--;

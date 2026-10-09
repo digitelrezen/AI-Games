@@ -1,5 +1,9 @@
 // Filename: PulseCannon.js
-// Kitty Vs Everything — v3.69.0 (module v1.0.0)
+// Kitty Vs Everything — v4.11.0 (module v1.1.0)
+// v1.1.0: AUDIO SUITE POLISH — fire() now plays the dedicated
+//   audio.pulseShot() voice (rich downward pitch sweep + warm resonant
+//   filter pop) instead of the generic audio.shoot() beep — a satisfying
+//   sci-fi energy punch for the twin-pod burst.
 // MODULAR WEAPON ARCHITECTURE (Phase 2) — the PLASMA PULSE (pulse cannon)
 // extracted from PlayerWeapons.firePrimary (v3.46.0 TWIN-POD BURST).
 //
@@ -17,7 +21,7 @@
 // the owner's thermal/lockout so switching away from an overheated Vulcan
 // never carries its lockout into this weapon (v3.67.0 cycleWeapon
 // invariant, preserved).
-export const VERSION = 'v1.0.0';
+export const VERSION = 'v1.1.0';
 import Bullet from './Bullet.js';
 import { audio } from '../core/AudioSystem.js';
 import { getMuzzleTipOffsets } from '../player/PlayerHardpoints.js';
@@ -55,7 +59,7 @@ export default class PulseCannon extends BaseWeapon {
     }
     this.owner.pawFlashL = 0.12;
     this.owner.pawFlashR = 0.12;
-    audio.shoot();
+    audio.pulseShot(); // v4.11.0: dedicated pulse cannon sweep + resonant pop
     return true;
   }
 

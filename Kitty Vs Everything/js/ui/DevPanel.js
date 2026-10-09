@@ -45,8 +45,10 @@
 // v4.7.0: RnM Ship button no longer emits the "RnM SHIP INTERCEPTOR
 //          INBOUND" banner — the force-spawned ship plays its own
 //          sequential Rick & Morty dialogue (RnMShip.js RNMSHIP_DIALOGUE).
-export const VERSION = 'v3.99.0';
+export const VERSION = 'v4.11.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
+import { SONGS } from '../core/audio/MusicPlaylists.js'; // v4.11.0: jukebox track list
+import { audio } from '../core/AudioSystem.js'; // v4.11.0: jukebox preview API
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
 import { spawnAsteroid } from '../levels/AsteroidBonus.js'; // v3.11.0: debug asteroid drop
@@ -184,6 +186,39 @@ export default class DevPanel {
         g.start(theme, { mode: 'sard' });
         bus.emit('banner', { text: 'SEARCH & DESTROY — SECTOR JOURNEY START', tone: 'warn', duration: 2.5 });
       };
+    }
+    // ─── v4.11.0: MUSIC JUKEBOX — preview any track from the SONGS album ───
+    // Reuses the MusicScheduler preview session (audio.previewSong /
+    // audio.stopPreview / audio.getPreviewSong): one track at a time,
+    // looping, hard-killed by gameplay startMusic(). The status line +
+    // active track button poll the facade (250 ms) so gameplay start/stop
+    // also updates the UI without extra event wiring.
+    const jukebox = document.getElementById('dev-jukebox');
+    if (jukebox) {
+      const statusEl = document.getElementById('dev-jukebox-status');
+      const stopBtn = document.getElementById('dev-jukebox-stop');
+      const trackBtns = new Map();
+      for (const song of Object.values(SONGS)) {
+        const b = document.createElement('button');
+        b.textContent = '▶ ' + song.title;
+        b.title = song.id + ' · ' + song.bpm + ' BPM · ' + song.bars + ' bars';
+        b.onclick = () => { audio.previewSong(song.id); };
+        trackBtns.set(song.id, b);
+        jukebox.appendChild(b);
+      }
+      if (stopBtn) stopBtn.onclick = () => { audio.stopPreview(); };
+      const refreshJukebox = () => {
+        const cur = audio.getPreviewSong();
+        for (const [id, b] of trackBtns) b.classList.toggle('active', id === cur);
+        if (statusEl) {
+          const song = cur ? SONGS[cur] : null;
+          statusEl.textContent = song
+            ? 'NOW PREVIEWING: ' + song.title + ' (' + song.bpm + ' BPM · looping)'
+            : 'No preview playing';
+        }
+      };
+      setInterval(refreshJukebox, 250);
+      refreshJukebox();
     }
     document.getElementById('dev-clear').onclick = () => {
       g.enemies = [];

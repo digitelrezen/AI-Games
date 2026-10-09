@@ -143,7 +143,11 @@
 //          interceptor plays its sequential Rick & Morty dialogue and
 //          spawns regularly in classic + Search & Destroy modes).
 //          Milestone version synced with package.json.
-export const VERSION = 'v4.10.0';
+// v4.11.0: AUDIO SUITE POLISH + ADMIN JUKEBOX — no boot changes (the
+//          milestone is the js/core/audio/ suite + the DevPanel Music
+//          Jukebox; the `audio` facade API the entry point relies on is
+//          unchanged). Milestone version synced with package.json.
+export const VERSION = 'v4.11.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup

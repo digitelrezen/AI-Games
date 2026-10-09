@@ -622,6 +622,34 @@ body {
 .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
 .dev-grid button { width: 100%; }
 .dev-full { width: 100%; }
+/* v4.11.0: MUSIC JUKEBOX — scrollable track list (13 album tracks) inside
+   the scrollable .dev-body; the active preview track gets the .active look. */
+.dev-jukebox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 148px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid #2a3550;
+  border-radius: 6px;
+  background: #0f1524;
+}
+.dev-jukebox::-webkit-scrollbar { width: 8px; }
+.dev-jukebox::-webkit-scrollbar-track { background: #0f1524; }
+.dev-jukebox::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.dev-jukebox::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.dev-jukebox button {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dev-jukebox button.active {
+  background: #14532d;
+  border-color: #22c55e;
+  color: #bbf7d0;
+}
 .dev-mt { margin-top: 5px; }
 .dev-primary {
   background: rgba(255,213,79,0.12); border-color: var(--accent);

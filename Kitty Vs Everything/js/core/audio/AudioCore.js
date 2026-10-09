@@ -1,5 +1,11 @@
 // Filename: core/audio/AudioCore.js
-// Kitty Vs Everything — v4.9.0
+// Kitty Vs Everything — v4.11.0
+// v4.11.0: ANTI-CLIPPING — a gentle soft-clip (tanh) WaveShaper is inserted
+//          on the SFX bus (sfxBus → sfxShaper → masterGain) so the summed
+//          peaks of layered rapid-fire voices are tamed BEFORE the master
+//          compressor — the final anti-clipping ceiling for the v4.11.0
+//          weapon SFX suite. Music is untouched (musicBus feeds masterGain
+//          directly).
 // v4.9.0: POLYPHONIC SYNTH OVERHAUL — unchanged surface: the context +
 //          master chain + buses + volumes + mute stay the single source of
 //          truth for every voice; the v4.9.0 SynthVoice.js engine and the
@@ -15,7 +21,9 @@
 //          global mute state — every voice in the game routes through this
 //          graph, so volume + mute are enforced in exactly one place
 //          (single source of truth).
-export const VERSION = 'v4.9.0';
+export const VERSION = 'v4.11.0';
+
+import { softClipCurve } from './SynthVoice.js';
 
 const clamp01 = (v) => Math.max(0, Math.min(1, +v || 0));
 
@@ -32,6 +40,7 @@ export class AudioCore {
     this.masterGain = null;   // master volume → compressor → destination
     this.compressor = null;   // gentle limiter (keeps bus peaks in check)
     this.sfxBus = null;       // SFX voices → sfxBus (gain = sfx volume)
+    this.sfxShaper = null;    // v4.11.0: soft-clip shaper (anti-clipping)
     this.musicBus = null;     // music session graph → musicBus (gain = music volume)
   }
 
@@ -64,7 +73,14 @@ export class AudioCore {
     this.compressor.release.value = 0.25;
     this.masterGain.connect(this.compressor).connect(ctx.destination);
     this.sfxBus = ctx.createGain();
-    this.sfxBus.connect(this.masterGain);
+    // v4.11.0: ANTI-CLIPPING — a gentle soft-clip (tanh) shaper tames the
+    // summed peaks of layered rapid-fire SFX voices before the master
+    // compressor (the final ceiling); music stays untouched.
+    this.sfxShaper = ctx.createWaveShaper();
+    this.sfxShaper.curve = softClipCurve(1.8);
+    this.sfxShaper.oversample = '2x';
+    this.sfxBus.connect(this.sfxShaper);
+    this.sfxShaper.connect(this.masterGain);
     this.musicBus = ctx.createGain();
     this.musicBus.connect(this.masterGain);
     this._applyVolumes();
@@ -108,6 +124,7 @@ export class AudioCore {
     this.masterGain = null;
     this.compressor = null;
     this.sfxBus = null;
+    this.sfxShaper = null;
     this.musicBus = null;
     this.enabled = true;
   }

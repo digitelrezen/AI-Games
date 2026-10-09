@@ -18,8 +18,8 @@ console.log('\n[6v] v3.69.0 modular weapon architecture (PulseCannon + RailCanno
   const { default: RailCannon } = await mod('js/combat/RailCannon.js');
   const pcSrc = fs.readFileSync(path.join(ROOT, 'js/combat/PulseCannon.js'), 'utf8');
   const rcSrc = fs.readFileSync(path.join(ROOT, 'js/combat/RailCannon.js'), 'utf8');
-  check('PulseCannon: VERSION = v1.0.0', pcSrc.includes("VERSION = 'v1.0.0'"));
-  check('RailCannon: VERSION = v1.0.0', rcSrc.includes("VERSION = 'v1.0.0'"));
+  check('PulseCannon: VERSION = v1.1.0', pcSrc.includes("VERSION = 'v1.1.0'"));
+  check('RailCannon: VERSION = v1.1.0', rcSrc.includes("VERSION = 'v1.1.0'"));
   check('PulseCannon: extends BaseWeapon', Object.getPrototypeOf(PulseCannon.prototype).constructor.name === 'BaseWeapon');
   check('RailCannon: extends BaseWeapon', Object.getPrototypeOf(RailCannon.prototype).constructor.name === 'BaseWeapon');
   // Player owns the full registry + respawn resets all three

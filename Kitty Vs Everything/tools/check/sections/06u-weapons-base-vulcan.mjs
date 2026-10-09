@@ -21,7 +21,7 @@ console.log('\n[6u] v3.68.0 modular weapon architecture (BaseWeapon + VulcanCann
   const bwSrc = fs.readFileSync(path.join(ROOT, 'js/combat/BaseWeapon.js'), 'utf8');
   const vcSrc = fs.readFileSync(path.join(ROOT, 'js/combat/VulcanCannon.js'), 'utf8');
   check('BaseWeapon: VERSION = v1.0.0', bwSrc.includes("VERSION = 'v1.0.0'"));
-  check('VulcanCannon: VERSION = v1.0.0', vcSrc.includes("VERSION = 'v1.0.0'"));
+  check('VulcanCannon: VERSION = v1.1.0', vcSrc.includes("VERSION = 'v1.1.0'"));
   check('VulcanCannon: extends BaseWeapon', Object.getPrototypeOf(VulcanCannon.prototype).constructor.name === 'BaseWeapon');
   check('BaseWeapon: abstract fire() throws for unimplemented weapons', (() => {
     const w = new BaseWeapon(makePlayer(makeGame()), 'vulkan');

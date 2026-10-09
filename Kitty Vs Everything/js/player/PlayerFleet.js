@@ -16,7 +16,7 @@
 //         it toggles the mini fleet between docked and orbiting the hull
 //         (MiniDeploy.toggleFleetOrbit). superCharge is now a HUD color-match
 //         meter only; the old superWeapon() fire is removed.
-export const VERSION = 'v3.71.0';
+export const VERSION = 'v4.11.0';
 import { createMiniShip } from '../combat/CatShipFactory.js'; // v3.71.0: modular combat
 import { MINI_SHIP } from '../core/config.js';
 import { bus } from '../core/EventBus.js';
@@ -38,6 +38,7 @@ export function addMini(player) {
       : 'MINI-SHIP DOCKED! SYNERGY CHARGING…',
     tone: 'good', duration: 1.5,
   });
+  audio.dock(); // v4.11.0: docking clunk (zero silent triggers)
   return true;
 }
 
