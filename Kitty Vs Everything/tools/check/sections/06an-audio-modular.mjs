@@ -31,6 +31,12 @@
 //        every MIDI channel maps to a SynthVoice.js voice slot (lead/bass/
 //        arp/pad/drums) and the scheduler grid moves to 32nds; all
 //        procedural placeholder tracks are removed.
+//        v4.17.0: MIDI ALBUM EXPANSION — the SONGS album grows 11 → 13
+//        tracks: + Classical Gas (Mose Ziering, the fingerpicked-arpeggio
+//        piano arrangement — open + boneyard queues, 'piano' profile) +
+//        Eiffel 65 — Blue (Da Ba Dee) (the Eurodance lead hook + horn-stab
+//        chord hits — combat queue, 'synth' profile); both are single-channel
+//        MIDI arrangements riding the polyphonic lead voice.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -88,19 +94,21 @@ export default async function run() {
   }
   const plMod = await mod('js/core/audio/MusicPlaylists.js');
   check('MusicPlaylists: 4 context modes', Object.keys(plMod.MUSIC_MODES).length === 4, `got ${Object.keys(plMod.MUSIC_MODES).join(', ')}`);
-  check('MusicPlaylists: v4.16.0 the 11-track MIDI album (all procedural placeholder tracks removed)',
-    Object.keys(plMod.SONGS).length === 11, `got ${Object.keys(plMod.SONGS).length}`);
+  check('MusicPlaylists: v4.17.0 the 13-track MIDI album (11 v4.16.0 tracks + Classical Gas + Eiffel 65 — Blue; all procedural placeholder tracks removed)',
+    Object.keys(plMod.SONGS).length === 13, `got ${Object.keys(plMod.SONGS).length}`);
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
   check('MusicPlaylists: v4.16.0 Nothing Else Matters is the main intro sequence (first in the open queue)',
     plMod.PLAYLISTS.open[0] === 'metallica-nem', `got ${plMod.PLAYLISTS.open[0]}`);
-  check('MusicPlaylists: v4.16.0 crossover tracks ride two modes each (fur-elise open+boneyard, johnny-march open+combat, harvester boneyard+boss, cowboys combat+boss)',
+  check('MusicPlaylists: v4.17.0 crossover tracks ride two modes each (fur-elise open+boneyard, johnny-march open+combat, harvester boneyard+boss, cowboys combat+boss, classical-gas open+boneyard) + eiffel65-blue in the combat queue',
     plMod.PLAYLISTS.open.includes('fur-elise') && plMod.PLAYLISTS.boneyard.includes('fur-elise')
     && plMod.PLAYLISTS.open.includes('johnny-march') && plMod.PLAYLISTS.combat.includes('johnny-march')
     && plMod.PLAYLISTS.boneyard.includes('metallica-harvester') && plMod.PLAYLISTS.boss.includes('metallica-harvester')
-    && plMod.PLAYLISTS.combat.includes('pantera-cowboys') && plMod.PLAYLISTS.boss.includes('pantera-cowboys'));
-  check('MusicPlaylists: v4.16.0 the album is the parsed MIDI lineup (exact titles/artists)',
+    && plMod.PLAYLISTS.combat.includes('pantera-cowboys') && plMod.PLAYLISTS.boss.includes('pantera-cowboys')
+    && plMod.PLAYLISTS.open.includes('classical-gas') && plMod.PLAYLISTS.boneyard.includes('classical-gas')
+    && plMod.PLAYLISTS.combat.includes('eiffel65-blue'));
+  check('MusicPlaylists: v4.17.0 the album is the parsed MIDI lineup (exact titles/artists)',
     plMod.SONGS['metallica-nem'].title === 'Nothing Else Matters' && plMod.SONGS['metallica-nem'].artist === 'Metallica'
     && plMod.SONGS['tool-forty-six'].title === 'Forty Six & 2' && plMod.SONGS['tool-forty-six'].artist === 'Tool'
     && plMod.SONGS['tool-no-quarter'].title === 'No Quarter' && plMod.SONGS['tool-no-quarter'].artist === 'Tool'
@@ -111,8 +119,10 @@ export default async function run() {
     && plMod.SONGS['axel-f'].title === 'Axel F'
     && plMod.SONGS['fur-elise'].title === 'Für Elise' && plMod.SONGS['fur-elise'].artist === 'Beethoven'
     && plMod.SONGS['johnny-march'].title === 'When Johnny Comes Marching Home'
-    && plMod.SONGS['requiem-dream'].title === 'Requiem for a Dream');
-  check('MusicPlaylists: v4.16.0 parsed note-sequence identity (dominant MIDI bpm + full parsed bar length per track)',
+    && plMod.SONGS['requiem-dream'].title === 'Requiem for a Dream'
+    && plMod.SONGS['classical-gas'].title === 'Classical Gas' && plMod.SONGS['classical-gas'].artist === 'Mose Ziering'
+    && plMod.SONGS['eiffel65-blue'].title === 'Blue (Da Ba Dee)' && plMod.SONGS['eiffel65-blue'].artist === 'Eiffel 65');
+  check('MusicPlaylists: v4.17.0 parsed note-sequence identity (dominant MIDI bpm + full parsed bar length per track)',
     plMod.SONGS['metallica-nem'].bpm === 75 && plMod.SONGS['metallica-nem'].bars === 43
     && plMod.SONGS['requiem-dream'].bpm === 45 && plMod.SONGS['requiem-dream'].bars === 25
     && plMod.SONGS['axel-f'].bpm === 125 && plMod.SONGS['axel-f'].bars === 28
@@ -123,7 +133,9 @@ export default async function run() {
     && plMod.SONGS['pantera-cowboys'].bpm === 230 && plMod.SONGS['pantera-cowboys'].bars === 45
     && plMod.SONGS['metallica-harvester'].bpm === 92 && plMod.SONGS['metallica-harvester'].bars === 42
     && plMod.SONGS['metallica-unforgiven'].bpm === 70 && plMod.SONGS['metallica-unforgiven'].bars === 110
-    && plMod.SONGS['tool-pneuma'].bpm === 115 && plMod.SONGS['tool-pneuma'].bars === 291);
+    && plMod.SONGS['tool-pneuma'].bpm === 115 && plMod.SONGS['tool-pneuma'].bars === 291
+    && plMod.SONGS['classical-gas'].bpm === 152 && plMod.SONGS['classical-gas'].bars === 117
+    && plMod.SONGS['eiffel65-blue'].bpm === 127 && plMod.SONGS['eiffel65-blue'].bars === 117);
   check('MusicPlaylists: v4.16.0 every song carries parsed MIDI events (lead layer non-empty, 32nd-grid bounds, sane bpm/bars)',
     Object.values(plMod.SONGS).every((s) => {
       if (!s.events || !s.events.lead.length || s.bpm <= 40 || s.bpm >= 300 || s.bars < 4) return false;
@@ -138,13 +150,17 @@ export default async function run() {
       }
       return true;
     }));
-  check('MusicPlaylists: v4.16.0 the exact note counts ride the layers (NEM 507 lead / 80 bass / 417 drums; Pneuma 3455 drums; Für Elise 526 lead, piano-only)',
+  check('MusicPlaylists: v4.17.0 the exact note counts ride the layers (NEM 507 lead / 80 bass / 417 drums; Pneuma 3455 drums; Für Elise 526 lead, piano-only; Classical Gas 1391 lead, piano-only; Eiffel 65 1141 lead, piano-only)',
     plMod.SONGS['metallica-nem'].events.lead.length === 507
     && plMod.SONGS['metallica-nem'].events.bass.length === 80
     && plMod.SONGS['metallica-nem'].events.drums.length === 417
     && plMod.SONGS['tool-pneuma'].events.drums.length === 3455
     && plMod.SONGS['fur-elise'].events.lead.length === 526
-    && plMod.SONGS['fur-elise'].events.drums.length === 0);
+    && plMod.SONGS['fur-elise'].events.drums.length === 0
+    && plMod.SONGS['classical-gas'].events.lead.length === 1391
+    && plMod.SONGS['classical-gas'].events.drums.length === 0
+    && plMod.SONGS['eiffel65-blue'].events.lead.length === 1141
+    && plMod.SONGS['eiffel65-blue'].events.drums.length === 0);
   check('v4.16.0 FIDELITY FIX: the main melody rides the LEAD slot (Requiem piano 1429 / Johnny trombone 481 / Harvester dist-gtr 395) + correct genre profiles (Axel F = synth perc 0.55, not metal; No Quarter + Für Elise = piano perc 0.3)',
     plMod.SONGS['requiem-dream'].events.lead.length === 1429
     && plMod.SONGS['johnny-march'].events.lead.length === 481
@@ -152,6 +168,11 @@ export default async function run() {
     && plMod.SONGS['axel-f'].vols.perc === 0.55
     && plMod.SONGS['tool-no-quarter'].vols.perc === 0.3
     && plMod.SONGS['fur-elise'].vols.perc === 0.3);
+  check('v4.17.0 new tracks ride the correct genre profiles (Classical Gas = piano triangle lead, perc 0.3; Eiffel 65 — Blue = synth saw lead, perc 0.55 — Eurodance, not metal)',
+    plMod.SONGS['classical-gas'].lead.wave === 'triangle'
+    && plMod.SONGS['classical-gas'].vols.perc === 0.3
+    && plMod.SONGS['eiffel65-blue'].lead.wave === 'sawtooth'
+    && plMod.SONGS['eiffel65-blue'].vols.perc === 0.55);
   check('scheduler: v4.16.0 MIDI event playback path (32nd grid + events map → SynthVoice slots + kick pump)',
     schedSrc.includes('60 / song.bpm / 8') && schedSrc.includes('song.events')
     && schedSrc.includes('_scheduleEventStep') && schedSrc.includes('_evIndex')

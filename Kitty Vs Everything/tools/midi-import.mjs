@@ -1,11 +1,11 @@
 // Filename: tools/midi-import.mjs
-// Kitty Vs Everything — v4.16.0
-// MIDI → MusicPlaylists.js converter (the v4.16.0 album import pipeline).
+// Kitty Vs Everything — v4.17.0
+// MIDI → MusicPlaylists.js converter (the v4.17.0 album import pipeline).
 //
-// The v4.16.0 soundtrack album is NOT procedural: every track is the exact
+// The v4.17.0 soundtrack album is NOT procedural: every track is the exact
 // note sequence parsed from the local .mid files in C:\Dev\AI-GAMES\.assets
-// (11 tracks — Tool, Metallica, Pantera, Beethoven, Faltermeyer,
-// Eastwood, traditional). This tool:
+// (13 tracks — Tool, Metallica, Pantera, Beethoven, Faltermeyer,
+// Eastwood, traditional, Ziering, Eiffel 65). This tool:
 //   1. parses each SMF (type 0/1/2) with a ZERO-DEPENDENCY native parser
 //      (no @tonejs/midi — the single-file build must stay dependency-free),
 //   2. converts notes to the scheduler's 32nd-note grid (t = 32nd index,
@@ -342,14 +342,29 @@ export const TRACKS = [
   { file: 'Metallica - Harvester of Sorrow.mid', id: 'metallica-harvester', title: 'Harvester of Sorrow', artist: 'Metallica', genre: 'metal', chMap: { lead: [0], arp: [1, 2], bass: [3] } },
   { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal' },
   { file: 'Tool- Pneuma.mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'metal' },
+  // v4.17.0: Classical Gas (Mose Ziering) — a single-channel grand-piano
+  // arrangement of the famous fingerpicked guitar piece. The melody and the
+  // fast arpeggiated left-hand figure overlap in pitch, so (like Für Elise)
+  // ALL notes ride the polyphonic lead voice; the 'piano' profile (bright
+  // pluck-like lead, fast decay) keeps the 16th-note arpeggio crisp.
+  { file: 'Classical Gas.mid.mid', id: 'classical-gas', title: 'Classical Gas', artist: 'Mose Ziering', genre: 'piano', chMap: { lead: [0] } },
+  // v4.17.0: Eiffel 65 — Blue (Da Ba Dee) — a single-channel piano
+  // arrangement of the Eurodance hook (the "da ba dee" lead melody + the
+  // horn-stab chord hits). ALL notes ride the polyphonic lead voice; the
+  // 'synth' profile (clean detuned-saw pluck) gives the hook its Eurodance
+  // lead sound (NOT the metal saw — this is dance, not riffs).
+  { file: 'Eiffel 65 - Blue (Da Ba Dee).mid', id: 'eiffel65-blue', title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', genre: 'synth', chMap: { lead: [0] } },
 ];
 
-// The per-mode rotation queues (v4.16.0). Nothing Else Matters is the main
+// The per-mode rotation queues (v4.17.0). Nothing Else Matters is the main
 // intro sequence — MusicScheduler.start() picks PLAYLISTS.open[0].
+// v4.17.0: Classical Gas rides the two mellow queues (open + boneyard, the
+// fingerpicked arpeggio as the atmospheric breath); Eiffel 65 — Blue joins
+// the high-energy combat queue (the Eurodance hook alongside the riffs).
 export const PLAYLISTS = {
-  open: ['metallica-nem', 'fur-elise', 'axel-f', 'johnny-march'],
-  combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys'],
-  boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester'],
+  open: ['metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
+  combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys', 'eiffel65-blue'],
+  boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester', 'classical-gas'],
   boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys'],
 };
 
@@ -492,15 +507,19 @@ function write() {
     .map(([m, l]) => `  ${m}: [${l.map((s) => `'${s}'`).join(', ')}],`)
     .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.16.0
-// v4.16.0: MIDI ALBUM — the entire SONGS album is now the exact note
-//          sequences parsed from the local .mid files (tools/midi-import.mjs,
-//          zero-dependency SMF parser): 11 tracks — Nothing Else Matters
-//          (Metallica, the main intro sequence — first in the open queue),
-//          Forty Six & 2 / No Quarter / Pneuma (Tool), Harvester of Sorrow /
-//          The Unforgiven (Metallica), Cowboys From Hell (Pantera), Axel F
-//          (Faltermeyer), Für Elise (Beethoven), When Johnny Comes Marching
-//          Home (traditional), Requiem for a Dream (Eastwood). Every MIDI
+// Kitty Vs Everything — v4.17.0
+// v4.17.0: MIDI ALBUM EXPANSION — the SONGS album grows 11 → 13 tracks:
+//          the v4.16.0 MIDI album (Nothing Else Matters — the main intro
+//          sequence — first in the open queue, Forty Six & 2 / No Quarter /
+//          Pneuma (Tool), Harvester of Sorrow / The Unforgiven (Metallica),
+//          Cowboys From Hell (Pantera), Axel F (Faltermeyer), Für Elise
+//          (Beethoven), When Johnny Comes Marching Home (traditional),
+//          Requiem for a Dream (Eastwood)) + Classical Gas (Mose Ziering —
+//          the fingerpicked-arpeggio piano arrangement, open + boneyard
+//          queues) + Eiffel 65 — Blue (Da Ba Dee) (the Eurodance lead hook +
+//          horn-stab chord hits, combat queue). Every track is the exact
+//          note sequence parsed from the local .mid files
+//          (tools/midi-import.mjs, zero-dependency SMF parser); every MIDI
 //          channel is mapped to a SynthVoice.js voice slot (lead / bass /
 //          arp / pad / drums) and every note rides the scheduler's 32nd-note
 //          grid (events: [t, midiNote, dur32nds, vel01]; drums:
