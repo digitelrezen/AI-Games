@@ -16,6 +16,12 @@
 //        (staccato detuned-saw leads, woody lowpass, heavy low-end bass,
 //        downbeat chord stabs) — all routed through the SynthVoice.js
 //        polyphonic engine.
+//        v4.15.0: JUKEBOX PLAYLIST VIEW + TRACK REPLACEMENTS — the admin
+//        Music Jukebox shows the per-mode PLAYLISTS queues (readable
+//        rotation order + preview highlight), the fur-elise slot is
+//        replaced by the new "Neon Horizon" D-minor composition, and
+//        boss-overdrive / boss-redline are rebuilt as clearly distinct
+//        tracks (gallop riff vs breakbeat).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -80,7 +86,6 @@ export default async function run() {
   check('MusicPlaylists: crossover tracks ride two modes each (fur-elise open+combat, johnny-march combat+boneyard)',
     plMod.PLAYLISTS.open.includes('fur-elise') && plMod.PLAYLISTS.combat.includes('fur-elise')
     && plMod.PLAYLISTS.combat.includes('johnny-march') && plMod.PLAYLISTS.boneyard.includes('johnny-march'));
-  check('MusicPlaylists: Für Elise motif = 40 16th-grid notes (20-note phrase × 2 loop halves)', plMod.SONGS['fur-elise'].lead.motif.length === 40, `got ${plMod.SONGS['fur-elise'].lead.motif.length}`);
   check('MusicPlaylists: Johnny March motif = 64 8th-grid notes', plMod.SONGS['johnny-march'].lead.motif.length === 64, `got ${plMod.SONGS['johnny-march'].lead.motif.length}`);
   // ─── v4.14.0: symphonic cello-metal overhaul pins ───
   check('MusicPlaylists: v4.14.0 intro overture is the primary opening theme (first in the open queue)',
@@ -90,9 +95,32 @@ export default async function run() {
     && plMod.SONGS['intro-overture'].harmony.motif.length === 27
     && plMod.SONGS['intro-overture'].stab === true
     && plMod.SONGS['intro-overture'].sweeps.includes(6));
-  check('MusicPlaylists: v4.14.0 cello-metal crossover arrangement (staccato leads + heavy downbeat stabs)',
-    plMod.SONGS['fur-elise'].lead.glide === false && plMod.SONGS['fur-elise'].stab === true
-    && plMod.SONGS['johnny-march'].lead.glide === false && plMod.SONGS['johnny-march'].stab === true);
+  check('MusicPlaylists: v4.14.0 cello-metal Johnny March arrangement (staccato lead + heavy downbeat stabs)',
+    plMod.SONGS['johnny-march'].lead.glide === false && plMod.SONGS['johnny-march'].stab === true);
+  // ─── v4.15.0: jukebox playlist view + track replacements ───
+  check('MusicPlaylists: v4.15.0 the fur-elise slot is the new "Neon Horizon" (61-note D-minor lead, 124 BPM, techno bass, offbeat hats, glide ON)',
+    plMod.SONGS['fur-elise'].title === 'Neon Horizon'
+    && plMod.SONGS['fur-elise'].bpm === 124
+    && plMod.SONGS['fur-elise'].lead.motif.length === 61
+    && plMod.SONGS['fur-elise'].lead.glide === true
+    && plMod.SONGS['fur-elise'].bass === 'techno'
+    && plMod.SONGS['fur-elise'].perc.hat.join(',') === '2,6,10,14'
+    && plMod.SONGS['fur-elise'].stab === false,
+    `got ${plMod.SONGS['fur-elise'].title} / ${plMod.SONGS['fur-elise'].bpm} / motif ${plMod.SONGS['fur-elise'].lead.motif.length}`);
+  check('MusicPlaylists: v4.15.0 boss tracks are distinct (overdrive: 48-note Cm gallop riff + gallop kick + 8th bass; redline: 150 BPM breakbeat + march bass + tension sweep)',
+    plMod.SONGS['boss-overdrive'].lead.motif.length === 48
+    && plMod.SONGS['boss-overdrive'].bass === 'eighth'
+    && plMod.SONGS['boss-overdrive'].perc.kick.join(',') === '0,3,4,8,11,12'
+    && plMod.SONGS['boss-redline'].bpm === 150
+    && plMod.SONGS['boss-redline'].bass === 'march'
+    && plMod.SONGS['boss-redline'].perc.kick.join(',') === '0,7,8'
+    && plMod.SONGS['boss-redline'].sweeps.includes(6)
+    && plMod.SONGS['boss-redline'].arps.length === 3);
+  check('v4.15.0: the admin jukebox shows the per-mode playlists (index.html #dev-jukebox-playlists + DevPanel builds the queue rows from PLAYLISTS)',
+    read('index.html').includes('dev-jukebox-playlists')
+    && read('js/ui/DevPanel.js').includes('dev-jukebox-playlists')
+    && read('js/ui/DevPanel.js').includes('PLAYLISTS')
+    && read('js/ui/DevPanel.js').includes('dev-playlist-track'));
   check('MusicPlaylists: hz() + mulberry32() helpers exported', typeof plMod.hz === 'function' && typeof plMod.mulberry32 === 'function');
   const schedMod = await mod('js/core/audio/MusicScheduler.js');
   check('MusicScheduler exports the class', typeof schedMod.MusicScheduler === 'function');

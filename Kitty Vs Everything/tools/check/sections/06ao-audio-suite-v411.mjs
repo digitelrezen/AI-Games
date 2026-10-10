@@ -102,8 +102,8 @@ export default async function run() {
     htmlSrc.includes('id="dev-jukebox"') && htmlSrc.includes('id="dev-jukebox-stop"')
     && htmlSrc.includes('id="dev-jukebox-status"'));
   const devSrc = read('js/ui/DevPanel.js');
-  check('DevPanel: imports SONGS + the audio facade for the jukebox',
-    devSrc.includes("import { SONGS } from '../core/audio/MusicPlaylists.js'")
+  check('DevPanel: imports SONGS + PLAYLISTS (v4.15.0) + the audio facade for the jukebox',
+    devSrc.includes("import { SONGS, PLAYLISTS } from '../core/audio/MusicPlaylists.js'")
     && devSrc.includes("import { audio } from '../core/AudioSystem.js'"));
   check('DevPanel: builds one play button per SONGS track + stop + live status',
     devSrc.includes('audio.previewSong(song.id)') && devSrc.includes('audio.stopPreview()')

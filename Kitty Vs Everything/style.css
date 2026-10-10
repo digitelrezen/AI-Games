@@ -623,12 +623,31 @@ body {
 .dev-grid button { width: 100%; }
 .dev-full { width: 100%; }
 /* v4.11.0: MUSIC JUKEBOX — scrollable track list (13 album tracks) inside
-   the scrollable .dev-body; the active preview track gets the .active look. */
+   the scrollable .dev-body; the active preview track gets the .active look.
+   v4.15.0: + the per-mode PLAYLISTS queue view above the track list. */
+.dev-playlists {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 6px;
+  padding: 5px 7px;
+  border: 1px solid #2a3550;
+  border-radius: 6px;
+  background: #0b0f1c;
+}
+.dev-playlist-row { display: flex; gap: 7px; align-items: baseline; }
+.dev-playlist-mode {
+  flex: 0 0 62px;
+  font-size: 10px; font-weight: bold; letter-spacing: 0.5px;
+  color: var(--accent);
+}
+.dev-playlist-queue { font-size: 10px; line-height: 1.55; color: #aab4c8; }
+.dev-playlist-track.active { color: #22c55e; font-weight: bold; }
 .dev-jukebox {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 148px;
+  max-height: 168px;
   overflow-y: auto;
   padding: 4px;
   border: 1px solid #2a3550;

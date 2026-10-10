@@ -1,5 +1,24 @@
 // Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.14.0
+// Kitty Vs Everything — v4.15.0
+// v4.15.0: JUKEBOX PLAYLIST VIEW + TRACK REPLACEMENTS — the admin Music
+//          Jukebox now shows the per-mode PLAYLISTS queues (DevPanel.js
+//          renders #dev-jukebox-playlists from PLAYLISTS + SONGS and
+//          highlights the track currently in preview), and three tracks
+//          are replaced/rebuilt:
+//            • fur-elise slot → "Neon Horizon": the cello-metal Für
+//              Elise arrangement is REPLACED by a new 124 BPM D-minor
+//              composition — a 61-note syncopated portamento saw lead
+//              (glide ON) over an octave-below triangle doubling,
+//              sidechain-pumped techno 16th sub, 4-on-the-floor kick
+//              with OFFBEAT hats (still rides the open+combat slot).
+//            • boss-overdrive → "Overdrive" rebuilt: a 48-note C-minor
+//              gallop lead riff (staccato detuned saw + sub), a
+//              galloping double-kick pattern (0/3/4/8/11/12), 8th-note
+//              bass — no longer an arp clone of the other boss tracks.
+//            • boss-redline → "Redline" rebuilt: 150 BPM B-minor
+//              breakbeat (kick 0/7/8), new arp patterns, distorted
+//              march 8th bass, a 2-bar tension sweep on bar 6 — clearly
+//              distinct from Overdrive + Eridath Protocol.
 // v4.14.0: SYMPHONIC CELLO-METAL OVERHAUL — the SONGS album adopts the
 //          epic multi-cello metal aesthetic (Apocalyptica-style cello
 //          ensembles): aggressive staccato bowing (glide OFF + tight
@@ -74,7 +93,7 @@
 //              marching snare accents (backbeat + ghost shuffles),
 //              distorted 8th-note bass pulses, high-tension 2-bar
 //              atmospheric noise sweeps.
-export const VERSION = 'v4.14.0';
+export const VERSION = 'v4.15.0';
 
 // ─── v4.6.0: procedural soundtrack data ───
 // MIDI → Hz (69 = A4 = 440).
@@ -104,24 +123,42 @@ export const MUSIC_MODES = {
 
 // ─── v4.6.0: crossover track motifs (16th-note grid, 8-bar loop) ───
 
-// Für Elise (A minor) — the iconic motif mapped onto the 16th grid:
-// E4 D#4 E4 D#4 E4 B3 D4 C4 A3 | G3 B3 C4 D4 E4 D4 C4 B3 A3 G3 E3.
-// Phrase A plays bars 0–1, phrase B plays bars 4–5 of each 8-bar loop.
-const FUR_ELISE_PHRASE = [
-  [0, 64, 2], [2, 63, 1], [3, 64, 1], [4, 63, 1], [5, 64, 1], [6, 59, 2],
-  [8, 62, 1], [9, 60, 1], [10, 57, 2], [12, 55, 1], [13, 59, 1], [14, 60, 1],
-  [15, 62, 1], [16, 64, 1], [17, 62, 1], [18, 60, 1], [19, 59, 1], [20, 57, 1],
-  [21, 55, 1], [22, 52, 1],
+// v4.15.0: "Neon Horizon" (D minor) — the replacement for the cello-metal
+// Für Elise arrangement (the open+combat crossover slot). A syncopated
+// 61-note lead line: phrase A (bars 0–1) is a staccato riff, phrase B
+// (bars 2–3) lifts through the Bb5, phrase A' (bars 4–5) repeats the
+// riff, phrase C (bars 6–7) resolves with a long held D root.
+const NEON_HORIZON_MOTIF = [
+  [0, 62, 2], [3, 65, 1], [4, 64, 2], [7, 62, 1], [8, 60, 2], [11, 58, 1],
+  [12, 57, 2], [15, 60, 1], [16, 62, 2], [19, 65, 1], [20, 67, 2], [23, 65, 1],
+  [24, 64, 2], [27, 62, 1], [28, 60, 2], [31, 57, 1],
+  [32, 60, 2], [35, 64, 1], [36, 65, 2], [39, 64, 1], [40, 62, 2], [43, 60, 1],
+  [44, 57, 2], [47, 60, 1], [48, 62, 2], [51, 65, 1], [52, 67, 2], [55, 70, 1],
+  [56, 67, 2], [59, 65, 1], [60, 64, 2], [63, 62, 1],
+  [64, 62, 2], [67, 65, 1], [68, 64, 2], [71, 62, 1], [72, 60, 2], [75, 58, 1],
+  [76, 57, 2], [79, 60, 1], [80, 62, 2], [83, 65, 1], [84, 67, 2], [87, 65, 1],
+  [88, 64, 2], [91, 62, 1], [92, 60, 2], [95, 57, 1],
+  [96, 60, 2], [99, 62, 1], [100, 65, 2], [103, 67, 1], [104, 69, 2], [107, 67, 1],
+  [108, 65, 2], [111, 64, 1], [112, 62, 2], [115, 60, 1], [116, 57, 2], [119, 53, 1],
+  [120, 62, 4],
 ];
-const FUR_ELISE_MOTIF = [
-  ...FUR_ELISE_PHRASE,
-  ...FUR_ELISE_PHRASE.map(([s, m, l]) => [s + 64, m, l]),
-];
+// The doubling: the same line an octave below (triangle — the classic
+// two-voice cyber texture; the pad carries the chords).
+const NEON_HORIZON_HARMONY = NEON_HORIZON_MOTIF.map(([s, m, l]) => [s, m - 12, l]);
 
-// v4.9.0: the Für Elise counter-voice — the same motif an octave below
-// (the classic two-hand doubling of the cyber-remix; the pad carries the
-// chords, the lead + harmony double the melody).
-const FUR_ELISE_HARMONY = FUR_ELISE_MOTIF.map(([s, m, l]) => [s, m - 12, l]);
+// v4.15.0: "Overdrive" (C minor) — the rebuilt boss track: a 48-note
+// gallop lead riff (staccato, 16th grid) over the Cm/Ab/Eb/Bb/G
+// progression — four 2-bar phrases, each a rising-falling power pattern.
+const OVERDRIVE_LEAD = [
+  [0, 60, 1], [2, 60, 1], [4, 60, 2], [8, 63, 1], [10, 63, 1], [12, 63, 2],
+  [16, 58, 1], [18, 58, 1], [20, 60, 2], [24, 63, 1], [26, 65, 1], [28, 67, 2],
+  [32, 67, 1], [34, 67, 1], [36, 65, 2], [40, 63, 1], [42, 63, 1], [44, 60, 2],
+  [48, 58, 1], [50, 58, 1], [52, 60, 2], [56, 63, 1], [58, 65, 1], [60, 67, 2],
+  [64, 60, 1], [66, 60, 1], [68, 63, 2], [72, 67, 1], [74, 67, 1], [76, 70, 2],
+  [80, 67, 1], [82, 65, 1], [84, 63, 2], [88, 60, 1], [90, 58, 1], [92, 60, 2],
+  [96, 63, 1], [98, 63, 1], [100, 65, 2], [104, 67, 1], [106, 67, 1], [108, 70, 2],
+  [112, 72, 1], [114, 70, 1], [116, 67, 2], [120, 65, 1], [122, 63, 1], [124, 60, 2],
+];
 
 // When Johnny Comes Marching Home Again (A minor) — the driving
 // militaristic motif as 8th notes across the 8-bar loop
@@ -290,41 +327,45 @@ export const SONGS = {
     padCutoff: 1200,
     vols: { pad: 0.095, arp: 0.05, bass: 0.1, perc: 0 },
   },
-  // ── CROSSOVER 1: Für Elise (A minor) — 128 BPM cello-metal arrangement ──
+  // ── CROSSOVER 1: v4.15.0 "Neon Horizon" (D minor) — 124 BPM cyber drive ──
+  // The cello-metal Für Elise arrangement was REPLACED (it sat badly
+  // against the rest of the album): a new syncopated D-minor composition
+  // with a portamento saw lead, octave triangle doubling, a
+  // sidechain-pumped techno sub and offbeat hats. Still rides the
+  // open+combat rotation (the crossover slot).
   'fur-elise': {
-    id: 'fur-elise', title: 'Für Elise (Cello-Metal)', bpm: 128, bars: 32, seed: 4,
+    id: 'fur-elise', title: 'Neon Horizon', bpm: 124, bars: 32, seed: 4,
     chords: [
-      [57, 60, 64], // Am
-      [53, 57, 60], // F
+      [50, 53, 57], // Dm
+      [46, 50, 53], // Bb
       [48, 52, 55], // C
-      [55, 59, 62], // G
-      [57, 60, 64], // Am
-      [53, 57, 60], // F
-      [55, 59, 62], // G
-      [52, 55, 59], // E
+      [45, 49, 52], // A
+      [50, 53, 57], // Dm
+      [46, 50, 53], // Bb
+      [43, 47, 50], // G
+      [45, 49, 52], // A
     ],
     arps: null,
     lead: {
-      motif: FUR_ELISE_MOTIF, loop: 128,
-      // v4.14.0: SYMPHONIC CELLO-METAL — aggressive staccato bowing:
-      // 3-osc detuned saw + sine sub, NO portamento (glide off), tight
-      // staccato ADSR, woody resonant lowpass, delay + reverb sends.
-      wave: 'sawtooth', detunes: [-11, 0, 11], sub: true,
-      lp: 2600, q: 1.2, glide: false, vol: 0.09,
-      adsr: { a: 0.004, d: 0.09, s: 0.35, r: 0.08 },
+      motif: NEON_HORIZON_MOTIF, loop: 128,
+      // v4.15.0: bright portamento cyber lead — 3-osc detuned saw +
+      // sine sub, wide lowpass, glide ON (the classic cyber-remix bend),
+      // delay + reverb sends.
+      wave: 'sawtooth', detunes: [-10, 0, 10], sub: true,
+      lp: 4200, q: 0.7, glide: true, vol: 0.085,
+      adsr: { a: 0.006, d: 0.12, s: 0.55, r: 0.1 },
     },
     harmony: {
-      motif: FUR_ELISE_HARMONY, loop: 128,
-      // the cello section: the motif an octave below, now a detuned-saw
-      // ensemble (was a soft triangle double) — chords + melody at once.
-      wave: 'sawtooth', detunes: [-8, 0, 8], lp: 1800, vol: 0.055,
-      adsr: { a: 0.005, d: 0.1, s: 0.4, r: 0.09 },
+      motif: NEON_HORIZON_HARMONY, loop: 128,
+      // the octave-below triangle doubling (two-voice melody).
+      wave: 'triangle', detunes: [-6, 6], lp: 2400, vol: 0.05,
+      adsr: { a: 0.01, d: 0.15, s: 0.5, r: 0.12 },
     },
-    bass: 'sixteenth', // staccato 16th-note low-end pulse (octave offbeats), soft-clipped
-    perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
-    stab: true, // v4.14.0: heavy detuned chord hits (downbeat + "and" of 3)
-    padCutoff: 900,
-    vols: { pad: 0.06, arp: 0, bass: 0.17, perc: 0.85, stab: 0.055 },
+    bass: 'techno', // sidechain-pumped 16th sub (the 4-on-the-floor bounce)
+    perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14] }, // offbeat hats
+    stab: false,
+    padCutoff: 1500,
+    vols: { pad: 0.055, arp: 0, bass: 0.16, perc: 0.9, stab: 0 },
   },
   // ═══ COMBAT — driving engagement ═══
   'combat-engage': {
@@ -517,41 +558,44 @@ export const SONGS = {
       [55, 59, 62], // G
       [55, 59, 62], // G
     ],
-    arps: [
-      [0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2],
-      [0, 1, 2, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 2, 1],
-      [0, 2, 0, 2, 1, 2, 1, 2, 2, 1, 2, 1, 0, 2, 1, 2],
-    ],
-    bass: 'sixteenth',
-    perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
-    octaveDouble: true,
-    stab: true, // v4.9.0: detuned chord hits on the downbeats
-    padCutoff: 1100,
-    vols: { pad: 0.045, arp: 0.07, bass: 0.18, perc: 1, stab: 0.06 },
+    arps: null,
+    lead: {
+      motif: OVERDRIVE_LEAD, loop: 128,
+      // v4.15.0: the gallop lead riff — staccato detuned saw + sine sub,
+      // tight lowpass, no glide (the power-metal bite).
+      wave: 'sawtooth', detunes: [-12, 0, 12], sub: true,
+      lp: 3200, q: 1.0, glide: false, vol: 0.085,
+      adsr: { a: 0.004, d: 0.1, s: 0.5, r: 0.08 },
+    },
+    bass: 'eighth', // v4.15.0: 8th-note detuned pulses (was 16th)
+    perc: { kick: [0, 3, 4, 8, 11, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] }, // v4.15.0: gallop
+    stab: true,
+    padCutoff: 1000,
+    vols: { pad: 0.045, arp: 0, bass: 0.18, perc: 1, stab: 0.06 },
   },
   'boss-redline': {
-    id: 'boss-redline', title: 'Redline', bpm: 138, bars: 32, seed: 13,
+    id: 'boss-redline', title: 'Redline', bpm: 150, bars: 32, seed: 13,
     chords: [
       [47, 50, 54], // Bm
-      [55, 59, 62], // G
-      [50, 53, 57], // D
-      [57, 61, 64], // A
+      [43, 47, 50], // G#m
+      [44, 47, 51], // E
+      [45, 49, 52], // A
       [47, 50, 54], // Bm
-      [55, 59, 62], // G
-      [57, 61, 64], // A
-      [52, 55, 59], // E
+      [43, 47, 50], // G#m
+      [45, 49, 52], // A
+      [42, 46, 49], // F# (V — the redline tension)
     ],
     arps: [
-      [0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1],
-      [0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2, 1, 2, 1, 2],
-      [0, 1, 0, 2, 1, 2, 0, 1, 2, 1, 2, 0, 1, 2, 1, 0],
+      [0, 1, 2, 1, 0, 1, 2, 1, 0, 2, 1, 2, 0, 1, 2, 1],
+      [2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 2, 1, 0, 1, 0, 1],
+      [0, 2, 1, 0, 2, 1, 0, 2, 1, 2, 1, 0, 2, 1, 2, 0],
     ],
-    bass: 'sixteenth',
-    perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
-    octaveDouble: true,
-    stab: true, // v4.9.0: detuned chord hits on the downbeats
-    padCutoff: 1200,
-    vols: { pad: 0.05, arp: 0.07, bass: 0.17, perc: 1, stab: 0.06 },
+    bass: 'march', // v4.15.0: distorted 8th pulses + semitone approach (was 16th)
+    perc: { kick: [0, 7, 8], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] }, // v4.15.0: breakbeat
+    stab: true,
+    sweeps: [6], // v4.15.0: 2-bar tension sweep into the final bar
+    padCutoff: 900,
+    vols: { pad: 0.05, arp: 0.08, bass: 0.17, perc: 1, stab: 0.06 },
   },
 };
 

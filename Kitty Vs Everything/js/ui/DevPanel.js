@@ -47,7 +47,7 @@
 //          sequential Rick & Morty dialogue (RnMShip.js RNMSHIP_DIALOGUE).
 export const VERSION = 'v4.11.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
-import { SONGS } from '../core/audio/MusicPlaylists.js'; // v4.11.0: jukebox track list
+import { SONGS, PLAYLISTS } from '../core/audio/MusicPlaylists.js'; // v4.11.0: jukebox track list; v4.15.0: playlist queues
 import { audio } from '../core/AudioSystem.js'; // v4.11.0: jukebox preview API
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import PowerUp from '../combat/PowerUp.js';
@@ -193,6 +193,9 @@ export default class DevPanel {
     // looping, hard-killed by gameplay startMusic(). The status line +
     // active track button poll the facade (250 ms) so gameplay start/stop
     // also updates the UI without extra event wiring.
+    // v4.15.0: + the per-mode PLAYLISTS queue view — the rotation order is
+    // now readable in the admin panel (each queue entry highlights while
+    // that track is in preview).
     const jukebox = document.getElementById('dev-jukebox');
     if (jukebox) {
       const statusEl = document.getElementById('dev-jukebox-status');
@@ -207,9 +210,40 @@ export default class DevPanel {
         jukebox.appendChild(b);
       }
       if (stopBtn) stopBtn.onclick = () => { audio.stopPreview(); };
+      // ─── v4.15.0: PLAYLIST VIEW — the per-mode rotation queues ───
+      const plEl = document.getElementById('dev-jukebox-playlists');
+      const MODE_LABELS = { open: 'OPEN', combat: 'COMBAT', boneyard: 'BONEYARD', boss: 'BOSS' };
+      if (plEl) {
+        for (const mode of Object.keys(PLAYLISTS)) {
+          const row = document.createElement('div');
+          row.className = 'dev-playlist-row';
+          const lab = document.createElement('span');
+          lab.className = 'dev-playlist-mode';
+          lab.textContent = MODE_LABELS[mode] || mode.toUpperCase();
+          const q = document.createElement('span');
+          q.className = 'dev-playlist-queue';
+          const list = PLAYLISTS[mode];
+          list.forEach((id, i) => {
+            const s = document.createElement('span');
+            s.className = 'dev-playlist-track';
+            s.dataset.song = id;
+            s.textContent = (i + 1) + '. ' + SONGS[id].title;
+            q.appendChild(s);
+            if (i < list.length - 1) q.appendChild(document.createTextNode(' → '));
+          });
+          row.appendChild(lab);
+          row.appendChild(q);
+          plEl.appendChild(row);
+        }
+      }
       const refreshJukebox = () => {
         const cur = audio.getPreviewSong();
         for (const [id, b] of trackBtns) b.classList.toggle('active', id === cur);
+        if (plEl) {
+          for (const el of plEl.querySelectorAll('.dev-playlist-track')) {
+            el.classList.toggle('active', el.dataset.song === cur);
+          }
+        }
         if (statusEl) {
           const song = cur ? SONGS[cur] : null;
           statusEl.textContent = song
