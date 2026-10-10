@@ -287,7 +287,7 @@
 //          primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js and the rebuilt vulkanShot() dual-layer
 //          mechanical snap). Milestone version synced with package.json.
-export const VERSION = 'v4.17.0';
+export const VERSION = 'v4.18.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

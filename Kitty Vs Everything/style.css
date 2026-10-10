@@ -598,8 +598,34 @@ body {
 .dev-body::-webkit-scrollbar-track { background: #0f1524; }
 .dev-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 .dev-body::-webkit-scrollbar-thumb:hover { background: #64748b; }
-.dev-section { padding: 8px 10px; border-bottom: 1px solid #1e293b; }
-.dev-section:last-child { border-bottom: none; }
+/* ─── v4.18.0: COMPACT ACCORDION UI — collapsible <details> groups with
+    neon headers + hover feedback (the chevron rotates open). Each accordion
+    body keeps the .dev-section class, so the label/select/button/range
+    rules below apply unchanged. ─── */
+.dev-acc { border-bottom: 1px solid #1e293b; }
+.dev-acc:last-child { border-bottom: none; }
+.dev-acc-head {
+  list-style: none;
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 10px;
+  font-size: 10px; font-weight: bold; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--accent);
+  background: rgba(255,213,79,0.05);
+  cursor: pointer; user-select: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.dev-acc-head::-webkit-details-marker { display: none; }
+.dev-acc-head::before {
+  content: '▸'; font-size: 9px; color: #8fa0bd;
+  transition: transform 0.15s ease;
+}
+.dev-acc[open] > .dev-acc-head::before { transform: rotate(90deg); }
+.dev-acc-head:hover { background: rgba(255,213,79,0.14); color: #ffe082; }
+.dev-acc[open] > .dev-acc-head {
+  background: rgba(255,213,79,0.09);
+  text-shadow: 0 0 8px rgba(255,213,79,0.35);
+}
+.dev-acc-body { padding: 8px 10px 10px; }
 .dev-section label {
   display: block; font-size: 10px; color: var(--accent);
   letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
@@ -610,9 +636,10 @@ body {
 }
 .dev-select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .dev-section button {
-  padding: 5px 8px; background: #232a3d; color: #ddd;
+  padding: 4px 6px; background: #232a3d; color: #ddd;
   border: 1px solid #3b4560; border-radius: 4px;
   cursor: pointer; font-family: inherit; font-size: 11px; text-align: center;
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 .dev-section button:hover { background: #313b56; border-color: #55628a; }
 .dev-section button.active {
@@ -620,8 +647,12 @@ body {
 }
 .dev-btn-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+/* v4.18.0: 3-column quick-action rows (Bonus Levels) */
+.dev-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .dev-grid button { width: 100%; }
 .dev-full { width: 100%; }
+/* v4.18.0: jukebox PLAY/STOP share the row 50/50 */
+#dev-jukebox-play, #dev-jukebox-stop { flex: 1 1 0; }
 /* v4.11.0: MUSIC JUKEBOX — the track picker. v4.16.0: the track list is a
    single DROPDOWN <select> (#dev-jukebox, styled by .dev-section select,
    like the Spawn Enemy selects) — pick a title, it plays. The per-mode

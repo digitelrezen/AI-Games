@@ -45,7 +45,15 @@
 // v4.7.0: RnM Ship button no longer emits the "RnM SHIP INTERCEPTOR
 //          INBOUND" banner — the force-spawned ship plays its own
 //          sequential Rick & Morty dialogue (RnMShip.js RNMSHIP_DIALOGUE).
-export const VERSION = 'v4.11.0';
+// v4.18.0: COMPACT CATEGORIZED ACCORDION UI — the flat stacked sections are
+//          regrouped into six collapsible <details> groups (Enemies &
+//          Spawning / Weapons & Combat / Player & Cheats / Levels & Drops /
+//          Music Jukebox / World & Display) with 2–3 column quick-action
+//          grids and dropdowns (index.html + style.css). "Enemies &
+//          Spawning" (the primary debug tab) opens by default; every group's
+//          open state is remembered in localStorage (kve-dev-acc). The
+//          jukebox gains an explicit PLAY button next to STOP.
+export const VERSION = 'v4.18.0';
 import { ENEMY_TYPES, TIERS, WEAPONS, WEAPON_ORDER, MINI_SHIP, ASTEROID } from '../core/config.js';
 import { SONGS, PLAYLISTS } from '../core/audio/MusicPlaylists.js'; // v4.11.0: jukebox track list; v4.15.0: playlist queues
 import { audio } from '../core/AudioSystem.js'; // v4.11.0: jukebox preview API
@@ -86,6 +94,27 @@ export default class DevPanel {
     });
     document.getElementById('dev-close').onclick = () => this.el.classList.add('hidden');
     document.getElementById('dev-version').textContent = VERSION;
+
+    // ─── v4.18.0: ACCORDION STATE MEMORY ───
+    // The six collapsible groups remember their open/closed state in
+    // localStorage (kve-dev-acc). Defaults come from the DOM (only
+    // "Enemies & Spawning" — the primary debug tab — is open); a saved
+    // state overrides the default per group. Persisted on every toggle.
+    const accEls = Array.from(this.el.querySelectorAll('details.dev-acc'));
+    const ACC_KEY = 'kve-dev-acc';
+    let accSaved = {};
+    try { accSaved = JSON.parse(localStorage.getItem(ACC_KEY) || '{}'); } catch { accSaved = {}; }
+    for (const d of accEls) {
+      const k = d.dataset.devAcc;
+      if (k && k in accSaved) d.open = !!accSaved[k];
+    }
+    for (const d of accEls) {
+      d.addEventListener('toggle', () => {
+        const state = {};
+        for (const el of accEls) state[el.dataset.devAcc] = el.open;
+        try { localStorage.setItem(ACC_KEY, JSON.stringify(state)); } catch { /* private mode */ }
+      });
+    }
 
     // ─── v3.34.0: LIVE VIEWPORT READOUT (pinned footer) ───
     // The panel is stage-relative (it lives inside #game-root and scales
@@ -213,6 +242,10 @@ export default class DevPanel {
       }
       jukebox.onchange = () => { if (jukebox.value) audio.previewSong(jukebox.value); };
       if (stopBtn) stopBtn.onclick = () => { audio.stopPreview(); };
+      // v4.18.0: explicit PLAY button — replays the currently selected track
+      // (the dropdown's onchange already auto-plays on selection).
+      const playBtn = document.getElementById('dev-jukebox-play');
+      if (playBtn) playBtn.onclick = () => { if (jukebox.value) audio.previewSong(jukebox.value); };
       // ─── v4.15.0: PLAYLIST VIEW — the per-mode rotation queues ───
       const plEl = document.getElementById('dev-jukebox-playlists');
       const MODE_LABELS = { open: 'OPEN', combat: 'COMBAT', boneyard: 'BONEYARD', boss: 'BOSS' };
