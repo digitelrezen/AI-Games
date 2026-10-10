@@ -49,6 +49,19 @@
 //        multiplies into the event-path layer gains, so quiet lead
 //        melodies can be boosted or overpowering percussion channels
 //        lowered per song without touching the genre profiles.
+//        v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against
+//        the Forty Six & 2 reference: TRACK_MIX_SETTINGS grows from 3 to
+//        5 scalars (gainLead / gainBass / gainDrums / gainArp / gainPad,
+//        the new arp + pad scalars applied in the MusicScheduler event
+//        path), quiet leads boosted (Crazy Train 2.6x, Blue 2.3x, Fur
+//        Elise / No Quarter / Classical Gas / Axel F 2.0x, Cowboys
+//        1.7x), drum-dominant tracks tamed (CoTG / Johnny March / Pneuma
+//        / Requiem / Harvester drums 0.35-0.45x), Harvester bass 0.5x,
+//        The Unforgiven's "synth" pad 0.25x, Pneuma's rhythm-guitar arp
+//        1.9x; Nothing Else Matters moves to the 'piano' profile (the
+//        ballad saw+sub "gross synth" lead is gone); Children Of The
+//        Grave becomes the OPENING track (PLAYLISTS.open[0], still in
+//        the boss queue).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -111,8 +124,8 @@ export default async function run() {
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
-  check('MusicPlaylists: v4.16.0 Nothing Else Matters is the main intro sequence (first in the open queue)',
-    plMod.PLAYLISTS.open[0] === 'metallica-nem', `got ${plMod.PLAYLISTS.open[0]}`);
+  check('MusicPlaylists: v4.20.0 Children Of The Grave is the OPENING track (first in the open queue — the game starts on the Black Sabbath anthem)',
+    plMod.PLAYLISTS.open[0] === 'black-sabbath-cotg', `got ${plMod.PLAYLISTS.open[0]}`);
   check('MusicPlaylists: v4.17.0 crossover tracks ride two modes each (fur-elise open+boneyard, johnny-march open+combat, harvester boneyard+boss, cowboys combat+boss, classical-gas open+boneyard) + eiffel65-blue in the combat queue',
     plMod.PLAYLISTS.open.includes('fur-elise') && plMod.PLAYLISTS.boneyard.includes('fur-elise')
     && plMod.PLAYLISTS.open.includes('johnny-march') && plMod.PLAYLISTS.combat.includes('johnny-march')
@@ -202,24 +215,32 @@ export default async function run() {
   check('v4.19.0 new tracks ride the metal genre profile (distorted-saw lead, driven bass)',
     plMod.SONGS['ozzy-crazy-train'].lead.wave === 'sawtooth' && plMod.SONGS['ozzy-crazy-train'].vols.perc === 0.6
     && plMod.SONGS['black-sabbath-cotg'].lead.wave === 'sawtooth' && plMod.SONGS['black-sabbath-cotg'].vols.perc === 0.6);
-  check('v4.19.0 TRACK_MIX_SETTINGS: per-song gainLead/gainBass/gainDrums scalars for every track (one entry per SONGS key, positive scalars)',
+  check('v4.20.0 TRACK_MIX_SETTINGS: per-song gainLead/gainBass/gainDrums/gainArp/gainPad scalars for every track (one entry per SONGS key, positive scalars)',
     plMod.TRACK_MIX_SETTINGS
     && Object.keys(plMod.TRACK_MIX_SETTINGS).length === Object.keys(plMod.SONGS).length
     && Object.keys(plMod.SONGS).every((id) => {
       const m = plMod.TRACK_MIX_SETTINGS[id];
       return m && typeof m.gainLead === 'number' && typeof m.gainBass === 'number' && typeof m.gainDrums === 'number'
-        && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0;
+        && typeof m.gainArp === 'number' && typeof m.gainPad === 'number'
+        && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0 && m.gainArp > 0 && m.gainPad > 0;
     }));
-  check('v4.19.0 TRACK_MIX_SETTINGS: the new tracks carry their mix tweaks (Crazy Train gainLead 1.15 — quiet lead boosted; CoTG gainDrums 0.8 — dense percussion lowered)',
-    plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 1.15
-    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainBass === 1
-    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainDrums === 1
-    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainLead === 1
-    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainBass === 1
-    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainDrums === 0.8);
-  check('v4.19.0 scheduler: the event path applies the per-track mix (TRACK_MIX_SETTINGS → gainLead/gainBass/gainDrums multipliers)',
+  check('v4.20.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the tuned tracks carry their mix (Crazy Train gainLead 2.6; CoTG gainLead 1.7 + gainDrums 0.45; Unforgiven gainPad 0.25; Pneuma gainArp 1.9; Harvester gainBass 0.5; Johnny March gainDrums 0.35)',
+    plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainLead === 1 && plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainDrums === 1
+    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 2.6
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainLead === 1.7
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainDrums === 0.45
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 0.25
+    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 1.9
+    && plMod.TRACK_MIX_SETTINGS['metallica-harvester'].gainBass === 0.5
+    && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainDrums === 0.35);
+  check('v4.20.0 scheduler: the event path applies the full 5-scalar per-track mix (TRACK_MIX_SETTINGS → gainLead/gainBass/gainDrums/gainArp/gainPad multipliers)',
     schedSrc.includes('TRACK_MIX_SETTINGS') && schedSrc.includes('mix.gainDrums')
-    && schedSrc.includes('mix.gainLead') && schedSrc.includes('mix.gainBass'));
+    && schedSrc.includes('mix.gainLead') && schedSrc.includes('mix.gainBass')
+    && schedSrc.includes('mix.gainArp') && schedSrc.includes('mix.gainPad'));
+  check('v4.20.0: Nothing Else Matters rides the piano profile (the detuned-saw+sub "gross synth" lead is gone — triangle pluck, no sub, perc 0.3)',
+    plMod.SONGS['metallica-nem'].lead.wave === 'triangle'
+    && plMod.SONGS['metallica-nem'].lead.sub === false
+    && plMod.SONGS['metallica-nem'].vols.perc === 0.3);
   check('scheduler: v4.16.0 MIDI event playback path (32nd grid + events map → SynthVoice slots + kick pump)',
     schedSrc.includes('60 / song.bpm / 8') && schedSrc.includes('song.events')
     && schedSrc.includes('_scheduleEventStep') && schedSrc.includes('_evIndex')

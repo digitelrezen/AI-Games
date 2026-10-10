@@ -1,5 +1,12 @@
 // Filename: core/audio/MusicScheduler.js
-// Kitty Vs Everything — v4.16.0
+// Kitty Vs Everything — v4.20.0
+// v4.20.0: AUDIO MIX TUNING — the per-track mix table (TRACK_MIX_SETTINGS)
+//          grows from 3 scalars to 5: gainLead / gainBass / gainDrums +
+//          NEW gainArp / gainPad. The event path multiplies gainArp into
+//          the arp pluck gains and gainPad into the event-pad gains, so
+//          the layers the v4.19.0 table couldn't reach (Pneuma's guitar
+//          rhythm rides the arp slot; The Unforgiven's "synth" rides the
+//          pad slot) can be balanced per song.
 // v4.16.0: MIDI EVENT PLAYBACK — the v4.16.0 album is the exact note
 //          sequences parsed from the local .mid files (tools/midi-import.mjs).
 //          The scheduler grid moves from 16ths to 32nds (the MIDI event
@@ -762,7 +769,11 @@ export class MusicScheduler {
     if (!list) return;
     const V = song.vols;
     // v4.19.0: per-track mix scalars (defaults 1.0 = profile vols as-is).
-    const mix = TRACK_MIX_SETTINGS[song.id] || { gainLead: 1, gainBass: 1, gainDrums: 1 };
+    // v4.20.0: the table grows to 5 scalars — gainArp / gainPad join
+    // gainLead / gainBass / gainDrums so the arp + pad event layers can
+    // be balanced per song (Pneuma's rhythm-guitar arp, Unforgiven's
+    // synth pad).
+    const mix = TRACK_MIX_SETTINGS[song.id] || { gainLead: 1, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 };
     for (const [layer, ev] of list) {
       if (layer === 'drums') {
         const kind = ev[1];
@@ -781,8 +792,8 @@ export class MusicScheduler {
       const v = ev[3];
       if (layer === 'lead') this._leadNote(song, n, t, dur, volScale, v, mix.gainLead);
       else if (layer === 'bass') this._eventBass(song, n, t, dur, volScale, v, mix.gainBass);
-      else if (layer === 'arp') this._pluckNote(hz(n), t, dur, V.arp * v * volScale, 1);
-      else if (layer === 'pad') this._eventPad(song, n, t, dur, volScale, v);
+      else if (layer === 'arp') this._pluckNote(hz(n), t, dur, V.arp * mix.gainArp * v * volScale, 1);
+      else if (layer === 'pad') this._eventPad(song, n, t, dur, volScale, v, mix.gainPad);
     }
   }
 
@@ -817,10 +828,11 @@ export class MusicScheduler {
    * (the chord/harmony layer of the parsed arrangement) with a reverb
    * send, through the pad bus.
    */
-  _eventPad(song, n, t, dur, volScale, vel) {
+  _eventPad(song, n, t, dur, volScale, vel, mix = 1) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
-    const V = song.vols.pad * volScale * vel;
+    // v4.20.0: mix = the per-track gainPad (TRACK_MIX_SETTINGS).
+    const V = song.vols.pad * mix * volScale * vel;
     if (V <= 0.001) return;
     const d = Math.max(0.15, dur);
     const v = makeVoice(ctx, this._layers.pad, {

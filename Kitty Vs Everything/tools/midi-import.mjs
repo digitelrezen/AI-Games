@@ -1,5 +1,16 @@
 // Filename: tools/midi-import.mjs
-// Kitty Vs Everything — v4.19.0
+// Kitty Vs Everything — v4.20.0
+// v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against the
+// Forty Six & 2 reference: quiet leads boosted (Crazy Train 2.6x, Blue
+// 2.3x, Fur Elise / No Quarter / Classical Gas / Axel F 2.0x, Cowboys
+// 1.7x), drum-dominant tracks tamed (CoTG / Johnny March / Pneuma /
+// Requiem / Harvester drums 0.35-0.45x), Harvester bass 0.5x, The
+// Unforgiven's "synth" pad 0.25x, Pneuma's rhythm-guitar arp 1.9x.
+// TRACKS[].mix grows from 3 to 5 scalars (gainLead / gainBass /
+// gainDrums / gainArp / gainPad — the new arp + pad scalars are applied
+// in the MusicScheduler event path). Nothing Else Matters moves to the
+// 'piano' profile (the ballad saw+sub "gross synth" lead is gone) and
+// Children Of The Grave becomes the OPENING track (PLAYLISTS.open[0]).
 // MIDI → MusicPlaylists.js converter (the v4.19.0 album import pipeline).
 //
 // The v4.19.0 soundtrack album is NOT procedural: every track is the exact
@@ -20,10 +31,12 @@
 //      100% single-file portable HTML output stays intact.
 //
 // v4.19.0: per-track mix — each TRACKS entry may carry a
-// `mix: { gainLead, gainBass, gainDrums }` object (defaults 1.0); the
-// writer emits it as the exported TRACK_MIX_SETTINGS table in
-// MusicPlaylists.js, which the MusicScheduler multiplies into the
-// event-path layer gains (boost quiet leads, lower loud drums, per song).
+// `mix: { gainLead, gainBass, gainDrums, gainArp, gainPad }` object
+// (defaults 1.0; v4.20.0 adds gainArp / gainPad); the writer emits it as
+// the exported TRACK_MIX_SETTINGS table in MusicPlaylists.js, which the
+// MusicScheduler multiplies into the event-path layer gains (boost quiet
+// leads, lower loud drums, duck harsh synth pads, lift rhythm-guitar
+// arps — per song).
 //
 // Usage:
 //   node tools/midi-import.mjs --report   // parse + per-channel report
@@ -314,80 +327,115 @@ const PROFILES = {
 // overrides (null = auto-classify; { lead:[], bass:[], pad:[], arp:[] }
 // pins channels; splitAt: pitch-split one channel into melody + low end).
 export const TRACKS = [
-  { file: 'Metallica - Nothing Else Matters.mid', id: 'metallica-nem', title: 'Nothing Else Matters', artist: 'Metallica', genre: 'ballad' },
+  // v4.20.0: 'piano' profile (was 'ballad') — the ballad profile's
+  // detuned-saw+sub lead was the "gross synth" sound; the triangle pluck
+  // + soft sine bass render the piano ballad faithfully (like the other
+  // piano-profile tracks). The mix boost (gainLead 1.8) lifts the quiet
+  // piano to the Forty Six & 2 reference level.
+  { file: 'Metallica - Nothing Else Matters.mid', id: 'metallica-nem', title: 'Nothing Else Matters', artist: 'Metallica', genre: 'piano', mix: { gainLead: 1.8, gainBass: 0.9, gainDrums: 0.9, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the piano (ch0, 1400+ polyphonic notes) is the MAIN body of the
   // piece — pin it to the lead voice. The violin / music box / xylophone
   // (ch1–3) are short melodic accents → arp. (Auto-classify sent the piano
   // to the quiet pad slot and made a 48-note music box the "lead".)
-  { file: 'Requiem for a Dream 3.mid', id: 'requiem-dream', title: 'Requiem for a Dream', artist: 'Clint Eastwood', genre: 'ballad', chMap: { lead: [0], arp: [1, 2, 3] } },
+  // v4.20.0: mix — the 1176-hit drum track is "way over the top": 0.4x,
+  // the quiet piano lead 1.7x (Forty Six & 2 reference level).
+  { file: 'Requiem for a Dream 3.mid', id: 'requiem-dream', title: 'Requiem for a Dream', artist: 'Clint Eastwood', genre: 'ballad', chMap: { lead: [0], arp: [1, 2, 3] }, mix: { gainLead: 1.7, gainBass: 1, gainDrums: 0.4, gainArp: 1.1, gainPad: 1 } },
   // v4.16.0: 80s synth-pop, NOT metal — the new 'synth' profile (clean
   // detuned-saw pluck lead, smooth bass, moderate drums). Auto-classify
   // already routes ch2 (the synth-pluck riff) → lead, ch3 (bass line) →
   // bass, ch0 (electric-piano chords) → pad, ch1 (wide synth figure) → arp.
-  { file: 'Axel - F.mid', id: 'axel-f', title: 'Axel F', artist: 'Harold Faltermeyer', genre: 'synth' },
+  // v4.20.0: mix — "way too low": the sparse lead 2.0x, the wide-synth
+  // arp + e-piano pad (the real body of the hook) 1.4x each.
+  { file: 'Axel - F.mid', id: 'axel-f', title: 'Axel F', artist: 'Harold Faltermeyer', genre: 'synth', mix: { gainLead: 2, gainBass: 1.2, gainDrums: 0.9, gainArp: 1.4, gainPad: 1.4 } },
   // Für Elise is a single piano channel — the melody and the left-hand
   // arpeggio overlap in pitch (A4/C5 belong to both), so a pitch split
   // would tear the melody apart: ALL notes ride the lead voice (the
   // polyphonic makeVoice renders the two-hand texture faithfully).
   // v4.16.0: the 'piano' profile (bright pluck-like lead, fast decay)
   // replaces the old soft 'classical' triangle.
-  { file: 'Für Elise.mid', id: 'fur-elise', title: 'Für Elise', artist: 'Beethoven', genre: 'piano', chMap: { lead: [0] } },
+  // v4.20.0: mix — "just too low": the quiet triangle piano 2.0x.
+  { file: 'Für Elise.mid', id: 'fur-elise', title: 'Für Elise', artist: 'Beethoven', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the trombone (ch0) plays the march MELODY — pin it to lead.
   // ch1 + ch4 are the bass line, ch2 (fast figure) + ch3 (violin
   // countermelody) are arp. (Auto-classify made the trombone a quiet pad
   // and the violin the "lead".)
-  { file: 'When Johnny Comes Marching Home.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] } },
-  { file: 'Forty Six & 2 - Tool.mid', id: 'tool-forty-six', title: 'Forty Six & 2', artist: 'Tool', genre: 'metal' },
+  // v4.20.0: mix — the in-your-face drums (1.49x the melody energy) go to
+  // the background (0.35x), the trombone melody 1.6x, the busy arp
+  // counter-figures 0.8x.
+  { file: 'When Johnny Comes Marching Home.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] }, mix: { gainLead: 1.6, gainBass: 1, gainDrums: 0.35, gainArp: 0.8, gainPad: 1 } },
+  // v4.20.0: THE VOLUME REFERENCE — Forty Six & 2 is the loudest,
+  // riff-forward track (dense high-velocity lead, drums at 0.14x the
+  // lead). Every other track is tuned against it; it stays all-1.0.
+  { file: 'Forty Six & 2 - Tool.mid', id: 'tool-forty-six', title: 'Forty Six & 2', artist: 'Tool', genre: 'metal', mix: { gainLead: 1, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the MIDI is the dramatic piano intro — the 'piano' profile
   // (not the metal sawtooth) renders it faithfully.
-  { file: 'TOOL_ No Quarter.mid', id: 'tool-no-quarter', title: 'No Quarter', artist: 'Tool', genre: 'piano' },
-  { file: 'Cowboys From HELL.mid', id: 'pantera-cowboys', title: 'Cowboys From Hell', artist: 'Pantera', genre: 'metal' },
+  // v4.20.0: mix — "too low": the short piano intro 2.0x.
+  { file: 'TOOL_ No Quarter.mid', id: 'tool-no-quarter', title: 'No Quarter', artist: 'Tool', genre: 'piano', mix: { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.20.0: mix — "just too low": the fast 230-bpm staccato notes read
+  // quiet — lead 1.7x + driving bass 1.3x.
+  { file: 'Cowboys From HELL.mid', id: 'pantera-cowboys', title: 'Cowboys From Hell', artist: 'Pantera', genre: 'metal', mix: { gainLead: 1.7, gainBass: 1.3, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the distorted rhythm guitar (ch0) is the main body of the
   // song — pin it to lead. ch1 (acoustic) + ch2 (lead guitar) are arp,
   // ch3 is the bass line. (Auto-classify made the rhythm guitar a quiet
   // pad and a 21-note channel the "lead".)
-  { file: 'Metallica - Harvester of Sorrow.mid', id: 'metallica-harvester', title: 'Harvester of Sorrow', artist: 'Metallica', genre: 'metal', chMap: { lead: [0], arp: [1, 2], bass: [3] } },
-  { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal' },
-  { file: 'Tool- Pneuma.mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'metal' },
+  // v4.20.0: mix — the main rhythm can't be heard (lead 1.8x), the bass
+  // was over the top (0.5x), and the clicky hi-hats are ick (drums 0.45x).
+  { file: 'Metallica - Harvester of Sorrow.mid', id: 'metallica-harvester', title: 'Harvester of Sorrow', artist: 'Metallica', genre: 'metal', chMap: { lead: [0], arp: [1, 2], bass: [3] }, mix: { gainLead: 1.8, gainBass: 0.5, gainDrums: 0.45, gainArp: 1, gainPad: 1 } },
+  // v4.20.0: mix — the main rhythm was muffed in the background (lead
+  // 1.9x) and the "synth" (the pad channel, the loudest layer) only plays
+  // part of the rhythm and is off-putting (0.25x); the busy arp 0.8x.
+  { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', mix: { gainLead: 1.9, gainBass: 1.1, gainDrums: 1, gainArp: 0.8, gainPad: 0.25 } },
+  // v4.20.0: mix — "mixed strange": the guitar RHYTHM rides the arp slot
+  // (6.5 energy/s vs 0.1 on the lead) — lift it 1.9x so it's the focus;
+  // the 3455-hit drum track is "a little annoying" (0.4x), the heavy bass
+  // 0.8x, the sparse lead 1.5x.
+  { file: 'Tool- Pneuma.mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'metal', mix: { gainLead: 1.5, gainBass: 0.8, gainDrums: 0.4, gainArp: 1.9, gainPad: 0.8 } },
   // v4.17.0: Classical Gas (Mose Ziering) — a single-channel grand-piano
   // arrangement of the famous fingerpicked guitar piece. The melody and the
   // fast arpeggiated left-hand figure overlap in pitch, so (like Für Elise)
   // ALL notes ride the polyphonic lead voice; the 'piano' profile (bright
   // pluck-like lead, fast decay) keeps the 16th-note arpeggio crisp.
-  { file: 'Classical Gas.mid.mid', id: 'classical-gas', title: 'Classical Gas', artist: 'Mose Ziering', genre: 'piano', chMap: { lead: [0] } },
+  { file: 'Classical Gas.mid.mid', id: 'classical-gas', title: 'Classical Gas', artist: 'Mose Ziering', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.17.0: Eiffel 65 — Blue (Da Ba Dee) — a single-channel piano
   // arrangement of the Eurodance hook (the "da ba dee" lead melody + the
   // horn-stab chord hits). ALL notes ride the polyphonic lead voice; the
   // 'synth' profile (clean detuned-saw pluck) gives the hook its Eurodance
   // lead sound (NOT the metal saw — this is dance, not riffs).
-  { file: 'Eiffel 65 - Blue (Da Ba Dee).mid', id: 'eiffel65-blue', title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', genre: 'synth', chMap: { lead: [0] } },
+  // v4.20.0: mix — "cannot hear it, so low" (1141 notes at avg velocity
+  // 0.15): the lead hook 2.3x to the Forty Six & 2 reference level (the
+  // arrangement itself "sounds great" — only the level was wrong).
+  { file: 'Eiffel 65 - Blue (Da Ba Dee).mid', id: 'eiffel65-blue', title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', genre: 'synth', chMap: { lead: [0] }, mix: { gainLead: 2.3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.19.0: Ozzy Osbourne — Crazy Train (intro riff, acoustic cover) —
   // the classic galloping E-minor riff as a single-channel acoustic
   // arrangement (80 notes, E2–B3, 9 bars). ALL notes ride the
   // polyphonic lead voice (like the other single-channel arrangements);
   // the 'metal' profile gives the gallop its driving distorted-saw body.
-  // The per-track mix boost (gainLead 1.15) lifts the quiet solo-guitar
-  // lead so it sits on top of the session bus.
-  { file: 'ozzy osbourne - crazy train intro riff acoustic cover.mid', id: 'ozzy-crazy-train', title: 'Crazy Train (Intro Riff)', artist: 'Ozzy Osbourne', genre: 'metal', chMap: { lead: [0] }, mix: { gainLead: 1.15, gainBass: 1, gainDrums: 1 } },
+  // The per-track mix boost (gainLead 2.6 — v4.20.0, up from 1.15) lifts
+  // the quiet solo-guitar riff ("cannot hear it, so low") to the Forty
+  // Six & 2 reference level.
+  { file: 'ozzy osbourne - crazy train intro riff acoustic cover.mid', id: 'ozzy-crazy-train', title: 'Crazy Train (Intro Riff)', artist: 'Ozzy Osbourne', genre: 'metal', chMap: { lead: [0] }, mix: { gainLead: 2.6, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.19.0: Black Sabbath — Children Of The Grave — the classic heavy
   // metal anthem (153 bars @ 138 bpm). ch0 (electric guitar, the
   // power-chord rhythm) + ch2 (the vocal melody) ride the lead bus
   // (riff + melody = the main body of the song, like Harvester), ch1 is
-  // the bass line, ch9 the drums (GM map). The dense 1840-hit drum track
-  // gets lowered with gainDrums 0.8 so the riff + melody stay on top.
-  { file: 'Black Sabbath - Children Of The Grave.mid', id: 'black-sabbath-cotg', title: 'Children Of The Grave', artist: 'Black Sabbath', genre: 'metal', chMap: { lead: [0, 2], bass: [1] }, mix: { gainLead: 1, gainBass: 1, gainDrums: 0.8 } },
+  // the bass line, ch9 the drums (GM map).
+  // v4.20.0: THE OPENING TRACK — first in the open queue (the game starts
+  // on the anthem; it stays in the boss queue too). Mix: the 1840-hit
+  // drum track was "too dominate, the main rhythm so far in the
+  // background" — drums 0.8x → 0.45x, the riff + melody lead 1.7x.
+  { file: 'Black Sabbath - Children Of The Grave.mid', id: 'black-sabbath-cotg', title: 'Children Of The Grave', artist: 'Black Sabbath', genre: 'metal', chMap: { lead: [0, 2], bass: [1] }, mix: { gainLead: 1.7, gainBass: 1, gainDrums: 0.45, gainArp: 1, gainPad: 1 } },
 ];
 
-// The per-mode rotation queues (v4.19.0). Nothing Else Matters is the main
-// intro sequence — MusicScheduler.start() picks PLAYLISTS.open[0].
-// v4.17.0: Classical Gas rides the two mellow queues (open + boneyard, the
-// fingerpicked arpeggio as the atmospheric breath); Eiffel 65 — Blue joins
-// the high-energy combat queue (the Eurodance hook alongside the riffs).
-// v4.19.0: Crazy Train (intro riff) joins the high-energy combat queue
-// (the 31-second galloping riff loop); Children Of The Grave (the 4.4-min
-// heavy metal anthem) joins the boss queue (a full-length battle track).
+// The per-mode rotation queues (v4.20.0). Children Of The Grave is the
+// OPENING track — MusicScheduler.start() picks PLAYLISTS.open[0] (the
+// Black Sabbath anthem; it stays in the boss queue as a full-length
+// battle track). v4.17.0: Classical Gas rides the two mellow queues
+// (open + boneyard, the fingerpicked arpeggio as the atmospheric breath);
+// Eiffel 65 — Blue joins the high-energy combat queue (the Eurodance hook
+// alongside the riffs). v4.19.0: Crazy Train (intro riff) joins the
+// high-energy combat queue (the 31-second galloping riff loop).
 export const PLAYLISTS = {
-  open: ['metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
+  open: ['black-sabbath-cotg', 'metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
   combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
   boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester', 'classical-gas'],
   boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys', 'black-sabbath-cotg'],
@@ -536,12 +584,26 @@ function write() {
   // the generated file without touching the genre profiles.
   const mixes = TRACKS
     .map((tr) => {
-      const m = { gainLead: 1, gainBass: 1, gainDrums: 1, ...(tr.mix || {}) };
+      const m = { gainLead: 1, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1, ...(tr.mix || {}) };
       return `  '${tr.id}': ${jsfmt(m)},`;
     })
     .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.19.0
+// Kitty Vs Everything — v4.20.0
+// v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against the
+//          Forty Six & 2 reference (the loudest, riff-forward track):
+//          quiet leads boosted (Crazy Train 2.6x, Blue 2.3x, Fur Elise /
+//          No Quarter / Classical Gas / Axel F 2.0x, Cowboys 1.7x),
+//          drum-dominant tracks tamed (Children Of The Grave / Johnny
+//          March / Pneuma / Requiem / Harvester drums 0.35-0.45x),
+//          Harvester's over-top bass 0.5x, The Unforgiven's "synth" pad
+//          0.25x, Pneuma's rhythm-guitar arp 1.9x (NEW gainArp/gainPad
+//          scalars in TRACK_MIX_SETTINGS, applied in the MusicScheduler
+//          event path), Nothing Else Matters switched to the piano
+//          profile (the detuned-saw+sub "gross synth" lead is gone).
+//          NEW OPENING TRACK: Children Of The Grave leads the open queue
+//          (the game starts on the Black Sabbath anthem; it stays in the
+//          boss queue too).
 // v4.19.0: CLASSIC HEAVY METAL EXPANSION + PER-TRACK MIX — the SONGS album
 //          grows 13 → 15 tracks: + Ozzy Osbourne — Crazy Train (intro riff,
 //          the galloping E-minor lead riff as a single-channel acoustic
@@ -603,20 +665,24 @@ export const SONGS = {
 ${songs.join('\n')}
 };
 
-// ─── v4.19.0: per-track mix settings (the per-song channel balance) ───
-// One entry per song: gainLead / gainBass / gainDrums are scalar
-// multipliers (1.0 = the genre profile's vols as-is) that the
+// ─── v4.20.0: per-track mix settings (the per-song channel balance) ───
+// One entry per song: gainLead / gainBass / gainDrums / gainArp / gainPad
+// are scalar multipliers (1.0 = the genre profile's vols as-is) that the
 // MusicScheduler applies in the MIDI event path — e.g. gainLead > 1
 // boosts a quiet lead melody, gainDrums < 1 lowers an overpowering
-// percussion channel. Tweak per song here (or in tools/midi-import.mjs
-// TRACKS[].mix) and re-run \`node tools/midi-import.mjs --write\`.
+// percussion channel, gainPad < 1 ducks a harsh synth pad, gainArp > 1
+// lifts a rhythm-guitar arp. Tuned v4.20.0 against the Forty Six & 2
+// reference (tool-forty-six stays all-1.0 — the volume benchmark).
+// Tweak per song here (or in tools/midi-import.mjs TRACKS[].mix) and
+// re-run \`node tools/midi-import.mjs --write\`.
 export const TRACK_MIX_SETTINGS = {
 ${mixes}
 };
 
-// ─── v4.16.0: per-mode song queues (the rotation order) ───
-// Nothing Else Matters opens every mission (MusicScheduler.start() picks
-// the first entry of the active mode's queue).
+// ─── v4.20.0: per-mode song queues (the rotation order) ───
+// Children Of The Grave opens every mission (MusicScheduler.start() picks
+// the first entry of the active mode's queue) — the Black Sabbath anthem
+// is the game's opening track (v4.20.0); it stays in the boss queue too.
 export const PLAYLISTS = {
 ${playlists}
 };

@@ -13,6 +13,11 @@
 //        high-pitched screech/chirp (the v4.11.0 1800–2700 Hz
 //        bandpass + 1500–2000 Hz square click) is GONE. Total
 //        voice life stays under the 70 ms Gatling cadence.
+//        v4.20.0: CANNON DE-PITCH — the Pulse + Rail cannon voices
+//        dropped ~40% so they no longer sound like toys: the pulse
+//        energy core 900→180 Hz is now 520→105 Hz (zap click
+//        2400→900 → 1400→520 Hz), the rail discharge zing 2800→7500 Hz
+//        is now 1100→3200 Hz (crack highpass 4500 → 3200 Hz).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -68,6 +73,20 @@ export default async function run() {
     && !/freq:\s*[12]\d{3}/.test(vulkan));
   check('vulkan: total voice life under the 70 ms Gatling cadence',
     /src\.stop\(t0 \+ 0\.048\)/.test(vulkan) && /dur:\s*0\.022/.test(vulkan));
+
+  // ─── v4.20.0: CANNON DE-PITCH — the Pulse + Rail cannon voices dropped
+  // ~40% so they no longer sound like toys (the v4.11.0 900→180 Hz pulse
+  // core and the 2800→7500 Hz rail zing are gone) ───
+  const pulse = body('pulseShot');
+  const rail = body('railShot');
+  check('pulse: energy core de-pitched (520→105 Hz sweep, was 900→180 Hz)',
+    /freq:\s*520,\s*slideTo:\s*105/.test(pulse) && !/freq:\s*900/.test(pulse));
+  check('pulse: zap click de-pitched (1400→520 Hz, was 2400→900 Hz)',
+    /freq:\s*1400,\s*slideTo:\s*520/.test(pulse) && !/freq:\s*2400/.test(pulse));
+  check('rail: discharge zing de-pitched (1100→3200 Hz, was the toy-bright 2800→7500 Hz)',
+    /freq:\s*1100,\s*slideTo:\s*3200/.test(rail) && !/freq:\s*2800/.test(rail));
+  check('rail: crack highpass lowered (3200 Hz, was 4500 Hz)',
+    /hp\.frequency\.value\s*=\s*3200/.test(rail) && !/hp\.frequency\.value\s*=\s*4500/.test(rail));
 
   // ─── Module version + headless safety ───
   const sfxMod = await mod('js/core/audio/SoundEffects.js');

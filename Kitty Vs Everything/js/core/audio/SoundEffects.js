@@ -182,9 +182,11 @@ export class SoundEffects {
 
   /**
    * v4.11.0: PULSE / PLASMA CANNON — rich frequency sweep with a fast
-   * downward pitch drop (900→180 Hz) through a warm resonant lowpass pop
-   * (cutoff 3200→700 Hz, Q 2.4) + sine sub + a high "zap" click — a
-   * satisfying sci-fi energy punch.
+   * downward pitch drop through a warm resonant lowpass pop + sine sub +
+   * a "zap" click — a satisfying sci-fi energy punch.
+   * v4.20.0: CANNON DE-PITCH — the v4.11.0 900→180 Hz core + 2400 Hz zap
+   * sounded "like a toy"; the whole voice drops ~40%: core 520→105 Hz,
+   * zap 1400→520 Hz, cutoff sweep 2200→520 Hz — a deep energy "thoomp".
    * v4.13.0: routes through the weapon bus (−35% master weapon level).
    */
   pulseShot() {
@@ -195,20 +197,20 @@ export class SoundEffects {
     const bus = this._weaponBus(ctx);
     // 1) Energy core — detuned saw, fast downward pitch drop, resonant pop.
     const v = makeVoice(ctx, bus, {
-      t: t0, freq: 900, slideTo: 180,
+      t: t0, freq: 520, slideTo: 105,
       type: 'sawtooth', detunes: [-7, 0, 7],
       sub: true, subLevel: 0.4,
-      cutoff: 3200, q: 2.4,
-      sweeps: [[0.09, 700]],
+      cutoff: 2200, q: 2.4,
+      sweeps: [[0.09, 520]],
       adsr: { a: 0.004, d: 0.09, s: 0.35, r: 0.05 },
       vol: 0.085, dur: 0.13,
     });
     for (const s of v.sources) this._track(s);
-    // 2) High "zap" click — the emitter crack.
+    // 2) "Zap" click — the emitter crack (v4.20.0: lowered 2400→1400 Hz).
     const z = makeVoice(ctx, bus, {
-      t: t0, freq: 2400, slideTo: 900,
+      t: t0, freq: 1400, slideTo: 520,
       type: 'square', detunes: [0],
-      cutoff: 7000, q: 0.5,
+      cutoff: 5000, q: 0.5,
       adsr: { a: 0.001, d: 0.03, s: 0.2, r: 0.02 },
       vol: 0.03, dur: 0.045,
     });
@@ -218,8 +220,12 @@ export class SoundEffects {
   /**
    * v4.11.0: RAIL CANNON — deep, high-impact sub-bass transient (130→38 Hz
    * sine, heavy initial punch) combined with an electric high-frequency
-   * snap (highpassed noise crack + 2800→7500 Hz zing) and a mid
+   * snap (highpassed noise crack + rail-discharge zing) and a mid
    * rail-discharge sweep — immense power.
+   * v4.20.0: CANNON DE-PITCH — the bright 2800→7500 Hz zing + 4500 Hz
+   * highpass crack sounded "like a toy"; the zing drops to 1100→3200 Hz
+   * (vol 0.035→0.05 to keep the punch) and the crack highpass to 3200 Hz
+   * — a heavy railgun discharge, not a pinball.
    * v4.13.0: routes through the weapon bus (−35% master weapon level).
    */
   railShot() {
@@ -237,12 +243,12 @@ export class SoundEffects {
       vol: 0.2, dur: 0.24,
     });
     for (const s of sub.sources) this._track(s);
-    // 2) Electric high-frequency snap — highpassed noise crack.
+    // 2) Electric snap — highpassed noise crack (v4.20.0: 4500→3200 Hz).
     const src = ctx.createBufferSource();
     src.buffer = this._noiseBuf(ctx);
     const hp = ctx.createBiquadFilter();
     hp.type = 'highpass';
-    hp.frequency.value = 4500;
+    hp.frequency.value = 3200;
     const ng = ctx.createGain();
     ng.gain.setValueAtTime(0.12, t0);
     ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
@@ -252,13 +258,14 @@ export class SoundEffects {
     src.start(t0);
     src.stop(t0 + 0.06);
     this._track(src);
-    // 3) Rail discharge zing — bright square sweep up (2800→7500 Hz).
+    // 3) Rail discharge zing — square sweep up (v4.20.0: 1100→3200 Hz,
+    //    was the toy-bright 2800→7500 Hz).
     const zing = makeVoice(ctx, bus, {
-      t: t0, freq: 2800, slideTo: 7500,
+      t: t0, freq: 1100, slideTo: 3200,
       type: 'square', detunes: [0],
-      cutoff: 9000, q: 0.5,
+      cutoff: 6000, q: 0.5,
       adsr: { a: 0.001, d: 0.05, s: 0.2, r: 0.03 },
-      vol: 0.035, dur: 0.07,
+      vol: 0.05, dur: 0.07,
     });
     for (const s of zing.sources) this._track(s);
     // 4) Mid discharge sweep — the "rail" body (300→120 Hz saw, tight LP).

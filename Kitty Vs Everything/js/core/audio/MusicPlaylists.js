@@ -1,5 +1,19 @@
 // Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.19.0
+// Kitty Vs Everything — v4.20.0
+// v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against the
+//          Forty Six & 2 reference (the loudest, riff-forward track):
+//          quiet leads boosted (Crazy Train 2.6x, Blue 2.3x, Fur Elise /
+//          No Quarter / Classical Gas / Axel F 2.0x, Cowboys 1.7x),
+//          drum-dominant tracks tamed (Children Of The Grave / Johnny
+//          March / Pneuma / Requiem / Harvester drums 0.35-0.45x),
+//          Harvester's over-top bass 0.5x, The Unforgiven's "synth" pad
+//          0.25x, Pneuma's rhythm-guitar arp 1.9x (NEW gainArp/gainPad
+//          scalars in TRACK_MIX_SETTINGS, applied in the MusicScheduler
+//          event path), Nothing Else Matters switched to the piano
+//          profile (the detuned-saw+sub "gross synth" lead is gone).
+//          NEW OPENING TRACK: Children Of The Grave leads the open queue
+//          (the game starts on the Black Sabbath anthem; it stays in the
+//          boss queue too).
 // v4.19.0: CLASSIC HEAVY METAL EXPANSION + PER-TRACK MIX — the SONGS album
 //          grows 13 → 15 tracks: + Ozzy Osbourne — Crazy Train (intro riff,
 //          the galloping E-minor lead riff as a single-channel acoustic
@@ -61,10 +75,13 @@ export const SONGS = {
   'metallica-nem': {
     id: 'metallica-nem', title: 'Nothing Else Matters', artist: 'Metallica',
     bpm: 75, bars: 43, seed: 1,
-    lead: { wave: 'sawtooth', detunes: [-8, 0, 8], sub: true, lp: 2600, q: 1, glide: true, vol: 0.1, adsr: { a: 0.01, d: 0.12, s: 0.6, r: 0.12 } },
-    bass: { soft: true, lp: 900, q: 0.6, detunes: [0], sub: false, adsr: { a: 0.02, d: 0.15, s: 0.85, r: 0.25 } },
-    padCutoff: 1300,
-    vols: { pad: 0.09, arp: 0.05, lead: 0.1, bass: 0.12, perc: 0.45 },
+    // v4.20.0: piano profile (was ballad) — the detuned-saw+sub lead was
+    // the "gross synth" sound; the triangle pluck + soft sine bass render
+    // the piano ballad faithfully (like the other piano-profile tracks).
+    lead: { wave: 'triangle', detunes: [0, 4], sub: false, lp: 5000, q: 0.5, glide: false, vol: 0.13, adsr: { a: 0.003, d: 0.35, s: 0.25, r: 0.35 } },
+    bass: { soft: true, lp: 800, q: 0.5, detunes: [0], sub: false, adsr: { a: 0.005, d: 0.2, s: 0.5, r: 0.2 } },
+    padCutoff: 1800,
+    vols: { pad: 0.08, arp: 0.06, lead: 0.13, bass: 0.1, perc: 0.3 },
     events: {
       lead: [
       [0,40,2,0.39], [4,55,2,0.39], [8,59,2,0.39], [12,64,2,0.39], [16,59,2,0.39], [20,55,2,0.39], [24,40,2,0.39], [28,55,2,0.39], [32,59,2,0.39], [36,64,2,0.39],
@@ -3628,36 +3645,40 @@ export const SONGS = {
   },
 };
 
-// ─── v4.19.0: per-track mix settings (the per-song channel balance) ───
-// One entry per song: gainLead / gainBass / gainDrums are scalar
-// multipliers (1.0 = the genre profile's vols as-is) that the
+// ─── v4.20.0: per-track mix settings (the per-song channel balance) ───
+// One entry per song: gainLead / gainBass / gainDrums / gainArp / gainPad
+// are scalar multipliers (1.0 = the genre profile's vols as-is) that the
 // MusicScheduler applies in the MIDI event path — e.g. gainLead > 1
 // boosts a quiet lead melody, gainDrums < 1 lowers an overpowering
-// percussion channel. Tweak per song here (or in tools/midi-import.mjs
-// TRACKS[].mix) and re-run `node tools/midi-import.mjs --write`.
+// percussion channel, gainPad < 1 ducks a harsh synth pad, gainArp > 1
+// lifts a rhythm-guitar arp. Tuned v4.20.0 against the Forty Six & 2
+// reference (tool-forty-six stays all-1.0 — the volume benchmark).
+// Tweak per song here (or in tools/midi-import.mjs TRACKS[].mix) and
+// re-run `node tools/midi-import.mjs --write`.
 export const TRACK_MIX_SETTINGS = {
-  'metallica-nem': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'requiem-dream': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'axel-f': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'fur-elise': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'johnny-march': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'tool-forty-six': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'tool-no-quarter': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'pantera-cowboys': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'metallica-harvester': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'metallica-unforgiven': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'tool-pneuma': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'classical-gas': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'eiffel65-blue': { gainLead: 1, gainBass: 1, gainDrums: 1 },
-  'ozzy-crazy-train': { gainLead: 1.15, gainBass: 1, gainDrums: 1 },
-  'black-sabbath-cotg': { gainLead: 1, gainBass: 1, gainDrums: 0.8 },
+  'metallica-nem': { gainLead: 1.8, gainBass: 0.9, gainDrums: 0.9, gainArp: 1, gainPad: 1 },
+  'requiem-dream': { gainLead: 1.7, gainBass: 1, gainDrums: 0.4, gainArp: 1.1, gainPad: 1 },
+  'axel-f': { gainLead: 2, gainBass: 1.2, gainDrums: 0.9, gainArp: 1.4, gainPad: 1.4 },
+  'fur-elise': { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'johnny-march': { gainLead: 1.6, gainBass: 1, gainDrums: 0.35, gainArp: 0.8, gainPad: 1 },
+  'tool-forty-six': { gainLead: 1, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'tool-no-quarter': { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'pantera-cowboys': { gainLead: 1.7, gainBass: 1.3, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'metallica-harvester': { gainLead: 1.8, gainBass: 0.5, gainDrums: 0.45, gainArp: 1, gainPad: 1 },
+  'metallica-unforgiven': { gainLead: 1.9, gainBass: 1.1, gainDrums: 1, gainArp: 0.8, gainPad: 0.25 },
+  'tool-pneuma': { gainLead: 1.5, gainBass: 0.8, gainDrums: 0.4, gainArp: 1.9, gainPad: 0.8 },
+  'classical-gas': { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'eiffel65-blue': { gainLead: 2.3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'ozzy-crazy-train': { gainLead: 2.6, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'black-sabbath-cotg': { gainLead: 1.7, gainBass: 1, gainDrums: 0.45, gainArp: 1, gainPad: 1 },
 };
 
-// ─── v4.16.0: per-mode song queues (the rotation order) ───
-// Nothing Else Matters opens every mission (MusicScheduler.start() picks
-// the first entry of the active mode's queue).
+// ─── v4.20.0: per-mode song queues (the rotation order) ───
+// Children Of The Grave opens every mission (MusicScheduler.start() picks
+// the first entry of the active mode's queue) — the Black Sabbath anthem
+// is the game's opening track (v4.20.0); it stays in the boss queue too.
 export const PLAYLISTS = {
-  open: ['metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
+  open: ['black-sabbath-cotg', 'metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
   combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
   boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester', 'classical-gas'],
   boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys', 'black-sabbath-cotg'],
