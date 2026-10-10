@@ -15,9 +15,11 @@
 // v3.78.0: A/D control mode radio pair (strafe / spin) in the FLIGHT section
 //          — writes Settings.controlMode (see _buildControlMode).
 // v4.22.0: CROSSHAIR section — style chips (classic/brackets/diamond/dot),
-//          color chips (red/green/yellow/blue/white), length + size sliders,
-//          and a LIVE PREVIEW canvas drawn by the same drawReticle() the
-//          in-game reticle uses (see _buildCrosshair). CONTROLLER section —
+//          color chips (red/green/yellow/blue/white), length + size + offset
+//          sliders (offset 140–340 px — pushes the reticle out in front of
+//          the ship, same range as the dev panel), and a LIVE PREVIEW canvas
+//          drawn by the same drawReticle() the in-game reticle uses
+//          (see _buildCrosshair). CONTROLLER section —
 //          gamepad enable toggle + connection status line (see _buildGamepad).
 export const VERSION = 'v4.22.0';
 import { SETTINGS, setSetting, resetSettings } from './Settings.js';
@@ -144,7 +146,9 @@ export default class SettingsScreen {
       setSetting(key, parseFloat(el.value));
       if (val) val.textContent = fmt(SETTINGS[key]);
       if (apply) apply();
-      audio.tone(340 + SETTINGS[key] * 300, 0.04, 'sine', 0.02);
+      // Clamp the tick pitch: large-value sliders (crosshairOffset 140–340)
+      // would otherwise map to inaudible frequencies.
+      audio.tone(340 + Math.min(SETTINGS[key], 3) * 300, 0.04, 'sine', 0.02);
     });
     this._syncers.push(() => {
       el.value = SETTINGS[key];
@@ -256,10 +260,13 @@ export default class SettingsScreen {
     }
     if (!CROSSHAIR_STYLES.includes(SETTINGS.crosshairStyle)) setSetting('crosshairStyle', 'classic');
     if (!Object.prototype.hasOwnProperty.call(CROSSHAIR_COLORS, SETTINGS.crosshairColor)) setSetting('crosshairColor', 'red');
-    // Length + size sliders (0.5–2×, redraw the preview on every tick)
+    // Length + size + offset sliders (redraw the preview on every tick).
+    // Offset is 140–340 px (dev-panel range) — pushes the reticle farther
+    // out in front of the ship.
     const redraw = () => this._drawCrosshairPreview();
     this._slider('set-crosshair-length', 'crosshairLength', x2, redraw);
     this._slider('set-crosshair-size', 'crosshairSize', x2, redraw);
+    this._slider('set-crosshair-offset', 'crosshairOffset', v => Math.round(v) + 'px', redraw);
     // Sync: chip highlight (sliders are handled by _slider syncers)
     this._syncers.push(() => {
       this._syncCrosshairChips();
@@ -277,15 +284,33 @@ export default class SettingsScreen {
     }
   }
 
-  /** Draw the preview canvas — the exact in-game reticle at 2× scale. */
+  /** Draw the preview canvas — the exact in-game reticle at 2× scale,
+   *  pushed out above a ship marker by the (scaled) OFFSET, so dragging
+   *  the offset slider visibly moves the reticle away from the ship.
+   *  The offset is drawn at 0.25× so the full 140–340 px range fits the
+   *  150 px panel canvas (the reticle geometry itself stays 2×). */
   _drawCrosshairPreview() {
     const cv = this._chPreview;
     if (!cv) return;
     const ctx = cv.getContext('2d');
     ctx.clearRect(0, 0, cv.width, cv.height);
+    // Ship marker — a small nose-up triangle at the bottom center
+    // (schematic stand-in for the player ship, the reticle's anchor).
+    const shipY = cv.height - 12;
     ctx.save();
-    ctx.translate(cv.width / 2, cv.height / 2);
-    // 2× the in-game scale so the thin strokes read clearly on the panel.
+    ctx.translate(cv.width / 2, shipY);
+    ctx.fillStyle = 'rgba(140, 170, 210, 0.9)';
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(7, 8);
+    ctx.lineTo(0, 4);
+    ctx.lineTo(-7, 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    // Reticle — 2× the in-game scale, offset px out in front of the nose.
+    ctx.save();
+    ctx.translate(cv.width / 2, shipY - SETTINGS.crosshairOffset * 0.25);
     drawReticle(ctx, {
       style: SETTINGS.crosshairStyle,
       color: SETTINGS.crosshairColor,

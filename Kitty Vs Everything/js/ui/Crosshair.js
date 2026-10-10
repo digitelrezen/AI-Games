@@ -32,7 +32,8 @@
 // on every aspect ratio; no per-width compensation is needed.
 //
 // Toggle: SETTINGS.crosshair (Settings screen → FX section, default ON).
-// Offset: SETTINGS.crosshairOffset (Dev panel → Player slider, live).
+// Offset: SETTINGS.crosshairOffset (Settings → CROSSHAIR slider, 140–340 px —
+// also live-tweakable in the Dev panel).
 // v3.55.0: range widened to 140–340 logical px — draw() clamps the offset
 // to LIMITS.crosshairOffset (single source of truth) defensively.
 export const VERSION = 'v4.22.0';

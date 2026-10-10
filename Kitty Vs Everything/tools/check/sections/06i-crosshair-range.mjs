@@ -15,6 +15,7 @@ console.log('\n[6i] v3.55.0 crosshair offset range (140–340 px)');
   const setSrc = fs.readFileSync(path.join(ROOT, 'js/ui/Settings.js'), 'utf8');
   const xhSrc = fs.readFileSync(path.join(ROOT, 'js/ui/Crosshair.js'), 'utf8');
   const devSrc = fs.readFileSync(path.join(ROOT, 'js/ui/DevPanel.js'), 'utf8');
+  const ssSrc = fs.readFileSync(path.join(ROOT, 'js/ui/SettingsScreen.js'), 'utf8');
   const htmlSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   check('Settings: crosshairOffset LIMITS 140–340 (default 140)', /crosshairOffset:\s*\{\s*min:\s*140,\s*max:\s*340,\s*def:\s*140/.test(setSrc));
   check('Settings: LIMITS exported (shared clamp source)', setSrc.includes('export const LIMITS'));
@@ -35,6 +36,9 @@ console.log('\n[6i] v3.55.0 crosshair offset range (140–340 px)');
   check('index.html: crosshair style chips (4)', htmlSrc.includes('data-chstyle="classic"') && htmlSrc.includes('data-chstyle="brackets"') && htmlSrc.includes('data-chstyle="diamond"') && htmlSrc.includes('data-chstyle="dot"'));
   check('index.html: crosshair color chips (5)', ['red', 'green', 'yellow', 'blue', 'white'].every(c => htmlSrc.includes(`data-chcolor="${c}"`)));
   check('index.html: crosshair length/size sliders (0.5–2)', htmlSrc.includes('id="set-crosshair-length" min="0.5" max="2"') && htmlSrc.includes('id="set-crosshair-size" min="0.5" max="2"'));
+  check('index.html: crosshair offset slider (140–340, dev-panel range)', htmlSrc.includes('id="set-crosshair-offset" min="140" max="340"'));
+  check('SettingsScreen: offset slider bound + preview redraw', ssSrc.includes("this._slider('set-crosshair-offset', 'crosshairOffset'"));
+  check('SettingsScreen: preview places reticle at the scaled offset', ssSrc.includes('SETTINGS.crosshairOffset * 0.25'));
   check('index.html: gamepad toggle + status line', htmlSrc.includes('id="set-gamepad"') && htmlSrc.includes('id="set-gamepad-status"'));
 }
 
