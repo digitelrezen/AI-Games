@@ -29,6 +29,11 @@ export const ENEMY_TYPES = {
   human:    { name: 'Human',        color: '#3d6fb4', speed: 2.2, hp: 50, damage: 14, fireRate: 1.0, pattern: 'strafe' },
   alien:    { name: 'Alien Ship',   color: '#7b2ff7', speed: 2.5, hp: 46, damage: 16, fireRate: 1.2, pattern: 'phase' },
   snake:    { name: 'Snake',        color: '#66bb6a', speed: 2.0, hp: 30, damage: 12, fireRate: 1.1, pattern: 'sine' },
+  // v4.12.0: Space Snake — the RnM encounter PRE-WAVE species (easter-egg
+  // ONLY: excluded from the regular wave cycle in WaveManager.js, so
+  // WAVE.SPECIES_COUNT stays 19). Spawned by EasterEgg.spawnRnMPreWave
+  // into the playfield before the RnM interceptor crosses in.
+  spacesnake: { name: 'Space Snake', color: '#b388ff', speed: 1.8, hp: 42, damage: 12, fireRate: 1.1, pattern: 'serpent' },
   spider:   { name: 'Spider',       color: '#4a4a4a', speed: 1.8, hp: 38, damage: 10, fireRate: 0.9, pattern: 'web', onDeathEffect: 'bomb_drop' },
   pinkcat:  { name: 'Pink Cat',     color: '#ff69b4', speed: 1.8, hp: 60, damage: 18, fireRate: 1.2, pattern: 'fierce' },
   shuttle:  { name: 'Space Shuttle', color: '#cfd8dc', speed: 2.0, hp: 60, damage: 16, fireRate: 1.4, pattern: 'glide' },

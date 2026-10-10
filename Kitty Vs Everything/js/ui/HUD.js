@@ -58,11 +58,11 @@
 // v4.7.0: Version label bumped with the RnM ship dialogue (the
 //          #alert-banner 'dialogue' style renders the interceptor's
 //          sequential Rick & Morty lines — showBanner is unchanged).
-// v4.11.0: AUDIO SUITE POLISH + ADMIN JUKEBOX — version label bumped
-//          (no HUD changes — the milestone is the js/core/audio/ suite
-//          + the DevPanel Music Jukebox; the jukebox UI lives in
-//          DevPanel.js, not the HUD).
-export const VERSION = 'v4.11.0';
+// v4.12.0: SPACE SNAKE PRE-WAVE + TANK EGG SHIPS — version label bumped
+//          (no HUD changes — the milestone is the RnM encounter: Space
+//          Snake pre-wave + tanked egg ships in EasterEgg.js /
+//          RnMShip.js / SpaceSnakeEnemy.js).
+export const VERSION = 'v4.12.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

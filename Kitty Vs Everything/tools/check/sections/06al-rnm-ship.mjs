@@ -1,19 +1,32 @@
 // ═══════════════════════════════════════════════════════════
 //  [6al] v4.1.0 RnM SHIP INTERCEPTOR (v4.7.0: dialogue +
-//        spawn-rate boost) — the easter-egg interceptor
-//        (js/modes/EasterEggs/RnMShip/): enters off-screen
-//        left flying right, turns around (sprite mirror) fully
-//        off-screen right and patrols back left, looping until
-//        destroyed; friendly bullets damage it (RNMSHIP.hp);
-//        destruction drops a GUARANTEED Frenzy power-up at its
-//        death coordinates (spawnGuaranteedDrop). The time-based
-//        roll lives in EasterEgg.update (gated on state ===
-//        'playing' — classic + SAR modes); v4.7.0: significantly
-//        boosted (spawnChance 0.19, 8–15 s roll windows, 8 s
-//        first roll, cap 5) and the "RnM SHIP INTERCEPTOR
-//        INBOUND" spawn banner is replaced by the ship's
-//        sequential Rick & Morty dialogue (RNMSHIP_DIALOGUE
-//        through the #alert-banner 'dialogue' style).
+//        spawn-rate boost; v4.12.0: SPACE SNAKE PRE-WAVE +
+//        TANK HULL + CONVERSATION-LINKED SHIELD) — the
+//        easter-egg encounter (js/modes/EasterEggs/RnMShip/):
+//        v4.12.0 the RnM roll (or dev button) first runs the
+//        SPACE SNAKE PRE-WAVE (EasterEgg.spawnRnMPreWave —
+//        RNMSHIP.preWaveCount Space Snake enemies, type
+//        'spacesnake', .assets/SpaceSnake-256x256.png, across
+//        the top of the playfield), then RNMSHIP.preWaveDelay
+//        seconds later (EasterEgg.rnmsShipDelay countdown,
+//        gated on state === 'playing') the interceptor enters
+//        off-screen left flying right, turns around (sprite
+//        mirror) fully off-screen right and patrols back left,
+//        looping until destroyed; friendly bullets damage the
+//        TANKED hull (RNMSHIP.hp 2400 — v4.12.0, was 120) but
+//        while the Rick & Morty dialogue is still playing the
+//        CONVERSATION-LINKED DAMAGE SHIELD reduces each hit to
+//        RNMSHIP.dialogueShieldMul (0.1), so the full character
+//        sequence plays out uninterrupted; destruction drops a
+//        GUARANTEED Frenzy power-up at its death coordinates
+//        (spawnGuaranteedDrop). The time-based roll lives in
+//        EasterEgg.update (gated on state === 'playing' —
+//        classic + SAR modes); v4.7.0: significantly boosted
+//        (spawnChance 0.19, 8–15 s roll windows, 8 s first
+//        roll, cap 5) and the "RnM SHIP INTERCEPTOR INBOUND"
+//        spawn banner is replaced by the ship's sequential Rick
+//        & Morty dialogue (RNMSHIP_DIALOGUE through the
+//        #alert-banner 'dialogue' style).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, TOOLS, check, mod } from '../infra.mjs';
@@ -34,8 +47,8 @@ export default async function run() {
   check('RnMShipArt: asset key `rnms` via the AssetManager pipeline', artSrc.includes("RNMSHIP_ART_KEY = 'rnms'") && artSrc.includes('getSprite(RNMSHIP_ART_KEY)'));
   check('RnMShipArt: mirrors the sprite when patrolling back (dir < 0)', artSrc.includes('if (dir < 0) ctx.scale(-1, 1)'));
   const barrelSrc = fs.readFileSync(path.join(ROOT, 'js/modes/EasterEggs/RnMShip/index.js'), 'utf8');
-  check('RnMShip barrel: exports RnMShip + RNMSHIP + art surface', barrelSrc.includes('export { default as RnMShip, RNMSHIP }') && barrelSrc.includes('drawRnMShip'));
-  const { RnMShip, RNMSHIP } = await mod('js/modes/EasterEggs/RnMShip/index.js');
+  check('RnMShip barrel: exports RnMShip + RNMSHIP + RNMSHIP_DIALOGUE + art surface', barrelSrc.includes('export { default as RnMShip, RNMSHIP, RNMSHIP_DIALOGUE }') && barrelSrc.includes('drawRnMShip'));
+  const { RnMShip, RNMSHIP, RNMSHIP_DIALOGUE } = await mod('js/modes/EasterEggs/RnMShip/index.js');
   check('RNMSHIP: rare roll + per-mission cap', RNMSHIP.spawnChance > 0 && RNMSHIP.spawnChance < 0.2 && RNMSHIP.maxPerRun >= 1, `got ${JSON.stringify(RNMSHIP)}`);
   check('RNMSHIP: shootable durability + patrol speed + uniform scale', RNMSHIP.hp > 0 && RNMSHIP.speed > 0 && RNMSHIP.scale > 0, `got ${JSON.stringify(RNMSHIP)}`);
   check('RNMSHIP: v4.7.0 spawn-rate boost (0.19 roll, 8–15 s windows, 8 s first, cap 5)',
@@ -45,6 +58,28 @@ export default async function run() {
     src.includes('Come on Morty, 20 minutes! In and out!') &&
     src.includes('Aw geez, Rick, is that a snake?') &&
     src.includes("there's everything in space."));
+  // v4.12.0: SPACE SNAKE PRE-WAVE + TANK HULL + CONVERSATION-LINKED SHIELD
+  check('RNMSHIP: v4.12.0 tank hull (hp 2400 — was 120)', RNMSHIP.hp === 2400, `got ${RNMSHIP.hp}`);
+  check('RNMSHIP: v4.12.0 Space Snake pre-wave tuning (count + delay)',
+    RNMSHIP.preWaveCount >= 3 && RNMSHIP.preWaveDelay > 0 && RNMSHIP.preWaveDelay < 10,
+    `got ${JSON.stringify({ preWaveCount: RNMSHIP.preWaveCount, preWaveDelay: RNMSHIP.preWaveDelay })}`);
+  check('RNMSHIP: v4.12.0 conversation-linked damage shield (0 < mul < 1)',
+    RNMSHIP.dialogueShieldMul > 0 && RNMSHIP.dialogueShieldMul < 1, `got ${RNMSHIP.dialogueShieldMul}`);
+  check('RnMShip: v4.12.0 conversation-linked shield window (dialogue still playing)',
+    src.includes('dialogueShieldActive()') && src.includes('dialogueStage < RNMSHIP_DIALOGUE.length - 1'));
+  check('RnMShip: v4.12.0 shield scales hit damage in checkBullets',
+    src.includes('b.damage * RNMSHIP.dialogueShieldMul'));
+  const eggSrcV412 = fs.readFileSync(path.join(ROOT, 'js/core/EasterEgg.js'), 'utf8');
+  check('EasterEgg: v4.12.0 spawnRnMPreWave exports the Space Snake pre-wave',
+    eggSrcV412.includes('export function spawnRnMPreWave(game)') && eggSrcV412.includes("type: 'spacesnake'"));
+  check('EasterEgg: v4.12.0 pre-wave → ship entry delay (rnmsShipDelay countdown)',
+    eggSrcV412.includes('rnmsShipDelay') && eggSrcV412.includes('rnmsShipDelay -= dt') &&
+    eggSrcV412.includes('new RnMShip(this.game)'));
+  check('EasterEgg: v4.12.0 roll arms the pre-wave (not the ship directly)',
+    eggSrcV412.includes('spawnRnMPreWave(game)') && eggSrcV412.includes('mgr.rnmsShipDelay = RNMSHIP.preWaveDelay'));
+  const { SHIP_EGG_HP } = await mod('js/core/EasterEgg.js');
+  check('EasterEgg: v4.12.0 Planet Express ship tanked (SHIP_EGG_HP 1200 — was 30)',
+    SHIP_EGG_HP === 1200, `got ${SHIP_EGG_HP}`);
   check('RnMShip: v4.7.0 dialogue uses the stylized banner tone', src.includes("tone: 'dialogue'"));
   const eggSrc = fs.readFileSync(path.join(ROOT, 'js/core/EasterEgg.js'), 'utf8');
   check('EasterEgg: rnms slot + maybeSpawnRnMShip roll (spawnChance + maxPerRun cap)', eggSrc.includes('rnms: null') && eggSrc.includes('maybeSpawnRnMShip') && eggSrc.includes('RNMSHIP.spawnChance') && eggSrc.includes('RNMSHIP.maxPerRun'));
@@ -79,25 +114,42 @@ export default async function run() {
     player: { x: 640, y: 400 },
   });
 
-  // A) trajectory: off-screen left → right → flip → left → flip back (loop)
+  // A) v4.12.0: SPACE SNAKE PRE-WAVE → ship entry after RNMSHIP.preWaveDelay
   {
     banners.length = 0;
     const g = makeGame();
     const mgr = new EasterEgg(g);
-    switchEgg(g, 'rnms');
+    g.aimbot = mgr; // v4.12.0: Game.js wires game.aimbot = new EasterEgg(this) — switchEgg reads it
+    switchEgg(g, 'rnms'); // dev-button path (full encounter: pre-wave + delayed ship)
+    // The pre-wave is instant: RNMSHIP.preWaveCount Space Snakes in the
+    // playfield, the ship slot still empty, the entry delay armed.
+    const snakes = (g.enemies || []).filter((e) => e.type === 'spacesnake');
+    check('v4.12.0: pre-wave spawns RNMSHIP.preWaveCount Space Snakes',
+      snakes.length === RNMSHIP.preWaveCount, `got ${snakes.length}`);
+    check('v4.12.0: pre-wave snakes are in the top of the playfield',
+      snakes.every((e) => e.x > -100 && e.x < g.viewW + 100 && e.y > 0 && e.y < 220));
+    check('v4.12.0: ship slot still empty before the delay elapses', g.eggs.rnms === null);
+    check('v4.12.0: entry delay armed (rnmsShipDelay = preWaveDelay)',
+      mgr.rnmsShipDelay === RNMSHIP.preWaveDelay, `got ${mgr.rnmsShipDelay}`);
+    // Count down the delay — the interceptor crosses in ~preWaveDelay later.
+    let t = 0;
+    while (!g.eggs.rnms && t < RNMSHIP.preWaveDelay + 2) { mgr.update(DT); t += DT; }
+    check('v4.12.0: ship enters after the pre-wave delay (delay consumed)',
+      !!g.eggs.rnms && mgr.rnmsShipDelay === null && t <= RNMSHIP.preWaveDelay + 2,
+      `t=${t.toFixed(2)}s delay=${mgr.rnmsShipDelay}`);
     const ship = g.eggs.rnms;
     check('spawned off-screen left', !!ship && ship.x < 0, `x=${ship && ship.x.toFixed(1)}`);
     check('starts flying right (dir=1)', !!ship && ship.dir === 1);
-    check('hp = maxHp (RNMSHIP.hp)', !!ship && ship.hp === RNMSHIP.hp && ship.maxHp === RNMSHIP.hp);
-    let t = 0, flipRightAt = null, flipLeftAt = null, maxX = -1e9;
-    while (g.eggs.rnms && t < 30) {
+    check('v4.12.0 tank hull: hp = maxHp = RNMSHIP.hp (2400)', !!ship && ship.hp === RNMSHIP.hp && ship.maxHp === RNMSHIP.hp, `hp=${ship && ship.hp}`);
+    let t2 = 0, flipRightAt = null, flipLeftAt = null, maxX = -1e9;
+    while (g.eggs.rnms && t2 < 30) {
       mgr.update(DT);
-      t += DT;
+      t2 += DT;
       const s = g.eggs.rnms;
       if (s) {
         maxX = Math.max(maxX, s.x);
-        if (s.dir === -1 && flipRightAt === null) flipRightAt = t;
-        if (s.dir === 1 && flipRightAt !== null && flipLeftAt === null) flipLeftAt = t;
+        if (s.dir === -1 && flipRightAt === null) flipRightAt = t2;
+        if (s.dir === 1 && flipRightAt !== null && flipLeftAt === null) flipLeftAt = t2;
       }
     }
     check('reached the right edge', maxX > g.viewW, `maxX=${maxX.toFixed(1)} (viewW=${g.viewW})`);
@@ -113,12 +165,16 @@ export default async function run() {
       banners.join(' | '));
   }
 
-  // B) destruction: friendly bullets → hp 0 → explosion + GUARANTEED frenzy at death point
+  // B) destruction: v4.12.0 conversation-linked shield + tank hull →
+  //    friendly bullets → hp 0 → explosion + GUARANTEED frenzy at death point
   {
     banners.length = 0;
     const g = makeGame();
     const mgr = new EasterEgg(g);
     switchEgg(g, 'rnms');
+    // v4.12.0: wait out the pre-wave delay, then fly until on-screen.
+    let t = 0;
+    while (!g.eggs.rnms && t < RNMSHIP.preWaveDelay + 2) { mgr.update(DT); t += DT; }
     while (g.eggs.rnms && g.eggs.rnms.x < 100) mgr.update(DT); // fly until on-screen
     const ship = g.eggs.rnms;
     check('ship on-screen', !!ship && ship.x > 0 && ship.x < g.viewW, `x=${ship && ship.x.toFixed(1)}`);
@@ -131,21 +187,37 @@ export default async function run() {
       deathCy = this.y + this.h / 2;
       return origDestroy();
     };
-    const hit = (friendly = true, damage = 10) => {
+    const hit = (friendly = true, damage = 100) => {
       const s = g.eggs.rnms;
+      if (!s) return;
       const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
       g.bullets.push({ x: cx, y: cy, alive: true, friendly, radius: 4, damage });
       mgr.update(DT);
+      g.bullets = g.bullets.filter((b) => b.alive); // keep the array bounded
     };
-    hit(false); // enemy bullet — ignored
+    hit(false, 10); // enemy bullet — ignored
     check('enemy bullet ignored (hp stays full, bullet alive)',
       !!g.eggs.rnms && g.eggs.rnms.hp === RNMSHIP.hp && g.bullets[0].alive === true,
       `hp=${g.eggs.rnms && g.eggs.rnms.hp} bulletAlive=${g.bullets[0] && g.bullets[0].alive}`);
-    while (g.eggs.rnms) {
-      hit(true);
-      if (g.bullets.length > 200) break; // safety
-    }
-    check('destroyed by friendly fire (slot freed)', g.eggs.rnms === null);
+    // v4.12.0: CONVERSATION-LINKED DAMAGE SHIELD — while the dialogue is
+    // still playing, each hit only deals RNMSHIP.dialogueShieldMul of its
+    // damage, so the full character sequence plays out uninterrupted.
+    check('v4.12.0: shield active while the dialogue is still playing',
+      !!g.eggs.rnms && g.eggs.rnms.dialogueShieldActive());
+    const hpBefore = g.eggs.rnms.hp;
+    hit(true, 100);
+    check('v4.12.0: shield scales hit damage to 10% while the dialogue plays',
+      !!g.eggs.rnms && g.eggs.rnms.hp === hpBefore - 100 * RNMSHIP.dialogueShieldMul,
+      `hp=${g.eggs.rnms && g.eggs.rnms.hp} (before=${hpBefore}, expected drop=${100 * RNMSHIP.dialogueShieldMul})`);
+    // Let the dialogue finish — the shield drops with the last line.
+    let t3 = 0;
+    while (g.eggs.rnms && g.eggs.rnms.dialogueStage < RNMSHIP_DIALOGUE.length - 1 && t3 < 12) { mgr.update(DT); t3 += DT; }
+    check('v4.12.0: shield drops once the dialogue is finished',
+      !!g.eggs.rnms && g.eggs.rnms.dialogueStage === RNMSHIP_DIALOGUE.length - 1 && !g.eggs.rnms.dialogueShieldActive(),
+      `stage=${g.eggs.rnms && g.eggs.rnms.dialogueStage}`);
+    let hits = 0;
+    while (g.eggs.rnms && hits < 500) { hit(true, 100); hits++; }
+    check('destroyed by friendly fire (slot freed)', g.eggs.rnms === null, `hits=${hits}`);
     check('destroyed flag set on the shot-down ship', ship.destroyed === true && ship.alive === false);
     check('GUARANTEED Frenzy drop spawned (exactly one)', g.powerups.length === 1, `got ${g.powerups.length}`);
     check('drop type is frenzy', g.powerups.length === 1 && g.powerups[0].type === 'frenzy', `got ${g.powerups[0] && g.powerups[0].type}`);

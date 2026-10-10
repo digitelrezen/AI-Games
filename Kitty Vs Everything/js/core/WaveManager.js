@@ -61,7 +61,10 @@ export default class WaveManager {
     this.bonusEvery = 4; // v3.76.0: synced by Game from LevelRegistry.bonusInterval
     this.cleared = false; // v3.76.0: wave-clear signal for the LevelRegistry
     // ─── v3.30.0: 16-species sequential wave system ───
-    this.species = Object.keys(ENEMY_TYPES); // insertion order = species order
+    // v4.12.0: Space Snake (type 'spacesnake') is EASTER-EGG-ONLY — the RnM
+    // encounter pre-wave (EasterEgg.spawnRnMPreWave) — so it is filtered out
+    // of the regular species cycle (WAVE.SPECIES_COUNT stays 19).
+    this.species = Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake'); // insertion order = species order
     this.speciesIndex = 0;
     this.currentSpecies = this.species[0];
     this.spawnOverride = 0; // 0 = AUTO (sawtooth ramp); >0 = fixed active count

@@ -1,5 +1,17 @@
 // Filename: RnMShip.js
 // Kitty Vs Everything — v4.1.0
+// v4.12.0: SPACE SNAKE PRE-WAVE + TANK EGG SHIP — before the ship crosses
+//          in, a wave of Space Snake enemies (type 'spacesnake',
+//          .assets/SpaceSnake-256x256.png) spawns into the playfield
+//          (EasterEgg.spawnRnMPreWave, RNMSHIP.preWaveCount) and the
+//          interceptor enters RNMSHIP.preWaveDelay seconds later — the
+//          "is that a snake?" scene. The hull is TANKED (RNMSHIP.hp
+//          120 → 2400) and gains a CONVERSATION-LINKED DAMAGE SHIELD:
+//          while the Rick & Morty dialogue is still playing (the last line
+//          not yet shown) the hull takes only RNMSHIP.dialogueShieldMul of
+//          each hit, so the full character sequence plays out
+//          uninterrupted even against high-level weapons (rail 100/hit,
+//          plasma volleys).
 // v4.7.0: RICK & MORTY DIALOGUE + SPAWN-RATE BOOST — the generic
 //          "RnM SHIP INTERCEPTOR INBOUND" spawn banner is GONE: the ship
 //          now plays a sequential on-screen dialogue (RNMSHIP_DIALOGUE,
@@ -43,17 +55,32 @@ import { audio } from '../../../core/AudioSystem.js';
 import { spawnGuaranteedDrop } from '../../../core/DropManager.js'; // guaranteed Frenzy
 import { rnmsArtDims, drawRnMShip } from './RnMShipArt.js';
 
-/** v4.1.0: RnM ship tuning (single source of truth). v4.7.0: spawn-rate boost. */
+/** v4.1.0: RnM ship tuning (single source of truth). v4.7.0: spawn-rate boost.
+ *  v4.12.0: Space Snake pre-wave + tank hull + conversation-linked shield. */
 export const RNMSHIP = {
   spawnChance: 0.19,      // v4.7.0: boosted roll per roll window (was 0.03 — ~6x more likely)
   rollIntervalMin: 8,     // v4.7.0: s between roll windows (was 25)
   rollIntervalMax: 15,    // v4.7.0: s between roll windows (was 45)
   firstRollDelay: 8,      // v4.7.0: s after mission start before the first roll (was 20)
   maxPerRun: 5,           // v4.7.0: per-mission cap (was 2 — EasterEgg manager counts)
-  hp: 120,                // shootable durability — ~a few seconds of fire
+  hp: 2400,               // v4.12.0: TANK EGG SHIP — 120 → 2400 (20x): high-level
+                          // weapons (rail 100/hit, plasma volleys) can no longer
+                          // vaporize the ship mid-encounter
   speed: 240,             // px/s horizontal patrol (both directions)
   scale: 0.5,             // 256×256 art → 128×128 on screen (uniform scale)
   wobble: 10,             // px amplitude of the vertical bob
+  // v4.12.0: SPACE SNAKE PRE-WAVE — before the ship crosses in, a wave of
+  // Space Snake enemies (type 'spacesnake', .assets/SpaceSnake-256x256.png,
+  // key `spacesnake`) spawns across the top of the playfield
+  // (EasterEgg.spawnRnMPreWave); the interceptor enters preWaveDelay later
+  // (EasterEgg.update counts down mgr.rnmsShipDelay).
+  preWaveCount: 8,        // Space Snakes in the pre-wave
+  preWaveDelay: 2.5,      // s between the pre-wave and the ship's entry
+  // v4.12.0: CONVERSATION-LINKED DAMAGE SHIELD — while the Rick & Morty
+  // dialogue is still playing (the last line not yet shown), the hull takes
+  // only this fraction of each hit, so the full character sequence plays out
+  // uninterrupted.
+  dialogueShieldMul: 0.1, // 90% damage reduction during the dialogue window
 };
 
 /** v4.7.0: sequential RnM dialogue — the iconic interceptor lines, shown
@@ -141,13 +168,24 @@ export default class RnMShip {
       if (Math.abs(b.x - cx) <= this.w / 2 + b.radius &&
           Math.abs(b.y - cy) <= this.h / 2 + b.radius) {
         b.alive = false;
-        this.hp -= b.damage;
+        // v4.12.0: conversation-linked damage shield — while the dialogue is
+        // still playing the hull takes only a fraction of each hit, so the
+        // full character sequence plays out uninterrupted.
+        const dmg = this.dialogueShieldActive() ? b.damage * RNMSHIP.dialogueShieldMul : b.damage;
+        this.hp -= dmg;
         g.particles.burst(b.x, b.y, { count: 8, color: '#ffd54f', speed: 160, life: 0.35, size: 2 });
         audio.hit();
         if (this.hp <= 0) this.destroy();
         break; // one bullet per frame is plenty
       }
     }
+  }
+
+  /** v4.12.0: true while the Rick & Morty dialogue is still playing (the
+   *  last line not yet shown) — the conversation-linked damage-shield
+   *  window. The shield drops the moment the final line is on screen. */
+  dialogueShieldActive() {
+    return this.alive && this.dialogueStage < RNMSHIP_DIALOGUE.length - 1;
   }
 
   /** v4.1.0: destroyed → explosion + GUARANTEED Frenzy drop at the death point. */
@@ -171,6 +209,19 @@ export default class RnMShip {
   draw(ctx) {
     if (!this.alive) return;
     drawRnMShip(ctx, this.x, this.y, this.dir, RNMSHIP.scale);
+    // v4.12.0: conversation-linked damage shield — visible while the
+    // dialogue is still playing (drops with the final line).
+    if (this.dialogueShieldActive()) {
+      ctx.save();
+      ctx.strokeStyle = `rgba(0, 229, 255, ${0.45 + 0.25 * Math.sin(this.t * 5)})`;
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#00e5ff';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.ellipse(this.x + this.w / 2, this.y + this.h / 2, this.w / 2 + 8, this.h / 2 + 8, 0, 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+    }
     // HP bar (ship-egg pattern) — only once damaged.
     if (this.hp < this.maxHp) {
       ctx.fillStyle = 'rgba(0,0,0,0.5)';

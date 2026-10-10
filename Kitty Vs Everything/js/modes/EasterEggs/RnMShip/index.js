@@ -4,7 +4,7 @@
 // The ship is registered by js/core/EasterEgg.js (the `rnms` slot);
 // this barrel is the single import surface for the subsystem.
 
-export { default as RnMShip, RNMSHIP } from './RnMShip.js';
+export { default as RnMShip, RNMSHIP, RNMSHIP_DIALOGUE } from './RnMShip.js';
 export {
   drawRnMShip,
   getRnMShipArt,

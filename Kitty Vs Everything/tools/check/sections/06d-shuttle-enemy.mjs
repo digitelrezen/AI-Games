@@ -13,9 +13,11 @@ import path from 'node:path';
 const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
 
 export default async function run() {
-console.log('\n[6d] shuttle enemy (19 species, v3.82.0 round-trip flyby)');
+console.log('\n[6d] shuttle enemy (19 wave species + 1 easter-egg-only, v3.82.0 round-trip flyby)');
 const { ENEMY_TYPES, WAVE } = await mod('js/core/config.js');
-check('config: ENEMY_TYPES has 19 species (shuttle + moth + squirrel)', Object.keys(ENEMY_TYPES).length === 19, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
+// v4.12.0: ENEMY_TYPES has 20 entries — the 19 regular wave species + 'spacesnake'
+// (easter-egg-only, filtered out of the wave species in WaveManager.js).
+check('config: ENEMY_TYPES has 20 entries (19 wave species + spacesnake easter-egg-only)', Object.keys(ENEMY_TYPES).length === 20, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
 check('config: shuttle entry (Space Shuttle, glide pattern)', ENEMY_TYPES.shuttle && ENEMY_TYPES.shuttle.name === 'Space Shuttle' && ENEMY_TYPES.shuttle.pattern === 'glide', `got ${JSON.stringify(ENEMY_TYPES.shuttle)}`);
 check('config: WAVE.SPECIES_COUNT = 19', WAVE.SPECIES_COUNT === 19, `got ${WAVE.SPECIES_COUNT}`);
 const { isValidEnemyType, getEnemyClass, getEnemyTypeIds } = await mod('js/enemies/EnemyFactory.js');

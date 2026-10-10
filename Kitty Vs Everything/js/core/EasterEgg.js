@@ -1,5 +1,16 @@
 // Filename: EasterEgg.js
 // Kitty Vs Everything — v4.1.0
+// v4.12.0: SPACE SNAKE PRE-WAVE + TANK EGG SHIPS — when the RnM roll hits
+//          (or the dev button fires), the encounter now runs in two beats:
+//          (1) spawnRnMPreWave() drops RNMSHIP.preWaveCount Space Snake
+//          enemies (type 'spacesnake', .assets/SpaceSnake-256x256.png)
+//          across the top of the playfield, and (2) RNMSHIP.preWaveDelay
+//          seconds later the RnM interceptor crosses in (rnmsShipDelay,
+//          counted down in update(), gated on 'playing'). Both easter-egg
+//          ships are TANKED so high-level player weapons can't vaporize
+//          them mid-set-piece: the RnM hull 120 → 2400 (plus its
+//          conversation-linked damage shield, RnMShip.js) and the Planet
+//          Express ship SHIP_EGG_HP 30 → 1200.
 // v4.7.0: RnM ship — the "RnM SHIP INTERCEPTOR INBOUND" spawn banner is
 //          gone from maybeSpawnRnMShip: the ship plays its sequential
 //          Rick & Morty dialogue itself (RnMShip.js RNMSHIP_DIALOGUE) as
@@ -81,6 +92,7 @@ import {
 import { getShip, SHIP_W, SHIP_H } from './ShipSprite.js'; // v3.27.0
 import { SpaceballsOne, SPACEBALLS_ONE } from '../modes/EasterEggs/SpaceballsOne/index.js'; // v3.81.0
 import { RnMShip, RNMSHIP } from '../modes/EasterEggs/RnMShip/index.js'; // v4.1.0
+import { createEnemy } from '../enemies/EnemyFactory.js'; // v4.12.0: Space Snake pre-wave
 import { spawnGuaranteedDrop } from './DropManager.js'; // v3.83.0: flyby 'robot' drop
 import { TAU, clamp, rand } from './utils.js';
 
@@ -95,7 +107,8 @@ const BENDER_OFFSCREEN = 60; // how far past the edge he starts/ends
 const SHIP_EGG_SPEED = 260;  // v3.27.0: px/s (both directions)
 const SHIP_EGG_SCALE = 0.42; // 422×159 art → ~177×67 on screen
 const SHIP_EGG_WOBBLE = 14;  // px amplitude of the vertical bob
-const SHIP_EGG_HP = 30;      // v3.28.0: friendly-bullet damage to destroy
+export const SHIP_EGG_HP = 1200;    // v4.12.0: TANK EGG SHIP — 30 → 1200 (40x): high-level
+                                    // weapons can no longer one-shot vaporize the flyby
 const SHIP_EGG_PASSES = 3;   // v3.28.0: full right/left patterns before despawn
 
 // v3.29.0: kill-based dialogue — stage 0 on catch, stage 1 after the intro
@@ -406,7 +419,16 @@ export function switchEgg(game, type) {
     e.spaceballs = new SpaceballsOne(game);
   } else if (type === 'rnms') { // v4.1.0: force-spawn (dev button)
     if (e.rnms) e.rnms.alive = false; // replace one still patrolling
-    e.rnms = new RnMShip(game);
+    // v4.12.0: the FULL encounter — Space Snake pre-wave first, then the
+    // interceptor crosses in RNMSHIP.preWaveDelay later (the manager counts
+    // down rnmsShipDelay in update()).
+    const mgr = game.aimbot;
+    if (mgr) {
+      spawnRnMPreWave(game);
+      mgr.rnmsShipDelay = RNMSHIP.preWaveDelay;
+    } else {
+      game.eggs.rnms = new RnMShip(game); // headless (no manager) — spawn directly
+    }
   } else {
     if (e.bender) e.bender.reset();
     if (e.ship) e.ship.alive = false;
@@ -439,6 +461,28 @@ export function maybeSpawnSpaceballs(game) {
 }
 
 /**
+ * v4.12.0: SPACE SNAKE PRE-WAVE — the RnM encounter setup. A wave of
+ * Space Snake enemies (type 'spacesnake' — .assets/SpaceSnake-256x256.png,
+ * asset key `spacesnake`, stats from ENEMY_TYPES via EnemyBase) spawns
+ * across the top of the playfield to set the scene ("Aw geez, Rick, is
+ * that a snake?"); the interceptor crosses in RNMSHIP.preWaveDelay seconds
+ * later (EasterEgg.update counts down mgr.rnmsShipDelay). Runs in BOTH
+ * classic wave mode and Search & Destroy mode (same 'playing' gate as the
+ * roll). The snakes are real enemies — shootable, they drift down and the
+ * classic off-screen cull retires them, so the pre-wave clears itself.
+ */
+export function spawnRnMPreWave(game) {
+  const list = game.enemies || (game.enemies = []);
+  const n = RNMSHIP.preWaveCount;
+  const margin = 140;
+  for (let i = 0; i < n; i++) {
+    const x = margin + ((i + 0.5) / n) * (game.viewW - margin * 2) + rand(-30, 30);
+    const y = rand(40, 180);
+    list.push(createEnemy({ type: 'spacesnake', tier: 'mob', x, y, game, difficulty: 1 }));
+  }
+}
+
+/**
  * v4.1.0: the time-based roll — EasterEgg.update() calls this when a
  * roll window elapses (RNMSHIP.firstRollDelay after mission start, then
  * every RNMSHIP.rollIntervalMin–Max seconds), gated on
@@ -448,16 +492,23 @@ export function maybeSpawnSpaceballs(game) {
  * v4.7.0: the "RnM SHIP INTERCEPTOR INBOUND" spawn banner is GONE — the
  * ship plays its sequential Rick & Morty dialogue itself (RnMShip.js
  * RNMSHIP_DIALOGUE) as it crosses into view.
- * @returns {boolean} true when the RnM ship was spawned
+ * v4.12.0: the roll no longer spawns the ship directly — it starts the
+ * SPACE SNAKE PRE-WAVE (spawnRnMPreWave) and arms rnmsShipDelay; the
+ * interceptor crosses in RNMSHIP.preWaveDelay seconds later.
+ * @returns {boolean} true when the encounter (pre-wave) was started
  */
 export function maybeSpawnRnMShip(game) {
   const mgr = game.aimbot;
   if (!mgr || !game.eggs) return false;
   if (game.eggs.rnms) return false; // one at a time
+  if (mgr.rnmsShipDelay !== null) return false; // v4.12.0: pre-wave already running
   if (mgr.rnmsCount >= RNMSHIP.maxPerRun) return false; // per-mission cap
   if (Math.random() >= RNMSHIP.spawnChance) return false; // v4.7.0: boosted (0.19)
   mgr.rnmsCount++;
-  switchEgg(game, 'rnms');
+  // v4.12.0: SPACE SNAKE PRE-WAVE — the snake wave enters the playfield
+  // first; the interceptor crosses in RNMSHIP.preWaveDelay later.
+  spawnRnMPreWave(game);
+  mgr.rnmsShipDelay = RNMSHIP.preWaveDelay;
   return true;
 }
 
@@ -475,6 +526,7 @@ export default class EasterEgg {
     this.spaceballsCount = 0; // v3.81.0: per-mission spawn counter (cap)
     this.rnmsCount = 0; // v4.1.0: per-mission spawn counter (cap)
     this.rnmsRollTimer = RNMSHIP.firstRollDelay; // v4.1.0: s until the first roll
+    this.rnmsShipDelay = null; // v4.12.0: s until the RnM ship enters (Space Snake pre-wave); null = not pending
     game.eggs = this.eggs; // v3.27.0: debug snapshot + switchEgg target
   }
 
@@ -508,6 +560,7 @@ export default class EasterEgg {
     this.spaceballsCount = 0; // v3.81.0: per-mission cap resets
     this.rnmsCount = 0; // v4.1.0: per-mission cap resets
     this.rnmsRollTimer = RNMSHIP.firstRollDelay; // v4.1.0: roll clock resets
+    this.rnmsShipDelay = null; // v4.12.0: pending pre-wave → ship entry resets
   }
 
   update(dt) {
@@ -532,12 +585,33 @@ export default class EasterEgg {
     // runs in BOTH classic wave mode and Search & Destroy mode (this
     // manager updates in both — Game.update calls aimbot.update every
     // frame); bonus rounds / menus / game-over never roll.
-    if (this.game.state === 'playing' && !e.rnms &&
-        this.rnmsCount < RNMSHIP.maxPerRun) {
-      this.rnmsRollTimer -= dt;
-      if (this.rnmsRollTimer <= 0) {
-        this.rnmsRollTimer = rand(RNMSHIP.rollIntervalMin, RNMSHIP.rollIntervalMax);
-        maybeSpawnRnMShip(this.game);
+    // v4.12.0: SPACE SNAKE PRE-WAVE — a hit starts the snake wave and arms
+    // rnmsShipDelay (the interceptor crosses in RNMSHIP.preWaveDelay
+    // later); the roll clock holds while the pre-wave is pending.
+    if (this.game.state === 'playing') {
+      // v4.12.0: pre-wave → ship entry countdown — the RnM interceptor
+      // crosses in RNMSHIP.preWaveDelay seconds after the snake wave spawns
+      // (armed by maybeSpawnRnMShip or the dev-button 'rnms' switchEgg).
+      // Runs regardless of the per-mission cap so the dev button always
+      // completes its encounter.
+      if (this.rnmsShipDelay !== null) {
+        this.rnmsShipDelay -= dt;
+        if (this.rnmsShipDelay <= 0) {
+          this.rnmsShipDelay = null;
+          if (!e.rnms) e.rnms = new RnMShip(this.game);
+        }
+      }
+      if (!e.rnms && this.rnmsCount < RNMSHIP.maxPerRun &&
+          this.rnmsShipDelay === null) {
+        this.rnmsRollTimer -= dt;
+        if (this.rnmsRollTimer <= 0) {
+          if (maybeSpawnRnMShip(this.game)) {
+            // encounter started — next roll window opens after the delay
+            this.rnmsRollTimer = rand(RNMSHIP.rollIntervalMin, RNMSHIP.rollIntervalMax) + RNMSHIP.preWaveDelay;
+          } else {
+            this.rnmsRollTimer = rand(RNMSHIP.rollIntervalMin, RNMSHIP.rollIntervalMax);
+          }
+        }
       }
     }
   }

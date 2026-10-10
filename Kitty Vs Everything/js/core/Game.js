@@ -271,13 +271,18 @@
 //          interceptor plays its sequential Rick & Morty dialogue and
 //          spawns regularly in classic + Search & Destroy modes).
 //          Milestone version synced with package.json.
+// v4.12.0: SPACE SNAKE PRE-WAVE + TANK EGG SHIPS — no orchestrator
+//          changes (the milestone is the RnM encounter: Space Snake
+//          pre-wave + tanked egg ships in EasterEgg.js / RnMShip.js /
+//          SpaceSnakeEnemy.js). Milestone version synced with
+//          package.json.
 // v4.11.0: AUDIO SUITE POLISH + ADMIN JUKEBOX — no orchestrator changes
 //          (the milestone is the js/core/audio/ suite: dedicated weapon
 //          SFX, zero-silent-trigger action SFX, SFX-bus soft-clip shaper
 //          + bounded voice pool, rebuilt explosion tail, and the
 //          MusicScheduler jukebox preview session powering the DevPanel
 //          Music Jukebox). Milestone version synced with package.json.
-export const VERSION = 'v4.11.0';
+export const VERSION = 'v4.12.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

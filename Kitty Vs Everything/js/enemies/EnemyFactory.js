@@ -12,6 +12,10 @@
 // v3.33.0 (v3.67.0 release): Added SquirrelEnemy registration — the squirrel
 //          is the 19th species (regular waves only; Bone Yard Phase 2 stays
 //          humanoid via its explicit allowlist).
+// v4.12.0: Added SpaceSnakeEnemy registration — the Space Snake is the RnM
+//          encounter pre-wave species (EASTER-EGG ONLY: spawned by
+//          EasterEgg.spawnRnMPreWave before the RnM interceptor crosses in;
+//          excluded from the regular wave cycle in WaveManager.js).
 export const VERSION = 'v3.33.0';
 import { ENEMY_TYPES } from '../core/config.js';
 import WaspEnemy from './WaspEnemy.js';
@@ -28,6 +32,7 @@ import DragonEnemy from './DragonEnemy.js';
 import HumanEnemy from './HumanEnemy.js';
 import AlienEnemy from './AlienEnemy.js';
 import SnakeEnemy from './SnakeEnemy.js';
+import SpaceSnakeEnemy from './SpaceSnakeEnemy.js'; // v4.12.0: RnM pre-wave species
 import SpiderEnemy from './SpiderEnemy.js';
 import PinkCatEnemy from '../bosses/PinkCatEnemy.js';
 import ShuttleEnemy from './ShuttleEnemy.js';
@@ -50,6 +55,7 @@ const REGISTRY = {
   human:     HumanEnemy,
   alien:     AlienEnemy,
   snake:     SnakeEnemy,
+  spacesnake: SpaceSnakeEnemy, // v4.12.0: RnM pre-wave (easter-egg only)
   spider:    SpiderEnemy,
   pinkcat:   PinkCatEnemy,
   shuttle:   ShuttleEnemy,

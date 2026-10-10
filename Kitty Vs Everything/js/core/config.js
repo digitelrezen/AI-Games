@@ -375,6 +375,16 @@
 //          modes. Destruction still drops the GUARANTEED Frenzy power-up.
 //          Milestone version synced across package.json, config.js,
 //          main.js, Game.js, HUD.js and index.html.
+// v4.12.0: SPACE SNAKE PRE-WAVE + TANK EGG SHIPS — no config changes
+//          (the milestone is the RnM encounter: the Space Snake pre-wave
+//          enemy type 'spacesnake' lives in config/enemies.js —
+//          .assets/SpaceSnake-256x256.png, easter-egg-only, filtered out
+//          of the regular wave species by WaveManager.js — and the
+//          encounter tuning lives in RnMShip.js RNMSHIP (preWaveCount /
+//          preWaveDelay / hp 2400 / dialogueShieldMul) + EasterEgg.js
+//          (spawnRnMPreWave / rnmsShipDelay / SHIP_EGG_HP 1200)).
+//          Milestone version synced across package.json, config.js,
+//          main.js, Game.js, HUD.js and index.html.
 // v4.11.0: AUDIO SUITE POLISH + ADMIN JUKEBOX — no config changes
 //          (the milestone is the js/core/audio/ suite: dedicated weapon
 //          SFX, zero-silent-trigger action SFX, SFX-bus soft-clip shaper
@@ -382,7 +392,7 @@
 //          MusicScheduler jukebox preview session powering the DevPanel
 //          Music Jukebox). Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v4.11.0';
+export const VERSION = 'v4.12.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
