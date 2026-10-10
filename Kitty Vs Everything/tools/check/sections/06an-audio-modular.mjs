@@ -22,6 +22,15 @@
 //        replaced by the new "Neon Horizon" D-minor composition, and
 //        boss-overdrive / boss-redline are rebuilt as clearly distinct
 //        tracks (gallop riff vs breakbeat).
+//        v4.16.0: MIDI ALBUM — the entire SONGS album is the exact note
+//        sequences parsed from the local .mid files (tools/midi-import.mjs,
+//        zero-dependency SMF parser): 11 tracks (Nothing Else Matters — the
+//        main intro sequence — Forty Six & 2 / No Quarter / Pneuma,
+//        Harvester of Sorrow / The Unforgiven, Cowboys From Hell, Axel F,
+//        Für Elise, When Johnny Comes Marching Home, Requiem for a Dream);
+//        every MIDI channel maps to a SynthVoice.js voice slot (lead/bass/
+//        arp/pad/drums) and the scheduler grid moves to 32nds; all
+//        procedural placeholder tracks are removed.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -79,43 +88,76 @@ export default async function run() {
   }
   const plMod = await mod('js/core/audio/MusicPlaylists.js');
   check('MusicPlaylists: 4 context modes', Object.keys(plMod.MUSIC_MODES).length === 4, `got ${Object.keys(plMod.MUSIC_MODES).join(', ')}`);
-  check('MusicPlaylists: 14 songs in the album', Object.keys(plMod.SONGS).length === 14, `got ${Object.keys(plMod.SONGS).length}`);
+  check('MusicPlaylists: v4.16.0 the 11-track MIDI album (all procedural placeholder tracks removed)',
+    Object.keys(plMod.SONGS).length === 11, `got ${Object.keys(plMod.SONGS).length}`);
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
-  check('MusicPlaylists: crossover tracks ride two modes each (fur-elise open+combat, johnny-march combat+boneyard)',
-    plMod.PLAYLISTS.open.includes('fur-elise') && plMod.PLAYLISTS.combat.includes('fur-elise')
-    && plMod.PLAYLISTS.combat.includes('johnny-march') && plMod.PLAYLISTS.boneyard.includes('johnny-march'));
-  check('MusicPlaylists: Johnny March motif = 64 8th-grid notes', plMod.SONGS['johnny-march'].lead.motif.length === 64, `got ${plMod.SONGS['johnny-march'].lead.motif.length}`);
-  // ─── v4.14.0: symphonic cello-metal overhaul pins ───
-  check('MusicPlaylists: v4.14.0 intro overture is the primary opening theme (first in the open queue)',
-    plMod.PLAYLISTS.open[0] === 'intro-overture', `got ${plMod.PLAYLISTS.open[0]}`);
-  check('MusicPlaylists: v4.14.0 intro overture is a polyphonic cello-metal ballad (27-note lead + open-fifth harmony + stabs + build sweep)',
-    plMod.SONGS['intro-overture'].lead.motif.length === 27
-    && plMod.SONGS['intro-overture'].harmony.motif.length === 27
-    && plMod.SONGS['intro-overture'].stab === true
-    && plMod.SONGS['intro-overture'].sweeps.includes(6));
-  check('MusicPlaylists: v4.14.0 cello-metal Johnny March arrangement (staccato lead + heavy downbeat stabs)',
-    plMod.SONGS['johnny-march'].lead.glide === false && plMod.SONGS['johnny-march'].stab === true);
-  // ─── v4.15.0: jukebox playlist view + track replacements ───
-  check('MusicPlaylists: v4.15.0 the fur-elise slot is the new "Neon Horizon" (61-note D-minor lead, 124 BPM, techno bass, offbeat hats, glide ON)',
-    plMod.SONGS['fur-elise'].title === 'Neon Horizon'
-    && plMod.SONGS['fur-elise'].bpm === 124
-    && plMod.SONGS['fur-elise'].lead.motif.length === 61
-    && plMod.SONGS['fur-elise'].lead.glide === true
-    && plMod.SONGS['fur-elise'].bass === 'techno'
-    && plMod.SONGS['fur-elise'].perc.hat.join(',') === '2,6,10,14'
-    && plMod.SONGS['fur-elise'].stab === false,
-    `got ${plMod.SONGS['fur-elise'].title} / ${plMod.SONGS['fur-elise'].bpm} / motif ${plMod.SONGS['fur-elise'].lead.motif.length}`);
-  check('MusicPlaylists: v4.15.0 boss tracks are distinct (overdrive: 48-note Cm gallop riff + gallop kick + 8th bass; redline: 150 BPM breakbeat + march bass + tension sweep)',
-    plMod.SONGS['boss-overdrive'].lead.motif.length === 48
-    && plMod.SONGS['boss-overdrive'].bass === 'eighth'
-    && plMod.SONGS['boss-overdrive'].perc.kick.join(',') === '0,3,4,8,11,12'
-    && plMod.SONGS['boss-redline'].bpm === 150
-    && plMod.SONGS['boss-redline'].bass === 'march'
-    && plMod.SONGS['boss-redline'].perc.kick.join(',') === '0,7,8'
-    && plMod.SONGS['boss-redline'].sweeps.includes(6)
-    && plMod.SONGS['boss-redline'].arps.length === 3);
+  check('MusicPlaylists: v4.16.0 Nothing Else Matters is the main intro sequence (first in the open queue)',
+    plMod.PLAYLISTS.open[0] === 'metallica-nem', `got ${plMod.PLAYLISTS.open[0]}`);
+  check('MusicPlaylists: v4.16.0 crossover tracks ride two modes each (fur-elise open+boneyard, johnny-march open+combat, harvester boneyard+boss, cowboys combat+boss)',
+    plMod.PLAYLISTS.open.includes('fur-elise') && plMod.PLAYLISTS.boneyard.includes('fur-elise')
+    && plMod.PLAYLISTS.open.includes('johnny-march') && plMod.PLAYLISTS.combat.includes('johnny-march')
+    && plMod.PLAYLISTS.boneyard.includes('metallica-harvester') && plMod.PLAYLISTS.boss.includes('metallica-harvester')
+    && plMod.PLAYLISTS.combat.includes('pantera-cowboys') && plMod.PLAYLISTS.boss.includes('pantera-cowboys'));
+  check('MusicPlaylists: v4.16.0 the album is the parsed MIDI lineup (exact titles/artists)',
+    plMod.SONGS['metallica-nem'].title === 'Nothing Else Matters' && plMod.SONGS['metallica-nem'].artist === 'Metallica'
+    && plMod.SONGS['tool-forty-six'].title === 'Forty Six & 2' && plMod.SONGS['tool-forty-six'].artist === 'Tool'
+    && plMod.SONGS['tool-no-quarter'].title === 'No Quarter' && plMod.SONGS['tool-no-quarter'].artist === 'Tool'
+    && plMod.SONGS['tool-pneuma'].title === 'Pneuma' && plMod.SONGS['tool-pneuma'].artist === 'Tool'
+    && plMod.SONGS['metallica-unforgiven'].title === 'The Unforgiven'
+    && plMod.SONGS['metallica-harvester'].title === 'Harvester of Sorrow'
+    && plMod.SONGS['pantera-cowboys'].title === 'Cowboys From Hell' && plMod.SONGS['pantera-cowboys'].artist === 'Pantera'
+    && plMod.SONGS['axel-f'].title === 'Axel F'
+    && plMod.SONGS['fur-elise'].title === 'Für Elise' && plMod.SONGS['fur-elise'].artist === 'Beethoven'
+    && plMod.SONGS['johnny-march'].title === 'When Johnny Comes Marching Home'
+    && plMod.SONGS['requiem-dream'].title === 'Requiem for a Dream');
+  check('MusicPlaylists: v4.16.0 parsed note-sequence identity (dominant MIDI bpm + full parsed bar length per track)',
+    plMod.SONGS['metallica-nem'].bpm === 75 && plMod.SONGS['metallica-nem'].bars === 43
+    && plMod.SONGS['requiem-dream'].bpm === 45 && plMod.SONGS['requiem-dream'].bars === 25
+    && plMod.SONGS['axel-f'].bpm === 125 && plMod.SONGS['axel-f'].bars === 28
+    && plMod.SONGS['fur-elise'].bpm === 135 && plMod.SONGS['fur-elise'].bars === 52
+    && plMod.SONGS['johnny-march'].bpm === 165 && plMod.SONGS['johnny-march'].bars === 137
+    && plMod.SONGS['tool-forty-six'].bpm === 79 && plMod.SONGS['tool-forty-six'].bars === 124
+    && plMod.SONGS['tool-no-quarter'].bpm === 110 && plMod.SONGS['tool-no-quarter'].bars === 15
+    && plMod.SONGS['pantera-cowboys'].bpm === 230 && plMod.SONGS['pantera-cowboys'].bars === 45
+    && plMod.SONGS['metallica-harvester'].bpm === 92 && plMod.SONGS['metallica-harvester'].bars === 42
+    && plMod.SONGS['metallica-unforgiven'].bpm === 70 && plMod.SONGS['metallica-unforgiven'].bars === 110
+    && plMod.SONGS['tool-pneuma'].bpm === 115 && plMod.SONGS['tool-pneuma'].bars === 291);
+  check('MusicPlaylists: v4.16.0 every song carries parsed MIDI events (lead layer non-empty, 32nd-grid bounds, sane bpm/bars)',
+    Object.values(plMod.SONGS).every((s) => {
+      if (!s.events || !s.events.lead.length || s.bpm <= 40 || s.bpm >= 300 || s.bars < 4) return false;
+      const total = s.bars * 32;
+      for (const layer of ['lead', 'bass', 'arp', 'pad']) {
+        for (const [t, n, d, v] of s.events[layer] || []) {
+          if (t < 0 || t >= total || n < 0 || n > 127 || d < 1 || v < 0 || v > 1) return false;
+        }
+      }
+      for (const [t, k, v] of s.events.drums || []) {
+        if (t < 0 || t >= total || k < 0 || k > 3 || v < 0 || v > 1) return false;
+      }
+      return true;
+    }));
+  check('MusicPlaylists: v4.16.0 the exact note counts ride the layers (NEM 507 lead / 80 bass / 417 drums; Pneuma 3455 drums; Für Elise 526 lead, piano-only)',
+    plMod.SONGS['metallica-nem'].events.lead.length === 507
+    && plMod.SONGS['metallica-nem'].events.bass.length === 80
+    && plMod.SONGS['metallica-nem'].events.drums.length === 417
+    && plMod.SONGS['tool-pneuma'].events.drums.length === 3455
+    && plMod.SONGS['fur-elise'].events.lead.length === 526
+    && plMod.SONGS['fur-elise'].events.drums.length === 0);
+  check('v4.16.0 FIDELITY FIX: the main melody rides the LEAD slot (Requiem piano 1429 / Johnny trombone 481 / Harvester dist-gtr 395) + correct genre profiles (Axel F = synth perc 0.55, not metal; No Quarter + Für Elise = piano perc 0.3)',
+    plMod.SONGS['requiem-dream'].events.lead.length === 1429
+    && plMod.SONGS['johnny-march'].events.lead.length === 481
+    && plMod.SONGS['metallica-harvester'].events.lead.length === 395
+    && plMod.SONGS['axel-f'].vols.perc === 0.55
+    && plMod.SONGS['tool-no-quarter'].vols.perc === 0.3
+    && plMod.SONGS['fur-elise'].vols.perc === 0.3);
+  check('scheduler: v4.16.0 MIDI event playback path (32nd grid + events map → SynthVoice slots + kick pump)',
+    schedSrc.includes('60 / song.bpm / 8') && schedSrc.includes('song.events')
+    && schedSrc.includes('_scheduleEventStep') && schedSrc.includes('_evIndex')
+    && schedSrc.includes('_eventBass') && schedSrc.includes('_eventPad'));
+  check('tools/midi-import.mjs: the zero-dependency MIDI parser + converter exists',
+    fs.existsSync(path.join(ROOT, 'tools/midi-import.mjs')));
   check('v4.15.0: the admin jukebox shows the per-mode playlists (index.html #dev-jukebox-playlists + DevPanel builds the queue rows from PLAYLISTS)',
     read('index.html').includes('dev-jukebox-playlists')
     && read('js/ui/DevPanel.js').includes('dev-jukebox-playlists')

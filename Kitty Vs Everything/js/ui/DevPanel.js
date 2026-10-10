@@ -190,25 +190,28 @@ export default class DevPanel {
     // ─── v4.11.0: MUSIC JUKEBOX — preview any track from the SONGS album ───
     // Reuses the MusicScheduler preview session (audio.previewSong /
     // audio.stopPreview / audio.getPreviewSong): one track at a time,
-    // looping, hard-killed by gameplay startMusic(). The status line +
-    // active track button poll the facade (250 ms) so gameplay start/stop
-    // also updates the UI without extra event wiring.
+    // looping, hard-killed by gameplay startMusic(). The status line polls
+    // the facade (250 ms) so gameplay start/stop also updates the UI without
+    // extra event wiring.
     // v4.15.0: + the per-mode PLAYLISTS queue view — the rotation order is
     // now readable in the admin panel (each queue entry highlights while
     // that track is in preview).
+    // v4.16.0: the track list is a single DROPDOWN PICKER (<select>, like
+    // the Spawn Enemy selects) — pick a title and it plays. The select
+    // mirrors the live preview: gameplay startMusic() / STOP resets it to
+    // the "— pick a track —" placeholder.
     const jukebox = document.getElementById('dev-jukebox');
     if (jukebox) {
       const statusEl = document.getElementById('dev-jukebox-status');
       const stopBtn = document.getElementById('dev-jukebox-stop');
-      const trackBtns = new Map();
+      // v4.16.0: build the dropdown — a placeholder + one <option> per
+      // SONGS track (title as the label, id as the value). Picking an
+      // option previews that track via the MusicScheduler preview session.
+      jukebox.add(new Option('— pick a track —', ''));
       for (const song of Object.values(SONGS)) {
-        const b = document.createElement('button');
-        b.textContent = '▶ ' + song.title;
-        b.title = song.id + ' · ' + song.bpm + ' BPM · ' + song.bars + ' bars';
-        b.onclick = () => { audio.previewSong(song.id); };
-        trackBtns.set(song.id, b);
-        jukebox.appendChild(b);
+        jukebox.add(new Option(song.title, song.id));
       }
+      jukebox.onchange = () => { if (jukebox.value) audio.previewSong(jukebox.value); };
       if (stopBtn) stopBtn.onclick = () => { audio.stopPreview(); };
       // ─── v4.15.0: PLAYLIST VIEW — the per-mode rotation queues ───
       const plEl = document.getElementById('dev-jukebox-playlists');
@@ -238,7 +241,11 @@ export default class DevPanel {
       }
       const refreshJukebox = () => {
         const cur = audio.getPreviewSong();
-        for (const [id, b] of trackBtns) b.classList.toggle('active', id === cur);
+        // v4.16.0: keep the dropdown in sync with the live preview —
+        // gameplay startMusic() or STOP clears the preview → the select
+        // falls back to the placeholder; a new preview selects its track.
+        if (cur) { if (jukebox.value !== cur) jukebox.value = cur; }
+        else if (jukebox.value) { jukebox.value = ''; }
         if (plEl) {
           for (const el of plEl.querySelectorAll('.dev-playlist-track')) {
             el.classList.toggle('active', el.dataset.song === cur);

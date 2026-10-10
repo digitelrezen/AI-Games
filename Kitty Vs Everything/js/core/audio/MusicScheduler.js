@@ -1,5 +1,15 @@
 // Filename: core/audio/MusicScheduler.js
-// Kitty Vs Everything — v4.11.0
+// Kitty Vs Everything — v4.16.0
+// v4.16.0: MIDI EVENT PLAYBACK — the v4.16.0 album is the exact note
+//          sequences parsed from the local .mid files (tools/midi-import.mjs).
+//          The scheduler grid moves from 16ths to 32nds (the MIDI event
+//          resolution) and _scheduleSongStep gains an event path: every
+//          song with an events map (lead/bass/arp/pad/drums, [t, note,
+//          dur32, vel] on the 32nd grid) plays its parsed notes through
+//          the SynthVoice.js voices (_leadNote / _eventBass / _pluckNote /
+//          _eventPad / _kick / _snare / _hat, kick-pumped sidechain). The
+//          procedural arrangement path is legacy (no procedural tracks
+//          remain in the album).
 // v4.11.0: JUKEBOX PREVIEW — the Admin Panel (js/ui/DevPanel.js) music
 //          previewer can audition ANY track from the SONGS album in
 //          isolation: previewSong(id) hard-kills any current session (game
@@ -57,7 +67,7 @@
 //          (PLAYLISTS) of 32-bar songs (SONGS), 1-bar overlap crossfade at
 //          song boundaries, mode changes (setMode) apply at the next bar
 //          boundary with a riser / sub-drop accent.
-export const VERSION = 'v4.11.0';
+export const VERSION = 'v4.16.0';
 import { MUSIC_MODES, SONGS, PLAYLISTS, hz, mulberry32 } from './MusicPlaylists.js';
 import {
   makeNoiseBuffer, makeImpulse, softClipCurve,
@@ -379,20 +389,22 @@ export class MusicScheduler {
     return list[i % list.length];
   }
 
-  /** Look-ahead loop: schedule every 16th up to LOOKAHEAD s ahead of now. */
+  /** Look-ahead loop: schedule every 32nd up to LOOKAHEAD s ahead of now. */
   _scheduleMusic() {
     if (!this.playing || !this.core.ctx) return; // inactive → never re-arm
     const ctx = this.core.ctx;
     while (this._musicNext < ctx.currentTime + LOOKAHEAD) {
       const song = SONGS[this._song];
-      const step = 60 / song.bpm / 4;
-      const total = song.bars * 16;
+      // v4.16.0: 32nd-note grid — the MIDI event resolution of the parsed
+      // album (the legacy 16th grid of the procedural tracks is gone).
+      const step = 60 / song.bpm / 8;
+      const total = song.bars * 32;
       // Bar boundary: mode changes + song-end rotations apply here.
       // v4.11.0: JUKEBOX PREVIEW — while a track is previewing, the song
       // WRAPS at its end (loops the same track) instead of rotating the
       // playlist or changing mode.
-      if (this._songStep % 16 === 0 && !this._incoming) {
-        const finalBar = this._songStep === total - 16;
+      if (this._songStep % 32 === 0 && !this._incoming) {
+        const finalBar = this._songStep === total - 32;
         if (this._preview) {
           if (this._songStep >= total) this._songStep = 0;
         } else if (this._pendingMode !== this._mode || finalBar) {
@@ -404,14 +416,14 @@ export class MusicScheduler {
       if (this._incoming) {
         // 1-bar overlap crossfade: the outgoing song's current bar fades
         // out while the incoming song's bar 0 fades in on the same grid.
-        const pos = this._songStep % 16;
-        const fade = (pos + 1) / 16;
+        const pos = this._songStep % 32;
+        const fade = (pos + 1) / 32;
         this._scheduleSongStep(this._song, this._songStep, this._musicNext, step, 1 - fade);
         this._scheduleSongStep(this._incoming, this._incomingStep, this._musicNext, step, fade);
         this._incomingStep++;
-        if (pos === 15) {
+        if (pos === 31) {
           this._song = this._incoming;
-          this._songStep = 16; // the incoming song continues from bar 1
+          this._songStep = 32; // the incoming song continues from bar 1
           this._incoming = null;
         } else {
           this._songStep++;
@@ -425,10 +437,19 @@ export class MusicScheduler {
     this._timer = setTimeout(() => this._scheduleMusic(), TICK);
   }
 
-  /** One 16th note of one song (volScale = crossfade gain, 0..1). */
+  /** One 32nd note of one song (volScale = crossfade gain, 0..1). */
   _scheduleSongStep(songId, songStep, t, step, volScale) {
     if (!this._layers || volScale <= 0.005) return;
     const song = SONGS[songId];
+    // v4.16.0: MIDI EVENT PLAYBACK — the entire v4.16.0 album is parsed
+    // note sequences (tools/midi-import.mjs): every song carries an
+    // events map (lead/bass/arp/pad/drums on the 32nd grid) and plays
+    // back through the SynthVoice.js voices. The procedural arrangement
+    // path below is legacy — no procedural tracks remain in the album.
+    if (song.events) {
+      this._scheduleEventStep(song, songStep, t, step, volScale);
+      return;
+    }
     const sib = songStep % 16;
     const bar = Math.floor(songStep / 16);
     const loopBar = bar % song.chords.length;
@@ -593,7 +614,7 @@ export class MusicScheduler {
    * resonant lowpass, delay + reverb sends, optional portamento glide from
    * the previous note. The melody is thick and warm, never a raw buzz.
    */
-  _leadNote(song, midi, t, dur, volScale) {
+  _leadNote(song, midi, t, dur, volScale, vel = 1) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
     const cfg = song.lead;
@@ -610,7 +631,7 @@ export class MusicScheduler {
       q: cfg.q || 0.9,
       pan: cfg.pan || 0,
       adsr: cfg.adsr || { a: 0.012, d: 0.1, s: 0.7, r: 0.14 },
-      vol: (cfg.vol || 0.08) * volScale,
+      vol: (cfg.vol || 0.08) * volScale * vel,
       dur,
       glide,
       prevFreq: glide ? prev : null,
@@ -696,6 +717,114 @@ export class MusicScheduler {
         ? { a: 0.02, d: 0.15, s: 0.85, r: 0.25 }
         : { a: 0.005, d: 0.09, s: 0.8, r: 0.07 },
       vol, dur,
+    });
+    for (const s of v.sources) this._track(s);
+  }
+
+  // ─── v4.16.0: MIDI event playback (the parsed-note album) ───
+
+  /**
+   * v4.16.0: per-step event index for a MIDI song — lazy-built once and
+   * cached on the song (static data, safe to memoize): idx[step] =
+   * [[layer, event], ...] or undefined (a silent 32nd).
+   */
+  _evIndex(song) {
+    if (song._evIdx) return song._evIdx;
+    const total = song.bars * 32;
+    const idx = new Array(total);
+    for (const layer of ['lead', 'bass', 'arp', 'pad', 'drums']) {
+      for (const ev of song.events[layer] || []) {
+        const t = ev[0];
+        if (t < 0 || t >= total) continue;
+        (idx[t] || (idx[t] = [])).push([layer, ev]);
+      }
+    }
+    song._evIdx = idx;
+    return idx;
+  }
+
+  /**
+   * v4.16.0: one 32nd step of a MIDI song — every parsed note event on
+   * this step, routed to its SynthVoice.js slot:
+   *   lead  → _leadNote (the song.lead cello/distorted-saw profile)
+   *   bass  → _eventBass (the song.bass profile, soft-clip bus + pump)
+   *   arp   → _pluckNote (short detuned pluck + delay send)
+   *   pad   → _eventPad (slow-attack detuned voice + reverb send)
+   *   drums → _kick/_snare/_hat (GM-mapped kinds 0/1/2/3, kick-pumped)
+   */
+  _scheduleEventStep(song, songStep, t, step, volScale) {
+    const list = this._evIndex(song)[songStep];
+    if (!list) return;
+    const V = song.vols;
+    for (const [layer, ev] of list) {
+      if (layer === 'drums') {
+        const kind = ev[1];
+        const dv = V.perc * volScale * ev[2];
+        if (dv <= 0.001) continue;
+        if (kind === 0) {
+          this._kick(t, dv);
+          this._sidechainPump(t, step); // the 4-on-the-floor bounce
+        } else if (kind === 1) this._snare(t, dv);
+        else if (kind === 2) this._hat(t, dv, false);
+        else this._hat(t, dv, true);
+        continue;
+      }
+      const n = ev[1];
+      const dur = step * ev[2];
+      const v = ev[3];
+      if (layer === 'lead') this._leadNote(song, n, t, dur, volScale, v);
+      else if (layer === 'bass') this._eventBass(song, n, t, dur, volScale, v);
+      else if (layer === 'arp') this._pluckNote(hz(n), t, dur, V.arp * v * volScale, 1);
+      else if (layer === 'pad') this._eventPad(song, n, t, dur, volScale, v);
+    }
+  }
+
+  /**
+   * v4.16.0: explicit MIDI bass note — the parsed bassline through the
+   * song.bass voice profile (soft sine for ballads, detuned saw + sub
+   * for the driven tracks) on the soft-clip bass bus.
+   */
+  _eventBass(song, n, t, dur, volScale, vel) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const cfg = song.bass;
+    const V = song.vols.bass * volScale * vel;
+    if (V <= 0.001) return;
+    const v = makeVoice(ctx, this._layers.bass, {
+      t, freq: hz(n),
+      type: cfg.soft ? 'sine' : 'sawtooth',
+      detunes: cfg.detunes || [0],
+      sub: !!cfg.sub,
+      subLevel: 0.8,
+      cutoff: cfg.lp || 700,
+      q: cfg.q || 0.8,
+      adsr: cfg.adsr || { a: 0.005, d: 0.09, s: 0.8, r: 0.07 },
+      vol: V, dur,
+    });
+    for (const s of v.sources) this._track(s);
+  }
+
+  /**
+   * v4.16.0: explicit MIDI pad note — a slow-attack 3-osc detuned voice
+   * (the chord/harmony layer of the parsed arrangement) with a reverb
+   * send, through the pad bus.
+   */
+  _eventPad(song, n, t, dur, volScale, vel) {
+    if (!this._layers) return;
+    const ctx = this.core.ctx;
+    const V = song.vols.pad * volScale * vel;
+    if (V <= 0.001) return;
+    const d = Math.max(0.15, dur);
+    const v = makeVoice(ctx, this._layers.pad, {
+      t, freq: hz(n),
+      type: 'sawtooth',
+      detunes: [-8, 0, 8],
+      cutoff: song.padCutoff || 1200,
+      q: 1.1,
+      pan: 0.2,
+      adsr: { a: Math.min(0.3, d * 0.3), d: 0.2, s: 0.7, r: Math.min(0.6, d * 0.5) },
+      vol: V, dur: d,
+      sends: [this._layers.reverb],
     });
     for (const s of v.sources) this._track(s);
   }

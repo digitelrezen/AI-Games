@@ -98,19 +98,20 @@ export default async function run() {
 
   // ─── DevPanel jukebox UI ───
   const htmlSrc = read('index.html');
-  check('index.html: jukebox section (track list + stop button + status line)',
-    htmlSrc.includes('id="dev-jukebox"') && htmlSrc.includes('id="dev-jukebox-stop"')
+  check('index.html: jukebox section (v4.16.0 dropdown picker + stop button + status line)',
+    htmlSrc.includes('<select id="dev-jukebox"') && htmlSrc.includes('id="dev-jukebox-stop"')
     && htmlSrc.includes('id="dev-jukebox-status"'));
   const devSrc = read('js/ui/DevPanel.js');
   check('DevPanel: imports SONGS + PLAYLISTS (v4.15.0) + the audio facade for the jukebox',
     devSrc.includes("import { SONGS, PLAYLISTS } from '../core/audio/MusicPlaylists.js'")
     && devSrc.includes("import { audio } from '../core/AudioSystem.js'"));
-  check('DevPanel: builds one play button per SONGS track + stop + live status',
-    devSrc.includes('audio.previewSong(song.id)') && devSrc.includes('audio.stopPreview()')
-    && devSrc.includes('audio.getPreviewSong()') && devSrc.includes('Object.values(SONGS)'));
+  check('DevPanel: v4.16.0 builds the dropdown picker (one <option> per SONGS track) + stop + live status',
+    devSrc.includes('jukebox.add(new Option(') && devSrc.includes('audio.previewSong(jukebox.value)')
+    && devSrc.includes('audio.stopPreview()') && devSrc.includes('audio.getPreviewSong()')
+    && devSrc.includes('Object.values(SONGS)'));
   const cssSrc = read('style.css');
-  check('style.css: .dev-jukebox styles (scrollable list + active track)',
-    cssSrc.includes('.dev-jukebox {') && cssSrc.includes('.dev-jukebox button.active'));
+  check('style.css: v4.16.0 jukebox picker is a <select> (styled by .dev-section select; old .dev-jukebox list styles removed)',
+    cssSrc.includes('.dev-section select {') && !cssSrc.includes('.dev-jukebox {'));
 
   // ─── Module surface ───
   const coreMod = await mod('js/core/audio/AudioCore.js');
@@ -138,16 +139,16 @@ export default async function run() {
   // ─── Headless behavior: jukebox preview lifecycle + SFX safety ───
   check('headless: previewSong() with a bogus id is a no-op (returns false)',
     a.previewSong('not-a-song') === false && a.getPreviewSong() === null);
-  a.previewSong('open-drift');
+  a.previewSong('metallica-nem');
   check('headless: previewSong() arms state without an AudioContext (playing + preview id)',
-    a.musicPlaying === true && a.getPreviewSong() === 'open-drift');
-  a.previewSong('combat-engage');
+    a.musicPlaying === true && a.getPreviewSong() === 'metallica-nem');
+  a.previewSong('tool-forty-six');
   check('headless: re-previewing swaps the track (singleton session)',
-    a.getPreviewSong() === 'combat-engage');
+    a.getPreviewSong() === 'tool-forty-six');
   a.stopPreview();
   check('headless: stopPreview() clears the preview + drops the session',
     a.getPreviewSong() === null && a.musicPlaying === false);
-  a.previewSong('boss-eridath');
+  a.previewSong('tool-pneuma');
   a.startMusic();
   check('headless: gameplay startMusic() clears the preview (game music wins)',
     a.getPreviewSong() === null && a.musicPlaying === true);
