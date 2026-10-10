@@ -9,6 +9,13 @@
 //        lookahead timer, ONE session graph, hard teardown before every
 //        restart (zero overlapping loops), tracked timers + live-source
 //        GC.
+//        v4.14.0: SYMPHONIC CELLO-METAL OVERHAUL — the SONGS album is
+//        now a 14-track cello-ensemble album: the new intro-overture
+//        (the game's primary opening theme, first in the open queue) +
+//        the Für Elise / Johnny March cello-metal re-arrangements
+//        (staccato detuned-saw leads, woody lowpass, heavy low-end bass,
+//        downbeat chord stabs) — all routed through the SynthVoice.js
+//        polyphonic engine.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -66,7 +73,7 @@ export default async function run() {
   }
   const plMod = await mod('js/core/audio/MusicPlaylists.js');
   check('MusicPlaylists: 4 context modes', Object.keys(plMod.MUSIC_MODES).length === 4, `got ${Object.keys(plMod.MUSIC_MODES).join(', ')}`);
-  check('MusicPlaylists: 13 songs in the album', Object.keys(plMod.SONGS).length === 13, `got ${Object.keys(plMod.SONGS).length}`);
+  check('MusicPlaylists: 14 songs in the album', Object.keys(plMod.SONGS).length === 14, `got ${Object.keys(plMod.SONGS).length}`);
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
@@ -75,6 +82,17 @@ export default async function run() {
     && plMod.PLAYLISTS.combat.includes('johnny-march') && plMod.PLAYLISTS.boneyard.includes('johnny-march'));
   check('MusicPlaylists: Für Elise motif = 40 16th-grid notes (20-note phrase × 2 loop halves)', plMod.SONGS['fur-elise'].lead.motif.length === 40, `got ${plMod.SONGS['fur-elise'].lead.motif.length}`);
   check('MusicPlaylists: Johnny March motif = 64 8th-grid notes', plMod.SONGS['johnny-march'].lead.motif.length === 64, `got ${plMod.SONGS['johnny-march'].lead.motif.length}`);
+  // ─── v4.14.0: symphonic cello-metal overhaul pins ───
+  check('MusicPlaylists: v4.14.0 intro overture is the primary opening theme (first in the open queue)',
+    plMod.PLAYLISTS.open[0] === 'intro-overture', `got ${plMod.PLAYLISTS.open[0]}`);
+  check('MusicPlaylists: v4.14.0 intro overture is a polyphonic cello-metal ballad (27-note lead + open-fifth harmony + stabs + build sweep)',
+    plMod.SONGS['intro-overture'].lead.motif.length === 27
+    && plMod.SONGS['intro-overture'].harmony.motif.length === 27
+    && plMod.SONGS['intro-overture'].stab === true
+    && plMod.SONGS['intro-overture'].sweeps.includes(6));
+  check('MusicPlaylists: v4.14.0 cello-metal crossover arrangement (staccato leads + heavy downbeat stabs)',
+    plMod.SONGS['fur-elise'].lead.glide === false && plMod.SONGS['fur-elise'].stab === true
+    && plMod.SONGS['johnny-march'].lead.glide === false && plMod.SONGS['johnny-march'].stab === true);
   check('MusicPlaylists: hz() + mulberry32() helpers exported', typeof plMod.hz === 'function' && typeof plMod.mulberry32 === 'function');
   const schedMod = await mod('js/core/audio/MusicScheduler.js');
   check('MusicScheduler exports the class', typeof schedMod.MusicScheduler === 'function');

@@ -1,5 +1,36 @@
 // Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.9.0
+// Kitty Vs Everything — v4.14.0
+// v4.14.0: SYMPHONIC CELLO-METAL OVERHAUL — the SONGS album adopts the
+//          epic multi-cello metal aesthetic (Apocalyptica-style cello
+//          ensembles): aggressive staccato bowing (glide OFF + tight
+//          staccato ADSR on the leads), rich woody resonance (resonant
+//          lowpass 1600–2800 Hz), heavy distorted lower registers
+//          (detuned saw + sine sub bass through the bass-bus soft-clip
+//          shaper), and soaring dramatic multi-voice lead harmonies
+//          (lead + open-fifth / octave / third counter-voices) — zero
+//          vocals. New + re-arranged:
+//            • intro-overture (FIRST in the open queue — the game's
+//              primary opening theme): "Epic Overture", a 100 BPM
+//              arpeggiated symphonic-metal ballad in A minor — broken
+//              Am/F/C/G string arps lift into a soaring sustained
+//              melody over an open-fifth cello section, half-time
+//              drums, downbeat chord stabs and a 2-bar tension sweep
+//              into the dominant E (the acoustic-to-heavy build-up).
+//            • fur-elise → "Für Elise (Cello-Metal)": the 40-note
+//              motif keeps its 16th-grid shape but the arrangement is
+//              re-voiced — staccato detuned-saw lead (portamento off),
+//              the octave counter-voice becomes a detuned-saw cello
+//              section, the techno sub becomes a 16th-note staccato
+//              low-end pulse, 8th-note hats + heavy downbeat stabs.
+//            • johnny-march → "Johnny Marching Home (Cello-Metal)":
+//              the 64-note march motif moves from gritty square to
+//              staccato detuned saw + sub, the third-below harmony
+//              becomes a cello voice, the distorted march bassline +
+//              ghost snares stay, heavy downbeat chord stabs join.
+//          Every voice routes through the SynthVoice.js polyphonic
+//          engine (makeVoice / makeChord: detuned multi-osc + sine sub
+//          + soft-clip + resonant lowpass + full ADSR + delay/reverb
+//          sends) — rich filtering, harmonic layering, distortion.
 // v4.9.0: POLYPHONIC ARRANGEMENT DATA — the SONGS album now carries full
 //          arrangement data for the SynthVoice.js polyphonic engine:
 //            • lead: { motif, loop, wave, detunes, sub, lp, q, glide, vol,
@@ -43,7 +74,7 @@
 //              marching snare accents (backbeat + ghost shuffles),
 //              distorted 8th-note bass pulses, high-tension 2-bar
 //              atmospheric noise sweeps.
-export const VERSION = 'v4.9.0';
+export const VERSION = 'v4.14.0';
 
 // ─── v4.6.0: procedural soundtrack data ───
 // MIDI → Hz (69 = A4 = 440).
@@ -114,6 +145,35 @@ JOHNNY_MELODY.forEach((barNotes, b) => {
 // (A→F#, B→G, C→A, D→B, E→C, G→E, F#→D), the two-part military doubling.
 const JOHNNY_HARMONY = JOHNNY_MOTIF.map(([s, m, l]) => [s, m - 3, l]);
 
+// ─── v4.14.0: intro overture motifs (16th-note grid, 8-bar loop) ───
+// "Epic Overture" (A minor) — the arpeggiated symphonic-metal ballad.
+// Bars 1–4: broken-chord string ARPS (Am / F / C / G) — the "acoustic"
+// half; bars 5–8: the SOARING sustained melody, resolved by a long
+// dominant-E hold. The counter-voice doubles the line an OPEN FIFTH
+// below — the multi-voice cello-ensemble texture (melody on top, thick
+// open fifths underneath).
+const INTRO_OVERTURE_LEAD = [
+  [0, 69, 3], [4, 72, 3], [8, 76, 3], [12, 81, 3],   // Am: A4 C5 E5 A5 (arps)
+  [16, 65, 3], [20, 69, 3], [24, 72, 3], [28, 77, 3], // F:  F4 A4 C5 F5
+  [32, 72, 3], [36, 76, 3], [40, 79, 3], [44, 76, 3], // C:  C5 E5 G5 E5
+  [48, 71, 3], [52, 74, 3], [56, 79, 3], [60, 76, 3], // G:  B4 D5 G5 E5
+  [64, 76, 6], [70, 72, 2], [72, 69, 4], [76, 71, 4], // Am: E5.. C5 A4 B4 (soar)
+  [80, 72, 4], [84, 69, 4], [88, 65, 4],              // F:  C5 A4 F4
+  [96, 67, 4], [100, 71, 4], [104, 74, 4],            // G:  G4 B4 D5
+  [112, 76, 8],                                       // E:  E5 (dominant hold)
+];
+// The cello section: an open fifth below the melody (the ensemble body).
+const INTRO_OVERTURE_HARMONY = [
+  [0, 62, 3], [4, 65, 3], [8, 69, 3], [12, 74, 3],   // D4 F4 A4 D5
+  [16, 58, 3], [20, 62, 3], [24, 65, 3], [28, 70, 3], // B3 D4 F4 B4
+  [32, 65, 3], [36, 69, 3], [40, 72, 3], [44, 69, 3], // F4 A4 C5 A4
+  [48, 64, 3], [52, 67, 3], [56, 72, 3], [60, 69, 3], // E4 G4 C5 A4
+  [64, 69, 6], [70, 65, 2], [72, 62, 4], [76, 64, 4], // A4 F4 D4 E4
+  [80, 65, 4], [84, 62, 4], [88, 58, 4],              // F4 D4 B3
+  [96, 60, 4], [100, 64, 4], [104, 67, 4],            // C4 E4 G4
+  [112, 69, 8],                                       // A4 (under the E5 hold)
+];
+
 // ─── v4.6.0: the soundtrack album — full-length song definitions ───
 // Each song: bpm, bars (full length, 4× the 8-bar chord loop), chords
 // (8 bars × 3 MIDI tones), arps (3 16-step chord-tone patterns, -1 = rest;
@@ -121,6 +181,45 @@ const JOHNNY_HARMONY = JOHNNY_MOTIF.map(([s, m, l]) => [s, m - 3, l]);
 // (whole/half/eighth/sixteenth/techno/march line structure), perc
 // (16th-grid hit positions; null = no percussion), padCutoff, vols.
 export const SONGS = {
+  // ═══ v4.14.0: INTRO — the game's primary opening theme ═══
+  // First in the open queue: MusicScheduler.start() picks PLAYLISTS.open[0],
+  // so this is the track that opens every mission — an epic arpeggiated
+  // symphonic-metal ballad (acoustic strings → heavy build-up).
+  'intro-overture': {
+    id: 'intro-overture', title: 'Epic Overture (Cello-Metal Ballad)', bpm: 100, bars: 32, seed: 14,
+    chords: [
+      [57, 60, 64], // Am
+      [53, 57, 60], // F
+      [48, 52, 55], // C
+      [55, 59, 62], // G
+      [57, 60, 64], // Am
+      [53, 57, 60], // F
+      [55, 59, 62], // G
+      [52, 55, 59], // E (dominant — the heavy resolution)
+    ],
+    arps: null,
+    lead: {
+      motif: INTRO_OVERTURE_LEAD, loop: 128,
+      // v4.14.0: soaring bowed-strings lead — 3-osc detuned saw + sine
+      // sub, warm woody resonant lowpass, portamento glide (the cello
+      // bow), delay + reverb sends.
+      wave: 'sawtooth', detunes: [-10, 0, 10], sub: true,
+      lp: 2800, q: 1.1, glide: true, vol: 0.09,
+      adsr: { a: 0.01, d: 0.12, s: 0.55, r: 0.12 },
+    },
+    harmony: {
+      motif: INTRO_OVERTURE_HARMONY, loop: 128,
+      // the open-fifth cello section under the melody (multi-voice lead).
+      wave: 'sawtooth', detunes: [-8, 0, 8], lp: 2000, vol: 0.055,
+      adsr: { a: 0.008, d: 0.14, s: 0.5, r: 0.12 },
+    },
+    bass: 'eighth', // detuned saw + sub through the bass-bus soft-clip (heavy low register)
+    perc: { kick: [0, 8], snare: [8], hat: [4, 12] }, // half-time epic ballad drums
+    stab: true, // v4.14.0: detuned chord hits on the downbeats (the "heavy" layer)
+    sweeps: [6], // 2-bar tension build into the dominant E
+    padCutoff: 1100,
+    vols: { pad: 0.07, arp: 0, bass: 0.16, perc: 0.8, stab: 0.05 },
+  },
   // ═══ OPEN SPACE — atmospheric, no percussion (the breath between waves) ═══
   'open-drift': {
     id: 'open-drift', title: 'Open Drift', bpm: 92, bars: 32, seed: 1,
@@ -191,9 +290,9 @@ export const SONGS = {
     padCutoff: 1200,
     vols: { pad: 0.095, arp: 0.05, bass: 0.1, perc: 0 },
   },
-  // ── CROSSOVER 1: Für Elise (A minor) — 128 BPM cyber-remix ──
+  // ── CROSSOVER 1: Für Elise (A minor) — 128 BPM cello-metal arrangement ──
   'fur-elise': {
-    id: 'fur-elise', title: 'Für Elise (Cyber-Remix)', bpm: 128, bars: 32, seed: 4,
+    id: 'fur-elise', title: 'Für Elise (Cello-Metal)', bpm: 128, bars: 32, seed: 4,
     chords: [
       [57, 60, 64], // Am
       [53, 57, 60], // F
@@ -207,20 +306,25 @@ export const SONGS = {
     arps: null,
     lead: {
       motif: FUR_ELISE_MOTIF, loop: 128,
-      // v4.9.0: 3-osc detuned saw + sine sub, portamento glide, warm
-      // resonant lowpass, delay + reverb sends.
-      wave: 'sawtooth', detunes: [-9, 0, 9], sub: true,
-      lp: 4200, q: 1.0, glide: true, vol: 0.085,
-      adsr: { a: 0.012, d: 0.1, s: 0.7, r: 0.14 },
+      // v4.14.0: SYMPHONIC CELLO-METAL — aggressive staccato bowing:
+      // 3-osc detuned saw + sine sub, NO portamento (glide off), tight
+      // staccato ADSR, woody resonant lowpass, delay + reverb sends.
+      wave: 'sawtooth', detunes: [-11, 0, 11], sub: true,
+      lp: 2600, q: 1.2, glide: false, vol: 0.09,
+      adsr: { a: 0.004, d: 0.09, s: 0.35, r: 0.08 },
     },
     harmony: {
       motif: FUR_ELISE_HARMONY, loop: 128,
-      wave: 'triangle', vol: 0.05,
+      // the cello section: the motif an octave below, now a detuned-saw
+      // ensemble (was a soft triangle double) — chords + melody at once.
+      wave: 'sawtooth', detunes: [-8, 0, 8], lp: 1800, vol: 0.055,
+      adsr: { a: 0.005, d: 0.1, s: 0.4, r: 0.09 },
     },
-    bass: 'techno', // 16th-note sub, sidechain-pumped on the kick
-    perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14] },
-    padCutoff: 1100,
-    vols: { pad: 0.07, arp: 0, bass: 0.16, perc: 0.85 },
+    bass: 'sixteenth', // staccato 16th-note low-end pulse (octave offbeats), soft-clipped
+    perc: { kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+    stab: true, // v4.14.0: heavy detuned chord hits (downbeat + "and" of 3)
+    padCutoff: 900,
+    vols: { pad: 0.06, arp: 0, bass: 0.17, perc: 0.85, stab: 0.055 },
   },
   // ═══ COMBAT — driving engagement ═══
   'combat-engage': {
@@ -269,9 +373,9 @@ export const SONGS = {
     padCutoff: 950,
     vols: { pad: 0.05, arp: 0.06, bass: 0.16, perc: 0.85, stab: 0.055 },
   },
-  // ── CROSSOVER 2: When Johnny Comes Marching Home — 132 BPM industrial remix ──
+  // ── CROSSOVER 2: When Johnny Comes Marching Home — 132 BPM cello-metal arrangement ──
   'johnny-march': {
-    id: 'johnny-march', title: 'Johnny Marching Home (Industrial Remix)', bpm: 132, bars: 32, seed: 7,
+    id: 'johnny-march', title: 'Johnny Marching Home (Cello-Metal)', bpm: 132, bars: 32, seed: 7,
     chords: [
       [57, 60, 64], // Am
       [57, 60, 64], // Am
@@ -285,24 +389,29 @@ export const SONGS = {
     arps: null,
     lead: {
       motif: JOHNNY_MOTIF, loop: 128,
-      // v4.9.0: gritty 3-osc detuned square + sine sub, tight resonant
-      // lowpass, delay + reverb sends.
-      wave: 'square', detunes: [-7, 0, 7], sub: true,
-      lp: 3200, q: 0.9, glide: false, vol: 0.08,
-      adsr: { a: 0.008, d: 0.12, s: 0.65, r: 0.1 },
+      // v4.14.0: SYMPHONIC CELLO-METAL — the driving march motif on a
+      // staccato 3-osc detuned saw + sine sub (was a gritty square),
+      // woody resonant lowpass, tight bowing ADSR, delay + reverb sends.
+      wave: 'sawtooth', detunes: [-10, 0, 10], sub: true,
+      lp: 2400, q: 1.1, glide: false, vol: 0.085,
+      adsr: { a: 0.004, d: 0.1, s: 0.4, r: 0.08 },
     },
     harmony: {
       motif: JOHNNY_HARMONY, loop: 128,
-      wave: 'square', vol: 0.045,
+      // the classic march third-below, now a detuned-saw cello voice
+      // (two-part military doubling, chords + melody at the same time).
+      wave: 'sawtooth', detunes: [-8, 0, 8], lp: 1600, vol: 0.05,
+      adsr: { a: 0.005, d: 0.1, s: 0.4, r: 0.09 },
     },
     bass: 'march', // distorted 8th-note pulses
     perc: {
       kick: [0, 4, 8, 12], snare: [4, 12],
       hat: [0, 2, 4, 6, 8, 10, 12, 14], ghostSnare: [2, 6, 10, 14],
     },
+    stab: true, // v4.14.0: heavy detuned chord hits (downbeat + "and" of 3)
     sweeps: [6], // high-tension 2-bar build into the loop restart
-    padCutoff: 850,
-    vols: { pad: 0.06, arp: 0, bass: 0.15, perc: 0.9 },
+    padCutoff: 800,
+    vols: { pad: 0.055, arp: 0, bass: 0.16, perc: 0.9, stab: 0.055 },
   },
   // ═══ BONEYARD — dark hazard zone ═══
   'boneyard-crypt': {
@@ -447,8 +556,11 @@ export const SONGS = {
 };
 
 // ─── v4.6.0: per-mode song queues (the rotation order) ───
+// v4.14.0: the open queue OPENS with the intro overture — the game's
+// primary opening theme (MusicScheduler.start() picks the first entry);
+// the Für Elise cello-metal crossover still rides the open rotation.
 export const PLAYLISTS = {
-  open: ['open-drift', 'fur-elise', 'open-nebula', 'open-aurora'],
+  open: ['intro-overture', 'fur-elise', 'open-drift', 'open-nebula', 'open-aurora'],
   combat: ['combat-engage', 'fur-elise', 'combat-vanguard', 'johnny-march'],
   boneyard: ['boneyard-crypt', 'johnny-march', 'boneyard-mire', 'boneyard-relic'],
   boss: ['boss-eridath', 'boss-overdrive', 'boss-redline'],
