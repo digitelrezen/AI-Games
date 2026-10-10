@@ -1,5 +1,19 @@
 // Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.20.0
+// Kitty Vs Everything — v4.21.0
+// v4.21.0: AUDIO MIX PASS 2 — TRACK_MIX_SETTINGS re-tuned against the
+//          Forty Six & 2 reference after the "most tracks are ~2x too
+//          quiet" report: Axel F L4.0/A2.5/P2.5 (the hook rides arp+pad
+//          at base vol 0.05/0.06 — it was inaudible), Unforgiven
+//          A2.5/P1.5 (the rhythm guitar + "synth" harmony were buried at
+//          0.8x/0.25x — "only part of the harmony plays"), Pneuma
+//          L2.0/B1.5/D1.0/A2.2/P1.5 (the full band back; the 2514-note
+//          power-chord rhythm now also rides a per-song SAW arp voice
+//          profile — song.arp — instead of the dead triangle pluck),
+//          Johnny March L3.0/D0.2 (the melody over the march snare), plus
+//          ~2x leads on every other quiet track (NEM 3.0, Requiem 3.0,
+//          Fur Elise 3.5, No Quarter 3.5, Cowboys 3.0, Harvester 3.0,
+//          Classical Gas 3.0, Blue 3.5, Crazy Train 4.0, CoTG 2.5).
+//          Forty Six & 2 stays all-1.0 (the volume reference).
 // v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against the
 //          Forty Six & 2 reference (the loudest, riff-forward track):
 //          quiet leads boosted (Crazy Train 2.6x, Blue 2.3x, Fur Elise /
@@ -2198,6 +2212,7 @@ export const SONGS = {
     bpm: 115, bars: 291, seed: 11,
     lead: { wave: 'sawtooth', detunes: [-10, 0, 10], sub: true, lp: 3000, q: 1, glide: false, vol: 0.11, adsr: { a: 0.004, d: 0.1, s: 0.55, r: 0.09 } },
     bass: { soft: false, lp: 450, q: 1.2, detunes: [-6, 6], sub: true, adsr: { a: 0.005, d: 0.09, s: 0.8, r: 0.07 } },
+    arp: { wave: 'sawtooth', detunes: [-8, 0, 8], lp: 2600, q: 1.1, adsr: { a: 0.01, d: 0.12, s: 0.6, r: 0.1 } },
     padCutoff: 1000,
     vols: { pad: 0.05, arp: 0.055, lead: 0.11, bass: 0.15, perc: 0.6 },
     events: {
@@ -3645,32 +3660,37 @@ export const SONGS = {
   },
 };
 
-// ─── v4.20.0: per-track mix settings (the per-song channel balance) ───
+// ─── v4.21.0: per-track mix settings (the per-song channel balance) ───
 // One entry per song: gainLead / gainBass / gainDrums / gainArp / gainPad
 // are scalar multipliers (1.0 = the genre profile's vols as-is) that the
 // MusicScheduler applies in the MIDI event path — e.g. gainLead > 1
 // boosts a quiet lead melody, gainDrums < 1 lowers an overpowering
 // percussion channel, gainPad < 1 ducks a harsh synth pad, gainArp > 1
-// lifts a rhythm-guitar arp. Tuned v4.20.0 against the Forty Six & 2
-// reference (tool-forty-six stays all-1.0 — the volume benchmark).
+// lifts a rhythm-guitar arp. Re-tuned v4.21.0 against the Forty Six & 2
+// reference (tool-forty-six stays all-1.0 — the volume benchmark) after
+// the "most tracks need ~2x to match 46&2" report: the v4.20.0 pass
+// under-corrected — Axel F's hook (arp+pad at base vol 0.05/0.06) was
+// still inaudible, The Unforgiven's rhythm guitar (arp 0.8x) + "synth"
+// harmony (pad 0.25x) were buried, Pneuma's full band was cut to a thin
+// pluck, and Johnny March's drums still buried the melody.
 // Tweak per song here (or in tools/midi-import.mjs TRACKS[].mix) and
 // re-run `node tools/midi-import.mjs --write`.
 export const TRACK_MIX_SETTINGS = {
-  'metallica-nem': { gainLead: 1.8, gainBass: 0.9, gainDrums: 0.9, gainArp: 1, gainPad: 1 },
-  'requiem-dream': { gainLead: 1.7, gainBass: 1, gainDrums: 0.4, gainArp: 1.1, gainPad: 1 },
-  'axel-f': { gainLead: 2, gainBass: 1.2, gainDrums: 0.9, gainArp: 1.4, gainPad: 1.4 },
-  'fur-elise': { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'johnny-march': { gainLead: 1.6, gainBass: 1, gainDrums: 0.35, gainArp: 0.8, gainPad: 1 },
+  'metallica-nem': { gainLead: 3, gainBass: 1.5, gainDrums: 1.5, gainArp: 1, gainPad: 1 },
+  'requiem-dream': { gainLead: 3, gainBass: 1, gainDrums: 0.8, gainArp: 2, gainPad: 1 },
+  'axel-f': { gainLead: 4, gainBass: 2, gainDrums: 1.5, gainArp: 2.5, gainPad: 2.5 },
+  'fur-elise': { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'johnny-march': { gainLead: 3, gainBass: 1.5, gainDrums: 0.2, gainArp: 0.8, gainPad: 1 },
   'tool-forty-six': { gainLead: 1, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'tool-no-quarter': { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'pantera-cowboys': { gainLead: 1.7, gainBass: 1.3, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'metallica-harvester': { gainLead: 1.8, gainBass: 0.5, gainDrums: 0.45, gainArp: 1, gainPad: 1 },
-  'metallica-unforgiven': { gainLead: 1.9, gainBass: 1.1, gainDrums: 1, gainArp: 0.8, gainPad: 0.25 },
-  'tool-pneuma': { gainLead: 1.5, gainBass: 0.8, gainDrums: 0.4, gainArp: 1.9, gainPad: 0.8 },
-  'classical-gas': { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'eiffel65-blue': { gainLead: 2.3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'ozzy-crazy-train': { gainLead: 2.6, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
-  'black-sabbath-cotg': { gainLead: 1.7, gainBass: 1, gainDrums: 0.45, gainArp: 1, gainPad: 1 },
+  'tool-no-quarter': { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'pantera-cowboys': { gainLead: 3, gainBass: 2, gainDrums: 1.5, gainArp: 1, gainPad: 1 },
+  'metallica-harvester': { gainLead: 3, gainBass: 1, gainDrums: 0.9, gainArp: 1.5, gainPad: 1 },
+  'metallica-unforgiven': { gainLead: 2.5, gainBass: 1.8, gainDrums: 1, gainArp: 2.5, gainPad: 1.5 },
+  'tool-pneuma': { gainLead: 2, gainBass: 1.5, gainDrums: 1, gainArp: 2.2, gainPad: 1.5 },
+  'classical-gas': { gainLead: 3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'eiffel65-blue': { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'ozzy-crazy-train': { gainLead: 4, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 },
+  'black-sabbath-cotg': { gainLead: 2.5, gainBass: 1.5, gainDrums: 0.8, gainArp: 1, gainPad: 1 },
 };
 
 // ─── v4.20.0: per-mode song queues (the rotation order) ───

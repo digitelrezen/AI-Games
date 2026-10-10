@@ -332,21 +332,28 @@ export const TRACKS = [
   // + soft sine bass render the piano ballad faithfully (like the other
   // piano-profile tracks). The mix boost (gainLead 1.8) lifts the quiet
   // piano to the Forty Six & 2 reference level.
-  { file: 'Metallica - Nothing Else Matters.mid', id: 'metallica-nem', title: 'Nothing Else Matters', artist: 'Metallica', genre: 'piano', mix: { gainLead: 1.8, gainBass: 0.9, gainDrums: 0.9, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": lead 3.0x, bass + drums 1.5x.
+  { file: 'Metallica - Nothing Else Matters.mid', id: 'metallica-nem', title: 'Nothing Else Matters', artist: 'Metallica', genre: 'piano', mix: { gainLead: 3, gainBass: 1.5, gainDrums: 1.5, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the piano (ch0, 1400+ polyphonic notes) is the MAIN body of the
   // piece — pin it to the lead voice. The violin / music box / xylophone
   // (ch1–3) are short melodic accents → arp. (Auto-classify sent the piano
   // to the quiet pad slot and made a 48-note music box the "lead".)
   // v4.20.0: mix — the 1176-hit drum track is "way over the top": 0.4x,
   // the quiet piano lead 1.7x (Forty Six & 2 reference level).
-  { file: 'Requiem for a Dream 3.mid', id: 'requiem-dream', title: 'Requiem for a Dream', artist: 'Clint Eastwood', genre: 'ballad', chMap: { lead: [0], arp: [1, 2, 3] }, mix: { gainLead: 1.7, gainBass: 1, gainDrums: 0.4, gainArp: 1.1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": piano lead 3.0x, the violin /
+  // music-box arp 2.0x, drums 0.8x.
+  { file: 'Requiem for a Dream 3.mid', id: 'requiem-dream', title: 'Requiem for a Dream', artist: 'Clint Eastwood', genre: 'ballad', chMap: { lead: [0], arp: [1, 2, 3] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 0.8, gainArp: 2, gainPad: 1 } },
   // v4.16.0: 80s synth-pop, NOT metal — the new 'synth' profile (clean
   // detuned-saw pluck lead, smooth bass, moderate drums). Auto-classify
   // already routes ch2 (the synth-pluck riff) → lead, ch3 (bass line) →
   // bass, ch0 (electric-piano chords) → pad, ch1 (wide synth figure) → arp.
   // v4.20.0: mix — "way too low": the sparse lead 2.0x, the wide-synth
   // arp + e-piano pad (the real body of the hook) 1.4x each.
-  { file: 'Axel - F.mid', id: 'axel-f', title: 'Axel F', artist: 'Harold Faltermeyer', genre: 'synth', mix: { gainLead: 2, gainBass: 1.2, gainDrums: 0.9, gainArp: 1.4, gainPad: 1.4 } },
+  // v4.21.0: mix — "still can't hear it at all": the HOOK rides the
+  // wide-synth arp (base vol 0.05) + e-piano pad (base vol 0.06) — 2.5x
+  // each (effective 0.125/0.15 ≈ the Forty Six & 2 lead level), the
+  // sparse lead 4.0x, bass 2.0x, drums 1.5x.
+  { file: 'Axel - F.mid', id: 'axel-f', title: 'Axel F', artist: 'Harold Faltermeyer', genre: 'synth', mix: { gainLead: 4, gainBass: 2, gainDrums: 1.5, gainArp: 2.5, gainPad: 2.5 } },
   // Für Elise is a single piano channel — the melody and the left-hand
   // arpeggio overlap in pitch (A4/C5 belong to both), so a pitch split
   // would tear the melody apart: ALL notes ride the lead voice (the
@@ -354,7 +361,8 @@ export const TRACKS = [
   // v4.16.0: the 'piano' profile (bright pluck-like lead, fast decay)
   // replaces the old soft 'classical' triangle.
   // v4.20.0: mix — "just too low": the quiet triangle piano 2.0x.
-  { file: 'Für Elise.mid', id: 'fur-elise', title: 'Für Elise', artist: 'Beethoven', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": the solo piano 3.5x.
+  { file: 'Für Elise.mid', id: 'fur-elise', title: 'Für Elise', artist: 'Beethoven', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the trombone (ch0) plays the march MELODY — pin it to lead.
   // ch1 + ch4 are the bass line, ch2 (fast figure) + ch3 (violin
   // countermelody) are arp. (Auto-classify made the trombone a quiet pad
@@ -362,7 +370,9 @@ export const TRACKS = [
   // v4.20.0: mix — the in-your-face drums (1.49x the melody energy) go to
   // the background (0.35x), the trombone melody 1.6x, the busy arp
   // counter-figures 0.8x.
-  { file: 'When Johnny Comes Marching Home.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] }, mix: { gainLead: 1.6, gainBass: 1, gainDrums: 0.35, gainArp: 0.8, gainPad: 1 } },
+  // v4.21.0: mix — "the drums ruin it" (still, at 0.35x): drums 0.2x,
+  // the trombone melody 3.0x (clearly on top), bass 1.5x.
+  { file: 'When Johnny Comes Marching Home.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] }, mix: { gainLead: 3, gainBass: 1.5, gainDrums: 0.2, gainArp: 0.8, gainPad: 1 } },
   // v4.20.0: THE VOLUME REFERENCE — Forty Six & 2 is the loudest,
   // riff-forward track (dense high-velocity lead, drums at 0.14x the
   // lead). Every other track is tuned against it; it stays all-1.0.
@@ -370,32 +380,44 @@ export const TRACKS = [
   // v4.16.0: the MIDI is the dramatic piano intro — the 'piano' profile
   // (not the metal sawtooth) renders it faithfully.
   // v4.20.0: mix — "too low": the short piano intro 2.0x.
-  { file: 'TOOL_ No Quarter.mid', id: 'tool-no-quarter', title: 'No Quarter', artist: 'Tool', genre: 'piano', mix: { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": the piano intro 3.5x.
+  { file: 'TOOL_ No Quarter.mid', id: 'tool-no-quarter', title: 'No Quarter', artist: 'Tool', genre: 'piano', mix: { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.20.0: mix — "just too low": the fast 230-bpm staccato notes read
   // quiet — lead 1.7x + driving bass 1.3x.
-  { file: 'Cowboys From HELL.mid', id: 'pantera-cowboys', title: 'Cowboys From Hell', artist: 'Pantera', genre: 'metal', mix: { gainLead: 1.7, gainBass: 1.3, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": lead 3.0x, bass 2.0x, drums 1.5x.
+  { file: 'Cowboys From HELL.mid', id: 'pantera-cowboys', title: 'Cowboys From Hell', artist: 'Pantera', genre: 'metal', mix: { gainLead: 3, gainBass: 2, gainDrums: 1.5, gainArp: 1, gainPad: 1 } },
   // v4.16.0: the distorted rhythm guitar (ch0) is the main body of the
   // song — pin it to lead. ch1 (acoustic) + ch2 (lead guitar) are arp,
   // ch3 is the bass line. (Auto-classify made the rhythm guitar a quiet
   // pad and a 21-note channel the "lead".)
   // v4.20.0: mix — the main rhythm can't be heard (lead 1.8x), the bass
   // was over the top (0.5x), and the clicky hi-hats are ick (drums 0.45x).
-  { file: 'Metallica - Harvester of Sorrow.mid', id: 'metallica-harvester', title: 'Harvester of Sorrow', artist: 'Metallica', genre: 'metal', chMap: { lead: [0], arp: [1, 2], bass: [3] }, mix: { gainLead: 1.8, gainBass: 0.5, gainDrums: 0.45, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": lead 3.0x, the bass back to
+  // 1.0x (the 0.5x cut was too far), drums 0.9x, the arp 1.5x.
+  { file: 'Metallica - Harvester of Sorrow.mid', id: 'metallica-harvester', title: 'Harvester of Sorrow', artist: 'Metallica', genre: 'metal', chMap: { lead: [0], arp: [1, 2], bass: [3] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 0.9, gainArp: 1.5, gainPad: 1 } },
   // v4.20.0: mix — the main rhythm was muffed in the background (lead
   // 1.9x) and the "synth" (the pad channel, the loudest layer) only plays
   // part of the rhythm and is off-putting (0.25x); the busy arp 0.8x.
-  { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', mix: { gainLead: 1.9, gainBass: 1.1, gainDrums: 1, gainArp: 0.8, gainPad: 0.25 } },
+  // v4.21.0: mix — "only part of the harmony plays": the 0.25x pad cut
+  // removed the "synth" harmony entirely — back to 1.5x; the rhythm
+  // guitar (arp, 1065 notes) 2.5x (the main body), lead 2.5x, bass 1.8x.
+  { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', mix: { gainLead: 2.5, gainBass: 1.8, gainDrums: 1, gainArp: 2.5, gainPad: 1.5 } },
   // v4.20.0: mix — "mixed strange": the guitar RHYTHM rides the arp slot
   // (6.5 energy/s vs 0.1 on the lead) — lift it 1.9x so it's the focus;
   // the 3455-hit drum track is "a little annoying" (0.4x), the heavy bass
   // 0.8x, the sparse lead 1.5x.
-  { file: 'Tool- Pneuma.mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'metal', mix: { gainLead: 1.5, gainBass: 0.8, gainDrums: 0.4, gainArp: 1.9, gainPad: 0.8 } },
+  // v4.21.0: mix — "sounds horrible": the 2514-note power-chord rhythm
+  // was a dead triangle pluck — NEW per-song SAW arp voice profile
+  // (sustained, like a guitar) + the full band back (drums 1.0x, bass
+  // 1.5x, arp 2.2x, pad 1.5x, lead 2.0x).
+  { file: 'Tool- Pneuma.mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'metal', arp: { wave: 'sawtooth', detunes: [-8, 0, 8], lp: 2600, q: 1.1, adsr: { a: 0.01, d: 0.12, s: 0.6, r: 0.1 } }, mix: { gainLead: 2, gainBass: 1.5, gainDrums: 1, gainArp: 2.2, gainPad: 1.5 } },
   // v4.17.0: Classical Gas (Mose Ziering) — a single-channel grand-piano
   // arrangement of the famous fingerpicked guitar piece. The melody and the
   // fast arpeggiated left-hand figure overlap in pitch, so (like Für Elise)
   // ALL notes ride the polyphonic lead voice; the 'piano' profile (bright
   // pluck-like lead, fast decay) keeps the 16th-note arpeggio crisp.
-  { file: 'Classical Gas.mid.mid', id: 'classical-gas', title: 'Classical Gas', artist: 'Mose Ziering', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 2, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": the solo piano 3.0x.
+  { file: 'Classical Gas.mid.mid', id: 'classical-gas', title: 'Classical Gas', artist: 'Mose Ziering', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.17.0: Eiffel 65 — Blue (Da Ba Dee) — a single-channel piano
   // arrangement of the Eurodance hook (the "da ba dee" lead melody + the
   // horn-stab chord hits). ALL notes ride the polyphonic lead voice; the
@@ -404,7 +426,8 @@ export const TRACKS = [
   // v4.20.0: mix — "cannot hear it, so low" (1141 notes at avg velocity
   // 0.15): the lead hook 2.3x to the Forty Six & 2 reference level (the
   // arrangement itself "sounds great" — only the level was wrong).
-  { file: 'Eiffel 65 - Blue (Da Ba Dee).mid', id: 'eiffel65-blue', title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', genre: 'synth', chMap: { lead: [0] }, mix: { gainLead: 2.3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": the lead hook 3.5x.
+  { file: 'Eiffel 65 - Blue (Da Ba Dee).mid', id: 'eiffel65-blue', title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', genre: 'synth', chMap: { lead: [0] }, mix: { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.19.0: Ozzy Osbourne — Crazy Train (intro riff, acoustic cover) —
   // the classic galloping E-minor riff as a single-channel acoustic
   // arrangement (80 notes, E2–B3, 9 bars). ALL notes ride the
@@ -413,7 +436,9 @@ export const TRACKS = [
   // The per-track mix boost (gainLead 2.6 — v4.20.0, up from 1.15) lifts
   // the quiet solo-guitar riff ("cannot hear it, so low") to the Forty
   // Six & 2 reference level.
-  { file: 'ozzy osbourne - crazy train intro riff acoustic cover.mid', id: 'ozzy-crazy-train', title: 'Crazy Train (Intro Riff)', artist: 'Ozzy Osbourne', genre: 'metal', chMap: { lead: [0] }, mix: { gainLead: 2.6, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": the 31-second riff loop 4.0x
+  // (the hook has to hit as hard as Forty Six & 2).
+  { file: 'ozzy osbourne - crazy train intro riff acoustic cover.mid', id: 'ozzy-crazy-train', title: 'Crazy Train (Intro Riff)', artist: 'Ozzy Osbourne', genre: 'metal', chMap: { lead: [0] }, mix: { gainLead: 4, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.19.0: Black Sabbath — Children Of The Grave — the classic heavy
   // metal anthem (153 bars @ 138 bpm). ch0 (electric guitar, the
   // power-chord rhythm) + ch2 (the vocal melody) ride the lead bus
@@ -423,7 +448,9 @@ export const TRACKS = [
   // on the anthem; it stays in the boss queue too). Mix: the 1840-hit
   // drum track was "too dominate, the main rhythm so far in the
   // background" — drums 0.8x → 0.45x, the riff + melody lead 1.7x.
-  { file: 'Black Sabbath - Children Of The Grave.mid', id: 'black-sabbath-cotg', title: 'Children Of The Grave', artist: 'Black Sabbath', genre: 'metal', chMap: { lead: [0, 2], bass: [1] }, mix: { gainLead: 1.7, gainBass: 1, gainDrums: 0.45, gainArp: 1, gainPad: 1 } },
+  // v4.21.0: mix — "still ~2x too quiet": the riff + melody lead 2.5x,
+  // bass 1.5x, drums 0.8x (audible under the riff, not on top of it).
+  { file: 'Black Sabbath - Children Of The Grave.mid', id: 'black-sabbath-cotg', title: 'Children Of The Grave', artist: 'Black Sabbath', genre: 'metal', chMap: { lead: [0, 2], bass: [1] }, mix: { gainLead: 2.5, gainBass: 1.5, gainDrums: 0.8, gainArp: 1, gainPad: 1 } },
 ];
 
 // The per-mode rotation queues (v4.20.0). Children Of The Grave is the
@@ -564,6 +591,9 @@ function write() {
     L.push(`    bpm: ${conv.bpm}, bars: ${conv.bars}, seed: ${ti + 1},`);
     L.push(`    lead: ${jsfmt(prof.lead)},`);
     L.push(`    bass: ${jsfmt(prof.bass)},`);
+    // v4.21.0: optional per-song arp voice profile (Tool — Pneuma's
+    // sustained power-chord rhythm plays as a saw guitar, not a pluck).
+    if (tr.arp) L.push(`    arp: ${jsfmt(tr.arp)},`);
     L.push(`    padCutoff: ${prof.padCutoff},`);
     L.push(`    vols: ${jsfmt(prof.vols)},`);
     L.push(`    events: {`);
@@ -589,7 +619,21 @@ function write() {
     })
     .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.20.0
+// Kitty Vs Everything — v4.21.0
+// v4.21.0: AUDIO MIX PASS 2 — TRACK_MIX_SETTINGS re-tuned against the
+//          Forty Six & 2 reference after the "most tracks are ~2x too
+//          quiet" report: Axel F L4.0/A2.5/P2.5 (the hook rides arp+pad
+//          at base vol 0.05/0.06 — it was inaudible), Unforgiven
+//          A2.5/P1.5 (the rhythm guitar + "synth" harmony were buried at
+//          0.8x/0.25x — "only part of the harmony plays"), Pneuma
+//          L2.0/B1.5/D1.0/A2.2/P1.5 (the full band back; the 2514-note
+//          power-chord rhythm now also rides a per-song SAW arp voice
+//          profile — song.arp — instead of the dead triangle pluck),
+//          Johnny March L3.0/D0.2 (the melody over the march snare), plus
+//          ~2x leads on every other quiet track (NEM 3.0, Requiem 3.0,
+//          Fur Elise 3.5, No Quarter 3.5, Cowboys 3.0, Harvester 3.0,
+//          Classical Gas 3.0, Blue 3.5, Crazy Train 4.0, CoTG 2.5).
+//          Forty Six & 2 stays all-1.0 (the volume reference).
 // v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against the
 //          Forty Six & 2 reference (the loudest, riff-forward track):
 //          quiet leads boosted (Crazy Train 2.6x, Blue 2.3x, Fur Elise /
@@ -665,14 +709,19 @@ export const SONGS = {
 ${songs.join('\n')}
 };
 
-// ─── v4.20.0: per-track mix settings (the per-song channel balance) ───
+// ─── v4.21.0: per-track mix settings (the per-song channel balance) ───
 // One entry per song: gainLead / gainBass / gainDrums / gainArp / gainPad
 // are scalar multipliers (1.0 = the genre profile's vols as-is) that the
 // MusicScheduler applies in the MIDI event path — e.g. gainLead > 1
 // boosts a quiet lead melody, gainDrums < 1 lowers an overpowering
 // percussion channel, gainPad < 1 ducks a harsh synth pad, gainArp > 1
-// lifts a rhythm-guitar arp. Tuned v4.20.0 against the Forty Six & 2
-// reference (tool-forty-six stays all-1.0 — the volume benchmark).
+// lifts a rhythm-guitar arp. Re-tuned v4.21.0 against the Forty Six & 2
+// reference (tool-forty-six stays all-1.0 — the volume benchmark) after
+// the "most tracks need ~2x to match 46&2" report: the v4.20.0 pass
+// under-corrected — Axel F's hook (arp+pad at base vol 0.05/0.06) was
+// still inaudible, The Unforgiven's rhythm guitar (arp 0.8x) + "synth"
+// harmony (pad 0.25x) were buried, Pneuma's full band was cut to a thin
+// pluck, and Johnny March's drums still buried the melody.
 // Tweak per song here (or in tools/midi-import.mjs TRACKS[].mix) and
 // re-run \`node tools/midi-import.mjs --write\`.
 export const TRACK_MIX_SETTINGS = {

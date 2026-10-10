@@ -224,19 +224,32 @@ export default async function run() {
         && typeof m.gainArp === 'number' && typeof m.gainPad === 'number'
         && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0 && m.gainArp > 0 && m.gainPad > 0;
     }));
-  check('v4.20.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the tuned tracks carry their mix (Crazy Train gainLead 2.6; CoTG gainLead 1.7 + gainDrums 0.45; Unforgiven gainPad 0.25; Pneuma gainArp 1.9; Harvester gainBass 0.5; Johnny March gainDrums 0.35)',
+  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their v4.21.0 mix (Axel F gainLead 4 + gainArp/gainPad 2.5; Unforgiven gainArp 2.5 + gainPad 1.5; Pneuma gainDrums 1 + gainArp 2.2; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
     plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainLead === 1 && plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainDrums === 1
-    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 2.6
-    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainLead === 1.7
-    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainDrums === 0.45
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 0.25
-    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 1.9
-    && plMod.TRACK_MIX_SETTINGS['metallica-harvester'].gainBass === 0.5
-    && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainDrums === 0.35);
+    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainLead === 4
+    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainArp === 2.5
+    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainPad === 2.5
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainArp === 2.5
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 1.5
+    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainDrums === 1
+    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 2.2
+    && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainLead === 3
+    && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainDrums === 0.2
+    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 4
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainLead === 2.5
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainDrums === 0.8
+    && plMod.TRACK_MIX_SETTINGS['metallica-harvester'].gainBass === 1);
   check('v4.20.0 scheduler: the event path applies the full 5-scalar per-track mix (TRACK_MIX_SETTINGS → gainLead/gainBass/gainDrums/gainArp/gainPad multipliers)',
     schedSrc.includes('TRACK_MIX_SETTINGS') && schedSrc.includes('mix.gainDrums')
     && schedSrc.includes('mix.gainLead') && schedSrc.includes('mix.gainBass')
     && schedSrc.includes('mix.gainArp') && schedSrc.includes('mix.gainPad'));
+  check('v4.21.0 scheduler: SONGS PLAY OUT — mode changes apply at the current song END (finalBar), no mid-song mode cuts, accent on the handoff',
+    !schedSrc.includes('this._pendingMode !== this._mode || finalBar')
+    && schedSrc.includes('v4.21.0: SONGS PLAY OUT')
+    && schedSrc.includes('this._riser(this._musicNext)'));
+  check('v4.21.0: per-song arp voice profile (Pneuma power-chord rhythm = sustained saw guitar, not a dead triangle pluck)',
+    plMod.SONGS['tool-pneuma'].arp && plMod.SONGS['tool-pneuma'].arp.wave === 'sawtooth'
+    && schedSrc.includes('song.arp'));
   check('v4.20.0: Nothing Else Matters rides the piano profile (the detuned-saw+sub "gross synth" lead is gone — triangle pluck, no sub, perc 0.3)',
     plMod.SONGS['metallica-nem'].lead.wave === 'triangle'
     && plMod.SONGS['metallica-nem'].lead.sub === false

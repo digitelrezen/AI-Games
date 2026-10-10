@@ -1,5 +1,22 @@
 // Filename: core/audio/MusicScheduler.js
-// Kitty Vs Everything — v4.20.0
+// Kitty Vs Everything — v4.21.0
+// v4.21.0: AUDIO MIX PASS 2 + SONGS PLAY OUT — (1) mode changes no longer
+//          cut the current song: setMode() only records the pending mode;
+//          the bar-boundary handler applies it at the song's END (finalBar)
+//          with the riser/sub-drop accent on the handoff, so the open↔
+//          combat flips between waves let each song play out fully instead
+//          of swapping tracks every bar; (2) per-song arp voice profile —
+//          _pluckNote() honors an optional song.arp config (wave/detunes/
+//          lp/q/adsr) so Tool — Pneuma's 2514-note sustained power-chord
+//          rhythm (the arp slot) plays as a sustained saw guitar instead
+//          of a dead triangle pluck; (3) TRACK_MIX_SETTINGS re-tuned ~2x
+//          against the Forty Six & 2 reference (the user's "most tracks
+//          need 2x" report): Axel F L4.0/A2.5/P2.5 (the hook rides
+//          arp+pad at base vol 0.05/0.06 — it was inaudible), Unforgiven
+//          A2.5/P1.5 (the rhythm guitar + "synth" harmony were buried at
+//          0.8x/0.25x), Pneuma L2.0/B1.5/D1.0/A2.2 (the full band back),
+//          Johnny March L3.0/D0.2 (melody over the march snare), plus ~2x
+//          leads on every other quiet track.
 // v4.20.0: AUDIO MIX TUNING — the per-track mix table (TRACK_MIX_SETTINGS)
 //          grows from 3 scalars to 5: gainLead / gainBass / gainDrums +
 //          NEW gainArp / gainPad. The event path multiplies gainArp into
@@ -70,11 +87,12 @@
 //              on onended) and the teardown force-stops + disconnects
 //              whatever is still live — no dangling oscillators, no leaked
 //              nodes, clean GC.
-//          Rotation behavior is unchanged from v4.6.0: per-mode playlist
-//          (PLAYLISTS) of 32-bar songs (SONGS), 1-bar overlap crossfade at
-//          song boundaries, mode changes (setMode) apply at the next bar
-//          boundary with a riser / sub-drop accent.
-export const VERSION = 'v4.16.0';
+//          Rotation behavior: per-mode playlist (PLAYLISTS) of
+//          full-length songs (SONGS), 1-bar overlap crossfade at song
+//          boundaries; v4.21.0: mode changes (setMode) apply at the
+//          current song's END (songs play out — no mid-song cuts) with a
+//          riser / sub-drop accent on the handoff.
+export const VERSION = 'v4.21.0';
 import { MUSIC_MODES, SONGS, PLAYLISTS, TRACK_MIX_SETTINGS, hz, mulberry32 } from './MusicPlaylists.js';
 import {
   makeNoiseBuffer, makeImpulse, softClipCurve,
@@ -92,7 +110,7 @@ export class MusicScheduler {
     this.core = core;
     // ─── session state ───
     this.playing = false;
-    this._mode = 'open';         // active mode (applied at bar boundaries)
+    this._mode = 'open';         // active mode (applied at song ends — v4.21.0)
     this._pendingMode = 'open';  // requested mode (setMode)
     this._preview = null;        // v4.11.0: jukebox preview track id (null = none)
     this._musicNext = 0;         // next 16th-note start time (ctx seconds)
@@ -125,21 +143,20 @@ export class MusicScheduler {
 
   /**
    * v4.4.0+: request a soundtrack mode ('open' | 'combat' | 'boneyard' |
-   * 'boss'). Takes effect at the next bar boundary (1-bar crossfade into
-   * the new mode's playlist) and plays a riser (intensity up) or sub-drop
-   * (intensity down) transition accent. Safe to call every frame — a no-op
-   * when the mode is unchanged or music is not playing.
+   * 'boss'). v4.21.0: the pending mode only takes effect when the CURRENT
+   * SONG ENDS — the bar-boundary handler applies it at finalBar (with the
+   * riser / sub-drop accent on the handoff), so rapid mode flips
+   * (open↔combat between waves) let the song play out fully instead of
+   * cutting it after one bar. Safe to call every frame — a no-op when the
+   * mode is unchanged or music is not playing.
    */
   setMode(mode) {
     if (!MUSIC_MODES[mode]) return;
     if (mode === this._pendingMode) return;
-    const from = this._pendingMode;
     this._pendingMode = mode;
-    if (this.playing && this.core.ctx) {
-      const t0 = this.core.ctx.currentTime + 0.02;
-      if (MUSIC_MODES[mode].intensity > MUSIC_MODES[from].intensity) this._riser(t0);
-      else this._subDrop(t0);
-    }
+    // v4.21.0: no transition accent here — it plays at the song-end
+    // handoff in _scheduleMusic(), so a mode flip that reverses before
+    // the song ends never fires an accent (no more stacked risers).
   }
 
   /**
@@ -414,8 +431,20 @@ export class MusicScheduler {
         const finalBar = this._songStep === total - 32;
         if (this._preview) {
           if (this._songStep >= total) this._songStep = 0;
-        } else if (this._pendingMode !== this._mode || finalBar) {
-          if (this._pendingMode !== this._mode) this._mode = this._pendingMode;
+        } else if (finalBar) {
+          // v4.21.0: SONGS PLAY OUT — a pending mode change no longer
+          // cuts the current song at the next bar boundary (the
+          // open↔combat flips between waves swapped tracks constantly);
+          // it applies HERE, at the song's end, with the transition
+          // accent (riser up / sub-drop down) playing on the handoff.
+          if (this._pendingMode !== this._mode) {
+            const from = this._mode;
+            this._mode = this._pendingMode;
+            if (this.core.ctx) {
+              if (MUSIC_MODES[this._mode].intensity > MUSIC_MODES[from].intensity) this._riser(this._musicNext);
+              else this._subDrop(this._musicNext);
+            }
+          }
           this._incoming = this._pickSong(this._mode, this._song);
           this._incomingStep = 0;
         }
@@ -574,18 +603,25 @@ export class MusicScheduler {
     for (const s of v.sources) this._track(s);
   }
 
-  /** Short detuned pluck (the arp voice) with a delay send. */
-  _pluckNote(freq, t, dur, vol, deg = 1) {
+  /**
+   * Short detuned pluck (the arp voice) with a delay send.
+   * v4.21.0: optional song — an explicit song.arp profile (wave /
+   * detunes / lp / q / adsr) overrides the triangle pluck, so a sustained
+   * rhythm-guitar channel (Tool — Pneuma) can play as a sustained saw
+   * voice instead of a dead pluck.
+   */
+  _pluckNote(freq, t, dur, vol, deg = 1, song = null) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
+    const cfg = song && song.arp;
     const v = makeVoice(ctx, this._layers.arp, {
       t, freq,
-      type: 'triangle',
-      detunes: [-5, 5],
-      cutoff: 3600,
-      q: 0.6,
+      type: (cfg && cfg.wave) || 'triangle',
+      detunes: (cfg && cfg.detunes) || [-5, 5],
+      cutoff: (cfg && cfg.lp) || 3600,
+      q: (cfg && cfg.q) || 0.6,
       pan: (deg - 1) * 0.35,
-      adsr: { a: 0.004, d: 0.18, s: 0, r: 0.1 },
+      adsr: (cfg && cfg.adsr) || { a: 0.004, d: 0.18, s: 0, r: 0.1 },
       vol, dur,
       sends: [this._layers.delay],
     });
@@ -792,7 +828,7 @@ export class MusicScheduler {
       const v = ev[3];
       if (layer === 'lead') this._leadNote(song, n, t, dur, volScale, v, mix.gainLead);
       else if (layer === 'bass') this._eventBass(song, n, t, dur, volScale, v, mix.gainBass);
-      else if (layer === 'arp') this._pluckNote(hz(n), t, dur, V.arp * mix.gainArp * v * volScale, 1);
+      else if (layer === 'arp') this._pluckNote(hz(n), t, dur, V.arp * mix.gainArp * v * volScale, 1, song);
       else if (layer === 'pad') this._eventPad(song, n, t, dur, volScale, v, mix.gainPad);
     }
   }
