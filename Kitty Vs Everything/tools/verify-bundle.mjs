@@ -311,6 +311,20 @@ const tests = [
     !/1800\s*\+\s*Math\.random\(\)\s*\*\s*900/.test(s) && !/1500\s*\+\s*Math\.random\(\)\s*\*\s*500/.test(s)],
   ['v4.13.0: primary weapon voices route through the weapon bus',
     (s.match(/this\._weaponBus\(ctx\)/g) || []).length >= 3],
+  // ── v4.22.0: crosshair customization + controller support ──
+  ['v4.22.0: Gamepad module in bundle (Gamepad API polling + connect events)',
+    s.includes('getGamepads') && s.includes('gamepadConnected') && s.includes('gamepadDisconnected')],
+  ['v4.22.0: InputManager owns the gamepad layer (action OR)',
+    s.includes('new Gamepad()') && s.includes('this.gamepad.isDown(action)') && s.includes('this.gamepad.wasPressed(action)')],
+  ['v4.22.0: Game.loop polls the gamepad each frame + Start → pause',
+    s.includes('this.input.gamepad.update()') && s.includes('this.input.gamepad.onPause')],
+  ['v4.22.0: PlayerFlight analog stick flight (thrust/brake/strafe/spin)',
+    s.includes('gp.thrust') && s.includes('gp.brake') && s.includes('GAMEPAD_SPIN_RATE')],
+  ['v4.22.0: PLAYER.GAMEPAD_SPIN_RATE = 3.5', /GAMEPAD_SPIN_RATE:\s*3\.5/.test(s)],
+  ['v4.22.0: shared drawReticle (in-game reticle + settings preview)',
+    s.includes('drawReticle') && s.includes('CROSSHAIR_COLORS') && s.includes("CROSSHAIR_STYLES")],
+  ['v4.22.0: crosshair settings (style/color/size/length) + gamepad toggle',
+    s.includes('crosshairStyle') && s.includes('crosshairColor') && s.includes('crosshairLength') && s.includes('crosshairSize') && s.includes('SETTINGS.gamepad')],
   [`version ${VER}`, s.includes(VER)],
 ];
 

@@ -12,8 +12,8 @@ import path from 'node:path';
 
 export default async function run() {
 {
-  console.log('\n[6aa] v4.21.0 version sync');
-  const MILESTONE = 'v4.21.0';
+  console.log('\n[6aa] v4.22.0 version sync');
+  const MILESTONE = 'v4.22.0';
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   check(`package.json version = ${MILESTONE.slice(1)} (build filename source of truth)`, pkg.version === MILESTONE.slice(1), `got ${pkg.version}`);
   const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');

@@ -833,6 +833,33 @@ body {
 .kb-chip.kb-empty { color: #667; border-style: dashed; }
 @keyframes kb-pulse { from { opacity: 0.7; } to { opacity: 1; } }
 
+/* v4.22.0: crosshair customization (style / color chips + live preview) */
+#set-crosshair-preview {
+  display: block; width: 100%; max-width: 220px; margin: 6px 0 10px;
+  background: #0a1020; border: 1px solid #1c2740; border-radius: 4px;
+}
+.ch-chiprow { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
+.ch-chip {
+  padding: 4px 10px; font-family: inherit; font-size: 11px;
+  background: #182444; color: #c6d2ec; border: 1px solid #33456e;
+  border-radius: 3px; cursor: pointer;
+}
+.ch-chip:hover { background: #22325e; }
+.ch-chip.active { background: #1d4632; border-color: #2f7a52; color: #b8f0c8; }
+/* color swatch dots inside the color chips */
+.ch-chip::before {
+  content: ""; display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 6px; vertical-align: middle;
+  background: #8899bb; border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.ch-chip-red::before { background: #ff5252; }
+.ch-chip-green::before { background: #5dff7f; }
+.ch-chip-yellow::before { background: #ffd54f; }
+.ch-chip-blue::before { background: #5da8ff; }
+.ch-chip-white::before { background: #ffffff; }
+#set-gamepad-status { color: #8fa3c8; }
+#set-gamepad-status.connected { color: #b8f0c8; }
+
 /* ─── v3.14.0: PAUSE MENU BUTTONS ─── */
 .pause-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; width: 240px; }
 .pause-btns button {

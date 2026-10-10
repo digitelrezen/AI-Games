@@ -5,11 +5,14 @@
 // compatibility re-export shim — the public surface is unchanged).
 // v3.78.0: STRAFE_THRUST_MULT — lateral thrust scaling for the 'strafe'
 //          A/D control mode (Settings.controlMode, consumed in PlayerFlight.js).
+// v4.22.0: GAMEPAD_SPIN_RATE — full-deflection spin rate (rad/s) for the
+//          controller sticks (PlayerFlight.js, × SETTINGS.spinSpeedMouse).
 
 // ─── PLAYER FLIGHT PHYSICS (Asteroids-style + mouse-look, v3.5.0) ───
 export const PLAYER = {
   ROTATION_SPEED: 3.8,     // rad/s base spin rate — multiplied by SETTINGS.spinSpeedKeyboard
   MOUSE_SENSITIVITY: 0.0035, // v3.7.0: rad per px of mouse movement — × SETTINGS.spinSpeedMouse
+  GAMEPAD_SPIN_RATE: 3.5,  // v4.22.0: rad/s at full stick deflection (right stick spin / left stick rotate) — × SETTINGS.spinSpeedMouse
   THRUST: 380,
   BOOST_MULT: 2.4,
   BRAKE_MULT: 2.2,         // S-key active brake = BRAKE_MULT × THRUST while moving forward

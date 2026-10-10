@@ -1,5 +1,12 @@
 // Filename: Game.js
 // Kitty Vs Everything — v3.76.0
+// v4.22.0: CONTROLLER SUPPORT — the InputManager's gamepad layer
+//         (js/input/Gamepad.js, Gamepad API, Xbox standard mapping) is
+//         polled once per frame in loop() before the sim reads input; the
+//         Start button toggles the pause menu (same gate as Esc/P), and
+//         pad connect/disconnect events land in the msglog. Crosshair
+//         customization (style/color/size/length) renders via the shared
+//         Crosshair.drawReticle().
 // v4.5.0: pause menu "RETURN TO HANGAR" — game.returnToHangar() delegate
 //         (StageFlow.js) tears down the live session (stage, entities,
 //         hazards, particles, ships, co-op/LAN, SAR facade, score, music,
@@ -287,7 +294,7 @@
 //          primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js and the rebuilt vulkanShot() dual-layer
 //          mechanical snap). Milestone version synced with package.json.
-export const VERSION = 'v4.21.0';
+export const VERSION = 'v4.22.0';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
@@ -353,6 +360,20 @@ export default class Game {
     // v3.31.0: pointer-lock policy — auto-pause when the browser releases
     // the lock mid-mission (ESC is consumed by the browser while locked).
     this.input.onLockChange = (locked) => this._onPointerLockChange(locked);
+    // v4.22.0: controller (gamepad) layer — Start toggles the pause menu
+    // (same mid-mission gate as Esc/P; the settings screen owns Esc itself),
+    // and connect/disconnect events land in the combat console msglog.
+    this.input.gamepad.onPause = () => {
+      const s = document.getElementById('settings-screen');
+      if (s && !s.classList.contains('hidden')) return; // settings owns Esc
+      if (this.state === 'playing' || this.state === 'bonus') this.pauseMenu.toggle();
+    };
+    bus.on('gamepadConnected', ({ name }) => {
+      this.msglog.log(`CONTROLLER CONNECTED — ${name}`, 'good', this.time);
+    });
+    bus.on('gamepadDisconnected', () => {
+      this.msglog.log('CONTROLLER DISCONNECTED', 'warn', this.time);
+    });
     // v3.33.0: kick off the shared-PNG decode (power-up art) — fire and
     // forget; drops draw their procedural glyphs until the canvases land.
     // Headless-safe: resolves immediately with nothing decoded under Node.
@@ -563,6 +584,7 @@ export default class Game {
   loop(ts) {
     const dt = Math.min(0.05, (ts - this.lastTs) / 1000 || 0.016);
     this.lastTs = ts;
+    this.input.gamepad.update(); // v4.22.0: poll the controller before the sim reads input
     if (!this.paused) this.update(dt); // v3.14.0: paused gates the whole world
     this.hudConsole.update();     // v3.14.0: DOM combat console (every frame)
     this.hudFireControl.update(); // v3.14.0: DOM fire-control dashboard

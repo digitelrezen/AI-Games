@@ -103,4 +103,25 @@ for (const key of keys) {
 const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 check('index.html loads the entry js/core/main.js', /js\/core\/main\.js/.test(indexHtml));
 
+// ─── v4.22.0: controller support + crosshair customization surface ───
+const Gamepad = (await mod('js/input/Gamepad.js')).default;
+check('Gamepad: class with update/isDown/wasPressed/endFrame',
+  typeof Gamepad === 'function' &&
+  typeof Gamepad.prototype.update === 'function' &&
+  typeof Gamepad.prototype.isDown === 'function' &&
+  typeof Gamepad.prototype.wasPressed === 'function' &&
+  typeof Gamepad.prototype.endFrame === 'function');
+check('PLAYER.GAMEPAD_SPIN_RATE = 3.5', PLAYER.GAMEPAD_SPIN_RATE === 3.5, `got ${PLAYER.GAMEPAD_SPIN_RATE}`);
+const inputSrc = fs.readFileSync(path.join(ROOT, 'js/input/InputManager.js'), 'utf8');
+check('InputManager: owns the gamepad layer (new Gamepad + action OR)',
+  inputSrc.includes('new Gamepad()') && inputSrc.includes('this.gamepad.isDown(action)') &&
+  inputSrc.includes('this.gamepad.wasPressed(action)') && inputSrc.includes('this.gamepad.endFrame()'));
+check('Game: loop() polls the gamepad before the sim', gameSrc.includes('this.input.gamepad.update()'));
+check('Game: Start button → pause toggle (gamepad.onPause)', gameSrc.includes('this.input.gamepad.onPause'));
+const flightSrc = fs.readFileSync(path.join(ROOT, 'js/player/PlayerFlight.js'), 'utf8');
+check('PlayerFlight: analog stick flight (thrust/brake/strafe/spin)',
+  flightSrc.includes('gp.thrust') && flightSrc.includes('gp.brake') && flightSrc.includes('GAMEPAD_SPIN_RATE'));
+check('index.html: crosshair preview + gamepad status DOM',
+  indexHtml.includes('id="set-crosshair-preview"') && indexHtml.includes('id="set-gamepad-status"'));
+
 }

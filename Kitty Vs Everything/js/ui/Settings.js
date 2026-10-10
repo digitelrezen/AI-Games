@@ -16,7 +16,11 @@
 // LIMITS is exported so Crosshair.js clamps the drawn offset to it.
 // v3.78.0: controlMode enum setting (ENUMS) — 'strafe' (default; A/D slide
 // the ship sideways, PlayerFlight.js) or 'spin' (classic keyboard rotation).
-export const VERSION = 'v3.78.0';
+// v4.22.0: CROSSHAIR CUSTOMIZATION — crosshairColor (enum, red default) +
+// crosshairStyle (enum, 'classic' default) + crosshairLength / crosshairSize
+// sliders (0.5–2×); and gamepad (boolean, default ON) — Gamepad API
+// controller support (js/input/Gamepad.js, Xbox standard mapping).
+export const VERSION = 'v4.22.0';
 
 const STORAGE_KEY = 'kve-settings-v1';
 
@@ -29,19 +33,26 @@ export const LIMITS = {
   audioMusic:        { min: 0,    max: 1, def: 0.4 },
   particleDensity:   { min: 0,    max: 2, def: 1 },
   crosshairOffset:   { min: 140,  max: 340, def: 140 }, // v3.48.0: reticle forward offset (logical px) · v3.55.0: range 140–340
+  crosshairLength:   { min: 0.5,  max: 2,   def: 1 },   // v4.22.0: reticle tick length (×, 50–200%)
+  crosshairSize:     { min: 0.5,  max: 2,   def: 1 },   // v4.22.0: reticle overall size (×, 50–200%)
 };
 const BOOLEANS = {
   screenShake: true,    // default ON (classic feel) — dev toggle in the settings panel
   screenBounds: false,  // v3.11.0 dev toggle: bounce walls vs classic wrap
   crosshair: true,      // v3.48.0: procedural aim reticle (Settings → FX, default ON)
+  gamepad: true,        // v4.22.0: controller support (Gamepad API, Xbox standard mapping)
 };
 
 // v3.78.0: enum settings — a fixed value set + factory default (single
 // source of truth for load-sanitize / setSetting / resetSettings).
 // controlMode picks what A/D do in PlayerFlight.js: 'strafe' (lateral slide,
 // default) or 'spin' (classic keyboard rotation).
+// v4.22.0: crosshairColor (red default) + crosshairStyle ('classic' default)
+// — the Settings → CROSSHAIR section (Crosshair.js palette / styles).
 const ENUMS = {
   controlMode: { values: ['strafe', 'spin'], def: 'strafe' },
+  crosshairColor: { values: ['red', 'green', 'yellow', 'blue', 'white'], def: 'red' },
+  crosshairStyle: { values: ['classic', 'brackets', 'diamond', 'dot'], def: 'classic' },
 };
 
 function loadSaved() {
@@ -85,11 +96,17 @@ export const SETTINGS = {
   audioMusic:        num(saved.audioMusic,        LIMITS.audioMusic),
   particleDensity:   num(saved.particleDensity,   LIMITS.particleDensity),
   crosshairOffset:   num(saved.crosshairOffset,   LIMITS.crosshairOffset),
+  crosshairLength:   num(saved.crosshairLength,   LIMITS.crosshairLength),   // v4.22.0
+  crosshairSize:     num(saved.crosshairSize,     LIMITS.crosshairSize),     // v4.22.0
   screenShake:       saved.screenShake !== false,
   screenBounds:      saved.screenBounds === true,
   crosshair:         saved.crosshair !== false,
+  gamepad:           saved.gamepad !== false,   // v4.22.0: controller support (default ON)
   // v3.78.0: A/D control mode — 'strafe' (default) or 'spin' (classic rotation)
   controlMode:       ENUMS.controlMode.values.includes(saved.controlMode) ? saved.controlMode : ENUMS.controlMode.def,
+  // v4.22.0: crosshair customization (Settings → CROSSHAIR)
+  crosshairColor:    ENUMS.crosshairColor.values.includes(saved.crosshairColor) ? saved.crosshairColor : ENUMS.crosshairColor.def,
+  crosshairStyle:    ENUMS.crosshairStyle.values.includes(saved.crosshairStyle) ? saved.crosshairStyle : ENUMS.crosshairStyle.def,
 };
 
 function persist() {

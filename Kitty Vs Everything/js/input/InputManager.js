@@ -30,9 +30,18 @@
 //          from the lock loss, not a keydown. mousemove skips absolute
 //          x/y mapping while locked (movementX + idle tracking keep
 //          working); touch devices never lock.
-export const VERSION = 'v3.31.0';
+// v4.22.0: GAMEPAD LAYER — this.gamepad (Gamepad.js, Gamepad API, Xbox
+//          standard mapping) is polled once per frame by Game.loop() and
+//          ORed into the action layer: isDownAction()/wasPressedAction()
+//          also count mapped gamepad buttons, so Player / PlayerWeapons /
+//          PlayerFlight consume the controller through the same remappable
+//          action API (Settings → CONTROLLER toggles SETTINGS.gamepad).
+//          Analog sticks (axisX/axisY/spinX) are read directly by
+//          PlayerFlight.js for thrust / brake / strafe / spin.
+export const VERSION = 'v4.22.0';
 import { GAME } from '../core/config.js';
 import { KEYBINDS, isMouseCode } from './Keybinds.js';
+import Gamepad from './Gamepad.js'; // v4.22.0: controller support
 
 export default class InputManager {
   constructor(canvas, view = null) {
@@ -45,6 +54,10 @@ export default class InputManager {
     this.canvas = canvas;
     this.view = view; // v3.13.0: live logical viewport (ViewScaler)
     this.touch = { active: false, joyX: 0, joyY: 0, fire: false, boost: false, stun: false, napalm: false, nova: false, weapon: false };
+    // v4.22.0: gamepad (controller) layer — Game.loop() polls
+    // this.gamepad.update() each frame; the action layer below ORs its
+    // button state in; PlayerFlight.js reads the analog sticks directly.
+    this.gamepad = new Gamepad();
 
     // v3.31.0: pointer lock — cursor hidden + deltas captured in play.
     // Touch devices have no pointer to lock (the touch UI owns input).
@@ -253,6 +266,8 @@ export default class InputManager {
     for (const code of (KEYBINDS[action] || [])) {
       if (this.isDownCode(code)) return true;
     }
+    // v4.22.0: gamepad buttons (Xbox standard mapping — Gamepad.js).
+    if (this.gamepad.isDown(action)) return true;
     switch (action) {
       case 'fire':        return this.touch.fire;
       case 'thrust':      return this.touch.joyY < -0.3;
@@ -268,6 +283,8 @@ export default class InputManager {
     for (const code of (KEYBINDS[action] || [])) {
       if (this.wasPressedCode(code)) return true;
     }
+    // v4.22.0: gamepad button edges (cleared in endFrame).
+    if (this.gamepad.wasPressed(action)) return true;
     switch (action) {
       case 'stun':        if (this.touch.stun)   { this.touch.stun = false;   return true; } break;
       case 'napalm':      if (this.touch.napalm) { this.touch.napalm = false; return true; } break;
@@ -281,5 +298,6 @@ export default class InputManager {
     this.pressed.clear();
     this.mousePressed.clear();
     this.mouse.moveX = 0; // v3.7.0: clear accumulated mouse movement each frame
+    this.gamepad.endFrame(); // v4.22.0: clear gamepad button edges
   }
 }

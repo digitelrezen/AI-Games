@@ -14,8 +14,14 @@
 //          is still active (no-op from the menu / while paused).
 // v3.78.0: A/D control mode radio pair (strafe / spin) in the FLIGHT section
 //          — writes Settings.controlMode (see _buildControlMode).
-export const VERSION = 'v3.78.0';
+// v4.22.0: CROSSHAIR section — style chips (classic/brackets/diamond/dot),
+//          color chips (red/green/yellow/blue/white), length + size sliders,
+//          and a LIVE PREVIEW canvas drawn by the same drawReticle() the
+//          in-game reticle uses (see _buildCrosshair). CONTROLLER section —
+//          gamepad enable toggle + connection status line (see _buildGamepad).
+export const VERSION = 'v4.22.0';
 import { SETTINGS, setSetting, resetSettings } from './Settings.js';
+import { drawReticle, CROSSHAIR_STYLES, CROSSHAIR_COLORS } from './Crosshair.js'; // v4.22.0: shared reticle renderer (live preview) + style/color source of truth
 import {
   ACTIONS, ACTION_LABELS, getBinds, setBind, resetBinds,
   actionForCode, codeLabel, captureNextInput,
@@ -37,6 +43,8 @@ export default class SettingsScreen {
     this._buildSliders();
     this._buildToggles();
     this._buildControlMode(); // v3.78.0: A/D strafe / spin radio pair
+    this._buildCrosshair();   // v4.22.0: reticle style/color/size/length + preview
+    this._buildGamepad();     // v4.22.0: controller toggle + connection status
     // v3.20.0: mount the LAN / multiplayer settings panel.
     const netContainer = byId('net-settings');
     if (netContainer) netSettingsUI.attach(game, netContainer);
@@ -205,6 +213,131 @@ export default class SettingsScreen {
       if (strafe) strafe.checked = SETTINGS.controlMode === 'strafe';
       if (spin) spin.checked = SETTINGS.controlMode === 'spin';
     });
+  }
+
+  // ─── v4.22.0: CROSSHAIR — style / color / size / length + live preview ───
+  // The preview canvas is drawn with the SAME drawReticle() the in-game
+  // reticle uses (Crosshair.js), so what you see here is what you get.
+  _buildCrosshair() {
+    const preview = byId('set-crosshair-preview');
+    this._chPreview = preview;
+    // Style chips (classic / brackets / diamond / dot)
+    const styleWrap = byId('set-crosshair-styles');
+    if (styleWrap) {
+      for (const btn of styleWrap.querySelectorAll('[data-chstyle]')) {
+        btn.addEventListener('click', () => {
+          setSetting('crosshairStyle', btn.dataset.chstyle);
+          this._syncCrosshairChips();
+          this._drawCrosshairPreview();
+          audio.uiBlip(520, 0.06);
+        });
+      }
+    }
+    // Color chips (red / green / yellow / blue / white)
+    const colorWrap = byId('set-crosshair-colors');
+    if (colorWrap) {
+      for (const btn of colorWrap.querySelectorAll('[data-chcolor]')) {
+        btn.addEventListener('click', () => {
+          setSetting('crosshairColor', btn.dataset.chcolor);
+          this._syncCrosshairChips();
+          this._drawCrosshairPreview();
+          audio.uiBlip(560, 0.06);
+        });
+      }
+    }
+    // v4.22.0: the module lists are the source of truth — drop any chip
+    // whose value no longer exists in Crosshair.js, and fall back to the
+    // factory default if a saved value is stale/invalid.
+    for (const btn of styleWrap ? styleWrap.querySelectorAll('[data-chstyle]') : []) {
+      if (!CROSSHAIR_STYLES.includes(btn.dataset.chstyle)) btn.remove();
+    }
+    for (const btn of colorWrap ? colorWrap.querySelectorAll('[data-chcolor]') : []) {
+      if (!Object.prototype.hasOwnProperty.call(CROSSHAIR_COLORS, btn.dataset.chcolor)) btn.remove();
+    }
+    if (!CROSSHAIR_STYLES.includes(SETTINGS.crosshairStyle)) setSetting('crosshairStyle', 'classic');
+    if (!Object.prototype.hasOwnProperty.call(CROSSHAIR_COLORS, SETTINGS.crosshairColor)) setSetting('crosshairColor', 'red');
+    // Length + size sliders (0.5–2×, redraw the preview on every tick)
+    const redraw = () => this._drawCrosshairPreview();
+    this._slider('set-crosshair-length', 'crosshairLength', x2, redraw);
+    this._slider('set-crosshair-size', 'crosshairSize', x2, redraw);
+    // Sync: chip highlight (sliders are handled by _slider syncers)
+    this._syncers.push(() => {
+      this._syncCrosshairChips();
+      this._drawCrosshairPreview();
+    });
+  }
+
+  /** Highlight the active style / color chips (SETTINGS is the source). */
+  _syncCrosshairChips() {
+    for (const btn of document.querySelectorAll('#set-crosshair-styles [data-chstyle]')) {
+      btn.classList.toggle('active', btn.dataset.chstyle === SETTINGS.crosshairStyle);
+    }
+    for (const btn of document.querySelectorAll('#set-crosshair-colors [data-chcolor]')) {
+      btn.classList.toggle('active', btn.dataset.chcolor === SETTINGS.crosshairColor);
+    }
+  }
+
+  /** Draw the preview canvas — the exact in-game reticle at 2× scale. */
+  _drawCrosshairPreview() {
+    const cv = this._chPreview;
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.save();
+    ctx.translate(cv.width / 2, cv.height / 2);
+    // 2× the in-game scale so the thin strokes read clearly on the panel.
+    drawReticle(ctx, {
+      style: SETTINGS.crosshairStyle,
+      color: SETTINGS.crosshairColor,
+      size: SETTINGS.crosshairSize * 2,
+      length: SETTINGS.crosshairLength,
+    });
+    ctx.restore();
+  }
+
+  // ─── v4.22.0: CONTROLLER — gamepad toggle + connection status ───
+  _buildGamepad() {
+    const toggle = byId('set-gamepad');
+    if (toggle) {
+      toggle.addEventListener('change', () => {
+        setSetting('gamepad', toggle.checked);
+        if (this.game.msglog && this.game.state === 'playing') {
+          this.game.msglog.log('CONTROLLER: ' + (toggle.checked ? 'ENABLED' : 'DISABLED'), 'info', this.game.time);
+        }
+        this._updateGamepadStatus();
+      });
+      this._syncers.push(() => {
+        toggle.checked = !!SETTINGS.gamepad;
+        this._updateGamepadStatus();
+      });
+    }
+    // Live connect / disconnect (Gamepad.js emits on the bus)
+    bus.on('gamepadConnected', () => this._updateGamepadStatus());
+    bus.on('gamepadDisconnected', () => this._updateGamepadStatus());
+  }
+
+  /** Status line: which pad is connected (or none / disabled). */
+  _updateGamepadStatus() {
+    const status = byId('set-gamepad-status');
+    if (!status) return;
+    if (!SETTINGS.gamepad) {
+      status.textContent = 'Controller support disabled';
+      status.classList.remove('connected');
+      return;
+    }
+    let name = null;
+    if (typeof navigator !== 'undefined' && typeof navigator.getGamepads === 'function') {
+      for (const gp of navigator.getGamepads()) {
+        if (gp && gp.connected) { name = gp.id; break; }
+      }
+    }
+    if (name) {
+      status.textContent = `Connected — ${name}`;
+      status.classList.add('connected');
+    } else {
+      status.textContent = 'No controller connected (plug in a pad — it hot-plugs)';
+      status.classList.remove('connected');
+    }
   }
 
   _syncAll() {

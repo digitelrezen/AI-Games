@@ -28,7 +28,13 @@
 // v3.99.0: p.freeBounds opt-out — Search & Destroy disables the classic
 //          wrap/bounce screen bounds (the SAR camera tether keeps the ship
 //          on screen by panning the world instead).
-export const VERSION = 'v3.99.0';
+// v4.22.0: GAMEPAD FLIGHT — analog sticks join the flight model:
+//          left stick Y = thrust (up) / brake (down), left stick X =
+//          strafe (in 'strafe' mode) or rotate (in 'spin' mode), right
+//          stick X = spin (always, × SETTINGS.spinSpeedMouse, rate
+//          PLAYER.GAMEPAD_SPIN_RATE). Buttons (fire / boost / weapons /
+//          fleet) flow through the action layer (InputManager.gamepad).
+export const VERSION = 'v4.22.0';
 import { PLAYER } from '../core/config.js';
 import { TAU } from '../core/utils.js';
 import { SETTINGS } from '../ui/Settings.js';
@@ -49,6 +55,13 @@ function spinWithMouse(p, input) {
 }
 
 export function updateFlight(p, dt, input) {
+  // ─── GAMEPAD STICKS (v4.22.0) ───
+  // Analog state from InputManager.gamepad (Gamepad.js, deadzoned -1..1).
+  // No pad / support disabled → all zeros, the flight model is untouched.
+  const gp = input.gamepad;
+  const gpX = gp ? gp.axisX : 0;    // left stick X (strafe / rotate)
+  const gpSpin = gp ? gp.spinX : 0; // right stick X (spin)
+
   // ─── ROTATION (delta mouse spin, A/D override) ───
   // v3.78.0: SETTINGS.controlMode decides what A/D do. 'spin' (classic):
   // keyboard rotation takes precedence over the mouse. 'strafe' (default):
@@ -66,6 +79,16 @@ export function updateFlight(p, dt, input) {
   } else if (input.mouseIdleTime() < PLAYER.MOUSE_LOOK_TIMEOUT) {
     spinWithMouse(p, input);
   }
+  // v4.22.0: gamepad spin — the RIGHT stick spins in both control modes;
+  // the LEFT stick rotates only in 'spin' mode (in 'strafe' mode it
+  // strafes — STRAFE section below). Scales with the mouse spin setting
+  // (it is the analog twin of the mouse) at PLAYER.GAMEPAD_SPIN_RATE.
+  if (gpSpin !== 0) {
+    p.angle += gpSpin * PLAYER.GAMEPAD_SPIN_RATE * SETTINGS.spinSpeedMouse * dt;
+  }
+  if (!strafeMode && gpX !== 0) {
+    p.angle += gpX * PLAYER.GAMEPAD_SPIN_RATE * SETTINGS.spinSpeedMouse * dt;
+  }
   // Mouse idle past the timeout (or simply not moving) → heading holds.
   // input.mouse.moveX is cleared in InputManager.endFrame() regardless,
   // so a burst of stale movement never leaks into the next steering frame.
@@ -73,6 +96,7 @@ export function updateFlight(p, dt, input) {
   if (p.angle < -Math.PI) p.angle += TAU;
 
   // ─── BOOST (v3.14.0: remappable 'boost' action — default Space / RMB) ───
+  // v4.22.0: gamepad LB / LT also boost (action layer).
   p.boostActive = input.isDownAction('boost');
   const boostMul = p.boostActive ? PLAYER.BOOST_MULT : 1;
 
@@ -81,8 +105,9 @@ export function updateFlight(p, dt, input) {
   // no W/S needed. Adding W on top of boost engages BOOST_MULT (faster).
   // Pressing S — even while still holding boost — wins: active brake,
   // then reverse along the facing heading. (v3.14.0: remappable actions.)
-  const wantW = input.isDownAction('thrust');
-  const wantS = input.isDownAction('brake');
+  // v4.22.0: left stick up/down = thrust/brake (same thresholds as touch).
+  const wantW = input.isDownAction('thrust') || (gp && gp.thrust > 0.3);
+  const wantS = input.isDownAction('brake') || (gp && gp.brake > 0.3);
   const wantFwd = wantW || (p.boostActive && !wantS);
   const wantRev = wantS;
   p.thrusterActive = wantFwd || wantRev;
@@ -120,12 +145,18 @@ export function updateFlight(p, dt, input) {
   // side), scaled by the A/D key state: D strafe-right, A strafe-left.
   // Runs independently of the forward/reverse thrust above (both together =
   // diagonal motion), and is damped by the same DRAG below.
-  if (strafeMode && keyTurn !== 0) {
-    const latX = Math.cos(p.angle + Math.PI / 2) * keyTurn;
-    const latY = Math.sin(p.angle + Math.PI / 2) * keyTurn;
-    const accel = PLAYER.THRUST * PLAYER.STRAFE_THRUST_MULT * dt;
-    p.vx += latX * accel;
-    p.vy += latY * accel;
+  // v4.22.0: the left stick (gpX) adds analog strafe — keyTurn (discrete
+  // -1/0/1 from A/D) + gpX (analog -1..1), clamped to ±1 so holding A and
+  // pulling the stick left never exceeds full lateral thrust.
+  if (strafeMode) {
+    const lat = Math.max(-1, Math.min(1, keyTurn + gpX));
+    if (lat !== 0) {
+      const latX = Math.cos(p.angle + Math.PI / 2) * lat;
+      const latY = Math.sin(p.angle + Math.PI / 2) * lat;
+      const accel = PLAYER.THRUST * PLAYER.STRAFE_THRUST_MULT * dt;
+      p.vx += latX * accel;
+      p.vy += latY * accel;
+    }
   }
 
   // ─── DRAG ───
