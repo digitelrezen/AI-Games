@@ -62,7 +62,12 @@
 //          (no HUD changes — the milestone is the RnM encounter: Space
 //          Snake pre-wave + tanked egg ships in EasterEgg.js /
 //          RnMShip.js / SpaceSnakeEnemy.js).
-export const VERSION = 'v4.12.0';
+// v4.13.0: WEAPON SFX BALANCE + VULCAN REDESIGN — version label bumped
+//          (no HUD changes — the milestone is the js/core/audio/ suite:
+//          the primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
+//          SoundEffects.js + the rebuilt vulkanShot() dual-layer
+//          mechanical snap).
+export const VERSION = 'v4.13.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter

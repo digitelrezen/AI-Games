@@ -147,7 +147,12 @@
 //          milestone is the RnM encounter: Space Snake pre-wave + tanked
 //          egg ships in EasterEgg.js / RnMShip.js / SpaceSnakeEnemy.js).
 //          Milestone version synced with package.json.
-export const VERSION = 'v4.12.0';
+// v4.13.0: WEAPON SFX BALANCE + VULCAN REDESIGN — no boot changes (the
+//          milestone is the js/core/audio/ suite: the primary-weapon
+//          master bus WEAPON_BUS_GAIN 0.65 in SoundEffects.js and the
+//          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
+//          version synced with package.json.
+export const VERSION = 'v4.13.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup

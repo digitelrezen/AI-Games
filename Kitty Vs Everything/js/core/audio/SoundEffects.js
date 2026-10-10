@@ -1,5 +1,20 @@
 // Filename: core/audio/SoundEffects.js
-// Kitty Vs Everything — v4.11.0
+// Kitty Vs Everything — v4.13.0
+// v4.13.0: WEAPON SFX BALANCE + VULCAN REDESIGN — the Catship primary
+//          weapon fire (vulkanShot / pulseShot / railShot) now routes
+//          through a dedicated WEAPON BUS (WEAPON_BUS_GAIN = 0.65, a
+//          ~35% reduction) wired into the SFX bus, so continuous Gatling
+//          fire blends under the music bed + impact SFX instead of
+//          drowning them. vulkanShot() is REBUILT as a fast, heavy,
+//          dual-layer mechanical snap: a LOW-MID TRANSIENT CLICK (180–
+//          270 Hz square "thock", ~25 ms life) under a PUNCHY NOISE
+//          BURST (480–820 Hz bandpass casing pop, ~45 ms life), both
+//          with SUBTLE PER-SHOT PITCH VARIANCE (bandpass center +
+//          playbackRate jitter) — the high-pitched screech/chirp (the
+//          v4.11.0 1800–2700 Hz bandpass + 1500–2000 Hz square click)
+//          is GONE; a 14-shot/s Gatling now reads as crisp, heavy
+//          gatling chatter. Total voice life stays UNDER the 70 ms
+//          fire cadence.
 // v4.11.0: AUDIO SUITE POLISH — the weapon SFX are rebuilt as dedicated
 //          high-performance voices and the SFX engine gains bounded voice
 //          pooling so rapid-fire can never starve the AudioContext:
@@ -55,7 +70,7 @@
 //          clean GC) and every setTimeout is tracked, so clearAll() can kill
 //          dangling timers + nodes (called by the facade's stopAllMusic() /
 //          resetAudioEngine()).
-export const VERSION = 'v4.11.0';
+export const VERSION = 'v4.13.0';
 
 import { makeVoice, makeNoiseBuffer } from './SynthVoice.js';
 
@@ -67,6 +82,15 @@ import { makeVoice, makeNoiseBuffer } from './SynthVoice.js';
 // (the anti-starvation / anti-crackle guarantee).
 const MAX_LIVE_SOURCES = 24;
 
+// ─── v4.13.0: primary-weapon master output bus ───
+// Every Catship primary-weapon fire voice (vulkanShot / pulseShot /
+// railShot) routes through this GainNode BEFORE the SFX bus, so the
+// whole weapon family sits ~35% below the raw SFX level — continuous
+// Gatling fire blends under the music bed + impact SFX instead of
+// drowning them. One knob, one place: weapon balance never touches
+// the per-voice envelopes or the global sfx volume.
+const WEAPON_BUS_GAIN = 0.65;
+
 export class SoundEffects {
   constructor(core) {
     this.core = core;
@@ -75,6 +99,8 @@ export class SoundEffects {
     this._noise = null;        // white-noise buffer (cached per ctx)
     this._boom = null;         // pre-shaped explosion crack buffer (per ctx)
     this._noiseCtx = null;     // the ctx the cached buffers belong to
+    this._wBus = null;         // v4.13.0: weapon bus GainNode (per ctx)
+    this._wBusCtx = null;      // the ctx the weapon bus belongs to
   }
 
   /**
@@ -104,43 +130,54 @@ export class SoundEffects {
   }
 
   /**
-   * v4.11.0: VULCAN CANNON — fast, crisp ballistic snap. A ~35 ms
-   * bandpassed noise crack (the casing pop) over a very short square
-   * click, both with per-shot pitch variation so a 14-shot/s Gatling
-   * reads as tight mechanical chatter, never a stacked buzz. Total voice
-   * life is UNDER the 70 ms fire cadence — no overlap buildup, no buzz.
+   * v4.13.0: VULCAN CANNON — fast, HEAVY, dual-layer mechanical snap.
+   * The v4.11.0 high-pitched screech/chirp (1800–2700 Hz bandpass crack
+   * + 1500–2000 Hz square click) is GONE. Instead:
+   *   1) LOW-MID TRANSIENT CLICK — a 180–270 Hz square "thock" through
+   *      a tight 900 Hz lowpass (~25 ms life), the mechanical snap of
+   *      the barrel.
+   *   2) PUNCHY NOISE BURST — a 480–820 Hz bandpass casing pop (~45 ms
+   *      life), the ballistic crack.
+   * Both layers carry SUBTLE PER-SHOT PITCH VARIANCE (bandpass center
+   * + playbackRate jitter + click frequency) so a 14-shot/s Gatling
+   * reads as crisp, heavy gatling chatter, never a stacked buzz. Total
+   * voice life is UNDER the 70 ms fire cadence — no overlap buildup.
+   * Routes through the v4.13.0 weapon bus (−35% master weapon level).
    */
   vulkanShot() {
     if (!this.core.enabled) return;
     const ctx = this.core.ensure();
     if (!ctx || !this.core.sfxBus) return;
     const t0 = ctx.currentTime;
-    // 1) Ballistic "snap" — bandpassed noise crack with per-shot variation.
-    const src = ctx.createBufferSource();
-    src.buffer = this._noiseBuf(ctx);
-    src.playbackRate.value = 0.9 + Math.random() * 0.25;
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = 1800 + Math.random() * 900;
-    bp.Q.value = 0.9;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.11, t0);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.035);
-    src.connect(bp);
-    bp.connect(g);
-    g.connect(this.core.sfxBus);
-    src.start(t0);
-    src.stop(t0 + 0.04);
-    this._track(src);
-    // 2) Crisp square click — very short decay, subtle per-shot pitch.
-    const v = makeVoice(ctx, this.core.sfxBus, {
-      t: t0, freq: 1500 + Math.random() * 500,
+    const bus = this._weaponBus(ctx);
+    // 1) Low-mid transient click — the mechanical "thock" of the barrel,
+    //    with subtle per-shot pitch (180–270 Hz).
+    const v = makeVoice(ctx, bus, {
+      t: t0, freq: 180 + Math.random() * 90,
       type: 'square', detunes: [0],
-      cutoff: 5200, q: 0.6,
-      adsr: { a: 0.001, d: 0.02, s: 0.15, r: 0.012 },
-      vol: 0.045, dur: 0.028,
+      cutoff: 900, q: 0.6,
+      adsr: { a: 0.001, d: 0.016, s: 0.1, r: 0.008 },
+      vol: 0.1, dur: 0.022,
     });
     for (const s of v.sources) this._track(s);
+    // 2) Punchy noise burst — the ballistic casing pop (bandpass 480–
+    //    820 Hz, per-shot pitch via center + playbackRate jitter).
+    const src = ctx.createBufferSource();
+    src.buffer = this._noiseBuf(ctx);
+    src.playbackRate.value = 0.9 + Math.random() * 0.18;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 480 + Math.random() * 340;
+    bp.Q.value = 0.8;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.15, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.042);
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(bus);
+    src.start(t0);
+    src.stop(t0 + 0.048);
+    this._track(src);
   }
 
   /**
@@ -148,14 +185,16 @@ export class SoundEffects {
    * downward pitch drop (900→180 Hz) through a warm resonant lowpass pop
    * (cutoff 3200→700 Hz, Q 2.4) + sine sub + a high "zap" click — a
    * satisfying sci-fi energy punch.
+   * v4.13.0: routes through the weapon bus (−35% master weapon level).
    */
   pulseShot() {
     if (!this.core.enabled) return;
     const ctx = this.core.ensure();
     if (!ctx || !this.core.sfxBus) return;
     const t0 = ctx.currentTime;
+    const bus = this._weaponBus(ctx);
     // 1) Energy core — detuned saw, fast downward pitch drop, resonant pop.
-    const v = makeVoice(ctx, this.core.sfxBus, {
+    const v = makeVoice(ctx, bus, {
       t: t0, freq: 900, slideTo: 180,
       type: 'sawtooth', detunes: [-7, 0, 7],
       sub: true, subLevel: 0.4,
@@ -166,7 +205,7 @@ export class SoundEffects {
     });
     for (const s of v.sources) this._track(s);
     // 2) High "zap" click — the emitter crack.
-    const z = makeVoice(ctx, this.core.sfxBus, {
+    const z = makeVoice(ctx, bus, {
       t: t0, freq: 2400, slideTo: 900,
       type: 'square', detunes: [0],
       cutoff: 7000, q: 0.5,
@@ -181,14 +220,16 @@ export class SoundEffects {
    * sine, heavy initial punch) combined with an electric high-frequency
    * snap (highpassed noise crack + 2800→7500 Hz zing) and a mid
    * rail-discharge sweep — immense power.
+   * v4.13.0: routes through the weapon bus (−35% master weapon level).
    */
   railShot() {
     if (!this.core.enabled) return;
     const ctx = this.core.ensure();
     if (!ctx || !this.core.sfxBus) return;
     const t0 = ctx.currentTime;
+    const bus = this._weaponBus(ctx);
     // 1) Deep sub-bass transient — the heavy initial punch.
-    const sub = makeVoice(ctx, this.core.sfxBus, {
+    const sub = makeVoice(ctx, bus, {
       t: t0, freq: 130, slideTo: 38,
       type: 'sine', detunes: [0],
       cutoff: 400, q: 0.4,
@@ -207,12 +248,12 @@ export class SoundEffects {
     ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
     src.connect(hp);
     hp.connect(ng);
-    ng.connect(this.core.sfxBus);
+    ng.connect(bus);
     src.start(t0);
     src.stop(t0 + 0.06);
     this._track(src);
     // 3) Rail discharge zing — bright square sweep up (2800→7500 Hz).
-    const zing = makeVoice(ctx, this.core.sfxBus, {
+    const zing = makeVoice(ctx, bus, {
       t: t0, freq: 2800, slideTo: 7500,
       type: 'square', detunes: [0],
       cutoff: 9000, q: 0.5,
@@ -221,7 +262,7 @@ export class SoundEffects {
     });
     for (const s of zing.sources) this._track(s);
     // 4) Mid discharge sweep — the "rail" body (300→120 Hz saw, tight LP).
-    const body = makeVoice(ctx, this.core.sfxBus, {
+    const body = makeVoice(ctx, bus, {
       t: t0, freq: 300, slideTo: 120,
       type: 'sawtooth', detunes: [-5, 5],
       cutoff: 1400, q: 1.2,
@@ -479,6 +520,24 @@ export class SoundEffects {
     this._track(src);
   }
   gameOver()    { this.tone(440, 0.6, 'triangle', 0.08, 110); }
+
+  /**
+   * v4.13.0: the primary-weapon master output bus — a GainNode at
+   * WEAPON_BUS_GAIN (−35%) wired into the SFX bus. Built lazily on first
+   * fire and cached per AudioContext (recreated on engine reset, same
+   * pattern as the noise buffers). Every primary-weapon fire voice
+   * (vulkanShot / pulseShot / railShot) connects HERE instead of the raw
+   * SFX bus, so weapon balance is one knob in one place.
+   */
+  _weaponBus(ctx) {
+    if (!this._wBus || this._wBusCtx !== ctx) {
+      this._wBus = ctx.createGain();
+      this._wBus.gain.value = WEAPON_BUS_GAIN;
+      this._wBus.connect(this.core.sfxBus);
+      this._wBusCtx = ctx;
+    }
+    return this._wBus;
+  }
 
   /** White-noise buffer cached per AudioContext (recreated on engine reset). */
   _noiseBuf(ctx) {

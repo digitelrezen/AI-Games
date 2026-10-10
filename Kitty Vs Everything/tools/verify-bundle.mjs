@@ -302,6 +302,15 @@ const tests = [
     /CRATE_AMBIENT_MIN\s*=\s*12\b/.test(s) && /CRATE_AMBIENT_MAX\s*=\s*20\b/.test(s),
   ],
   ['v3.80.0: ambient crate spawn (type "crate" power-up)', /type:\s*["']crate["']/.test(s)],
+  // ── v4.13.0: weapon SFX balance + vulcan redesign ──
+  ['v4.13.0: primary-weapon master bus (WEAPON_BUS_GAIN 0.65 → sfxBus)',
+    /WEAPON_BUS_GAIN\s*=\s*0\.65/.test(s) && s.includes('this._wBus.connect(this.core.sfxBus)') && s.includes('this._wBusCtx')],
+  ['v4.13.0: vulkan = low-mid click + punchy noise burst (dual-layer mechanical snap)',
+    /freq:\s*180\s*\+\s*Math\.random\(\)\s*\*\s*90/.test(s) && /bp\.frequency\.value\s*=\s*480\s*\+\s*Math\.random\(\)\s*\*\s*340/.test(s)],
+  ['v4.13.0: vulkan high-pitched screech/chirp is gone (1800–2700 / 1500–2000 voices removed)',
+    !/1800\s*\+\s*Math\.random\(\)\s*\*\s*900/.test(s) && !/1500\s*\+\s*Math\.random\(\)\s*\*\s*500/.test(s)],
+  ['v4.13.0: primary weapon voices route through the weapon bus',
+    (s.match(/this\._weaponBus\(ctx\)/g) || []).length >= 3],
   [`version ${VER}`, s.includes(VER)],
 ];
 

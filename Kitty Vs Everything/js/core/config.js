@@ -392,7 +392,13 @@
 //          MusicScheduler jukebox preview session powering the DevPanel
 //          Music Jukebox). Milestone version synced across package.json,
 //          config.js, main.js, Game.js, HUD.js and index.html.
-export const VERSION = 'v4.12.0';
+// v4.13.0: WEAPON SFX BALANCE + VULCAN REDESIGN — no config changes
+//          (the milestone is the js/core/audio/ suite: the primary-weapon
+//          master bus WEAPON_BUS_GAIN 0.65 in SoundEffects.js and the
+//          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
+//          version synced across package.json, config.js, main.js,
+//          Game.js, HUD.js and index.html.
+export const VERSION = 'v4.13.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
