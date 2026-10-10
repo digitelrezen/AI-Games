@@ -37,6 +37,18 @@
 //        Eiffel 65 — Blue (Da Ba Dee) (the Eurodance lead hook + horn-stab
 //        chord hits — combat queue, 'synth' profile); both are single-channel
 //        MIDI arrangements riding the polyphonic lead voice.
+//        v4.19.0: CLASSIC HEAVY METAL EXPANSION + PER-TRACK MIX — the
+//        SONGS album grows 13 → 15 tracks: + Ozzy Osbourne — Crazy Train
+//        (intro riff, the galloping E-minor lead riff as a single-channel
+//        acoustic arrangement — combat queue, 'metal' profile) + Black
+//        Sabbath — Children Of The Grave (the full heavy metal anthem:
+//        power-chord rhythm + vocal melody on the lead voice, bass line,
+//        GM drums — boss queue, 'metal' profile). NEW: TRACK_MIX_SETTINGS
+//        — a per-song mix table (gainLead / gainBass / gainDrums scalars,
+//        one entry per track, defaults 1.0) that the MusicScheduler
+//        multiplies into the event-path layer gains, so quiet lead
+//        melodies can be boosted or overpowering percussion channels
+//        lowered per song without touching the genre profiles.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -94,8 +106,8 @@ export default async function run() {
   }
   const plMod = await mod('js/core/audio/MusicPlaylists.js');
   check('MusicPlaylists: 4 context modes', Object.keys(plMod.MUSIC_MODES).length === 4, `got ${Object.keys(plMod.MUSIC_MODES).join(', ')}`);
-  check('MusicPlaylists: v4.17.0 the 13-track MIDI album (11 v4.16.0 tracks + Classical Gas + Eiffel 65 — Blue; all procedural placeholder tracks removed)',
-    Object.keys(plMod.SONGS).length === 13, `got ${Object.keys(plMod.SONGS).length}`);
+  check('MusicPlaylists: v4.19.0 the 15-track MIDI album (13 v4.17.0 tracks + Ozzy Osbourne — Crazy Train (intro riff) + Black Sabbath — Children Of The Grave; all procedural placeholder tracks removed)',
+    Object.keys(plMod.SONGS).length === 15, `got ${Object.keys(plMod.SONGS).length}`);
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
@@ -173,6 +185,41 @@ export default async function run() {
     && plMod.SONGS['classical-gas'].vols.perc === 0.3
     && plMod.SONGS['eiffel65-blue'].lead.wave === 'sawtooth'
     && plMod.SONGS['eiffel65-blue'].vols.perc === 0.55);
+  check('v4.19.0 classic heavy metal MIDIs join the album (Crazy Train intro riff — combat queue; Children Of The Grave — boss queue)',
+    plMod.SONGS['ozzy-crazy-train'].title === 'Crazy Train (Intro Riff)' && plMod.SONGS['ozzy-crazy-train'].artist === 'Ozzy Osbourne'
+    && plMod.SONGS['black-sabbath-cotg'].title === 'Children Of The Grave' && plMod.SONGS['black-sabbath-cotg'].artist === 'Black Sabbath'
+    && plMod.PLAYLISTS.combat.includes('ozzy-crazy-train')
+    && plMod.PLAYLISTS.boss.includes('black-sabbath-cotg'));
+  check('v4.19.0 new tracks ride the parsed note sequences (Crazy Train = 80-lead-note solo-guitar riff, 9 bars @ 69 bpm, no drums; CoTG = 1219 lead (riff + melody) / 495 bass / 1840 drums, 153 bars @ 138 bpm)',
+    plMod.SONGS['ozzy-crazy-train'].bpm === 69 && plMod.SONGS['ozzy-crazy-train'].bars === 9
+    && plMod.SONGS['ozzy-crazy-train'].events.lead.length === 80
+    && plMod.SONGS['ozzy-crazy-train'].events.bass.length === 0
+    && plMod.SONGS['ozzy-crazy-train'].events.drums.length === 0
+    && plMod.SONGS['black-sabbath-cotg'].bpm === 138 && plMod.SONGS['black-sabbath-cotg'].bars === 153
+    && plMod.SONGS['black-sabbath-cotg'].events.lead.length === 1219
+    && plMod.SONGS['black-sabbath-cotg'].events.bass.length === 495
+    && plMod.SONGS['black-sabbath-cotg'].events.drums.length === 1840);
+  check('v4.19.0 new tracks ride the metal genre profile (distorted-saw lead, driven bass)',
+    plMod.SONGS['ozzy-crazy-train'].lead.wave === 'sawtooth' && plMod.SONGS['ozzy-crazy-train'].vols.perc === 0.6
+    && plMod.SONGS['black-sabbath-cotg'].lead.wave === 'sawtooth' && plMod.SONGS['black-sabbath-cotg'].vols.perc === 0.6);
+  check('v4.19.0 TRACK_MIX_SETTINGS: per-song gainLead/gainBass/gainDrums scalars for every track (one entry per SONGS key, positive scalars)',
+    plMod.TRACK_MIX_SETTINGS
+    && Object.keys(plMod.TRACK_MIX_SETTINGS).length === Object.keys(plMod.SONGS).length
+    && Object.keys(plMod.SONGS).every((id) => {
+      const m = plMod.TRACK_MIX_SETTINGS[id];
+      return m && typeof m.gainLead === 'number' && typeof m.gainBass === 'number' && typeof m.gainDrums === 'number'
+        && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0;
+    }));
+  check('v4.19.0 TRACK_MIX_SETTINGS: the new tracks carry their mix tweaks (Crazy Train gainLead 1.15 — quiet lead boosted; CoTG gainDrums 0.8 — dense percussion lowered)',
+    plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 1.15
+    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainBass === 1
+    && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainDrums === 1
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainLead === 1
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainBass === 1
+    && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainDrums === 0.8);
+  check('v4.19.0 scheduler: the event path applies the per-track mix (TRACK_MIX_SETTINGS → gainLead/gainBass/gainDrums multipliers)',
+    schedSrc.includes('TRACK_MIX_SETTINGS') && schedSrc.includes('mix.gainDrums')
+    && schedSrc.includes('mix.gainLead') && schedSrc.includes('mix.gainBass'));
   check('scheduler: v4.16.0 MIDI event playback path (32nd grid + events map → SynthVoice slots + kick pump)',
     schedSrc.includes('60 / song.bpm / 8') && schedSrc.includes('song.events')
     && schedSrc.includes('_scheduleEventStep') && schedSrc.includes('_evIndex')

@@ -68,7 +68,7 @@
 //          song boundaries, mode changes (setMode) apply at the next bar
 //          boundary with a riser / sub-drop accent.
 export const VERSION = 'v4.16.0';
-import { MUSIC_MODES, SONGS, PLAYLISTS, hz, mulberry32 } from './MusicPlaylists.js';
+import { MUSIC_MODES, SONGS, PLAYLISTS, TRACK_MIX_SETTINGS, hz, mulberry32 } from './MusicPlaylists.js';
 import {
   makeNoiseBuffer, makeImpulse, softClipCurve,
   makeVoice, makeChord,
@@ -614,7 +614,7 @@ export class MusicScheduler {
    * resonant lowpass, delay + reverb sends, optional portamento glide from
    * the previous note. The melody is thick and warm, never a raw buzz.
    */
-  _leadNote(song, midi, t, dur, volScale, vel = 1) {
+  _leadNote(song, midi, t, dur, volScale, vel = 1, mix = 1) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
     const cfg = song.lead;
@@ -631,7 +631,8 @@ export class MusicScheduler {
       q: cfg.q || 0.9,
       pan: cfg.pan || 0,
       adsr: cfg.adsr || { a: 0.012, d: 0.1, s: 0.7, r: 0.14 },
-      vol: (cfg.vol || 0.08) * volScale * vel,
+      // v4.19.0: mix = the per-track gainLead (TRACK_MIX_SETTINGS).
+      vol: (cfg.vol || 0.08) * volScale * vel * mix,
       dur,
       glide,
       prevFreq: glide ? prev : null,
@@ -751,15 +752,21 @@ export class MusicScheduler {
    *   arp   → _pluckNote (short detuned pluck + delay send)
    *   pad   → _eventPad (slow-attack detuned voice + reverb send)
    *   drums → _kick/_snare/_hat (GM-mapped kinds 0/1/2/3, kick-pumped)
+   * v4.19.0: the per-track mix (TRACK_MIX_SETTINGS[song.id]) multiplies
+   * the lead / bass / drums layer gains — gainLead boosts a quiet lead
+   * melody, gainDrums lowers an overpowering percussion channel, all
+   * per song without touching the genre profile vols.
    */
   _scheduleEventStep(song, songStep, t, step, volScale) {
     const list = this._evIndex(song)[songStep];
     if (!list) return;
     const V = song.vols;
+    // v4.19.0: per-track mix scalars (defaults 1.0 = profile vols as-is).
+    const mix = TRACK_MIX_SETTINGS[song.id] || { gainLead: 1, gainBass: 1, gainDrums: 1 };
     for (const [layer, ev] of list) {
       if (layer === 'drums') {
         const kind = ev[1];
-        const dv = V.perc * volScale * ev[2];
+        const dv = V.perc * mix.gainDrums * volScale * ev[2];
         if (dv <= 0.001) continue;
         if (kind === 0) {
           this._kick(t, dv);
@@ -772,8 +779,8 @@ export class MusicScheduler {
       const n = ev[1];
       const dur = step * ev[2];
       const v = ev[3];
-      if (layer === 'lead') this._leadNote(song, n, t, dur, volScale, v);
-      else if (layer === 'bass') this._eventBass(song, n, t, dur, volScale, v);
+      if (layer === 'lead') this._leadNote(song, n, t, dur, volScale, v, mix.gainLead);
+      else if (layer === 'bass') this._eventBass(song, n, t, dur, volScale, v, mix.gainBass);
       else if (layer === 'arp') this._pluckNote(hz(n), t, dur, V.arp * v * volScale, 1);
       else if (layer === 'pad') this._eventPad(song, n, t, dur, volScale, v);
     }
@@ -784,11 +791,12 @@ export class MusicScheduler {
    * song.bass voice profile (soft sine for ballads, detuned saw + sub
    * for the driven tracks) on the soft-clip bass bus.
    */
-  _eventBass(song, n, t, dur, volScale, vel) {
+  _eventBass(song, n, t, dur, volScale, vel, mix = 1) {
     if (!this._layers) return;
     const ctx = this.core.ctx;
     const cfg = song.bass;
-    const V = song.vols.bass * volScale * vel;
+    // v4.19.0: mix = the per-track gainBass (TRACK_MIX_SETTINGS).
+    const V = song.vols.bass * mix * volScale * vel;
     if (V <= 0.001) return;
     const v = makeVoice(ctx, this._layers.bass, {
       t, freq: hz(n),

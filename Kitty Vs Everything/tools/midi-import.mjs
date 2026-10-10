@@ -1,11 +1,12 @@
 // Filename: tools/midi-import.mjs
-// Kitty Vs Everything — v4.17.0
-// MIDI → MusicPlaylists.js converter (the v4.17.0 album import pipeline).
+// Kitty Vs Everything — v4.19.0
+// MIDI → MusicPlaylists.js converter (the v4.19.0 album import pipeline).
 //
-// The v4.17.0 soundtrack album is NOT procedural: every track is the exact
+// The v4.19.0 soundtrack album is NOT procedural: every track is the exact
 // note sequence parsed from the local .mid files in C:\Dev\AI-GAMES\.assets
-// (13 tracks — Tool, Metallica, Pantera, Beethoven, Faltermeyer,
-// Eastwood, traditional, Ziering, Eiffel 65). This tool:
+// (15 tracks — Tool, Metallica, Pantera, Beethoven, Faltermeyer,
+// Eastwood, traditional, Ziering, Eiffel 65, Ozzy Osbourne, Black Sabbath).
+// This tool:
 //   1. parses each SMF (type 0/1/2) with a ZERO-DEPENDENCY native parser
 //      (no @tonejs/midi — the single-file build must stay dependency-free),
 //   2. converts notes to the scheduler's 32nd-note grid (t = 32nd index,
@@ -14,9 +15,15 @@
 //      (lead / bass / arp / pad / drums) — GM percussion map for ch 10,
 //      pitch-range heuristics for the melodic channels, per-track
 //      overrides below,
-//   4. regenerates js/core/audio/MusicPlaylists.js (SONGS + PLAYLISTS) as
-//      clean embedded JS data — the 100% single-file portable HTML output
-//      stays intact.
+//   4. regenerates js/core/audio/MusicPlaylists.js (SONGS +
+//      TRACK_MIX_SETTINGS + PLAYLISTS) as clean embedded JS data — the
+//      100% single-file portable HTML output stays intact.
+//
+// v4.19.0: per-track mix — each TRACKS entry may carry a
+// `mix: { gainLead, gainBass, gainDrums }` object (defaults 1.0); the
+// writer emits it as the exported TRACK_MIX_SETTINGS table in
+// MusicPlaylists.js, which the MusicScheduler multiplies into the
+// event-path layer gains (boost quiet leads, lower loud drums, per song).
 //
 // Usage:
 //   node tools/midi-import.mjs --report   // parse + per-channel report
@@ -354,18 +361,36 @@ export const TRACKS = [
   // 'synth' profile (clean detuned-saw pluck) gives the hook its Eurodance
   // lead sound (NOT the metal saw — this is dance, not riffs).
   { file: 'Eiffel 65 - Blue (Da Ba Dee).mid', id: 'eiffel65-blue', title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', genre: 'synth', chMap: { lead: [0] } },
+  // v4.19.0: Ozzy Osbourne — Crazy Train (intro riff, acoustic cover) —
+  // the classic galloping E-minor riff as a single-channel acoustic
+  // arrangement (80 notes, E2–B3, 9 bars). ALL notes ride the
+  // polyphonic lead voice (like the other single-channel arrangements);
+  // the 'metal' profile gives the gallop its driving distorted-saw body.
+  // The per-track mix boost (gainLead 1.15) lifts the quiet solo-guitar
+  // lead so it sits on top of the session bus.
+  { file: 'ozzy osbourne - crazy train intro riff acoustic cover.mid', id: 'ozzy-crazy-train', title: 'Crazy Train (Intro Riff)', artist: 'Ozzy Osbourne', genre: 'metal', chMap: { lead: [0] }, mix: { gainLead: 1.15, gainBass: 1, gainDrums: 1 } },
+  // v4.19.0: Black Sabbath — Children Of The Grave — the classic heavy
+  // metal anthem (153 bars @ 138 bpm). ch0 (electric guitar, the
+  // power-chord rhythm) + ch2 (the vocal melody) ride the lead bus
+  // (riff + melody = the main body of the song, like Harvester), ch1 is
+  // the bass line, ch9 the drums (GM map). The dense 1840-hit drum track
+  // gets lowered with gainDrums 0.8 so the riff + melody stay on top.
+  { file: 'Black Sabbath - Children Of The Grave.mid', id: 'black-sabbath-cotg', title: 'Children Of The Grave', artist: 'Black Sabbath', genre: 'metal', chMap: { lead: [0, 2], bass: [1] }, mix: { gainLead: 1, gainBass: 1, gainDrums: 0.8 } },
 ];
 
-// The per-mode rotation queues (v4.17.0). Nothing Else Matters is the main
+// The per-mode rotation queues (v4.19.0). Nothing Else Matters is the main
 // intro sequence — MusicScheduler.start() picks PLAYLISTS.open[0].
 // v4.17.0: Classical Gas rides the two mellow queues (open + boneyard, the
 // fingerpicked arpeggio as the atmospheric breath); Eiffel 65 — Blue joins
 // the high-energy combat queue (the Eurodance hook alongside the riffs).
+// v4.19.0: Crazy Train (intro riff) joins the high-energy combat queue
+// (the 31-second galloping riff loop); Children Of The Grave (the 4.4-min
+// heavy metal anthem) joins the boss queue (a full-length battle track).
 export const PLAYLISTS = {
   open: ['metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
-  combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys', 'eiffel65-blue'],
+  combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
   boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester', 'classical-gas'],
-  boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys'],
+  boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys', 'black-sabbath-cotg'],
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -506,27 +531,47 @@ function write() {
   const playlists = Object.entries(PLAYLISTS)
     .map(([m, l]) => `  ${m}: [${l.map((s) => `'${s}'`).join(', ')}],`)
     .join('\n');
+  // v4.19.0: per-track mix settings — one entry per song (every track gets
+  // an entry, defaults 1.0), so channel gains can be tweaked per song in
+  // the generated file without touching the genre profiles.
+  const mixes = TRACKS
+    .map((tr) => {
+      const m = { gainLead: 1, gainBass: 1, gainDrums: 1, ...(tr.mix || {}) };
+      return `  '${tr.id}': ${jsfmt(m)},`;
+    })
+    .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.17.0
-// v4.17.0: MIDI ALBUM EXPANSION — the SONGS album grows 11 → 13 tracks:
-//          the v4.16.0 MIDI album (Nothing Else Matters — the main intro
-//          sequence — first in the open queue, Forty Six & 2 / No Quarter /
-//          Pneuma (Tool), Harvester of Sorrow / The Unforgiven (Metallica),
-//          Cowboys From Hell (Pantera), Axel F (Faltermeyer), Für Elise
-//          (Beethoven), When Johnny Comes Marching Home (traditional),
-//          Requiem for a Dream (Eastwood)) + Classical Gas (Mose Ziering —
-//          the fingerpicked-arpeggio piano arrangement, open + boneyard
-//          queues) + Eiffel 65 — Blue (Da Ba Dee) (the Eurodance lead hook +
-//          horn-stab chord hits, combat queue). Every track is the exact
-//          note sequence parsed from the local .mid files
-//          (tools/midi-import.mjs, zero-dependency SMF parser); every MIDI
-//          channel is mapped to a SynthVoice.js voice slot (lead / bass /
-//          arp / pad / drums) and every note rides the scheduler's 32nd-note
-//          grid (events: [t, midiNote, dur32nds, vel01]; drums:
-//          [t, kind, vel01] with kind 0 kick / 1 snare / 2 closed hat /
-//          3 open hat). All procedural placeholder tracks are gone — the
-//          data below is generated; re-run \`node tools/midi-import.mjs
-//          --write\` after touching the .mid files.
+// Kitty Vs Everything — v4.19.0
+// v4.19.0: CLASSIC HEAVY METAL EXPANSION + PER-TRACK MIX — the SONGS album
+//          grows 13 → 15 tracks: + Ozzy Osbourne — Crazy Train (intro riff,
+//          the galloping E-minor lead riff as a single-channel acoustic
+//          arrangement — combat queue) + Black Sabbath — Children Of The
+//          Grave (the full heavy metal anthem: power-chord rhythm + vocal
+//          melody on the lead voice, bass line, GM drums — boss queue).
+//          NEW: TRACK_MIX_SETTINGS — a per-song mix table (gainLead /
+//          gainBass / gainDrums scalars, one entry per track, defaults
+//          1.0) that the MusicScheduler multiplies into the event-path
+//          layer gains, so quiet lead melodies can be boosted or
+//          overpowering percussion channels lowered per song without
+//          touching the genre profiles.
+// v4.17.0: MIDI ALBUM EXPANSION — the v4.16.0 MIDI album (Nothing Else
+//          Matters — the main intro sequence — first in the open queue,
+//          Forty Six & 2 / No Quarter / Pneuma (Tool), Harvester of Sorrow
+//          / The Unforgiven (Metallica), Cowboys From Hell (Pantera),
+//          Axel F (Faltermeyer), Für Elise (Beethoven), When Johnny Comes
+//          Marching Home (traditional), Requiem for a Dream (Eastwood)) +
+//          Classical Gas (Mose Ziering — the fingerpicked-arpeggio piano
+//          arrangement, open + boneyard queues) + Eiffel 65 — Blue (Da Ba
+//          Dee) (the Eurodance lead hook + horn-stab chord hits, combat
+//          queue). Every track is the exact note sequence parsed from the
+//          local .mid files (tools/midi-import.mjs, zero-dependency SMF
+//          parser); every MIDI channel is mapped to a SynthVoice.js voice
+//          slot (lead / bass / arp / pad / drums) and every note rides the
+//          scheduler's 32nd-note grid (events: [t, midiNote, dur32nds,
+//          vel01]; drums: [t, kind, vel01] with kind 0 kick / 1 snare /
+//          2 closed hat / 3 open hat). All procedural placeholder tracks
+//          are gone — the data below is generated; re-run \`node
+//          tools/midi-import.mjs --write\` after touching the .mid files.
 export const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 // Seeded PRNG (kept for the scheduler's per-phrase variation helper).
@@ -556,6 +601,17 @@ export const MUSIC_MODES = {
 // padCutoff, and events — the parsed note data on the 32nd-note grid.
 export const SONGS = {
 ${songs.join('\n')}
+};
+
+// ─── v4.19.0: per-track mix settings (the per-song channel balance) ───
+// One entry per song: gainLead / gainBass / gainDrums are scalar
+// multipliers (1.0 = the genre profile's vols as-is) that the
+// MusicScheduler applies in the MIDI event path — e.g. gainLead > 1
+// boosts a quiet lead melody, gainDrums < 1 lowers an overpowering
+// percussion channel. Tweak per song here (or in tools/midi-import.mjs
+// TRACKS[].mix) and re-run \`node tools/midi-import.mjs --write\`.
+export const TRACK_MIX_SETTINGS = {
+${mixes}
 };
 
 // ─── v4.16.0: per-mode song queues (the rotation order) ───
