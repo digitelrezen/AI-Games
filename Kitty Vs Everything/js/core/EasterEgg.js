@@ -1,5 +1,11 @@
 // Filename: EasterEgg.js
-// Kitty Vs Everything — v4.1.0
+// Kitty Vs Everything — v4.28.0
+// v4.28.0: BENDER KILL PACING — the kill-based dialogue now requires
+//          KILLS_PER_LINE (10) friendly kills between lines instead of one
+//          kill per line: with the aimbot auto-firing, the old pacing pushed
+//          all six lines out in a few seconds. Lines 2–5 now fire at kills
+//          10/20/30/40 (BENDER_KILLS 4 → 40), giving each line time on
+//          screen to be read.
 // v4.12.0: SPACE SNAKE PRE-WAVE + TANK EGG SHIPS — when the RnM roll hits
 //          (or the dev button fires), the encounter now runs in two beats:
 //          (1) spawnRnMPreWave() drops RNMSHIP.preWaveCount Space Snake
@@ -25,15 +31,16 @@
 //     ../.assets/Robot-Bender Pixel Art.png) at normal
 //     proportions (no stretch), cigar arm at rest (v3.29.0: no more ship
 //     tracking). v3.29.0: the 10-second timer is GONE — catching Bender
-//     starts a kill-based dialogue:
+//     starts a kill-based dialogue (v4.28.0: KILLS_PER_LINE = 10 kills
+//     between lines so each line stays on screen long enough to read):
 //       0 "I'm your Aimbot." (on catch)
-//       1 "Shoot that guy!" (2 s later, skipped if a kill comes first)
-//       2 "Great, now shoot that guy!" (kill 1)
-//       3 "Great, great, now aim a little to the left." (kill 2)
-//       4 "Boom! Headshot!" (kill 3)
-//       5 "Ok that's enough, I have to go get drunk." (kill 4 → end)
+//       1 "Shoot that guy!" (2 s later, or the first kill)
+//       2 "Great, now shoot that guy!" (kill 10)
+//       3 "Great, great, now aim a little to the left." (kill 20)
+//       4 "Boom! Headshot!" (kill 30)
+//       5 "Ok that's enough, I have to go get drunk." (kill 40 → end)
 //     Kills are counted via Combat.js onEnemyDeath → aimbot.onEnemyKilled.
-//     After kill 4 the aimbot disables and Bender slides back out.
+//     After kill 40 the aimbot disables and Bender slides back out.
 //   • ShipEasterEgg (v3.27.0, reworked v3.28.0) — the Planet Express ship
 //     (ShipSprite.js, derived pixel art 422×159, nose faces +x) enters
 //     off-screen left and flies right; off-screen right it flips
@@ -96,7 +103,8 @@ import { createEnemy } from '../enemies/EnemyFactory.js'; // v4.12.0: Space Snak
 import { spawnGuaranteedDrop } from './DropManager.js'; // v3.83.0: flyby 'robot' drop
 import { TAU, clamp, rand } from './utils.js';
 
-export const BENDER_KILLS = 4; // v3.29.0: friendly kills that end the egg (HUD "BENDER x/4")
+const KILLS_PER_LINE = 10; // v4.28.0: friendly kills between dialogue lines (was 1 — lines flew by unreadable)
+export const BENDER_KILLS = KILLS_PER_LINE * 4; // v4.28.0: kills that end the egg (4 lines × 10; HUD "BENDER x/40")
 const BENDER_INTRO_DELAY = 2; // v3.29.0: s between "I'm your Aimbot." and "Shoot that guy!"
 const BENDER_SCALE = 0.5;    // v3.28.0: 293×441 art → 146×220 on screen (60% smaller than v3.27.0)
 const BENDER_ENTER = 1.3;    // slide-in duration
@@ -113,6 +121,8 @@ const SHIP_EGG_PASSES = 3;   // v3.28.0: full right/left patterns before despawn
 
 // v3.29.0: kill-based dialogue — stage 0 on catch, stage 1 after the intro
 // delay, stages 2–5 after kills 1–4 (stage 5 ends the egg).
+// v4.28.0: KILLS_PER_LINE (10) kills between lines — stages 2–5 now fire
+// at kills 10/20/30/40 so each line stays on screen long enough to read.
 const BENDER_DIALOGUE = [
   "I'm your Aimbot.",
   'Shoot that guy!',
@@ -174,13 +184,14 @@ export class BenderEasterEgg {
 
   /**
    * v3.29.0: Combat.js onEnemyDeath hook — one friendly kill. Advances the
-   * dialogue; after BENDER_KILLS kills the aimbot and the egg end
-   * (final line + exit slide).
+   * dialogue (v4.28.0: one line per KILLS_PER_LINE = 10 kills); after
+   * BENDER_KILLS kills the aimbot and the egg end (final line + exit slide).
    */
   onEnemyKilled() {
     if (!this.active) return;
     this.killCount++;
-    const stage = 1 + this.killCount; // kill 1 → line 2 … kill 4 → line 5
+    // v4.28.0: KILLS_PER_LINE (10) kills per line — kill 10 → line 2 … kill 40 → line 5
+    const stage = 1 + Math.floor(this.killCount / KILLS_PER_LINE);
     if (stage > this.dialogueStage) this.showLine(stage);
     if (this.killCount >= BENDER_KILLS) this.end();
   }

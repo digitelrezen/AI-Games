@@ -24,8 +24,9 @@
 //          the fire-control panel's slots (HUDFireControl.js) are the single
 //          source of truth for ability state.
 // v3.29.0: Bender easter egg — the 10 s countdown is gone; the label now
-//          shows the kill counter "BENDER x/4" (game.aimbot.killCount /
+//          shows the kill counter "BENDER x/40" (game.aimbot.killCount /
 //          BENDER_KILLS) while the egg's aim window is open.
+//          v4.28.0: 10 kills between dialogue lines (BENDER_KILLS 4 → 40).
 // v3.77.0: Version label bumped with the Phase 4 modularization lock-in
 //          (4-phase modular refactor complete — see ARCHITECTURE.md).
 // v3.78.0: A/D control mode (strafe / spin) + pause-button removal.
@@ -67,10 +68,10 @@
 //          the primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js + the rebuilt vulkanShot() dual-layer
 //          mechanical snap).
-export const VERSION = 'v4.27.0';
+export const VERSION = 'v4.28.0';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
-import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/4" kill counter
+import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/40" kill counter (v4.28.0: 10 kills/line)
 
 export default class HUD {
   constructor(game) {
