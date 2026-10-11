@@ -16,6 +16,9 @@
 //          encounter pre-wave species (EASTER-EGG ONLY: spawned by
 //          EasterEgg.spawnRnMPreWave before the RnM interceptor crosses in;
 //          excluded from the regular wave cycle in WaveManager.js).
+// v4.24.0: Added SkeletonEnemy registration — the Skeleton is the Boneyard
+//          encounter species (Eridath's Mom's House dump; excluded from the
+//          regular wave cycle in WaveManager.js).
 export const VERSION = 'v3.33.0';
 import { ENEMY_TYPES } from '../core/config.js';
 import WaspEnemy from './WaspEnemy.js';
@@ -33,6 +36,7 @@ import HumanEnemy from './HumanEnemy.js';
 import AlienEnemy from './AlienEnemy.js';
 import SnakeEnemy from './SnakeEnemy.js';
 import SpaceSnakeEnemy from './SpaceSnakeEnemy.js'; // v4.12.0: RnM pre-wave species
+import SkeletonEnemy from './SkeletonEnemy.js'; // v4.24.0: Boneyard-encounter-only skeleton
 import SpiderEnemy from './SpiderEnemy.js';
 import PinkCatEnemy from '../bosses/PinkCatEnemy.js';
 import ShuttleEnemy from './ShuttleEnemy.js';
@@ -56,6 +60,7 @@ const REGISTRY = {
   alien:     AlienEnemy,
   snake:     SnakeEnemy,
   spacesnake: SpaceSnakeEnemy, // v4.12.0: RnM pre-wave (easter-egg only)
+  skeleton:   SkeletonEnemy, // v4.24.0: Boneyard encounter (house dump; excluded from waves)
   spider:    SpiderEnemy,
   pinkcat:   PinkCatEnemy,
   shuttle:   ShuttleEnemy,

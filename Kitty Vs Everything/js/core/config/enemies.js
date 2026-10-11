@@ -34,6 +34,12 @@ export const ENEMY_TYPES = {
   // WAVE.SPECIES_COUNT stays 19). Spawned by EasterEgg.spawnRnMPreWave
   // into the playfield before the RnM interceptor crosses in.
   spacesnake: { name: 'Space Snake', color: '#b388ff', speed: 1.8, hp: 42, damage: 12, fireRate: 1.1, pattern: 'serpent' },
+  // v4.24.0: Skeleton — BONEYARD-ENCOUNTER-ONLY species (Eridath's Mom's
+  // House dump, BoneYardBonus Phase 3/4). Like spacesnake it is EXCLUDED
+  // from the regular wave cycle (WaveManager.js filter), so
+  // WAVE.SPECIES_COUNT stays 19. Shambles toward the player and fires a
+  // lazy bone-chunk shot (js/enemies/SkeletonEnemy.js).
+  skeleton: { name: 'Skeleton',       color: '#e8e4d8', speed: 1.5, hp: 30, damage: 12, fireRate: 1.8, pattern: 'shamble' },
   spider:   { name: 'Spider',       color: '#4a4a4a', speed: 1.8, hp: 38, damage: 10, fireRate: 0.9, pattern: 'web', onDeathEffect: 'bomb_drop' },
   pinkcat:  { name: 'Pink Cat',     color: '#ff69b4', speed: 1.8, hp: 60, damage: 18, fireRate: 1.2, pattern: 'fierce' },
   shuttle:  { name: 'Space Shuttle', color: '#cfd8dc', speed: 2.0, hp: 60, damage: 16, fireRate: 1.4, pattern: 'glide' },

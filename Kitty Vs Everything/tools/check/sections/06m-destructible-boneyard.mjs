@@ -19,7 +19,9 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   check('BoneYardBonus: VERSION = v3.76.0', bySrc.includes("VERSION = 'v3.76.0'"));
   check('BoneYardBonus: non-destructible backdrop removed (BONEYARD_BG_* gone)', !bySrc.includes('BONEYARD_BG_KEYS') && !bySrc.includes('BONEYARD_BG_BASE') && !bySrc.includes('BONEYARD_BG_COUNTS'));
   check('BoneYardBonus: _buildBackground/_drawProceduralBg removed', !bySrc.includes('_buildBackground') && !bySrc.includes('_drawProceduralBg'));
-  check('BoneYardBonus: draw() is a no-op hook', bySrc.includes('draw(ctx) {}'));
+  // v4.24.0: draw() is the yard's architecture pass — 8 bone columns
+  // (BONUS.BONE_YARD_COLUMNS) + the Eridath's Mom's House sub-module.
+  check('BoneYardBonus: draw() renders the bone columns + house (v4.24.0)', bySrc.includes('draw(ctx) {') && bySrc.includes('_drawColumns') && bySrc.includes('BONUS.BONE_YARD_COLUMNS') && bySrc.includes('EridathsMomsHouse'));
   check('BoneYardBonus: seeded field from BONUS.BONE_YARD_FIELD', bySrc.includes('BONUS.BONE_YARD_FIELD') && bySrc.includes('_seedYardField'));
   check('BoneYardBonus: deterministic mulberry32 layout (seed 20261001)', bySrc.includes('function mulberry32') && bySrc.includes('mulberry32(20261001)'));
   check('BoneYardBonus: field drift 6–18 px/s, no horizontal drift', bySrc.includes('bone.vy = 6 + rng() * 12') && bySrc.includes('bone.vx = 0'));

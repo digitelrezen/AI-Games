@@ -7,9 +7,12 @@
 //     each shot, so the player can read the aim).
 //   • Bone Yard bonus: marchMode = true → straight-down single-file march
 //     at 0.7× speed (original Bone Yard behavior), walk cycle animating.
+//   • v4.24.0 Bone Yard Phase 2: rushMode = true → the line surges
+//     bottom→top at full speed (no firing) — the 4 parallel rush lines
+//     that charge up toward Eridath's Mom's House.
 // Created through EnemyFactory.createEnemy(); bonuses may set marchMode /
 // fireRate after creation.
-export const VERSION = 'v3.13.0';
+export const VERSION = 'v3.14.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
 import { randomOutfit, drawHuman } from '../core/HumanSprite.js';
@@ -21,6 +24,8 @@ export default class HumanEnemy extends EnemyBase {
     this.outfit = randomOutfit();
     // Bone Yard: straight-down single-file march (no strafing).
     this.marchMode = false;
+    // v4.24.0 Bone Yard Phase 2: bottom→top rush line (no firing).
+    this.rushMode = false;
     // Wave behavior: descend to a hover band, then strafe left/right.
     this.strafeDir = Math.random() < 0.5 ? -1 : 1;
     this.hoverY = 90 + rand(0, 120);
@@ -30,6 +35,14 @@ export default class HumanEnemy extends EnemyBase {
 
   move(dt, slowMul) {
     const s = this.speed * slowMul;
+
+    // v4.24.0: RUSH LINES (Bone Yard Phase 2) — the line surges bottom→top
+    // toward the house at full speed, no firing. (EnemyBase only culls the
+    // bottom/sides, so BoneYardBonus reaps its own top-exiting rushers.)
+    if (this.rushMode) {
+      this.y -= s * dt * 1.15;
+      return;
+    }
 
     // Telegraphed aimed rifle fire (v3.13.0): attack() arms the aim,
     // this counts it down and fires the shot. Stunned humans (slowMul = 0)
@@ -57,6 +70,8 @@ export default class HumanEnemy extends EnemyBase {
   }
 
   attack() {
+    // v4.24.0: rush lines don't fire — they're all surge.
+    if (this.rushMode) return;
     // Telegraph the aim — the actual shot fires in move() once the
     // telegraph expires.
     this.telegraph = 0.35;

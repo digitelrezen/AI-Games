@@ -110,9 +110,23 @@ export default class Player extends Entity {
     initWeaponAnimState(this); // vulkanSpin / railCharge / plasmaPulse
     // ─── ANIMATION CLOCK (blink / tail idle-wag in the art) ───
     this.animTime = 0;
+    // ─── v4.24.0: SCRIPTED CONTROL LOCK (Bone Yard Phase 3) ───
+    // While locked the ship freezes in place and ignores ALL input
+    // (movement + every weapon/action key). BoneYardBonus sets it while
+    // Eridath's Mom's House descends and resets it defensively in
+    // cleanup() so the lock can never leak out of the stage.
+    this._controlsLocked = false;
     // ─── RENDERER ───
     this.renderer = new PlayerRenderer(this);
   }
+
+  /** v4.24.0: scripted control lock — assigning true freezes the ship
+   *  (velocity zeroed) and update() skips all input-driven sections. */
+  set controlsLocked(v) {
+    this._controlsLocked = !!v;
+    if (v) { this.vx = 0; this.vy = 0; }
+  }
+  get controlsLocked() { return this._controlsLocked; }
 
   // ═══════════════════════════════════════════════════════════
   //  HARDPOINT MATH (delegates to PlayerHardpoints.js —
@@ -153,22 +167,35 @@ export default class Player extends Entity {
     if (this.pawFlashL > 0) this.pawFlashL = Math.max(0, this.pawFlashL - dt);
     if (this.pawFlashR > 0) this.pawFlashR = Math.max(0, this.pawFlashR - dt);
     if (this.muzzleFlash > 0) this.muzzleFlash = Math.max(0, this.muzzleFlash - dt);
+    // ─── v4.24.0: SCRIPTED CONTROL LOCK (Bone Yard Phase 3) — while
+    // locked the ship coasts with drag only and ignores ALL input. ───
+    const locked = this._controlsLocked;
     // ─── v3.16.0: FLEET DEPLOY / RECALL (remappable 'deployFleet' action) ───
-    if (input.wasPressedAction('deployFleet')) toggleFleetDeploy(this);
+    if (!locked && input.wasPressedAction('deployFleet')) toggleFleetDeploy(this);
     // ─── v3.96.0: FLEET ORBIT (remappable 'synergy' action, T / - default) ───
-    if (input.wasPressedAction('synergy')) toggleFleetOrbit(this);
+    if (!locked && input.wasPressedAction('synergy')) toggleFleetOrbit(this);
 
     // ─── FLIGHT (rotation / thrust / boost / drag / wrap / tail sway) ───
-    updateFlight(this, dt, input);
+    if (!locked) updateFlight(this, dt, input);
+    else {
+      // v4.24.0: locked — drag-only coast (no input, no bounds wrap).
+      const dragFactor = Math.exp(-PLAYER.DRAG * dt);
+      this.vx *= dragFactor;
+      this.vy *= dragFactor;
+      this.x += this.vx * dt;
+      this.y += this.vy * dt;
+    }
 
     // ─── WEAPONS (thermal state, E/LMB fire, Q stun rockets, R cycle) ───
     updateWeaponState(this, dt);
-    tryFire(this, dt, input);
-    handleActionKeys(this, input);
+    if (!locked) {
+      tryFire(this, dt, input);
+      handleActionKeys(this, input);
+    }
 
     // ─── ULTIMATE action (default F / C = lefty; abstract, overridden) ───
     // v3.14.0: remappable via Keybinds.js.
-    if (input.wasPressedAction('ultimate') && this.ultimateCooldown <= 0) {
+    if (!locked && input.wasPressedAction('ultimate') && this.ultimateCooldown <= 0) {
       this.activateUltimate();
       this.ultimateCooldown = this.ULTIMATE_COOLDOWN;
     }

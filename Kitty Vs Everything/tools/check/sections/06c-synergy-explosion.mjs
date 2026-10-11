@@ -24,7 +24,7 @@ console.log('\n[6c] v3.96.0 fleet orbit (source gates)');
     fleetSrc.includes('player.superCharge = Math.min(1, player.superCharge + dt / MINI_SHIP.synergyChargeTime)'));
   const playerSrc = fs.readFileSync(path.join(ROOT, 'js/player/Player.js'), 'utf8');
   check('Player: "synergy" action dispatches to toggleFleetOrbit',
-    playerSrc.includes("if (input.wasPressedAction('synergy')) toggleFleetOrbit(this);"));
+    playerSrc.includes("input.wasPressedAction('synergy')) toggleFleetOrbit(this);"));
   check('Player: imports toggleFleetOrbit from MiniDeploy.js',
     playerSrc.includes("import { toggleFleetDeploy, updateFleetDeploy, toggleFleetOrbit } from '../levels/MiniDeploy.js';"));
   check('Player: fleetOrbiting state initialized',

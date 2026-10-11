@@ -64,7 +64,9 @@ export default class WaveManager {
     // v4.12.0: Space Snake (type 'spacesnake') is EASTER-EGG-ONLY — the RnM
     // encounter pre-wave (EasterEgg.spawnRnMPreWave) — so it is filtered out
     // of the regular species cycle (WAVE.SPECIES_COUNT stays 19).
-    this.species = Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake'); // insertion order = species order
+    // v4.24.0: skeleton is BONEYARD-ENCOUNTER-ONLY (Eridath's Mom's House
+    // dump) — filtered out of the regular species cycle the same way.
+    this.species = Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake' && t !== 'skeleton'); // insertion order = species order
     this.speciesIndex = 0;
     this.currentSpecies = this.species[0];
     this.spawnOverride = 0; // 0 = AUTO (sawtooth ramp); >0 = fixed active count

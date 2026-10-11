@@ -13,16 +13,19 @@ import path from 'node:path';
 const wmSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
 
 export default async function run() {
-console.log('\n[6d] shuttle enemy (19 wave species + 1 easter-egg-only, v3.82.0 round-trip flyby)');
+console.log('\n[6d] shuttle enemy (19 wave species + 2 easter-egg-only, v3.82.0 round-trip flyby)');
 const { ENEMY_TYPES, WAVE } = await mod('js/core/config.js');
-// v4.12.0: ENEMY_TYPES has 20 entries — the 19 regular wave species + 'spacesnake'
-// (easter-egg-only, filtered out of the wave species in WaveManager.js).
-check('config: ENEMY_TYPES has 20 entries (19 wave species + spacesnake easter-egg-only)', Object.keys(ENEMY_TYPES).length === 20, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
-check('config: shuttle entry (Space Shuttle, glide pattern)', ENEMY_TYPES.shuttle && ENEMY_TYPES.shuttle.name === 'Space Shuttle' && ENEMY_TYPES.shuttle.pattern === 'glide', `got ${JSON.stringify(ENEMY_TYPES.shuttle)}`);
+// v4.24.0: ENEMY_TYPES has 21 entries — the 19 regular wave species +
+// 'spacesnake' (RnM easter-egg-only) + 'skeleton' (Boneyard-encounter-only,
+// Eridath's Mom's House dump). Both bonus species are filtered out of the
+// wave species in WaveManager.js.
+check('config: ENEMY_TYPES has 21 entries (19 wave species + spacesnake + skeleton bonus-only)', Object.keys(ENEMY_TYPES).length === 21, `got ${Object.keys(ENEMY_TYPES).length}: ${Object.keys(ENEMY_TYPES).join(', ')}`);
+check('config: skeleton entry (bonus-only Boneyard species)', ENEMY_TYPES.skeleton && typeof ENEMY_TYPES.skeleton.speed === 'number' && typeof ENEMY_TYPES.skeleton.hp === 'number', `got ${JSON.stringify(ENEMY_TYPES.skeleton)}`);
 check('config: WAVE.SPECIES_COUNT = 19', WAVE.SPECIES_COUNT === 19, `got ${WAVE.SPECIES_COUNT}`);
 const { isValidEnemyType, getEnemyClass, getEnemyTypeIds } = await mod('js/enemies/EnemyFactory.js');
 check('EnemyFactory: shuttle registered in REGISTRY', isValidEnemyType('shuttle') && getEnemyTypeIds().includes('shuttle'));
-check('EnemyFactory: getEnemyClass("shuttle") is the ShuttleEnemy class', typeof getEnemyClass('shuttle') === 'function' && getEnemyClass('shuttle').name === 'ShuttleEnemy', `got ${getEnemyClass('shuttle') && getEnemyClass('shuttle').name}`);
+check('EnemyFactory: skeleton registered in REGISTRY (v4.24.0)', isValidEnemyType('skeleton') && getEnemyTypeIds().includes('skeleton'));
+check('EnemyFactory: getEnemyClass("skeleton") is the SkeletonEnemy class (v4.24.0)', typeof getEnemyClass('skeleton') === 'function' && getEnemyClass('skeleton').name === 'SkeletonEnemy', `got ${getEnemyClass('skeleton') && getEnemyClass('skeleton').name}`);
 const { default: ShuttleEnemy } = await mod('js/enemies/ShuttleEnemy.js');
 const seSrc = fs.readFileSync(path.join(ROOT, 'js/enemies/ShuttleEnemy.js'), 'utf8');
 check('ShuttleEnemy: extends EnemyBase, sprite key "shuttle", banked-strafe + telegraph', Object.getPrototypeOf(ShuttleEnemy.prototype).constructor.name === 'EnemyBase' && seSrc.includes("SHUTTLE_SPRITE_KEY = 'shuttle'") && seSrc.includes('this.bank') && seSrc.includes('this.telegraph'));
@@ -31,6 +34,9 @@ check('ShuttleEnemy: extends EnemyBase, sprite key "shuttle", banked-strafe + te
 const { default: WaveManager } = await mod('js/core/WaveManager.js');
 const wm = new WaveManager({});
 check('WaveManager: regular-wave species pool includes shuttle + moth + squirrel (19 total)', wm.species.includes('shuttle') && wm.species.includes('moth') && wm.species.includes('squirrel') && wm.species.length === 19, `got ${wm.species.length}: ${wm.species.join(', ')}`);
+// v4.24.0: the bonus-only species (spacesnake RnM / skeleton Boneyard) must
+// never enter the regular wave cycle.
+check('WaveManager: bonus-only species excluded from the wave pool (spacesnake + skeleton)', !wm.species.includes('spacesnake') && !wm.species.includes('skeleton'), `got ${wm.species.join(', ')}`);
 check('WaveManager: species pool comes from ENEMY_TYPES (source gate)', wmSrc.includes('this.species = Object.keys(ENEMY_TYPES)'));
 // Bone Yard Phase 2/3: explicit humanoid allowlist — a new species can
 // never leak into the march.

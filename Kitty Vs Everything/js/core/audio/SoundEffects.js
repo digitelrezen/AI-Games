@@ -371,6 +371,14 @@ export class SoundEffects {
   powerup()     { this.tone(523, 0.1, 'square', 0.05, 784); this.tone(784, 0.15, 'square', 0.04, 1046); }
   banner()      { this.tone(660, 0.2, 'triangle', 0.06, 880); }
 
+  /** v4.24.0: character voice blip — a short two-note synth "mumble" for
+   *  scripted dialogue lines (the Bone Yard house; RnM-style 'dialogue'
+   *  banners). Kept quiet so subtitles carry the message. */
+  voiceLine() {
+    this.tone(392, 0.09, 'triangle', 0.045, 330);
+    this._after(110, () => this.tone(330, 0.12, 'triangle', 0.04, 294));
+  }
+
   /** v4.11.0: HULL HIT — metallic hull-chip thud (square drop + noise tick). */
   hullHit() {
     if (!this.core.enabled) return;

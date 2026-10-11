@@ -92,6 +92,8 @@ class AudioSystem {
   coin()        { this.sfxEngine.coin(); }
   powerup()     { this.sfxEngine.powerup(); }
   banner()      { this.sfxEngine.banner(); }
+  /** v4.24.0: character voice blip (scripted dialogue lines). */
+  voiceLine()   { this.sfxEngine.voiceLine(); }
   superWeapon() { this.sfxEngine.superWeapon(); }
   gameOver()    { this.sfxEngine.gameOver(); }
 

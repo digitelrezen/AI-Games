@@ -64,10 +64,11 @@ export default async function run() {
 
   // ─── Easter-egg-only: filtered out of the regular wave cycle ───
   const waveSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
-  check('WaveManager: spacesnake filtered out of the wave species', waveSrc.includes("t !== 'spacesnake'"));
-  check('regular wave species count stays 19 (spacesnake excluded)',
-    Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake').length === 19,
-    `got ${Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake').length}`);
+  check('WaveManager: spacesnake + skeleton filtered out of the wave species',
+    waveSrc.includes("t !== 'spacesnake'") && waveSrc.includes("t !== 'skeleton'"));
+  check('regular wave species count stays 19 (bonus-only species excluded)',
+    Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake' && t !== 'skeleton').length === 19,
+    `got ${Object.keys(ENEMY_TYPES).filter((t) => t !== 'spacesnake' && t !== 'skeleton').length}`);
 
   // ─── Headless spawn through the factory (stats from ENEMY_TYPES) ───
   const { createEnemy } = await mod('js/enemies/EnemyFactory.js');
