@@ -152,6 +152,14 @@
 //          master bus WEAPON_BUS_GAIN 0.65 in SoundEffects.js and the
 //          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
 //          version synced with package.json.
+// v4.29.1: AD BANNER REWORK — the sponsored banner now starts HIDDEN and
+//          pops up with a NEW ad every 30–60 s (12 s on screen, then
+//          retracts) in the TRUE lower-left corner at joke size (240px
+//          wide / 64×64 sprite); the minimize button (–) is REAL — it
+//          docks an "AD · MOM" chip into the fire-control mini-bar
+//          (#fc-mini-bar) so nothing floats; clicking the chip pops the
+//          ad back up (AdBannerManager v4.29.1). No boot-wiring changes
+//          (adBanner.start() still just arms the first pop-up).
 // v4.29.0: AD BANNER — Eridath's Mom Enterprises (js/core/ui/
 //          AdBannerManager.js): a decoupled ES module that builds its own
 //          retro 90s "sponsored window" as a standalone overlay at the
@@ -161,7 +169,7 @@
 //          MONETIZATION / AD BANNERS (#set-ads, default ON) drives
 //          adBanner.setEnabled() — localStorage 'kitty_enable_ads'.
 //          Milestone version synced with package.json.
-export const VERSION = 'v4.29.0';
+export const VERSION = 'v4.29.1';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup

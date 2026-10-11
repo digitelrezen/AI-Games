@@ -1,12 +1,13 @@
 // Filename: AdBannerManager.js
-// Kitty Vs Everything — v4.29.0
+// Kitty Vs Everything — v4.29.1
 // Eridath's Mom Enterprises — the lower-left "sponsored by" ad banner.
 //
 // A decoupled, extensible UI module: it builds its OWN DOM (a retro 90s
 // ad window — neon cyan/magenta borders, gradient title bar, fake
 // close/minimize/maximize buttons) as a standalone overlay at the
 // LOWER-LEFT of the main game screen (inside #game-root, NOT part of the
-// fire-control panel) and rotates the AD_CATALOG every 8–12 s. index.html
+// fire-control panel) and pops up a NEW ad from the AD_CATALOG every
+// 30–60 s (v4.29.1 — the banner starts HIDDEN). index.html
 // only provides the settings toggle (#set-ads, Settings → MONETIZATION /
 // AD BANNERS); everything else is self-contained here.
 //
@@ -17,33 +18,40 @@
 //     256×256 in AssetSprites.js) and is scaled with nearest-neighbor
 //     (image-rendering: pixelated in style.css + smoothing disabled here)
 //     so the pixel art stays razor-sharp at any banner size.
-//   • setEnabled(boolean) — show/hide the banner AND pause/resume the
-//     rotation immediately; persists to localStorage 'kitty_enable_ads'
-//     (default ON — Mom always runs the sponsorship).
-//   • Fake window buttons are decorative (90s authenticity): clicking
-//     them fires a bus 'banner' toast instead of closing the ad.
+//   • Pop-up model (v4.29.1): the banner STARTS HIDDEN and pops up with a
+//     NEW ad after a random 30–60 s gap, stays on screen for 12 s, then
+//     retracts — a joke, not a fixture. The minimize button (–) is REAL:
+//     it retracts the banner and docks a small "AD · MOM" chip into the
+//     fire-control mini-bar (#fc-mini-bar) so nothing floats on the game
+//     screen; clicking the chip pops the ad back up. Close/maximize stay
+//     fake (90s authenticity — Mom refuses).
+//   • setEnabled(boolean) — turns the pop-up cycle on/off immediately
+//     (off: hide + undock + clear timers); persists to localStorage
+//     'kitty_enable_ads' (default ON — Mom always runs the sponsorship).
 //   • Node-safe: importing under tools/check.mjs never touches the DOM —
 //     the constructor probes canvas.getContext('2d') before building, so
 //     headless checks get a live (but DOM-less) manager.
 //
-// Boot: main.js calls adBanner.start() (renders ad #1 + schedules the
-// first 8–12 s rotation). SettingsScreen._buildAds() binds #set-ads to
-// adBanner.setEnabled().
+// Boot: main.js calls adBanner.start() — the banner stays hidden and the
+// first pop-up arrives after a random 30–60 s gap. SettingsScreen
+// ._buildAds() binds #set-ads to adBanner.setEnabled().
 
 import { bus } from '../EventBus.js';
 import { getSprite, loadAssets } from '../AssetManager.js';
 import { disableImageSmoothing } from '../utils.js'; // v3.88.0: crisp pixel-art enforcement
 
-export const VERSION = 'v4.29.0';
+export const VERSION = 'v4.29.1';
 
 // localStorage key for the enable toggle (Settings → MONETIZATION / AD
 // BANNERS). Default ON.
 export const AD_STORAGE_KEY = 'kitty_enable_ads';
 
-// Rotation window: the catalog advances every 8–12 s (randomized so the
-// cadence never feels mechanical).
-export const ROTATE_MIN_MS = 8000;
-export const ROTATE_MAX_MS = 12000;
+// Pop-up cadence (v4.29.1): the banner starts HIDDEN and pops up with a
+// NEW ad after a random 30–60 s gap, stays on screen for VISIBLE_MS,
+// then retracts and waits for the next gap. A joke — not a fixture.
+export const POPUP_MIN_MS = 30000;
+export const POPUP_MAX_MS = 60000;
+export const VISIBLE_MS = 12000;
 
 // ─── AD CATALOG (extensible — append new Eridath's Mom Enterprises
 //     products here; the banner picks them up automatically) ────────────
@@ -54,7 +62,7 @@ export const AD_CATALOG = [
     subtitle: 'Free soup kitchen open late',
     body: 'Call 1-976-PIPE-CLEANERS ($3.99/min) for 24/7 pipe cleaning hotline!',
     // 512×512 house pixel art (embedded 256×256 in AssetSprites.js) —
-    // scaled nearest-neighbor into the 96×96 sprite box (see _drawSprite).
+    // scaled nearest-neighbor into the 64×64 sprite box (see _drawSprite).
     sprite: 'eridath_moms_house',
     cta: 'CALL 1-976-PIPE-CLEANERS',
   },
@@ -119,17 +127,27 @@ export class AdBannerManager {
   constructor() {
     this.enabled = loadEnabled();
     this._index = 0;
-    this._timer = null;
-    this._root = null; // #ad-banner element
-    this._sprite = null; // 96×96 sprite canvas
+    this._timer = null;        // pending pop-up timer
+    this._visibleTimer = null; // auto-retract timer
+    this._visible = false;     // banner currently on screen
+    this._docked = false;      // minimized chip sitting in the FC mini-bar
+    this._root = null;         // #ad-banner element
+    this._sprite = null;       // 64×64 sprite canvas
+    this._dock = null;         // #ad-dock chip in #fc-mini-bar
     this._build();
   }
 
   /** The full catalog (extensible). */
   get ads() { return AD_CATALOG; }
 
-  /** The ad currently on screen. */
+  /** The ad currently on screen (or the next one to pop up). */
   get current() { return AD_CATALOG[this._index]; }
+
+  /** True while the banner is on screen. */
+  get visible() { return this._visible; }
+
+  /** True while the minimized chip is docked in the FC mini-bar. */
+  get docked() { return this._docked; }
 
   // ─── DOM (retro 90s ad window, built entirely by this module) ────────
   _build() {
@@ -162,17 +180,17 @@ export class AdBannerManager {
       return b;
     };
     const closeBtn = mkBtn('ad-btn ad-btn-close', '✕', 'Close — Mom said no');
-    const minBtn = mkBtn('ad-btn ad-btn-min', '–', 'Minimize — Mom said no');
+    const minBtn = mkBtn('ad-btn ad-btn-min', '–', 'Minimize — dock into the fire-control bar');
     const maxBtn = mkBtn('ad-btn ad-btn-max', '□', 'Maximize — Mom said no');
     bar.append(label, btns);
 
-    // Body — 96×96 pixel-art sprite box + ad copy + CTA.
+    // Body — 64×64 pixel-art sprite box + ad copy + CTA.
     const body = document.createElement('div');
     body.className = 'ad-body';
     const cv = document.createElement('canvas');
     cv.className = 'ad-sprite';
-    cv.width = 96;
-    cv.height = 96;
+    cv.width = 64;
+    cv.height = 64;
     const copy = document.createElement('div');
     copy.className = 'ad-copy';
     this._titleEl = document.createElement('div');
@@ -201,12 +219,15 @@ export class AdBannerManager {
     this._root = el;
     this._sprite = cv;
     root.appendChild(el);
+    this._buildDock(); // v4.29.1: the minimized chip lives in the FC mini-bar
 
-    // Fake window buttons — decorative; the ad refuses to close.
+    // Window buttons — close/maximize are FAKE (90s authenticity, Mom
+    // refuses); minimize is REAL (v4.29.1): it retracts the banner and
+    // docks the "AD · MOM" chip into the fire-control mini-bar.
     const refuse = (msg) => () => bus.emit('banner', { text: msg, tone: 'bad', duration: 2 });
     closeBtn.addEventListener('click', refuse('CANNOT CLOSE — MOM APPROVES THIS SPONSORSHIP'));
-    minBtn.addEventListener('click', refuse('NO MINIMIZE — THE AD IS ALWAYS WATCHING'));
-    maxBtn.addEventListener('click', refuse('NO MAXIMIZE — 320px IS ENOUGH FOR EVERYONE'));
+    minBtn.addEventListener('click', () => this.minimize());
+    maxBtn.addEventListener('click', refuse('NO MAXIMIZE — 240px IS ENOUGH FOR EVERYONE'));
 
     // CTA click — Mom logs your interest (bus event) and the ad wiggles.
     this._ctaEl.addEventListener('click', () => {
@@ -219,61 +240,147 @@ export class AdBannerManager {
     if (!this.enabled) el.classList.add('hidden');
   }
 
-  // ─── lifecycle ────────────────────────────────────────────────────────
-
-  /** Boot the banner: render ad #1 + start the 8–12 s rotation.
-   *  Called from main.js at boot (no-op under Node). */
-  start() {
-    if (!this._root) return;
-    this._renderAd();
-    if (this.enabled) this._scheduleNext();
+  /** v4.29.1: the minimized chip — a small "AD · MOM" button docked into
+   *  the fire-control mini-bar (#fc-mini-bar) so a minimized ad lives in
+   *  the bottom bar instead of floating on the game screen. Clicking it
+   *  pops the ad back up. */
+  _buildDock() {
+    if (!domReady()) return;
+    const host = document.getElementById('fc-mini-bar') || document.getElementById('fc-dashboard');
+    if (!host) return;
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.id = 'ad-dock';
+    chip.className = 'ad-dock';
+    chip.textContent = 'AD · MOM';
+    chip.title = "Eridath's Mom Enterprises — click to restore the ad";
+    chip.classList.add('hidden');
+    chip.addEventListener('click', () => this.restore());
+    host.appendChild(chip);
+    this._dock = chip;
   }
 
-  /** Show/hide the banner AND pause/resume the rotation immediately.
-   *  Persists to localStorage 'kitty_enable_ads'. */
+  _setDocked(docked) {
+    this._docked = docked;
+    if (this._dock) this._dock.classList.toggle('hidden', !docked);
+  }
+
+  // ─── lifecycle (v4.29.1: hidden start + random pop-ups) ──────────────
+
+  /** Boot: the banner stays HIDDEN — the first pop-up arrives after a
+   *  random 30–60 s gap (no-op under Node). */
+  start() {
+    if (!this._root) return;
+    this._schedulePopup();
+  }
+
+  /** Turn the pop-up cycle on/off immediately. Off: hide the banner,
+   *  undock the chip, clear all timers. On: schedule the next pop-up
+   *  (30–60 s). Persists to localStorage 'kitty_enable_ads'. */
   setEnabled(on) {
     const next = !!on;
     this.enabled = next;
     persistEnabled(next);
-    if (!this._root) return;
-    this._root.classList.toggle('hidden', !next);
-    if (next) {
-      this._renderAd();
-      this._scheduleNext();
+    if (!next) {
+      this._visible = false;
+      this._clearTimers();
+      if (this._root) this._root.classList.add('hidden');
+      this._setDocked(false);
     } else {
-      this._clearTimer();
+      this._schedulePopup();
     }
   }
 
   toggle() { this.setEnabled(!this.enabled); }
 
-  /** Pause the rotation (banner stays on screen on the current ad). */
-  pause() { this._clearTimer(); }
-
-  /** Resume the rotation (only when enabled). */
-  resume() { if (this.enabled) this._scheduleNext(); }
-
-  /** Advance to the next ad immediately (dev / easter-egg hook). */
-  next() {
-    if (!this.enabled || !this._root) return;
-    this._index = (this._index + 1) % AD_CATALOG.length;
-    this._renderAd();
-    this._scheduleNext();
+  /** Minimize (the REAL window button): retract the banner now and dock
+   *  the "AD · MOM" chip into the fire-control mini-bar. The next pop-up
+   *  is scheduled 30–60 s out. */
+  minimize() {
+    if (!this._visible) return;
+    this._retract();
+    this._setDocked(true);
   }
 
-  // ─── rotation ─────────────────────────────────────────────────────────
+  /** Restore from the docked chip: pop the current ad back up now. */
+  restore() {
+    if (!this.enabled || this._visible) return;
+    this._popup();
+  }
 
-  _scheduleNext() {
-    this._clearTimer();
+  /** Pause all timers (the banner stays exactly as-is). */
+  pause() { this._clearTimers(); }
+
+  /** Resume: if visible, restart the auto-retract; if hidden, schedule
+   *  the next pop-up. */
+  resume() {
     if (!this.enabled) return;
-    const delay = ROTATE_MIN_MS + Math.random() * (ROTATE_MAX_MS - ROTATE_MIN_MS);
-    this._timer = setTimeout(() => this.next(), delay);
+    if (this._visible) {
+      this._clearVisibleTimer();
+      this._visibleTimer = setTimeout(() => this._retract(), VISIBLE_MS);
+    } else {
+      this._schedulePopup();
+    }
   }
 
-  _clearTimer() {
+  /** Dev / easter-egg hook: pop up the NEXT ad immediately. */
+  next() {
+    if (!this.enabled) return;
+    this._advance();
+    this._popup();
+  }
+
+  // ─── pop-up state machine ─────────────────────────────────────────────
+
+  /** Pop up the current ad (with the pop-in animation) and start the
+   *  12 s auto-retract. Undocks the chip first. */
+  _popup() {
+    if (!this.enabled || !this._root) return;
+    this._setDocked(false);
+    this._renderAd();
+    this._root.classList.remove('hidden');
+    this._root.classList.remove('ad-pop');
+    void this._root.offsetWidth; // restart the pop-in animation
+    this._root.classList.add('ad-pop');
+    this._visible = true;
+    this._clearVisibleTimer();
+    this._visibleTimer = setTimeout(() => this._retract(), VISIBLE_MS);
+  }
+
+  /** Retract (auto-hide after VISIBLE_MS, or minimize): hide the banner,
+   *  advance to the NEXT ad, and wait 30–60 s for the next pop-up. */
+  _retract() {
+    this._visible = false;
+    this._clearVisibleTimer();
+    if (this._root) this._root.classList.add('hidden');
+    this._advance();
+    this._schedulePopup();
+  }
+
+  /** Each pop-up shows a NEW ad. */
+  _advance() {
+    this._index = (this._index + 1) % AD_CATALOG.length;
+  }
+
+  _schedulePopup() {
+    this._clearTimers();
+    if (!this.enabled) return;
+    const delay = POPUP_MIN_MS + Math.random() * (POPUP_MAX_MS - POPUP_MIN_MS);
+    this._timer = setTimeout(() => this._popup(), delay);
+  }
+
+  _clearTimers() {
     if (this._timer != null) {
       clearTimeout(this._timer);
       this._timer = null;
+    }
+    this._clearVisibleTimer();
+  }
+
+  _clearVisibleTimer() {
+    if (this._visibleTimer != null) {
+      clearTimeout(this._visibleTimer);
+      this._visibleTimer = null;
     }
   }
 
@@ -290,11 +397,11 @@ export class AdBannerManager {
     this._drawSprite(ad);
   }
 
-  /** Nearest-neighbor blit of the ad's sprite into the 96×96 box (crisp
-   *  pixel art — smoothing disabled, integer fit). Until the
-   *  AssetSprites.js base64 decodes (or if it fails) a procedural
-   *  pixel-art placeholder stands in, and the re-render fires when the
-   *  decode lands. */
+  /** Nearest-neighbor blit of the ad's sprite into the 64×64 box (crisp
+   *  pixel art — smoothing disabled, integer fit: the 256×256 house art
+   *  scales exactly 4× down). Until the AssetSprites.js base64 decodes
+   *  (or if it fails) a procedural pixel-art placeholder stands in, and
+   *  the re-render fires when the decode lands. */
   _drawSprite(ad) {
     const cv = this._sprite;
     if (!cv || !cv.getContext) return;
@@ -317,7 +424,7 @@ export class AdBannerManager {
     }
   }
 
-  /** Chunky 96×96 procedural fallback (12×12 grid of 8px art pixels) —
+  /** Chunky 64×64 procedural fallback (8×8 grid of 8px art pixels) —
    *  one icon per ad id, drawn while the sprite decodes / if it failed. */
   _drawPlaceholder(ctx, ad) {
     const px = 8;
@@ -327,25 +434,25 @@ export class AdBannerManager {
     };
     switch (ad.id) {
       case 'eridaths_moms_house': // little house
-        r(5, 2, 2, 1, '#ff4fd8'); r(4, 3, 4, 1, '#ff4fd8'); r(3, 4, 6, 1, '#ff4fd8');
-        r(3, 5, 6, 5, '#e8c15a'); r(5, 7, 2, 3, '#8a5a2b');
-        r(3, 6, 1, 1, '#00e5ff'); r(8, 6, 1, 1, '#00e5ff');
+        r(4, 1, 1, 1, '#ff4fd8'); r(3, 2, 2, 1, '#ff4fd8'); r(2, 3, 4, 1, '#ff4fd8');
+        r(2, 4, 4, 3, '#e8c15a'); r(3, 5, 2, 2, '#8a5a2b');
+        r(2, 4, 1, 1, '#00e5ff'); r(5, 4, 1, 1, '#00e5ff');
         break;
       case 'rhino_cat_9000': // extra-strength pill
-        r(3, 5, 1, 2, '#ff8a80'); r(4, 5, 2, 2, '#ffffff'); r(6, 5, 2, 2, '#ff5252'); r(8, 5, 1, 2, '#ff8a80');
-        r(4, 7, 4, 1, '#7a1020');
+        r(1, 3, 1, 2, '#ff8a80'); r(2, 3, 2, 2, '#ffffff'); r(4, 3, 2, 2, '#ff5252'); r(6, 3, 1, 2, '#ff8a80');
+        r(2, 5, 4, 1, '#7a1020');
         break;
       case 'only_eridaths_mom': // cat face
-        r(3, 3, 1, 2, '#ff4fd8'); r(8, 3, 1, 2, '#ff4fd8');
-        r(3, 4, 6, 5, '#ff9ad5');
-        r(4, 6, 1, 1, '#10041f'); r(7, 6, 1, 1, '#10041f');
-        r(2, 7, 1, 1, '#00e5ff'); r(9, 7, 1, 1, '#00e5ff');
+        r(2, 1, 1, 1, '#ff4fd8'); r(5, 1, 1, 1, '#ff4fd8');
+        r(2, 2, 4, 4, '#ff9ad5');
+        r(3, 3, 1, 1, '#10041f'); r(4, 3, 1, 1, '#10041f');
+        r(1, 4, 1, 1, '#00e5ff'); r(6, 4, 1, 1, '#00e5ff');
         break;
       case 'boneyard_disposal': // bone
-        r(3, 5, 2, 3, '#e8e8f0'); r(7, 5, 2, 3, '#e8e8f0'); r(4, 6, 4, 1, '#e8e8f0');
+        r(1, 2, 2, 2, '#e8e8f0'); r(5, 2, 2, 2, '#e8e8f0'); r(2, 3, 4, 1, '#e8e8f0');
         break;
       default: // MOM monogram
-        r(3, 4, 2, 5, '#00e5ff'); r(8, 4, 2, 5, '#00e5ff'); r(5, 5, 2, 2, '#ff4fd8');
+        r(1, 1, 2, 4, '#00e5ff'); r(5, 1, 2, 4, '#00e5ff'); r(3, 2, 2, 1, '#ff4fd8');
     }
   }
 }

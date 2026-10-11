@@ -68,7 +68,7 @@
 //          the primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js + the rebuilt vulkanShot() dual-layer
 //          mechanical snap).
-export const VERSION = 'v4.29.0';
+export const VERSION = 'v4.29.1';
 import { formatTime } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { BENDER_KILLS } from '../core/EasterEgg.js'; // v3.29.0: "BENDER x/40" kill counter (v4.28.0: 10 kills/line)

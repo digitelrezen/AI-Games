@@ -50,6 +50,8 @@ const tests = [
   ['ad banner title bar (SPONSORED BY ERIDATH\'S MOM ENTERPRISES)', s.includes("SPONSORED BY ERIDATH'S MOM ENTERPRISES")],
   ['ad banner house ad copy (1-976-PIPE-CLEANERS hotline)', s.includes('1-976-PIPE-CLEANERS') && s.includes('$3.99/min')],
   ['ad banner CTA copy (300% cannon power / Frenzy / bury your problems)', s.includes('300% maximum cannon power') && s.includes('unlimited Frenzy power-ups') && s.includes('bury your problems fast')],
+  // v4.29.1: ad banner rework — hidden start + 30–60 s pop-ups + FC-bar dock
+  ['ad banner v4.29.1: pop-up window (30–60 s) + 12 s visible + #ad-dock FC-bar chip', s.includes('POPUP_MIN_MS') && s.includes('VISIBLE_MS') && s.includes('ad-dock')],
   // Note: "autoAim" alone is NOT a failure — Player2.js legitimately uses
   // PLAYER2.autoAimTurnRate / _autoAim() for the P2 co-op AI ship. The dead
   // reference from the old EasterEgg was specifically `player.autoAim`.

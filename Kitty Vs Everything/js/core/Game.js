@@ -289,12 +289,20 @@
 //          + bounded voice pool, rebuilt explosion tail, and the
 //          MusicScheduler jukebox preview session powering the DevPanel
 //          Music Jukebox). Milestone version synced with package.json.
+// v4.29.1: AD BANNER REWORK — starts hidden, pops up with a NEW ad every
+//          30–60 s (12 s on screen), true lower-left corner at joke size
+//          (240px / 64×64 sprite); the minimize button docks an "AD · MOM"
+//          chip into the fire-control mini-bar (#fc-mini-bar) so nothing
+//          floats (AdBannerManager v4.29.1 — no orchestrator changes).
+// v4.29.0: AD BANNER — Eridath's Mom Enterprises sponsored banner
+//          (js/core/ui/AdBannerManager.js, standalone lower-left overlay,
+//          settings #set-ads toggle). Milestone version synced.
 // v4.13.0: WEAPON SFX BALANCE + VULCAN REDESIGN — no orchestrator
 //          changes (the milestone is the js/core/audio/ suite: the
 //          primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js and the rebuilt vulkanShot() dual-layer
 //          mechanical snap). Milestone version synced with package.json.
-export const VERSION = 'v4.29.0';
+export const VERSION = 'v4.29.1';
 import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
