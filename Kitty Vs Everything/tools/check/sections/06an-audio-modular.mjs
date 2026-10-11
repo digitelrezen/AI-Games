@@ -150,7 +150,7 @@ export default async function run() {
   check('MusicPlaylists: v4.17.0 parsed note-sequence identity (dominant MIDI bpm + full parsed bar length per track)',
     plMod.SONGS['metallica-nem'].bpm === 75 && plMod.SONGS['metallica-nem'].bars === 43
     && plMod.SONGS['requiem-dream'].bpm === 45 && plMod.SONGS['requiem-dream'].bars === 25
-    && plMod.SONGS['axel-f'].bpm === 125 && plMod.SONGS['axel-f'].bars === 28
+    && plMod.SONGS['axel-f'].bpm === 115 && plMod.SONGS['axel-f'].bars === 89
     && plMod.SONGS['fur-elise'].bpm === 135 && plMod.SONGS['fur-elise'].bars === 52
     && plMod.SONGS['johnny-march'].bpm === 165 && plMod.SONGS['johnny-march'].bars === 137
     && plMod.SONGS['tool-forty-six'].bpm === 79 && plMod.SONGS['tool-forty-six'].bars === 124
@@ -158,7 +158,7 @@ export default async function run() {
     && plMod.SONGS['pantera-cowboys'].bpm === 230 && plMod.SONGS['pantera-cowboys'].bars === 45
     && plMod.SONGS['metallica-harvester'].bpm === 92 && plMod.SONGS['metallica-harvester'].bars === 42
     && plMod.SONGS['metallica-unforgiven'].bpm === 70 && plMod.SONGS['metallica-unforgiven'].bars === 110
-    && plMod.SONGS['tool-pneuma'].bpm === 115 && plMod.SONGS['tool-pneuma'].bars === 291
+    && plMod.SONGS['tool-pneuma'].bpm === 114 && plMod.SONGS['tool-pneuma'].bars === 84
     && plMod.SONGS['classical-gas'].bpm === 152 && plMod.SONGS['classical-gas'].bars === 117
     && plMod.SONGS['eiffel65-blue'].bpm === 127 && plMod.SONGS['eiffel65-blue'].bars === 117);
   check('MusicPlaylists: v4.16.0 every song carries parsed MIDI events (lead layer non-empty, 32nd-grid bounds, sane bpm/bars)',
@@ -175,22 +175,25 @@ export default async function run() {
       }
       return true;
     }));
-  check('MusicPlaylists: v4.17.0 the exact note counts ride the layers (NEM 507 lead / 80 bass / 417 drums; Pneuma 3455 drums; Für Elise 526 lead, piano-only; Classical Gas 1391 lead, piano-only; Eiffel 65 1141 lead, piano-only)',
+  check('MusicPlaylists: v4.17.0 the exact note counts ride the layers (NEM 507 lead / 80 bass / 417 drums; Pneuma 1542 lead piano-only; Axel F 1036 lead piano-only; Für Elise 526 lead, piano-only; Classical Gas 1391 lead, piano-only; Eiffel 65 1141 lead, piano-only)',
     plMod.SONGS['metallica-nem'].events.lead.length === 507
     && plMod.SONGS['metallica-nem'].events.bass.length === 80
     && plMod.SONGS['metallica-nem'].events.drums.length === 417
-    && plMod.SONGS['tool-pneuma'].events.drums.length === 3455
+    && plMod.SONGS['tool-pneuma'].events.lead.length === 1542
+    && plMod.SONGS['tool-pneuma'].events.drums.length === 0
+    && plMod.SONGS['axel-f'].events.lead.length === 1036
+    && plMod.SONGS['axel-f'].events.drums.length === 0
     && plMod.SONGS['fur-elise'].events.lead.length === 526
     && plMod.SONGS['fur-elise'].events.drums.length === 0
     && plMod.SONGS['classical-gas'].events.lead.length === 1391
     && plMod.SONGS['classical-gas'].events.drums.length === 0
     && plMod.SONGS['eiffel65-blue'].events.lead.length === 1141
     && plMod.SONGS['eiffel65-blue'].events.drums.length === 0);
-  check('v4.16.0 FIDELITY FIX: the main melody rides the LEAD slot (Requiem piano 1429 / Johnny trombone 481 / Harvester dist-gtr 395) + correct genre profiles (Axel F = synth perc 0.55, not metal; No Quarter + Für Elise = piano perc 0.3)',
+  check('v4.16.0 FIDELITY FIX: the main melody rides the LEAD slot (Requiem piano 1429 / Johnny trombone 481 / Harvester dist-gtr 395) + correct genre profiles (Axel F = piano perc 0.3, the v4.23.0 ragtime-piano arrangement; No Quarter + Für Elise = piano perc 0.3)',
     plMod.SONGS['requiem-dream'].events.lead.length === 1429
     && plMod.SONGS['johnny-march'].events.lead.length === 481
     && plMod.SONGS['metallica-harvester'].events.lead.length === 395
-    && plMod.SONGS['axel-f'].vols.perc === 0.55
+    && plMod.SONGS['axel-f'].vols.perc === 0.3
     && plMod.SONGS['tool-no-quarter'].vols.perc === 0.3
     && plMod.SONGS['fur-elise'].vols.perc === 0.3);
   check('v4.17.0 new tracks ride the correct genre profiles (Classical Gas = piano triangle lead, perc 0.3; Eiffel 65 — Blue = synth saw lead, perc 0.55 — Eurodance, not metal)',
@@ -224,15 +227,16 @@ export default async function run() {
         && typeof m.gainArp === 'number' && typeof m.gainPad === 'number'
         && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0 && m.gainArp > 0 && m.gainPad > 0;
     }));
-  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their v4.21.0 mix (Axel F gainLead 4 + gainArp/gainPad 2.5; Unforgiven gainArp 2.5 + gainPad 1.5; Pneuma gainDrums 1 + gainArp 2.2; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
+  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their v4.21.0 mix (v4.23.0: Pneuma + Axel F piano gainLead 3; Unforgiven gainArp 2.5 + gainPad 1.5; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
     plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainLead === 1 && plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainDrums === 1
-    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainLead === 4
-    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainArp === 2.5
-    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainPad === 2.5
+    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainLead === 3
+    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainArp === 1
+    && plMod.TRACK_MIX_SETTINGS['axel-f'].gainPad === 1
     && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainArp === 2.5
     && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 1.5
+    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainDrums === 1
-    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 2.2
+    && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 1
     && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainDrums === 0.2
     && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 4
@@ -247,8 +251,8 @@ export default async function run() {
     !schedSrc.includes('this._pendingMode !== this._mode || finalBar')
     && schedSrc.includes('v4.21.0: SONGS PLAY OUT')
     && schedSrc.includes('this._riser(this._musicNext)'));
-  check('v4.21.0: per-song arp voice profile (Pneuma power-chord rhythm = sustained saw guitar, not a dead triangle pluck)',
-    plMod.SONGS['tool-pneuma'].arp && plMod.SONGS['tool-pneuma'].arp.wave === 'sawtooth'
+  check('v4.23.0: per-song arp voice profile (Pneuma is now the Classic Elec Piano arrangement — no per-song SAW arp, rides the piano triangle lead; the scheduler still supports per-song song.arp for other tracks)',
+    !plMod.SONGS['tool-pneuma'].arp && plMod.SONGS['tool-pneuma'].lead.wave === 'triangle'
     && schedSrc.includes('song.arp'));
   check('v4.20.0: Nothing Else Matters rides the piano profile (the detuned-saw+sub "gross synth" lead is gone — triangle pluck, no sub, perc 0.3)',
     plMod.SONGS['metallica-nem'].lead.wave === 'triangle'

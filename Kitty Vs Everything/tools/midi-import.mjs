@@ -1,5 +1,11 @@
 // Filename: tools/midi-import.mjs
-// Kitty Vs Everything — v4.20.0
+// Kitty Vs Everything — v4.23.0
+// v4.23.0: SOURCE REPLACEMENT — Pneuma + Axel F re-imported from the new
+// .mid files (Tool - Pneuma (Classic Elec Piano w_ Remix, WIP).mid and
+// Axel F (Beverly Hills Cop Theme).mid). Both are now piano arrangements
+// (the old full-band metal Pneuma and multi-channel synth-pop Axel F are
+// gone); both re-tuned to the 'piano' profile + gainLead 3.0 against the
+// Forty Six & 2 reference.
 // v4.20.0: AUDIO MIX TUNING — per-track volume/mix pass against the
 // Forty Six & 2 reference: quiet leads boosted (Crazy Train 2.6x, Blue
 // 2.3x, Fur Elise / No Quarter / Classical Gas / Axel F 2.0x, Cowboys
@@ -343,17 +349,18 @@ export const TRACKS = [
   // v4.21.0: mix — "still ~2x too quiet": piano lead 3.0x, the violin /
   // music-box arp 2.0x, drums 0.8x.
   { file: 'Requiem for a Dream 3.mid', id: 'requiem-dream', title: 'Requiem for a Dream', artist: 'Clint Eastwood', genre: 'ballad', chMap: { lead: [0], arp: [1, 2, 3] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 0.8, gainArp: 2, gainPad: 1 } },
-  // v4.16.0: 80s synth-pop, NOT metal — the new 'synth' profile (clean
-  // detuned-saw pluck lead, smooth bass, moderate drums). Auto-classify
-  // already routes ch2 (the synth-pluck riff) → lead, ch3 (bass line) →
-  // bass, ch0 (electric-piano chords) → pad, ch1 (wide synth figure) → arp.
-  // v4.20.0: mix — "way too low": the sparse lead 2.0x, the wide-synth
-  // arp + e-piano pad (the real body of the hook) 1.4x each.
-  // v4.21.0: mix — "still can't hear it at all": the HOOK rides the
-  // wide-synth arp (base vol 0.05) + e-piano pad (base vol 0.06) — 2.5x
-  // each (effective 0.125/0.15 ≈ the Forty Six & 2 lead level), the
-  // sparse lead 4.0x, bass 2.0x, drums 1.5x.
-  { file: 'Axel - F.mid', id: 'axel-f', title: 'Axel F', artist: 'Harold Faltermeyer', genre: 'synth', mix: { gainLead: 4, gainBass: 2, gainDrums: 1.5, gainArp: 2.5, gainPad: 2.5 } },
+  // v4.16.0: 80s synth-pop — the 'synth' profile rendered the original
+  // multi-channel Faltermeyer arrangement (synth-pluck riff -> lead, bass
+  // line -> bass, e-piano chords -> pad, wide synth figure -> arp).
+  // v4.22.0: SOURCE REPLACED — now the single-channel "Ragtime Piano"
+  // arrangement (Axel F (Beverly Hills Cop Theme).mid, 1036 notes, one
+  // piano channel, no drums/bass). The 'piano' profile (bright pluck
+  // lead, fast decay) renders it faithfully; ALL notes ride the
+  // polyphonic lead voice (like the other piano arrangements). Mix
+  // gainLead 3.0 matches the Forty Six & 2 reference (energy 157.6, in
+  // the piano-track band: Fur Elise 93.3 / NEM 155.2 / Classical Gas
+  // 211.6).
+  { file: 'Axel F (Beverly Hills Cop Theme).mid', id: 'axel-f', title: 'Axel F', artist: 'Harold Faltermeyer', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // Für Elise is a single piano channel — the melody and the left-hand
   // arpeggio overlap in pitch (A4/C5 belong to both), so a pitch split
   // would tear the melody apart: ALL notes ride the lead voice (the
@@ -402,15 +409,17 @@ export const TRACKS = [
   // removed the "synth" harmony entirely — back to 1.5x; the rhythm
   // guitar (arp, 1065 notes) 2.5x (the main body), lead 2.5x, bass 1.8x.
   { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', mix: { gainLead: 2.5, gainBass: 1.8, gainDrums: 1, gainArp: 2.5, gainPad: 1.5 } },
-  // v4.20.0: mix — "mixed strange": the guitar RHYTHM rides the arp slot
-  // (6.5 energy/s vs 0.1 on the lead) — lift it 1.9x so it's the focus;
-  // the 3455-hit drum track is "a little annoying" (0.4x), the heavy bass
-  // 0.8x, the sparse lead 1.5x.
-  // v4.21.0: mix — "sounds horrible": the 2514-note power-chord rhythm
-  // was a dead triangle pluck — NEW per-song SAW arp voice profile
-  // (sustained, like a guitar) + the full band back (drums 1.0x, bass
-  // 1.5x, arp 2.2x, pad 1.5x, lead 2.0x).
-  { file: 'Tool- Pneuma.mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'metal', arp: { wave: 'sawtooth', detunes: [-8, 0, 8], lp: 2600, q: 1.1, adsr: { a: 0.01, d: 0.12, s: 0.6, r: 0.1 } }, mix: { gainLead: 2, gainBass: 1.5, gainDrums: 1, gainArp: 2.2, gainPad: 1.5 } },
+  // v4.20.0: mix — the full metal band (power-chord rhythm on a per-song
+  // SAW arp profile, heavy bass, drums, sparse lead).
+  // v4.22.0: SOURCE REPLACED — now the "Classic Elec Piano w_ Remix"
+  // arrangement (Tool - Pneuma (Classic Elec Piano w_ Remix, WIP).mid,
+  // 1542 notes, two electric-piano channels, no drums/bass). The 'piano'
+  // profile (bright pluck lead, fast decay) renders the electric piano
+  // faithfully; BOTH channels ride the polyphonic lead voice (the old
+  // per-song SAW arp profile is gone — no power-chord rhythm here). Mix
+  // gainLead 3.0 matches the Forty Six & 2 reference (energy 234.5, just
+  // above Classical Gas 211.6 — a dense boss-queue piano).
+  { file: 'Tool - Pneuma (Classic Elec Piano w_ Remix, WIP).mid', id: 'tool-pneuma', title: 'Pneuma', artist: 'Tool', genre: 'piano', chMap: { lead: [0, 1] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
   // v4.17.0: Classical Gas (Mose Ziering) — a single-channel grand-piano
   // arrangement of the famous fingerpicked guitar piece. The melody and the
   // fast arpeggiated left-hand figure overlap in pitch, so (like Für Elise)
@@ -619,7 +628,14 @@ function write() {
     })
     .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.21.0
+// Kitty Vs Everything — v4.23.0
+// v4.23.0: SOURCE REPLACEMENT — Pneuma + Axel F re-imported from the new
+//          .mid files (Tool - Pneuma (Classic Elec Piano w_ Remix, WIP).mid
+//          and Axel F (Beverly Hills Cop Theme).mid). Both are now piano
+//          arrangements (the old full-band metal Pneuma and multi-channel
+//          synth-pop Axel F are gone); both re-tuned to the 'piano' profile
+//          + gainLead 3.0 against the Forty Six & 2 reference (Pneuma energy
+//          234.5 ≈ Classical Gas 211.6; Axel F 157.6 ≈ NEM 155.2).
 // v4.21.0: AUDIO MIX PASS 2 — TRACK_MIX_SETTINGS re-tuned against the
 //          Forty Six & 2 reference after the "most tracks are ~2x too
 //          quiet" report: Axel F L4.0/A2.5/P2.5 (the hook rides arp+pad
