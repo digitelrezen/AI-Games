@@ -1,7 +1,13 @@
 // Filename: config.js
-// Kitty Vs Everything — v4.30.0
+// Kitty Vs Everything — v4.30.1
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v4.30.1: SPIDER HOURGLASS REMOVAL — SpiderEnemy.js v1.3.0 drops the red
+//          hourglass dorsal mark (sprite pass + procedural fallback): it
+//          sat too far left on the abdomen and read as a "B". Also: the
+//          check-suite makeGame() mock gains game.view (ViewScaler) so
+//          the headless life-timer spawn path can't flake. No config
+//          changes.
 // v4.30.0: EXTRA-LIFE TIMER — LIFE_SCORE_INTERVAL (the score-bonus life,
 //          one per 30,000 points) is removed from config/stages.js and
 //          its re-export; the 'life' pill leaves the POWERUP_DROPS pool
@@ -405,7 +411,7 @@
 //          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
 //          version synced across package.json, config.js, main.js,
 //          Game.js, HUD.js and index.html.
-export const VERSION = 'v4.30.0';
+export const VERSION = 'v4.30.1';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

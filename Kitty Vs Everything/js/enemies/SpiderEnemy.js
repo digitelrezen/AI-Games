@@ -1,5 +1,5 @@
 // Filename: SpiderEnemy.js
-// Kitty Vs Everything — v1.2.0
+// Kitty Vs Everything — v1.3.0
 // Spider: slow web-spinner with 8 articulated legs, a multi-eyed face,
 // and a patterned abdomen. Fires slow web projectiles.
 // v1.2.0: sprite swap — now draws the shared pixel-art PNG
@@ -8,12 +8,13 @@
 //         "spider", normalized to 94×128). The full pixel-art shading,
 //         depth, and charcoal texture replace the flat gray silhouette:
 //         aspect-preserving, centered on the hitbox, nearest-neighbor, with
-//         a ground shadow, a crawler bob/sway/tilt gait, and a BRIGHT RED
-//         HOURGLASS mark painted on the dorsal (back) section of the
-//         abdomen. The classic procedural spider is kept as the null-sprite
-//         fallback per the AssetManager contract (brown/charcoal shading +
-//         red hourglass marking).
-export const VERSION = 'v1.2.0';
+//         a ground shadow and a crawler bob/sway/tilt gait. The classic
+//         procedural spider is kept as the null-sprite fallback per the
+//         AssetManager contract (brown/charcoal shading + dorsal spots).
+// v1.3.0: removed the red hourglass dorsal mark (sprite pass + procedural
+//         fallback) — it sat too far left on the abdomen and read as a
+//         "B".
+export const VERSION = 'v1.3.0';
 import EnemyBase from './EnemyBase.js';
 import { TAU, rand, clamp } from '../core/utils.js';
 import { getSprite, getDims } from '../core/AssetManager.js'; // v1.2.0: shared PNG pipeline
@@ -56,8 +57,8 @@ export default class SpiderEnemy extends EnemyBase {
   // charcoal texture comes from the PNG itself; the crawler gait is a
   // gentle bob + lateral sway + slight body tilt (the leg-wave feel of the
   // old procedural art) plus a subtle idle breathe. A soft ground shadow
-  // grounds the sprite, then a BRIGHT RED HOURGLASS mark is painted on the
-  // dorsal (back) section of the abdomen after the crisp sprite pass.
+  // grounds the sprite. (v1.3.0: the red hourglass dorsal mark that used to
+  // be painted after the crisp sprite pass is gone — it read as a "B".)
   _drawSprite(ctx, sprite, r) {
     const dims = getDims(SPIDER_SPRITE_KEY);
     const targetW = r * 3.0;
@@ -86,54 +87,12 @@ export default class SpiderEnemy extends EnemyBase {
     ctx.shadowBlur = 0;
     ctx.globalAlpha = this.flash > 0 ? 0.55 : 1;
     ctx.drawImage(sprite, dx, dy, targetW, targetH);
-    // ─── BRIGHT RED HOURGLASS MARK (dorsal / back section) ───
-    this._drawHourglassMark(ctx, targetW, targetH);
-    ctx.restore();
-  }
-
-  // v1.2.0 — bright red hourglass dorsal marking: two triangles pinched
-  // at the waist, a dark outline for contrast on the charcoal body, a
-  // soft red glow, and a lighter red core highlight that pulses so the
-  // mark reads as a vivid brand. The pixel-art body column sits slightly
-  // above sprite center (opaque body ≈ 23%–59% of the art height, center
-  // ≈ 41%), so the mark anchors at -9% of the drawn height.
-  _drawHourglassMark(ctx, targetW, targetH) {
-    const cw = targetW * 0.13;    // half-width of each triangle
-    const chh = targetH * 0.14;   // half-height of the full hourglass
-    const cy = -targetH * 0.09;   // dorsal anchor (body center ≈ 41% of art)
-    const pulse = 0.5 + 0.5 * Math.sin(this.t * 3);
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(-cw, cy - chh);
-    ctx.lineTo(cw, cy - chh);
-    ctx.lineTo(0, cy);
-    ctx.lineTo(cw, cy + chh);
-    ctx.lineTo(-cw, cy + chh);
-    ctx.closePath();
-    ctx.shadowColor = 'rgba(255, 32, 32, 0.9)';
-    ctx.shadowBlur = targetW * (0.05 + 0.05 * pulse);
-    ctx.fillStyle = `rgba(255, 34, 34, ${0.82 + 0.18 * pulse})`;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(60, 0, 0, 0.85)';
-    ctx.lineWidth = Math.max(1, targetW * 0.015);
-    ctx.stroke();
-    // Bright core highlight (the "bright" of the mark)
-    ctx.beginPath();
-    ctx.moveTo(-cw * 0.55, cy - chh * 0.55);
-    ctx.lineTo(cw * 0.55, cy - chh * 0.55);
-    ctx.lineTo(0, cy);
-    ctx.lineTo(cw * 0.55, cy + chh * 0.55);
-    ctx.lineTo(-cw * 0.55, cy + chh * 0.55);
-    ctx.closePath();
-    ctx.fillStyle = `rgba(255, 102, 85, ${0.30 + 0.30 * pulse})`;
-    ctx.fill();
     ctx.restore();
   }
 
   // v1.2.0 — classic procedural spider, kept as the null-sprite fallback.
-  // Brown/charcoal shading + a bright red hourglass marking on the dorsal
-  // (back) section of the abdomen.
+  // Brown/charcoal shading + subtle dorsal spots on the abdomen.
+  // (v1.3.0: the red hourglass marking was removed — it read as a "B".)
   _drawProcedural(ctx, r) {
     const legWave = Math.sin(this.t * 4) * 0.1;
 
@@ -196,26 +155,8 @@ export default class SpiderEnemy extends EnemyBase {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Abdomen pattern — BRIGHT RED HOURGLASS marking (dorsal/back section)
-    const markPulse = 0.5 + 0.5 * Math.sin(this.t * 3);
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(-r * 0.22, -r * 0.1);
-    ctx.lineTo(r * 0.22, -r * 0.1);
-    ctx.lineTo(0, r * 0.2);
-    ctx.lineTo(r * 0.22, r * 0.5);
-    ctx.lineTo(-r * 0.22, r * 0.5);
-    ctx.closePath();
-    ctx.shadowColor = 'rgba(255, 32, 32, 0.9)';
-    ctx.shadowBlur = r * 0.25;
-    ctx.fillStyle = `rgba(255, 34, 34, ${0.8 + 0.2 * markPulse})`;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(60, 0, 0, 0.85)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.restore();
-    // Spots
+    // Abdomen pattern — subtle dorsal spots (v1.3.0: the red hourglass
+    // marking that used to sit here was removed)
     ctx.fillStyle = 'rgba(190, 150, 105, 0.28)';
     ctx.beginPath(); ctx.arc(-r * 0.2, r * 0.4, r * 0.06, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(r * 0.2, r * 0.4, r * 0.06, 0, TAU); ctx.fill();

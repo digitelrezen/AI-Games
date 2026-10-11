@@ -160,7 +160,7 @@ The Game.js orchestrator logic extracted into focused modules. Every function ta
   - **HumanEnemy.js** — v3.13.0: a REAL PERSON (HumanSprite.js). Waves: hover band + strafe + telegraphed aimed rifle; Bone Yard: `marchMode` = straight-down single-file march at 0.7× speed with an animated walk cycle.
   - **AlienEnemy.js** — Pulsing UFO disc, phase-shift alpha, sine sweeps.
   - **SnakeEnemy.js** — Undulating serpent, smooth sine wave (pixel-art sprite, key "snake", slither gait phase-locked to the movement sine).
-  - **SpiderEnemy.js** — Slow web-spinner, slow web projectiles (pixel-art sprite, key "spider", bright red hourglass mark on the dorsal abdomen).
+  - **SpiderEnemy.js** — Slow web-spinner, slow web projectiles (pixel-art sprite, key "spider").
   - **ShuttleEnemy.js** — v3.50.0: 17th species (REGULAR WAVES ONLY): crewed space shuttle, hover band (y 80–180) + banked-tilt strafe, telegraphed aimed cannon shots (pixel-art sprite, key "shuttle").
   - **MothEnemy.js** — v3.52.0: 18th species (REGULAR WAVES ONLY): erratic fluttering night-flyer, double-sine flutter + sudden random darts, light aimed shots (pixel-art sprite, key "moth", fast procedural wing-beat).
   - **SquirrelEnemy.js** — v3.67.0: 19th species (REGULAR WAVES ONLY): fast erratic tree-dweller, quick bursts + hops + twitchy sprints, light aimed shots (pixel-art sprite, key "squirrel").

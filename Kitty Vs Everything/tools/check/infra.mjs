@@ -55,6 +55,7 @@ const { fireNow, updateWeaponState, cycleWeapon } = await mod('js/player/PlayerW
 
 const makeGame = () => ({
   W: 1280, viewW: 1280, viewH: 720, H: 720,
+  view: { viewW: 1280, viewH: 720 }, // v4.30.1: lifeDropTick reads game.view (ViewScaler)
   particles: { burst() {} }, shake: 0, time: 0,
   bullets: [], score: 0, multiplier: 1,
   msglog: { log() {} }, aimbot: { active: false, trigger() {} },

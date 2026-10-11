@@ -116,13 +116,13 @@ const tests = [
   ['v3.53.0: beetle sprite dims 128×128', /beetle:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.53.0: beetle sprite key in AssetSprites registry', s.includes('beetle: "iVBORw0KGgo')],
   ['v3.53.0: BeetleEnemy sprite + procedural fallback', /BEETLE_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
-  // ── v3.57.0 spider pixel-art sprite (web-spinner) + red hourglass mark ──
+  // ── v3.57.0 spider pixel-art sprite (web-spinner; v1.3.0: hourglass mark removed) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
   ['v3.57.0: spider sprite dims 128×128', /spider:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(s)],
   ['v3.57.0: spider sprite key in AssetSprites registry', s.includes('spider: "iVBORw0KGgo')],
   ['v3.57.0: SpiderEnemy sprite + procedural fallback', /SPIDER_SPRITE_KEY/.test(s) && s.includes('this._drawProcedural(ctx, r)')],
-  ['v3.57.0: bright red hourglass dorsal mark', s.includes('_drawHourglassMark') && /rgba\(255,\s*34,\s*34/.test(s)],
+  ['v4.30.1: spider hourglass mark removed (v1.3.0)', !s.includes('_drawHourglassMark')],
   // ── v3.54.0 boneyard pixel-art environment (skeleton/skull/femur/profile bone) ──
   // esbuild (IIFE, non-minified) re-emits string literals with double
   // quotes — every pattern below is quote-tolerant (['"]).
@@ -344,5 +344,5 @@ for (const [name, ok] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);
   if (!ok) fail++;
 }
-console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite w/ red hourglass + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + bat pixel-art sprite + squirrel enemy (19th species) + power-up pixel art w/ 5 jewel drops + modular cat-ship combat (CatShipFactory + MiniShip + SuperNova)).` : `\n${fail} check(s) FAILED.`);
+console.log(fail === 0 ? `\nBundle OK — v${VER} build verified (Bender easter egg + clean catship + shuttle + moth + beetle sprite + destructible boneyard (29 seeded bones) + crosshair 140–340 range + spider sprite (no hourglass mark) + snake pixel-art sprite + wolf pixel-art sprite + lizard pixel-art sprite + dragon pixel-art sprite + falcon pixel-art sprite + bat pixel-art sprite + squirrel enemy (19th species) + power-up pixel art w/ 5 jewel drops + modular cat-ship combat (CatShipFactory + MiniShip + SuperNova)).` : `\n${fail} check(s) FAILED.`);
 process.exit(fail ? 1 : 0);
