@@ -227,13 +227,16 @@ export default async function run() {
         && typeof m.gainArp === 'number' && typeof m.gainPad === 'number'
         && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0 && m.gainArp > 0 && m.gainPad > 0;
     }));
-  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their v4.21.0 mix (v4.23.0: Pneuma + Axel F piano gainLead 3; Unforgiven gainArp 2.5 + gainPad 1.5; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
+  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their tuned mix (v4.23.0: Pneuma + Axel F piano gainLead 3; v4.25.0: Unforgiven full-band melody-forward L4.0/A1.5/D0.6/P0.75/B0.9; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
     plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainLead === 1 && plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainDrums === 1
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainArp === 1
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainPad === 1
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainArp === 2.5
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 1.5
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainLead === 4
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainBass === 0.9
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainDrums === 0.6
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainArp === 1.5
+    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 0.75
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainDrums === 1
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 1

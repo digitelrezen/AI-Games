@@ -1,5 +1,14 @@
 // Filename: BoneYardBonus.js
-// Kitty Vs Everything — v3.76.0
+// Kitty Vs Everything — v3.77.0
+// v4.25.0: SHOOTABLE BONE COLUMNS + PIXEL-ART HOUSE — the 8 dense bone
+//          columns (BONUS.BONE_YARD_COLUMNS) are no longer a draw-only
+//          backdrop: every stacked bone is now a FIXED BoneFragment
+//          entity (v2.5.0) in game.bonusTargets, so bullets shatter
+//          them through the normal Collisions.js bonusTargets path
+//          (_buildColumns; the old draw-only column pass is gone). The
+//          house centerpiece now draws the shared
+//          Eridaths-Moms-House-512x512.png pixel art (EridathsMomsHouse
+//          v1.1.0) instead of the procedural house.
 // v3.76.0 (LevelRegistry refactor): uniform stage interface — start() is
 //          now init(); the timer-expired branch no longer drives the game
 //          state itself, it sets this.complete and Game.advanceStage()
@@ -44,15 +53,14 @@
 //          backdrop of the shared PNGs (skeleton / skull / femur /
 //          profile_bone). SUPERSEDED by v3.16.0: the yard is now fully
 //          destructible (see above).
-export const VERSION = 'v3.76.0';
+export const VERSION = 'v3.77.0';
 import { BONUS } from '../core/config.js';
-import { rand, TAU } from '../core/utils.js';
+import { rand } from '../core/utils.js';
 import { bus } from '../core/EventBus.js';
 import { audio } from '../core/AudioSystem.js';
 import BoneFragment from './BoneFragment.js';
 import EridathsMomsHouse from './EridathsMomsHouse.js'; // v4.24.0: scripted centerpiece
 import { createEnemy } from '../enemies/EnemyFactory.js';
-import { getSprite, getDims } from '../core/AssetManager.js'; // v4.24.0: bone columns
 
 // v3.14.0: Phase 2/3 humanoid line — EXPLICIT allowlist. The Bone Yard march
 // is standard humanoids only; new species added to ENEMY_TYPES (e.g. the
@@ -113,6 +121,9 @@ export default class BoneYardBonus {
     // v3.16.0: seed the yard with a field of DESTRUCTIBLE bones (the
     // v3.15.0 non-shootable backdrop is gone).
     this._seedYardField();
+    // v4.25.0: build the 8 bone columns as SHOOTABLE fixed BoneFragment
+    // entities (the old draw-only backdrop is gone).
+    this._buildColumns();
     // v4.24.0: Phase 1 opens on the line forming (dialogue line 0).
     this._say(BONUS.BONE_YARD_DIALOGUE[0], 0.5);
   }
@@ -365,58 +376,48 @@ export default class BoneYardBonus {
 
   // v4.24.0 — the yard's architecture: 8 dense bone columns (4 per
   // interior border, BONUS.BONE_YARD_COLUMNS) frame the fight; the
-  // center corridor stays clear. The house paints over them (BonusLevel
-  // draws the stage before the bonusTargets/enemies passes).
+  // center corridor stays clear. v4.25.0: the columns are SHOOTABLE
+  // BoneFragment entities in game.bonusTargets (Game.js draws them in
+  // its bonusTargets pass) — the stage only paints the house here.
   draw(ctx) {
     if (!this.active) return;
-    this._drawColumns(ctx);
     if (this.house && this.house.state !== 'exiting') this.house.draw(ctx);
   }
 
-  _drawColumns(ctx) {
+  // v4.25.0 — the yard's architecture: 8 dense bone columns (4 per
+  // interior border, BONUS.BONE_YARD_COLUMNS) frame the fight; the
+  // center corridor stays clear. Every stacked bone is a FIXED
+  // BoneFragment entity (v2.5.0) in game.bonusTargets — bullets shatter
+  // them through the normal Collisions.js bonusTargets path (flash →
+  // applyDamage → shatter → score). Positions keep the old
+  // deterministic jitter (stable across frames); radius 10 → the old
+  // 24px draw width (10 × femur sizeMul 2.4), hp 40 (sturdier than the
+  // drifting field bones), rotation 0 (horizontal femur, as drawn).
+  _buildColumns() {
     const { perSide, bonesPerColumn } = BONUS.BONE_YARD_COLUMNS;
     const W = this.game.viewW, H = this.game.viewH;
     const colW = 30; // column band width (px) per side
     const gap = 8;
     const slotH = H / bonesPerColumn;
-    const sprite = getSprite('femur');
-    const dims = getDims('femur');
     for (let side = 0; side < 2; side++) {
       for (let c = 0; c < perSide; c++) {
         const bx = side === 0
           ? 12 + c * (colW + gap)
           : W - 12 - (c + 1) * (colW + gap);
         for (let j = 0; j < bonesPerColumn; j++) {
-          // Deterministic jitter (stable across frames).
+          // Deterministic jitter (same formula as the old draw pass).
           const jx = Math.sin(c * 12.9898 + j * 78.233) * 3;
           const jy = j * slotH + slotH / 2 + Math.cos(c * 4.7 + j * 9.1) * 2;
-          this._drawColumnBone(ctx, bx + jx, jy, colW - 6, sprite, dims);
+          this.game.bonusTargets.push(new BoneFragment({
+            x: bx + jx, y: jy, game: this.game,
+            spriteKey: 'femur',
+            fixed: true,
+            radius: 10,
+            hp: 40,
+            rotation: 0,
+          }));
         }
       }
     }
-  }
-
-  _drawColumnBone(ctx, x, y, w, sprite, dims) {
-    ctx.save();
-    ctx.translate(x, y);
-    if (sprite && dims) {
-      const bh = (w * dims.h) / dims.w;
-      ctx.imageSmoothingEnabled = false;
-      ctx.globalAlpha = 0.85;
-      ctx.drawImage(sprite, -w / 2, -bh / 2, w, bh);
-    } else {
-      // Procedural fallback: a horizontal bone (shaft + end knobs).
-      const h = w * 0.32;
-      ctx.fillStyle = '#e8dcc8';
-      ctx.fillRect(-w / 2, -h / 2, w, h);
-      ctx.fillStyle = '#f0e8d4';
-      ctx.beginPath();
-      ctx.arc(-w / 2, -h * 0.3, h * 0.6, 0, TAU);
-      ctx.arc(-w / 2, h * 0.3, h * 0.55, 0, TAU);
-      ctx.arc(w / 2, -h * 0.3, h * 0.6, 0, TAU);
-      ctx.arc(w / 2, h * 0.3, h * 0.55, 0, TAU);
-      ctx.fill();
-    }
-    ctx.restore();
   }
 }

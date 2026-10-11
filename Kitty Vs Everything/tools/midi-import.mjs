@@ -1,5 +1,16 @@
 // Filename: tools/midi-import.mjs
-// Kitty Vs Everything — v4.23.0
+// Kitty Vs Everything — v4.25.0
+// v4.25.0: SOURCE REPLACEMENT — The Unforgiven re-imported from the new
+// .mid file (The Unforgiven-New - Metallica.mid, 9 channels, 3820 notes):
+// the old 6-channel arrangement (no drums, no bass) is replaced by the
+// full band — a real bass line (ch5) + a full GM drum kit (ch9, 32nd-note
+// snare-roll intro) join the rhythm guitar (ch0), the melody (ch1), the
+// distortion harmony (ch2) and the guitar accents (ch3 first half + ch7
+// second half); ch6 is the 3-bar tremolo E-power-chord intro; ch4 (3
+// notes) is an unmapped artifact. chMap pinned (lead [1], bass [5], arp
+// [0,3,6,7], pad [2]); mix normalized to the Forty Six & 2 reference:
+// L2.5/A2.5/P1.5 keep the (identical) melodic channels at their v4.21.0
+// reference-matched levels, the new bass 1.0x, the new drums 0.9x.
 // v4.23.0: SOURCE REPLACEMENT — Pneuma + Axel F re-imported from the new
 // .mid files (Tool - Pneuma (Classic Elec Piano w_ Remix, WIP).mid and
 // Axel F (Beverly Hills Cop Theme).mid). Both are now piano arrangements
@@ -379,7 +390,12 @@ export const TRACKS = [
   // counter-figures 0.8x.
   // v4.21.0: mix — "the drums ruin it" (still, at 0.35x): drums 0.2x,
   // the trombone melody 3.0x (clearly on top), bass 1.5x.
-  { file: 'When Johnny Comes Marching Home.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] }, mix: { gainLead: 3, gainBass: 1.5, gainDrums: 0.2, gainArp: 0.8, gainPad: 1 } },
+  // v4.25.0: SOURCE FILE SWAP — re-imported from
+  // "When Johnny Comes Marching Home -New.mid": byte-identical to the
+  // old file (same 4273 notes / 6 channels / 165 bpm — verified by
+  // hash), so the generated event data is unchanged; only the source
+  // reference moves to the -New file.
+  { file: 'When Johnny Comes Marching Home -New.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] }, mix: { gainLead: 3, gainBass: 1.5, gainDrums: 0.2, gainArp: 0.8, gainPad: 1 } },
   // v4.20.0: THE VOLUME REFERENCE — Forty Six & 2 is the loudest,
   // riff-forward track (dense high-velocity lead, drums at 0.14x the
   // lead). Every other track is tuned against it; it stays all-1.0.
@@ -408,7 +424,26 @@ export const TRACKS = [
   // v4.21.0: mix — "only part of the harmony plays": the 0.25x pad cut
   // removed the "synth" harmony entirely — back to 1.5x; the rhythm
   // guitar (arp, 1065 notes) 2.5x (the main body), lead 2.5x, bass 1.8x.
-  { file: 'The Unforgiven - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', mix: { gainLead: 2.5, gainBass: 1.8, gainDrums: 1, gainArp: 2.5, gainPad: 1.5 } },
+  // v4.25.0: SOURCE REPLACED — now the full-band arrangement (The
+  // Unforgiven-New - Metallica.mid, 3820 notes): the old 6-channel file
+  // had no drums (2 notes) and no bass (a guitar mis-classified as bass);
+  // the new file adds a real bass line (ch5, E1–A2, enters bar 11) and a
+  // full GM drum kit (ch9, 1176 hits, 32nd-note snare-roll intro).
+  // chMap pinned: ch1 (the melody line — the mid-range counter-riff +
+  // the bars 63–66 chorus run up to C#6, avg vel 86, the loudest
+  // channel) lead, ch5 bass, ch0 (the power-chord rhythm, the main
+  // body) + ch3/ch7 (guitar accents, bars 67–81) arp, ch2 (the
+  // distortion "synth" harmony, poly 5) pad; ch4 (3 notes at t0) and
+  // ch6 (the 2-bar tremolo E-power-chord intro, 285 zero-length
+  // triggers — a harsh buzz through the pluck voice) are unmapped.
+  // v4.25.0 mix fix — "all separated, none of the melody flows, keeps
+  // switching to other instruments": the 612 open-hat hits (52% of the
+  // 1176 drum notes) + the same-gain rhythm bus + the tremolo intro
+  // formed a wall around the melody. The melody goes clearly on top
+  // (4.0x — the Crazy Train / Blue level), the rhythm supports (1.5x),
+  // the drums drive under it (0.6x), the harmony sits back (0.75x),
+  // the bass 0.9x.
+  { file: 'The Unforgiven-New - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', chMap: { lead: [1], bass: [5], arp: [0, 3, 7], pad: [2] }, mix: { gainLead: 4, gainBass: 0.9, gainDrums: 0.6, gainArp: 1.5, gainPad: 0.75 } },
   // v4.20.0: mix — the full metal band (power-chord rhythm on a per-song
   // SAW arp profile, heavy bass, drums, sparse lead).
   // v4.22.0: SOURCE REPLACED — now the "Classic Elec Piano w_ Remix"
@@ -628,7 +663,26 @@ function write() {
     })
     .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.23.0
+// Kitty Vs Everything — v4.25.0
+// v4.25.0: SOURCE REPLACEMENT + MIX FIX — The Unforgiven re-imported
+//          from the new .mid file (The Unforgiven-New - Metallica.mid,
+//          9 channels, 3820 notes): the old 6-channel arrangement (no
+//          drums, no bass) is replaced by the full band — a real bass
+//          line (ch5) + a full GM drum kit (ch9, 32nd-note snare-roll
+//          intro) join the rhythm guitar (ch0), the melody (ch1), the
+//          distortion harmony (ch2) and the guitar accents (ch3/ch7,
+//          bars 67–81); ch4 (3-note artifact) and ch6 (2-bar tremolo
+//          E-power-chord intro — a harsh buzz through the pluck voice)
+//          are unmapped. Mix fix — "all separated, none of the melody
+//          flows": the 612 open-hat hits (52% of the 1176 drum notes) +
+//          the same-gain rhythm + the tremolo intro formed a wall
+//          around the melody — the melody goes clearly on top (L4.0),
+//          the rhythm supports (A1.5), the drums drive under it (D0.6),
+//          the harmony sits back (P0.75), the bass 0.9x.
+//          When Johnny Comes Marching Home re-imported from
+//          "When Johnny Comes Marching Home -New.mid" — byte-identical
+//          to the old file (same 4273 notes / 6 channels / 165 bpm), so
+//          the event data is unchanged; only the source reference moves.
 // v4.23.0: SOURCE REPLACEMENT — Pneuma + Axel F re-imported from the new
 //          .mid files (Tool - Pneuma (Classic Elec Piano w_ Remix, WIP).mid
 //          and Axel F (Beverly Hills Cop Theme).mid). Both are now piano

@@ -5,9 +5,12 @@
 //        → Phase 3 controls locked + house descent (3s) →
 //        Phase 4 the fight (15s survival gate OR 1/16 damage cap)
 //        → house teleport-out (2.2s) → complete.
-//        Stage-owned: top-exit cull, bullet-vs-house collision,
-//        bone columns draw. The house is a sub-module (NOT a
-//        registered BONUS_STAGES entry, NOT in game.enemies).
+//        Stage-owned: top-exit cull, bullet-vs-house collision.
+//        The house is a sub-module (NOT a registered BONUS_STAGES
+//        entry, NOT in game.enemies).
+//        v4.25.0: the house draws the shared Eridaths-Moms-House
+//        pixel art (v1.1.0) and the bone columns are shootable
+//        fixed BoneFragment entities ([6m] owns the column checks).
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -32,8 +35,12 @@ console.log('\n[6ar] v4.24.0 Boneyard encounter — Eridath\'s Mom\'s House (hea
   const lrSrc = fs.readFileSync(path.join(ROOT, 'js/levels/LevelRegistry.js'), 'utf8');
   check('house: sub-module — NOT registered in BONUS_STAGES/LevelRegistry',
     !lrSrc.includes('EridathsMomsHouse') && Object.keys(BONUS_STAGES).sort().join(',') === 'boneyard,internet');
-  check('house: VERSION v1.0.0 + 1/16 damage cap + maxDumps',
-    houseSrc.includes("VERSION = 'v1.0.0'") && houseSrc.includes('damageCapFrac') && houseSrc.includes('maxDumps'));
+  check('house: VERSION v1.1.0 + 1/16 damage cap + maxDumps',
+    houseSrc.includes("VERSION = 'v1.1.0'") && houseSrc.includes('damageCapFrac') && houseSrc.includes('maxDumps'));
+  // v4.25.0: the house draws the shared pixel-art landmark (the
+  // procedural house is the null-sprite fallback).
+  check('house: v4.25.0 pixel art (eridath_moms_house sprite + procedural fallback)',
+    houseSrc.includes("getSprite('eridath_moms_house')") && houseSrc.includes('_drawProcedural(ctx, s)'));
   const bySrc = fs.readFileSync(path.join(ROOT, 'js/levels/BoneYardBonus.js'), 'utf8');
   check('stage: 4-phase machine + control lock + top cull + house collision',
     bySrc.includes('_updatePhase1') && bySrc.includes('_updatePhase2') &&
@@ -160,7 +167,7 @@ console.log('\n[6ar] v4.24.0 Boneyard encounter — Eridath\'s Mom\'s House (hea
     tDone !== null && tDone >= 39.5 && tDone <= 41.5, `tDone=${tDone}`);
   check('stage: complete + isComplete (LevelRegistry handoff)', yard.complete === true && yard.isComplete() === true);
   check('stage: house is NOT in game.enemies (stage-owned collision)', !game.enemies.includes(yard.house));
-  check('stage: draw() renders columns + house headless-safe (no crash)', drewDuringFight === true);
+  check('stage: draw() renders the house headless-safe (no crash; v4.25.0 columns are bonusTargets)', drewDuringFight === true);
   // Dialogue: all 5 lines, tone 'dialogue', in order.
   const dialogueBanners = banners.filter((b) => b.tone === 'dialogue');
   check('dialogue: all 5 lines played (tone dialogue, in order)',

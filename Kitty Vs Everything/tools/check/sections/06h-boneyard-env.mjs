@@ -21,6 +21,9 @@ console.log('\n[6h] v3.54.0 boneyard pixel-art environment');
   check('AssetSprites: skull dims 128×128 registered', /skull:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
   check('AssetSprites: femur dims 128×128 registered', /femur:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
   check('AssetSprites: profile_bone dims 128×128 registered', /profile_bone:\s*\{\s*w:\s*128,\s*h:\s*128\s*\}/.test(spritesSrc));
+  // v4.25.0: the boneyard house centerpiece draws the shared pixel-art
+  // landmark — embedded at 256×256 (HOUSE_MAX_DIM import exception).
+  check('AssetSprites: eridath_moms_house dims 256×256 registered (v4.25.0)', /eridath_moms_house:\s*\{\s*w:\s*256,\s*h:\s*256\s*\}/.test(spritesSrc));
 }
 
 }

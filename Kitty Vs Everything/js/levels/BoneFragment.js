@@ -2,6 +2,11 @@
 // Kitty Vs Everything — v2.4.0
 // Bone that drifts downward in the Bone Yard bonus. When shot, shatters
 // into sharp bone shrapnel particles.
+// v2.5.0 (v4.25.0 release): FIXED architectural bones — the Boneyard's
+// 8 dense bone columns (BoneYardBonus._buildColumns) are now real
+// shootable BoneFragment entities (fixed: true — no drift, no
+// off-screen cull, static rotation, optional radius/hp overrides) in
+// game.bonusTargets, so they shatter through the normal bullet path.
 // v2.4.0 (v3.93.0 release): uniform bone art — femur / skull re-exported
 // as 256×256 (→ 128×128 embedded) and skeleton as 256×384 (→ 85×128),
 // matching the v3.92.0 power-up art pipeline (native → 128px box).
@@ -17,7 +22,7 @@
 // through the AssetManager pipeline, aspect-preserving, rotated with the
 // fragment, with an ethereal glow pass. The classic procedural bone is
 // kept as the null-sprite fallback per the AssetManager contract.
-export const VERSION = 'v2.4.0';
+export const VERSION = 'v2.5.0';
 import Entity from '../core/Entity.js';
 import { TAU, rand } from '../core/utils.js';
 import { audio } from '../core/AudioSystem.js';
@@ -58,14 +63,28 @@ function rollBoneFragmentKey() {
 }
 
 export default class BoneFragment extends Entity {
-  constructor({ x, y, game, spriteKey = null }) {
+  /**
+   * @param {object} o
+   * @param {number} o.x @param {number} o.y @param {object} o.game
+   * @param {string|null} [o.spriteKey] femur / profile_bone / skull / skeleton
+   * @param {boolean}  [o.fixed]    v2.5.0: fixed architectural bone (the
+   *   boneyard's columns) — no drift, no off-screen cull, static rotation.
+   * @param {number}   [o.radius]   v2.5.0: explicit hit radius (skips the
+   *   per-key band roll).
+   * @param {number}   [o.hp]       v2.5.0: explicit HP (skips the per-key
+   *   band roll).
+   * @param {number}   [o.rotation] v2.5.0: explicit rotation in radians
+   *   (default 0 — the columns stand horizontal).
+   */
+  constructor({ x, y, game, spriteKey = null, fixed = false, radius = null, hp = null, rotation = null }) {
     // v2.3.0: per-key size/HP/score bands (BONE_FRAGMENT_STATS).
+    // v2.5.0: explicit radius/hp overrides for fixed column bones.
     const key = spriteKey || rollBoneFragmentKey();
     const stats = BONE_FRAGMENT_STATS[key];
     super({
       x, y,
-      radius: rand(stats.radius[0], stats.radius[1]),
-      hp: Math.round(rand(stats.hp[0], stats.hp[1])),
+      radius: radius ?? rand(stats.radius[0], stats.radius[1]),
+      hp: hp ?? Math.round(rand(stats.hp[0], stats.hp[1])),
       shield: 0,
       color: '#f5f0e0',
     });
@@ -73,8 +92,17 @@ export default class BoneFragment extends Entity {
     this.t = rand(0, TAU);
     this.vy = rand(40, 80);
     this.vx = rand(-20, 20);
-    this.rotation = rand(0, TAU);
+    this.rotation = rotation !== null ? rotation : rand(0, TAU);
     this.rotSpeed = rand(-1.5, 1.5);
+    // v2.5.0: fixed architectural bones (the boneyard's 8 columns) —
+    // they stand still and shatter when shot through the normal
+    // bonusTargets bullet path (Collisions.js).
+    if (fixed) {
+      this.fixed = true;
+      this.vy = 0;
+      this.vx = 0;
+      this.rotSpeed = 0;
+    }
     // Procedural bone shape parameters
     this.shaftLen = rand(1.2, 2.0);
     this.shaftWidth = rand(0.25, 0.4);
@@ -91,11 +119,14 @@ export default class BoneFragment extends Entity {
 
   update(dt) {
     this.t += dt;
-    this.y += this.vy * dt;
-    this.x += this.vx * dt;
-    this.rotation += this.rotSpeed * dt;
+    // v2.5.0: fixed column bones don't drift and don't cull.
+    if (!this.fixed) {
+      this.y += this.vy * dt;
+      this.x += this.vx * dt;
+      this.rotation += this.rotSpeed * dt;
+      if (this.y > this.game.H + 60) this.alive = false;
+    }
     if (this.flash > 0) this.flash = Math.max(0, this.flash - dt);
-    if (this.y > this.game.H + 60) this.alive = false;
   }
 
   /** Trigger the shatter effect when this bone is destroyed. */

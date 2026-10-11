@@ -2,7 +2,10 @@
 //  [6m] v3.60.0 FULLY DESTRUCTIBLE BONE YARD — the yard opens on a
 //       seeded field of 29 shootable bones; per-key radius/HP/score
 //       bands (500/1000/2000); weighted spawn pool (40/40/15/5);
-//       the v3.15.0 non-shootable backdrop is gone
+//       the v3.15.0 non-shootable backdrop is gone.
+//       v4.25.0: the 8 bone columns (BONUS.BONE_YARD_COLUMNS) are now
+//       SHOOTABLE too — 80 fixed BoneFragment entities (v2.5.0) in
+//       game.bonusTargets, shot through the normal Collisions.js path.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, mod } from '../infra.mjs';
@@ -16,17 +19,18 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   const { BONUS } = await mod('js/core/config.js');
   const bfSrc = fs.readFileSync(path.join(ROOT, 'js/levels/BoneFragment.js'), 'utf8');
   check('config: BONUS.BONE_YARD_FIELD = 10 femur / 10 profile_bone / 6 skull / 3 skeleton', BONUS.BONE_YARD_FIELD && BONUS.BONE_YARD_FIELD.femur === 10 && BONUS.BONE_YARD_FIELD.profile_bone === 10 && BONUS.BONE_YARD_FIELD.skull === 6 && BONUS.BONE_YARD_FIELD.skeleton === 3);
-  check('BoneYardBonus: VERSION = v3.76.0', bySrc.includes("VERSION = 'v3.76.0'"));
+  check('BoneYardBonus: VERSION = v3.77.0', bySrc.includes("VERSION = 'v3.77.0'"));
   check('BoneYardBonus: non-destructible backdrop removed (BONEYARD_BG_* gone)', !bySrc.includes('BONEYARD_BG_KEYS') && !bySrc.includes('BONEYARD_BG_BASE') && !bySrc.includes('BONEYARD_BG_COUNTS'));
   check('BoneYardBonus: _buildBackground/_drawProceduralBg removed', !bySrc.includes('_buildBackground') && !bySrc.includes('_drawProceduralBg'));
-  // v4.24.0: draw() is the yard's architecture pass — 8 bone columns
-  // (BONUS.BONE_YARD_COLUMNS) + the Eridath's Mom's House sub-module.
-  check('BoneYardBonus: draw() renders the bone columns + house (v4.24.0)', bySrc.includes('draw(ctx) {') && bySrc.includes('_drawColumns') && bySrc.includes('BONUS.BONE_YARD_COLUMNS') && bySrc.includes('EridathsMomsHouse'));
+  // v4.25.0: the columns are SHOOTABLE fixed BoneFragment entities
+  // (_buildColumns) — the old draw-only _drawColumns pass is gone; the
+  // stage's draw() now only paints the house centerpiece.
+  check('BoneYardBonus: v4.25.0 shootable columns (_buildColumns) + house draw', bySrc.includes('draw(ctx) {') && bySrc.includes('_buildColumns') && bySrc.includes('BONUS.BONE_YARD_COLUMNS') && bySrc.includes('EridathsMomsHouse') && !bySrc.includes('_drawColumns'));
   check('BoneYardBonus: seeded field from BONUS.BONE_YARD_FIELD', bySrc.includes('BONUS.BONE_YARD_FIELD') && bySrc.includes('_seedYardField'));
   check('BoneYardBonus: deterministic mulberry32 layout (seed 20261001)', bySrc.includes('function mulberry32') && bySrc.includes('mulberry32(20261001)'));
   check('BoneYardBonus: field drift 6–18 px/s, no horizontal drift', bySrc.includes('bone.vy = 6 + rng() * 12') && bySrc.includes('bone.vx = 0'));
   check('BoneYardBonus: Phase 1 rain rolls the weighted pool', bySrc.includes('new BoneFragment({ x, y: -30, game: this.game })'));
-  check('BoneFragment: VERSION = v2.4.0', bfSrc.includes("VERSION = 'v2.4.0'"));
+  check('BoneFragment: VERSION = v2.5.0', bfSrc.includes("VERSION = 'v2.5.0'"));
   check('BoneFragment: per-key radius/HP/score bands', bfSrc.includes('BONE_FRAGMENT_STATS') && bfSrc.includes('score: 500') && bfSrc.includes('score: 1000') && bfSrc.includes('score: 2000'));
   check('BoneFragment: weighted spawn pool 40/40/15/5', bfSrc.includes('BONE_FRAGMENT_POOL') && bfSrc.includes('weight: 40') && bfSrc.includes('weight: 15') && bfSrc.includes('weight: 5'));
   check('BoneFragment: optional spriteKey constructor arg', bfSrc.includes('spriteKey = null'));
@@ -44,16 +48,28 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   const game = mkGame();
   const yard = new BoneYardBonus(game);
   yard.init(); // v3.76.0: uniform stage interface (was start())
-  const field = game.bonusTargets;
+  // v4.25.0: bonusTargets = drifting field bones + SHOOTABLE fixed
+  // column bones — the field assertions below use the drifting set.
+  const field = game.bonusTargets.filter((b) => !b.fixed);
+  const columns = game.bonusTargets.filter((b) => b.fixed);
   check('BoneYard: seeded field = 29 destructible bones', field.length === 29, `got ${field.length}`);
   const count = (k) => field.filter((b) => b.spriteKey === k).length;
   check('BoneYard: field mix 10 femur / 10 profile_bone / 6 skull / 3 skeleton', count('femur') === 10 && count('profile_bone') === 10 && count('skull') === 6 && count('skeleton') === 3, `got ${count('femur')}/${count('profile_bone')}/${count('skull')}/${count('skeleton')}`);
   check('BoneYard: every field bone is damageable (alive, hp > 0, applyDamage)', field.every((b) => b.alive && b.hp > 0 && typeof b.applyDamage === 'function'));
   check('BoneYard: field drift 6–18 px/s, no horizontal drift', field.every((b) => b.vy >= 6 && b.vy <= 18 && b.vx === 0));
   check('BoneYard: skeleton sentinels hug the left/right margins', field.filter((b) => b.spriteKey === 'skeleton').every((b) => b.x < 240 || b.x > 1680));
+  // v4.25.0: the 8 bone columns (4 per side × 10 stacked) are SHOOTABLE
+  // fixed femur entities — no drift, no cull, damageable, center
+  // corridor clear.
+  const expectedColumns = BONUS.BONE_YARD_COLUMNS.perSide * BONUS.BONE_YARD_COLUMNS.bonesPerColumn * 2;
+  check('BoneYard: v4.25.0 columns = 80 shootable fixed bones', columns.length === expectedColumns, `got ${columns.length}`);
+  check('BoneYard: columns are fixed (no drift, no rotation)', columns.every((b) => b.vy === 0 && b.vx === 0 && b.rotSpeed === 0 && b.rotation === 0));
+  check('BoneYard: columns are femur, damageable, hp 40', columns.every((b) => b.spriteKey === 'femur' && b.alive && b.hp === 40 && typeof b.applyDamage === 'function'));
+  check('BoneYard: columns hug the left/right borders (center corridor clear)', columns.every((b) => b.x < 200 || b.x > 1720));
   const game2 = mkGame();
   new BoneYardBonus(game2).init(); // v3.76.0: uniform stage interface
-  check('BoneYard: seeded layout is identical across runs', game2.bonusTargets.length === field.length && game2.bonusTargets.every((b, i) => b.spriteKey === field[i].spriteKey && Math.abs(b.x - field[i].x) < 0.001 && Math.abs(b.y - field[i].y) < 0.001));
+  const field2 = game2.bonusTargets.filter((b) => !b.fixed);
+  check('BoneYard: seeded layout is identical across runs', field2.length === field.length && field2.every((b, i) => b.spriteKey === field[i].spriteKey && Math.abs(b.x - field[i].x) < 0.001 && Math.abs(b.y - field[i].y) < 0.001));
 
   const femur = new BoneFragment({ x: 100, y: 100, game, spriteKey: 'femur' });
   const skull = new BoneFragment({ x: 100, y: 100, game, spriteKey: 'skull' });
@@ -69,6 +85,11 @@ console.log('\n[6m] v3.60.0 fully destructible Bone Yard');
   }
   check('BoneFragment: pool roll covers all four keys', pool.femur > 0 && pool.profile_bone > 0 && pool.skull > 0 && pool.skeleton > 0, JSON.stringify(pool));
   check('BoneFragment: pool weights ≈ 40/40/15/5', Math.abs(pool.femur / 2000 - 0.4) < 0.05 && Math.abs(pool.skull / 2000 - 0.15) < 0.05 && Math.abs(pool.skeleton / 2000 - 0.05) < 0.04, JSON.stringify(pool));
+  // v4.25.0: fixed architectural bones (the boneyard's columns).
+  check('BoneFragment: v2.5.0 fixed option (no drift, no cull)', bfSrc.includes('if (fixed) {') && bfSrc.includes('this.fixed = true') && bfSrc.includes('if (!this.fixed) {'));
+  const col = new BoneFragment({ x: 100, y: 100, game, spriteKey: 'femur', fixed: true, radius: 10, hp: 40, rotation: 0 });
+  for (let i = 0; i < 120; i++) col.update(1 / 60); // 2s — a drifting bone would have left
+  check('BoneFragment: fixed bone stays put (no drift, no cull, overrides kept)', col.y === 100 && col.x === 100 && col.alive === true && col.radius === 10 && col.hp === 40 && col.rotation === 0);
   skull.applyDamage(9999);
   check('BoneFragment: skull dies to damage (alive=false)', skull.alive === false);
   skull.shatter(game);

@@ -56,6 +56,8 @@ const OUT = path.resolve(__dirname, '..', 'js', 'core', 'AssetSprites.js');
 const MAX_DIM = 128; // v3.72.0 normalization ceiling for embedded art (keeps the single-file build small)
 const CATSHIP_MAX_DIM = 512; // v3.90.0: cat_* keys (the 9 catship themes) embed at native 256×384 — 512 only guards future oversized catship art
 const SHIP_MAX_DIM = 384; // v3.93.0: spaceballs_one ship embeds at native 384×256 (text must stay readable)
+const HOUSE_MAX_DIM = 256; // v4.25.0: eridath_moms_house embeds at 256×256 (readable pixel art at the boneyard's 170px draw size; also sharpens the SAR sector base)
+
 
 const checkMode = process.argv.includes('--check');
 let failures = 0;
@@ -272,7 +274,7 @@ for (const key of keys) {
   }
   // Normalize (downscale + re-encode) when larger than MAX_DIM
   let outBuf = buf, outW = png.width, outH = png.height, normalized = false;
-  const cap = key.startsWith('cat_') ? CATSHIP_MAX_DIM : (key === 'spaceballs_one' ? SHIP_MAX_DIM : MAX_DIM); // v3.90.0: catship art embeds native; everything else stays at the 128px normalization
+  const cap = key.startsWith('cat_') ? CATSHIP_MAX_DIM : (key === 'spaceballs_one' ? SHIP_MAX_DIM : (key === 'eridath_moms_house' ? HOUSE_MAX_DIM : MAX_DIM)); // v3.90.0: catship art embeds native; v3.93.0: ship art native; v4.25.0: Mom's House at 256px; everything else stays at the 128px normalization
   const scale = Math.min(1, cap / Math.max(png.width, png.height));
   if (scale < 1) {
     const dw = Math.max(1, Math.round(png.width * scale));

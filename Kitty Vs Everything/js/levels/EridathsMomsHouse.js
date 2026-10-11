@@ -1,5 +1,13 @@
 // Filename: EridathsMomsHouse.js
-// Kitty Vs Everything — v1.0.0
+// Kitty Vs Everything — v1.1.0
+// v1.1.0 (v4.25.0 release): PIXEL ART — the house now draws the shared
+//          .assets/Eridaths-Moms-House-512x512.png landmark (manifest
+//          `eridath_moms_house`, embedded at 256×256 via the
+//          HOUSE_MAX_DIM import exception), aspect-fit to a 1.3×size
+//          square centered on the anchor, nearest-neighbor. The classic
+//          procedural house is kept as the null-sprite fallback per the
+//          AssetManager contract. Bullet hit radius widened to 0.55×size
+//          to match the art footprint.
 // v4.24.0: Eridath's Mom's House — the Boneyard bonus stage's scripted
 //          centerpiece, driven by js/levels/BoneYardBonus.js (Phase 3/4).
 //          It is a STAGE SUB-MODULE, not a registered BONUS_STAGES entry
@@ -20,10 +28,11 @@
 //          bullet collision (BoneYardBonus._houseBulletHits) so the house
 //          never enters the enemy ram loop, the enemy-death pipeline, or
 //          the wave-clear bookkeeping.
-export const VERSION = 'v1.0.0';
+export const VERSION = 'v1.1.0';
 import { createEnemy } from '../enemies/EnemyFactory.js';
 import { BONUS } from '../core/config.js';
 import { TAU, rand } from '../core/utils.js';
+import { getSprite, getDims } from '../core/AssetManager.js'; // v1.1.0: pixel-art house
 
 export default class EridathsMomsHouse {
   constructor(game, opts = {}) {
@@ -34,7 +43,7 @@ export default class EridathsMomsHouse {
     this.maxHp = cfg.hp;
     this.cap = this.maxHp * cfg.damageCapFrac; // 1/16 damage cap
     this.size = cfg.size;
-    this.radius = cfg.size * 0.5; // bullet hit radius (stage-owned collision)
+    this.radius = cfg.size * 0.55; // v1.1.0: bullet hit radius matches the pixel-art footprint (stage-owned collision)
     this.x = game.viewW / 2;
     this.y = -this.size; // top of the view (off-screen)
     this.settleY = cfg.settleY * game.viewH;
@@ -142,6 +151,32 @@ export default class EridathsMomsHouse {
       const sc = 1 - 0.35 * k;
       ctx.scale(sc, sc);
     }
+    // ─── v1.1.0: PIXEL ART ───
+    // .assets/Eridaths-Moms-House-512x512.png (manifest
+    // `eridath_moms_house`, embedded 256×256) — aspect-fit to a 1.3s
+    // square centered on the anchor, nearest-neighbor (crisp). The
+    // classic procedural house is the null-sprite fallback.
+    const side = s * 1.3;
+    const sprite = getSprite('eridath_moms_house');
+    const dims = getDims('eridath_moms_house');
+    if (sprite && dims) {
+      const h = (side * dims.h) / dims.w;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sprite, -side / 2, -h / 2, side, h);
+    } else {
+      this._drawProcedural(ctx, s);
+    }
+    // ─── HIT FLASH ───
+    if (this.flash > 0) {
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-side / 2, -side / 2, side, side);
+    }
+    ctx.restore();
+  }
+
+  /** v1.1.0: the classic procedural house — null-sprite fallback. */
+  _drawProcedural(ctx, s) {
     // ─── WALLS ───
     const wallW = s;
     const wallH = s * 0.6;
@@ -188,12 +223,5 @@ export default class EridathsMomsHouse {
       ctx.lineTo(wx + s * 0.09, s * 0.1);
       ctx.stroke();
     }
-    // ─── HIT FLASH ───
-    if (this.flash > 0) {
-      ctx.globalAlpha = 0.45;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-s * 0.58, -s * 0.55, s * 1.16, s * 1.07);
-    }
-    ctx.restore();
   }
 }
