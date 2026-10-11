@@ -152,7 +152,16 @@
 //          master bus WEAPON_BUS_GAIN 0.65 in SoundEffects.js and the
 //          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
 //          version synced with package.json.
-export const VERSION = 'v4.28.0';
+// v4.29.0: AD BANNER — Eridath's Mom Enterprises (js/core/ui/
+//          AdBannerManager.js): a decoupled ES module that builds its own
+//          retro 90s "sponsored window" as a standalone overlay at the
+//          LOWER-LEFT of the main game screen (NOT the fire-control
+//          panel) and rotates the 4-ad AD_CATALOG every 8–12 s (house
+//          512×512 pixel art scaled nearest-neighbor). Settings →
+//          MONETIZATION / AD BANNERS (#set-ads, default ON) drives
+//          adBanner.setEnabled() — localStorage 'kitty_enable_ads'.
+//          Milestone version synced with package.json.
+export const VERSION = 'v4.29.0';
 import Game from './Game.js';
 import PlayerRenderer from '../player/PlayerRenderer.js';
 import { PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config.js'; // v3.89.0: hangar sprite lookup
@@ -160,6 +169,7 @@ import { loadAssets, getSprite } from './AssetManager.js'; // v3.72.1: re-render
 import { disableImageSmoothing } from './utils.js'; // v3.89.0: crisp hangar preview
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer
 import MenuKeybinds from '../input/MenuKeybinds.js'; // v3.23.0: dynamic keybind footer
+import { adBanner } from './ui/AdBannerManager.js'; // v4.29.0: Eridath's Mom Enterprises ad banner
 
 const canvas = document.getElementById('game-canvas');
 const game = new Game(canvas);
@@ -170,6 +180,13 @@ const game = new Game(canvas);
 new MenuKeybinds();
 // v3.20.0: wire the in-game net status HUD (LAN).
 netSettingsUI.showHud(document.getElementById('net-hud'));
+
+// v4.29.0: Eridath's Mom Enterprises — the lower-left sponsored ad banner
+// (js/core/ui/AdBannerManager.js, a standalone overlay on the main game
+// screen — NOT the fire-control panel) renders ad #1 and starts the 8–12 s
+// AD_CATALOG rotation. Settings → MONETIZATION / AD BANNERS drives
+// adBanner.setEnabled() (localStorage 'kitty_enable_ads', default ON).
+adBanner.start();
 
 // ─── Cat ship theme selection (v3.100.0: HACKER TERMINAL HANGAR) ─────
 // v3.100.0: the v3.85.0 hangar carousel (single hero card + ‹/› arrows +

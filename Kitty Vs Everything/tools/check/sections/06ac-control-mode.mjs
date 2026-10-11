@@ -95,7 +95,11 @@ export default async function run() {
     !pauseSrc.includes('pauseBtn'));
   check('PauseMenu.js still handles the Esc / P keydowns',
     pauseSrc.includes("'Escape'") && pauseSrc.includes("'KeyP'"));
-  check('index.html tab title is synced to v4.28.0',
-    indexHtml.includes('Kitty Vs Everything — v4.28.0'));
+  // v4.29.0: derive the expected title from package.json (the build
+  // filename source of truth) so this redundant gate never goes stale
+  // on a milestone bump (06aa remains the authoritative title check).
+  const pkgVersion = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
+  check(`index.html tab title is synced to v${pkgVersion}`,
+    indexHtml.includes(`Kitty Vs Everything — v${pkgVersion}`));
 }
 }

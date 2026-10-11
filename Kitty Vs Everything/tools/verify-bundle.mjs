@@ -31,7 +31,7 @@ const tests = [
   ['BENDER sprite payload (body PNG)', s.includes('iVBORw0KGgo') && s.includes('ASUAAAG5CAYAAADIwyJP')],
   ['dialogue line 0 "I\'m your Aimbot."', s.includes("I'm your Aimbot.")],
   ['dialogue line 5 (exit quip)', s.includes("Ok that's enough, I have to go get drunk.")],
-  ['BENDER_KILLS = 4', /BENDER_KILLS\s*=\s*4/.test(s)],
+  ['BENDER_KILLS = KILLS_PER_LINE * 4 (= 40, v4.28.0 pacing)', /BENDER_KILLS\s*=\s*\w+\s*\*\s*4/.test(s)],
   ['BENDER_INTRO_DELAY = 2', /BENDER_INTRO_DELAY\s*=\s*2/.test(s)],
   ['BENDER_DIALOGUE table', /BENDER_DIALOGUE\s*=\s*\[/.test(s)],
   ['killCount state', /killCount/.test(s)],
@@ -44,6 +44,12 @@ const tests = [
   ['no BENDER_TIME / PARTING_QUIPS (timer flow removed)', !/BENDER_TIME|PARTING_QUIPS/.test(s)],
   ['no drawArm (stale API removed)', !/drawArm/.test(s)],
   ['no AIM BOT label (stale wording removed)', !/AIM BOT/.test(s)],
+  // v4.29.0: Eridath's Mom Enterprises ad banner (js/core/ui/AdBannerManager.js)
+  ['ad banner module in bundle (AD_CATALOG + kitty_enable_ads)', s.includes('AD_CATALOG') && s.includes('kitty_enable_ads')],
+  ['ad banner catalog: all 4 Eridath\'s Mom ads', s.includes('eridaths_moms_house') && s.includes('rhino_cat_9000') && s.includes('only_eridaths_mom') && s.includes('boneyard_disposal')],
+  ['ad banner title bar (SPONSORED BY ERIDATH\'S MOM ENTERPRISES)', s.includes("SPONSORED BY ERIDATH'S MOM ENTERPRISES")],
+  ['ad banner house ad copy (1-976-PIPE-CLEANERS hotline)', s.includes('1-976-PIPE-CLEANERS') && s.includes('$3.99/min')],
+  ['ad banner CTA copy (300% cannon power / Frenzy / bury your problems)', s.includes('300% maximum cannon power') && s.includes('unlimited Frenzy power-ups') && s.includes('bury your problems fast')],
   // Note: "autoAim" alone is NOT a failure — Player2.js legitimately uses
   // PLAYER2.autoAimTurnRate / _autoAim() for the P2 co-op AI ship. The dead
   // reference from the old EasterEgg was specifically `player.autoAim`.

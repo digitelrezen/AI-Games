@@ -1153,3 +1153,114 @@ body {
 }
 #menu-keybinds .menu-kb-label { color: #5f8fa5; }
 .menu-kb-note { margin-top: 4px; }
+
+/* ─── v4.29.0: AD BANNER (js/core/ui/AdBannerManager.js) — Eridath's Mom
+   Enterprises — retro 90s "sponsored window". A STANDALONE overlay at the
+   LOWER-LEFT of the main game screen (NOT part of the fire-control
+   panel): #fc-dashboard is centered 900px wide at bottom:10px (its left
+   edge sits at x≈190), so the banner floats just above it — bottom:205px
+   clears the worst-case ~190px-tall dashboard AND the mobile joystick
+   (bottom:30px / left:30px). z-index 30: above the FC dashboard (20) +
+   touch UI (15), below the settings screen (50) / dev panel (60). The
+   .hidden utility class (display:none !important) drives setEnabled(). */
+#ad-banner {
+  position: absolute;
+  left: 14px;
+  bottom: 205px;
+  width: 320px;
+  z-index: 30;
+  background: #14041f;
+  border: 2px solid #00e5ff;
+  box-shadow:
+    0 0 10px rgba(0, 229, 255, 0.55),
+    inset 0 0 0 1px #ff4fd8,
+    0 0 24px rgba(255, 79, 216, 0.28);
+  font-family: 'Courier New', monospace;
+}
+#ad-banner .ad-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 4px 2px 8px;
+  background: linear-gradient(90deg, #00e5ff 0%, #ff4fd8 100%);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #10041f;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+}
+#ad-banner .ad-titlebar-btns { display: inline-flex; gap: 3px; flex: 0 0 auto; }
+#ad-banner .ad-btn {
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid #10041f;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+}
+#ad-banner .ad-btn-close { background: #ff5252; color: #fff; }
+#ad-banner .ad-btn-min { background: #00e5ff; color: #10041f; }
+#ad-banner .ad-btn-max { background: #ffd54f; color: #10041f; }
+#ad-banner .ad-body {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(8, 1, 20, 0.92);
+}
+#ad-banner .ad-sprite {
+  width: 96px;
+  height: 96px;
+  flex: 0 0 96px;
+  background: #1c0630;
+  border: 1px solid #ff4fd8;
+  /* crisp nearest-neighbor scaling of the pixel-art sprite (the 512×512
+     house art embedded 256×256 stays razor-sharp at 96×96) */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+#ad-banner .ad-copy { min-width: 0; }
+#ad-banner .ad-title {
+  color: #ffd54f;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.25;
+  text-shadow: 0 0 8px rgba(255, 213, 79, 0.65);
+}
+#ad-banner .ad-subtitle { color: #00e5ff; font-size: 10px; margin-top: 2px; }
+#ad-banner .ad-text { color: #cfd8ff; font-size: 10px; line-height: 1.35; margin-top: 4px; }
+#ad-banner .ad-cta {
+  margin-top: 6px;
+  padding: 3px 8px;
+  background: #ff4fd8;
+  color: #20002a;
+  border: 1px solid #fff;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  font-family: inherit;
+  animation: ad-cta-blink 1.2s steps(2, start) infinite;
+}
+@keyframes ad-cta-blink { 50% { background: #00e5ff; } }
+#ad-banner .ad-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 8px;
+  border-top: 1px dashed #3a2a5a;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #7f8fd8;
+}
+#ad-banner .ad-ad-badge { color: #ff4fd8; font-weight: bold; }
+/* CTA click — the ad wiggles (Mom approves of your interest) */
+#ad-banner.ad-wiggle { animation: ad-wiggle 0.4s steps(2) 2; }
+@keyframes ad-wiggle {
+  25% { transform: translateX(-3px) rotate(-0.5deg); }
+  75% { transform: translateX(3px) rotate(0.5deg); }
+}

@@ -21,7 +21,11 @@
 //          drawn by the same drawReticle() the in-game reticle uses
 //          (see _buildCrosshair). CONTROLLER section —
 //          gamepad enable toggle + connection status line (see _buildGamepad).
-export const VERSION = 'v4.22.0';
+// v4.29.0: MONETIZATION / AD BANNERS section — the #set-ads toggle drives
+//          AdBannerManager.setEnabled() (js/core/ui/AdBannerManager.js —
+//          the Eridath's Mom Enterprises lower-left ad banner; default ON,
+//          persists to localStorage 'kitty_enable_ads'; see _buildAds).
+export const VERSION = 'v4.29.0';
 import { SETTINGS, setSetting, resetSettings } from './Settings.js';
 import { drawReticle, CROSSHAIR_STYLES, CROSSHAIR_COLORS } from './Crosshair.js'; // v4.22.0: shared reticle renderer (live preview) + style/color source of truth
 import {
@@ -31,6 +35,7 @@ import {
 import { audio } from '../core/AudioSystem.js';
 import { bus } from '../core/EventBus.js';
 import netSettingsUI from '../../net/NetSettingsUI.js'; // v3.20.0: LAN / multiplayer panel
+import { adBanner } from '../core/ui/AdBannerManager.js'; // v4.29.0: monetization / ad banner toggle
 
 function byId(id) { return document.getElementById(id); }
 const pct = (v) => Math.round(v * 100) + '%';
@@ -47,6 +52,7 @@ export default class SettingsScreen {
     this._buildControlMode(); // v3.78.0: A/D strafe / spin radio pair
     this._buildCrosshair();   // v4.22.0: reticle style/color/size/length + preview
     this._buildGamepad();     // v4.22.0: controller toggle + connection status
+    this._buildAds();         // v4.29.0: monetization / ad banner toggle
     // v3.20.0: mount the LAN / multiplayer settings panel.
     const netContainer = byId('net-settings');
     if (netContainer) netSettingsUI.attach(game, netContainer);
@@ -339,6 +345,24 @@ export default class SettingsScreen {
     // Live connect / disconnect (Gamepad.js emits on the bus)
     bus.on('gamepadConnected', () => this._updateGamepadStatus());
     bus.on('gamepadDisconnected', () => this._updateGamepadStatus());
+  }
+
+  // ─── v4.29.0: MONETIZATION / AD BANNERS — Eridath's Mom Enterprises ───
+  // The toggle drives AdBannerManager.setEnabled() directly (the banner
+  // owns its own 'kitty_enable_ads' localStorage key — see
+  // js/core/ui/AdBannerManager.js). Default ON; flipping it shows/hides
+  // the lower-left banner and pauses/resumes the 8–12 s rotation
+  // immediately.
+  _buildAds() {
+    const toggle = byId('set-ads');
+    if (!toggle) return;
+    toggle.addEventListener('change', () => {
+      adBanner.setEnabled(toggle.checked);
+      if (this.game.msglog && this.game.state === 'playing') {
+        this.game.msglog.log('AD BANNERS: ' + (toggle.checked ? 'ENABLED' : 'DISABLED'), 'info', this.game.time);
+      }
+    });
+    this._syncers.push(() => { toggle.checked = !!adBanner.enabled; });
   }
 
   /** Status line: which pad is connected (or none / disabled). */
