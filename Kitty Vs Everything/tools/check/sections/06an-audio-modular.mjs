@@ -119,8 +119,8 @@ export default async function run() {
   }
   const plMod = await mod('js/core/audio/MusicPlaylists.js');
   check('MusicPlaylists: 4 context modes', Object.keys(plMod.MUSIC_MODES).length === 4, `got ${Object.keys(plMod.MUSIC_MODES).join(', ')}`);
-  check('MusicPlaylists: v4.19.0 the 15-track MIDI album (13 v4.17.0 tracks + Ozzy Osbourne — Crazy Train (intro riff) + Black Sabbath — Children Of The Grave; all procedural placeholder tracks removed)',
-    Object.keys(plMod.SONGS).length === 15, `got ${Object.keys(plMod.SONGS).length}`);
+  check('MusicPlaylists: v4.26.0 the 14-track MIDI album (the v4.19.0 15-track album minus The Unforgiven — removed v4.26.0; 13 v4.17.0 tracks + Ozzy Osbourne — Crazy Train (intro riff) + Black Sabbath — Children Of The Grave; all procedural placeholder tracks removed)',
+    Object.keys(plMod.SONGS).length === 14, `got ${Object.keys(plMod.SONGS).length}`);
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
@@ -138,7 +138,6 @@ export default async function run() {
     && plMod.SONGS['tool-forty-six'].title === 'Forty Six & 2' && plMod.SONGS['tool-forty-six'].artist === 'Tool'
     && plMod.SONGS['tool-no-quarter'].title === 'No Quarter' && plMod.SONGS['tool-no-quarter'].artist === 'Tool'
     && plMod.SONGS['tool-pneuma'].title === 'Pneuma' && plMod.SONGS['tool-pneuma'].artist === 'Tool'
-    && plMod.SONGS['metallica-unforgiven'].title === 'The Unforgiven'
     && plMod.SONGS['metallica-harvester'].title === 'Harvester of Sorrow'
     && plMod.SONGS['pantera-cowboys'].title === 'Cowboys From Hell' && plMod.SONGS['pantera-cowboys'].artist === 'Pantera'
     && plMod.SONGS['axel-f'].title === 'Axel F'
@@ -157,7 +156,6 @@ export default async function run() {
     && plMod.SONGS['tool-no-quarter'].bpm === 110 && plMod.SONGS['tool-no-quarter'].bars === 15
     && plMod.SONGS['pantera-cowboys'].bpm === 230 && plMod.SONGS['pantera-cowboys'].bars === 45
     && plMod.SONGS['metallica-harvester'].bpm === 92 && plMod.SONGS['metallica-harvester'].bars === 42
-    && plMod.SONGS['metallica-unforgiven'].bpm === 70 && plMod.SONGS['metallica-unforgiven'].bars === 110
     && plMod.SONGS['tool-pneuma'].bpm === 114 && plMod.SONGS['tool-pneuma'].bars === 84
     && plMod.SONGS['classical-gas'].bpm === 152 && plMod.SONGS['classical-gas'].bars === 117
     && plMod.SONGS['eiffel65-blue'].bpm === 127 && plMod.SONGS['eiffel65-blue'].bars === 117);
@@ -227,16 +225,11 @@ export default async function run() {
         && typeof m.gainArp === 'number' && typeof m.gainPad === 'number'
         && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0 && m.gainArp > 0 && m.gainPad > 0;
     }));
-  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their tuned mix (v4.23.0: Pneuma + Axel F piano gainLead 3; v4.25.0: Unforgiven full-band melody-forward L4.0/A1.5/D0.6/P0.75/B0.9; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
+  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their tuned mix (v4.23.0: Pneuma + Axel F piano gainLead 3; v4.26.0: Unforgiven removed; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
     plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainLead === 1 && plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainDrums === 1
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainArp === 1
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainPad === 1
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainLead === 4
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainBass === 0.9
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainDrums === 0.6
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainArp === 1.5
-    && plMod.TRACK_MIX_SETTINGS['metallica-unforgiven'].gainPad === 0.75
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainDrums === 1
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 1

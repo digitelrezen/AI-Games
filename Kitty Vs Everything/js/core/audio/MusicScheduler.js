@@ -807,8 +807,7 @@ export class MusicScheduler {
     // v4.19.0: per-track mix scalars (defaults 1.0 = profile vols as-is).
     // v4.20.0: the table grows to 5 scalars — gainArp / gainPad join
     // gainLead / gainBass / gainDrums so the arp + pad event layers can
-    // be balanced per song (Pneuma's rhythm-guitar arp, Unforgiven's
-    // synth pad).
+    // be balanced per song (e.g. Pneuma's rhythm-guitar arp).
     const mix = TRACK_MIX_SETTINGS[song.id] || { gainLead: 1, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 };
     for (const [layer, ev] of list) {
       if (layer === 'drums') {

@@ -1,5 +1,9 @@
 // Filename: tools/midi-import.mjs
-// Kitty Vs Everything — v4.25.0
+// Kitty Vs Everything — v4.26.0
+// v4.26.0: TRACK REMOVAL — The Unforgiven (Metallica) is gone from the
+//          album: its TRACKS[] entry + comment block and its combat-queue
+//          slot are removed (15 → 14 tracks). Re-run `node
+//          tools/midi-import.mjs --write` to regenerate MusicPlaylists.js.
 // v4.25.0: SOURCE REPLACEMENT — The Unforgiven re-imported from the new
 // .mid file (The Unforgiven-New - Metallica.mid, 9 channels, 3820 notes):
 // the old 6-channel arrangement (no drums, no bass) is replaced by the
@@ -418,32 +422,6 @@ export const TRACKS = [
   // v4.21.0: mix — "still ~2x too quiet": lead 3.0x, the bass back to
   // 1.0x (the 0.5x cut was too far), drums 0.9x, the arp 1.5x.
   { file: 'Metallica - Harvester of Sorrow.mid', id: 'metallica-harvester', title: 'Harvester of Sorrow', artist: 'Metallica', genre: 'metal', chMap: { lead: [0], arp: [1, 2], bass: [3] }, mix: { gainLead: 3, gainBass: 1, gainDrums: 0.9, gainArp: 1.5, gainPad: 1 } },
-  // v4.20.0: mix — the main rhythm was muffed in the background (lead
-  // 1.9x) and the "synth" (the pad channel, the loudest layer) only plays
-  // part of the rhythm and is off-putting (0.25x); the busy arp 0.8x.
-  // v4.21.0: mix — "only part of the harmony plays": the 0.25x pad cut
-  // removed the "synth" harmony entirely — back to 1.5x; the rhythm
-  // guitar (arp, 1065 notes) 2.5x (the main body), lead 2.5x, bass 1.8x.
-  // v4.25.0: SOURCE REPLACED — now the full-band arrangement (The
-  // Unforgiven-New - Metallica.mid, 3820 notes): the old 6-channel file
-  // had no drums (2 notes) and no bass (a guitar mis-classified as bass);
-  // the new file adds a real bass line (ch5, E1–A2, enters bar 11) and a
-  // full GM drum kit (ch9, 1176 hits, 32nd-note snare-roll intro).
-  // chMap pinned: ch1 (the melody line — the mid-range counter-riff +
-  // the bars 63–66 chorus run up to C#6, avg vel 86, the loudest
-  // channel) lead, ch5 bass, ch0 (the power-chord rhythm, the main
-  // body) + ch3/ch7 (guitar accents, bars 67–81) arp, ch2 (the
-  // distortion "synth" harmony, poly 5) pad; ch4 (3 notes at t0) and
-  // ch6 (the 2-bar tremolo E-power-chord intro, 285 zero-length
-  // triggers — a harsh buzz through the pluck voice) are unmapped.
-  // v4.25.0 mix fix — "all separated, none of the melody flows, keeps
-  // switching to other instruments": the 612 open-hat hits (52% of the
-  // 1176 drum notes) + the same-gain rhythm bus + the tremolo intro
-  // formed a wall around the melody. The melody goes clearly on top
-  // (4.0x — the Crazy Train / Blue level), the rhythm supports (1.5x),
-  // the drums drive under it (0.6x), the harmony sits back (0.75x),
-  // the bass 0.9x.
-  { file: 'The Unforgiven-New - Metallica.mid', id: 'metallica-unforgiven', title: 'The Unforgiven', artist: 'Metallica', genre: 'metal', chMap: { lead: [1], bass: [5], arp: [0, 3, 7], pad: [2] }, mix: { gainLead: 4, gainBass: 0.9, gainDrums: 0.6, gainArp: 1.5, gainPad: 0.75 } },
   // v4.20.0: mix — the full metal band (power-chord rhythm on a per-song
   // SAW arp profile, heavy bass, drums, sparse lead).
   // v4.22.0: SOURCE REPLACED — now the "Classic Elec Piano w_ Remix"
@@ -507,7 +485,7 @@ export const TRACKS = [
 // high-energy combat queue (the 31-second galloping riff loop).
 export const PLAYLISTS = {
   open: ['black-sabbath-cotg', 'metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
-  combat: ['tool-forty-six', 'johnny-march', 'metallica-unforgiven', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
+  combat: ['tool-forty-six', 'johnny-march', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
   boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester', 'classical-gas'],
   boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys', 'black-sabbath-cotg'],
 };
@@ -663,7 +641,10 @@ function write() {
     })
     .join('\n');
   const out = `// Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.25.0
+// Kitty Vs Everything — v4.26.0
+// v4.26.0: TRACK REMOVAL — The Unforgiven (Metallica) is gone from the
+//          album: its SONGS data, its TRACK_MIX_SETTINGS entry, and its
+//          combat-queue slot are all removed (15 → 14 tracks).
 // v4.25.0: SOURCE REPLACEMENT + MIX FIX — The Unforgiven re-imported
 //          from the new .mid file (The Unforgiven-New - Metallica.mid,
 //          9 channels, 3820 notes): the old 6-channel arrangement (no
