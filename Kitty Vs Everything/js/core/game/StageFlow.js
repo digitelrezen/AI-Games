@@ -11,7 +11,7 @@
 //         state back to the hangar terminal (ship selection).
 
 import { BONUS_STAGES } from '../../levels/LevelRegistry.js';
-import { LIFE_SCORE_INTERVAL } from '../config.js';
+import { resetLifeTimer } from '../DropManager.js'; // v4.30.0: extra-life timer reset
 import { audio } from '../AudioSystem.js';
 import coopManager from '../../../net/CoopManager.js';
 import clientMirror from '../../../net/ClientMirror.js';
@@ -104,7 +104,7 @@ export function returnToHangar(game) {
   // ── Run state (Game.start() resets these again on the next launch) ──
   game.score = 0;
   game.multiplier = 1;
-  game.nextLifeAt = LIFE_SCORE_INTERVAL;
+  resetLifeTimer(); // v4.30.0: fresh extra-life timer per run
   game.shake = 0;
   game.godMode = false;
   game.paused = false;

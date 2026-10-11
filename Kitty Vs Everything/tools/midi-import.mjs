@@ -385,21 +385,8 @@ export const TRACKS = [
   // v4.20.0: mix — "just too low": the quiet triangle piano 2.0x.
   // v4.21.0: mix — "still ~2x too quiet": the solo piano 3.5x.
   { file: 'Für Elise.mid', id: 'fur-elise', title: 'Für Elise', artist: 'Beethoven', genre: 'piano', chMap: { lead: [0] }, mix: { gainLead: 3.5, gainBass: 1, gainDrums: 1, gainArp: 1, gainPad: 1 } },
-  // v4.16.0: the trombone (ch0) plays the march MELODY — pin it to lead.
-  // ch1 + ch4 are the bass line, ch2 (fast figure) + ch3 (violin
-  // countermelody) are arp. (Auto-classify made the trombone a quiet pad
-  // and the violin the "lead".)
-  // v4.20.0: mix — the in-your-face drums (1.49x the melody energy) go to
-  // the background (0.35x), the trombone melody 1.6x, the busy arp
-  // counter-figures 0.8x.
-  // v4.21.0: mix — "the drums ruin it" (still, at 0.35x): drums 0.2x,
-  // the trombone melody 3.0x (clearly on top), bass 1.5x.
-  // v4.25.0: SOURCE FILE SWAP — re-imported from
-  // "When Johnny Comes Marching Home -New.mid": byte-identical to the
-  // old file (same 4273 notes / 6 channels / 165 bpm — verified by
-  // hash), so the generated event data is unchanged; only the source
-  // reference moves to the -New file.
-  { file: 'When Johnny Comes Marching Home -New.mid', id: 'johnny-march', title: 'When Johnny Comes Marching Home', artist: 'Traditional', genre: 'march', chMap: { lead: [0], bass: [1, 4], arp: [2, 3] }, mix: { gainLead: 3, gainBass: 1.5, gainDrums: 0.2, gainArp: 0.8, gainPad: 1 } },
+  // v4.30.0: When Johnny Comes Marching Home removed from the album —
+  // its .mid import entry is gone with it (14 → 13 tracks).
   // v4.20.0: THE VOLUME REFERENCE — Forty Six & 2 is the loudest,
   // riff-forward track (dense high-velocity lead, drums at 0.14x the
   // lead). Every other track is tuned against it; it stays all-1.0.
@@ -484,8 +471,8 @@ export const TRACKS = [
 // alongside the riffs). v4.19.0: Crazy Train (intro riff) joins the
 // high-energy combat queue (the 31-second galloping riff loop).
 export const PLAYLISTS = {
-  open: ['black-sabbath-cotg', 'metallica-nem', 'fur-elise', 'axel-f', 'johnny-march', 'classical-gas'],
-  combat: ['tool-forty-six', 'johnny-march', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
+  open: ['black-sabbath-cotg', 'metallica-nem', 'fur-elise', 'axel-f', 'classical-gas'],
+  combat: ['tool-forty-six', 'pantera-cowboys', 'eiffel65-blue', 'ozzy-crazy-train'],
   boneyard: ['requiem-dream', 'fur-elise', 'metallica-harvester', 'classical-gas'],
   boss: ['tool-no-quarter', 'tool-pneuma', 'metallica-harvester', 'pantera-cowboys', 'black-sabbath-cotg'],
 };

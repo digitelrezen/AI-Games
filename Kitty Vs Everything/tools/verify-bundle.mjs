@@ -274,16 +274,19 @@ const tests = [
   // ── v3.80.0 drop rarity ladder + ships every level + ambient spawners ──
   // (POWERUP_DROPS / DROP_RARITY parsed numerically above — esbuild may
   // normalize 0.30 → 0.3 / .3, so string matching would be brittle.)
-  ['v3.86.0: POWERUP_DROPS coin-first pool (coin .75 / health .07 / shield .06 / frenzy .05 / mini .03 / crate .02 / life .01 / robot .01)',
-    Math.abs(powerupDrops.coin - 0.75) < 1e-9 && Math.abs(powerupDrops.health - 0.07) < 1e-9 &&
+  ['v4.30.0: POWERUP_DROPS coin-first pool (coin .76 / health .07 / shield .06 / frenzy .05 / mini .03 / crate .02 / robot .01 — life pill removed)',
+    Math.abs(powerupDrops.coin - 0.76) < 1e-9 && Math.abs(powerupDrops.health - 0.07) < 1e-9 &&
     Math.abs(powerupDrops.shield - 0.06) < 1e-9 && Math.abs(powerupDrops.frenzy - 0.05) < 1e-9 &&
     Math.abs(powerupDrops.mini - 0.03) < 1e-9 && Math.abs(powerupDrops.crate - 0.02) < 1e-9 &&
-    Math.abs(powerupDrops.life - 0.01) < 1e-9 && Math.abs(powerupDrops.robot - 0.01) < 1e-9,
+    Math.abs(powerupDrops.robot - 0.01) < 1e-9 && !('life' in powerupDrops),
   ],
   ['v3.86.0: POWERUP_DROPS weights sum to 1.00',
     Math.abs(Object.values(powerupDrops).reduce((a, b) => a + b, 0) - 1) < 1e-9,
   ],
-  ['v3.86.0: coin is the common drop (75%) + life/robot super-rare (1%)', powerupDrops.coin === 0.75 && powerupDrops.life === 0.01 && powerupDrops.robot === 0.01],
+  ['v4.30.0: coin is the common drop (76%) + robot super-rare (1%)', powerupDrops.coin === 0.76 && powerupDrops.robot === 0.01],
+  ['v4.30.0: LIFE_DROP_TIMER extra-life timer in bundle (30 s / 10% — the only life source)',
+    /LIFE_DROP_TIMER/.test(s) && /lifeDropTick/.test(s) && !s.includes('LIFE_SCORE_INTERVAL') && !s.includes('checkScoreLives'),
+  ],
   ['v3.83.0: DROP_POLICY per-source drop table in bundle (mob/asteroid/crate/boss, chance + maxDrops)',
     /DROP_POLICY\s*=\s*\{/.test(s) && /maxDrops/.test(s) && /chance/.test(s),
   ],

@@ -1,7 +1,14 @@
 // Filename: config.js
-// Kitty Vs Everything — v4.3.0
+// Kitty Vs Everything — v4.30.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v4.30.0: EXTRA-LIFE TIMER — LIFE_SCORE_INTERVAL (the score-bonus life,
+//          one per 30,000 points) is removed from config/stages.js and
+//          its re-export; the 'life' pill leaves the POWERUP_DROPS pool
+//          and LIFE_DROP_TIMER (30 s / 10%) joins the drops re-exports
+//          — the DropManager life timer is now the ONLY source of extra
+//          lives. Also: When Johnny Comes Marching Home removed from the
+//          SONGS album (14 → 13 tracks).
 // v4.0.0: SEARCH & DESTROY — the sector-journey mode (js/modes/
 //          SearchAndDestroy/, E6 nested modules) stamps 4.0.0: the
 //          DISPLACEMENT-ACCUMULATOR camera (SectorMap) replaces the
@@ -398,12 +405,12 @@
 //          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
 //          version synced across package.json, config.js, main.js,
 //          Game.js, HUD.js and index.html.
-export const VERSION = 'v4.29.1';
+export const VERSION = 'v4.30.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';
 export { ENEMY_TYPES, TIERS, WAVE, ENEMY_ATTACK, ENEMY_HAZARD } from './config/enemies.js';
-export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP, DROP_POLICY } from './config/drops.js';
-export { BONUS, LIFE_SCORE_INTERVAL } from './config/stages.js';
+export { ASTEROID, POWERUP_DROPS, rollPowerUpDrop, SHUTTLE_DROP, DROP_POLICY, LIFE_DROP_TIMER } from './config/drops.js';
+export { BONUS } from './config/stages.js';
 export { HAZARD_TYPES, HAZARD, rollHazardType } from './config/hazards.js'; // v3.97.0
 export { SAR, sarProgress, sarZoneFor } from './config/searchDestroy.js'; // v3.99.0: Search & Destroy mode

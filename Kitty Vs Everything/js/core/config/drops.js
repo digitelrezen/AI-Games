@@ -1,5 +1,12 @@
 // Filename: config/drops.js
-// Kitty Vs Everything — v3.86.0
+// Kitty Vs Everything — v4.30.0
+// v4.30.0: EXTRA-LIFE TIMER — the 'life' pill LEAVES the shared pool
+// (it was 1% of every roll, and the score-bonus life — one per
+// 30,000 points — was the real life faucet). Extra lives now come from
+// ONE place: the LIFE_DROP_TIMER below — every `interval` seconds the
+// DropManager rolls `chance` to eject a single 'life' pill from the top
+// of the screen (no cap, just a very low chance). coin absorbs the
+// freed 1% (0.75 → 0.76).
 // v3.86.0: GOLD COIN DROP — the shared pool is now coin-first (coin 0.75,
 // +500 score) with the classic power-ups rebalanced below it.
 // v3.83.0: DROP POLICY — DROP_RARITY is gone; every normal drop source now
@@ -43,15 +50,27 @@ export const ASTEROID = {
 // crate destruction (Game.destroyCrate) all roll this one table, so no
 // source is ever missing a core drop. Asteroids are NOT in the pool: they
 // spawn fully off-screen from the wave spawner only (ASTEROID.spawnY).
+// v4.30.0: the 'life' pill is OUT of the pool — extra lives come only
+// from the LIFE_DROP_TIMER (below). coin absorbs its 1% (0.75 → 0.76).
 export const POWERUP_DROPS = {
-  coin:   0.75,  // COMMON — gold coin (+500 score)
+  coin:   0.76,  // COMMON — gold coin (+500 score)
   health: 0.07,  // UNCOMMON — hull repair (PLAYER.HEALTH_RESTORE)
   shield: 0.06,  // UNCOMMON — shield restore
   frenzy: 0.05,  // UNCOMMON — 30s all-cooldowns-off
   mini:   0.03,  // RARE — "Wanted" poster → mini-ship
   crate:  0.02,  // RARE — score crate (destructible — drops again)
-  life:   0.01,  // SUPER RARE — extra life
   robot:  0.01,  // SUPER RARE — Bender easter egg
+};
+
+// ─── v4.30.0: EXTRA-LIFE TIMER (the ONLY source of extra lives) ───
+// Every `interval` seconds (game time, active play only) the DropManager
+// rolls `chance` to eject a single 'life' pill from the top of the screen.
+// 10% per 30 s ≈ one extra life every ~5 minutes — no cap, just a very
+// low chance (replaces the 1%-of-every-kill pool roll AND the removed
+// score-bonus life, which together flooded long runs with lives).
+export const LIFE_DROP_TIMER = {
+  interval: 30,  // seconds between rolls
+  chance: 0.10,  // very low chance per roll
 };
 
 /** v3.42.0: weighted roll over POWERUP_DROPS (weights sum to 1). */

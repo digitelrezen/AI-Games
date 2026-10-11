@@ -1,10 +1,12 @@
 // Filename: SpaceballsOneLoot.js
-// Kitty Vs Everything — v3.83.0
+// Kitty Vs Everything — v4.30.0
 // Treasure-chest jackpot: when Spaceballs One is destroyed it explodes into
 // ONE of EVERY available power-up type — the full POWERUP_DROPS pool
-// (health / frenzy / shield / mini / crate / life / robot) — ejected
+// (coin / health / frenzy / shield / mini / crate / robot) — ejected
 // simultaneously in a ring around the kill point, plus a gold burst, a
 // jackpot score bonus (× multiplier) and the banner.
+// v4.30.0: the 'life' pill left the pool (extra lives come only from the
+// DropManager life timer), so the ring carries the remaining 7 types.
 // v3.83.0: the ring drops spawn through the DropManager's raw primitive
 // (spawnDropAt) — a guaranteed special spread that bypasses DROP_POLICY.
 

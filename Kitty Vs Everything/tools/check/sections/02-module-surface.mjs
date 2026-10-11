@@ -20,8 +20,8 @@ check('WEAPONS.vulkan.thermalLockout = 1.2', WEAPONS.vulkan.thermalLockout === 1
 check('WEAPONS.vulkan.rate = 0.07', WEAPONS.vulkan.rate === 0.07, `got ${WEAPONS.vulkan.rate}`);
 // v3.42.0: shared drop pool + fully off-screen asteroid spawn
 check('ASTEROID.spawnY = -80 (fully off-screen spawn)', ASTEROID.spawnY === -80, `got ${ASTEROID.spawnY}`);
-check('POWERUP_DROPS has the 8 v3.86.0 drop types',
-  JSON.stringify(Object.keys(POWERUP_DROPS || {}).sort()) === JSON.stringify(['coin', 'crate', 'frenzy', 'health', 'life', 'mini', 'robot', 'shield']),
+check('POWERUP_DROPS has the 7 v4.30.0 drop types (life pill removed — timer-only lives)',
+  JSON.stringify(Object.keys(POWERUP_DROPS || {}).sort()) === JSON.stringify(['coin', 'crate', 'frenzy', 'health', 'mini', 'robot', 'shield']),
   `got ${Object.keys(POWERUP_DROPS || {}).join(', ')}`);
 check('POWERUP_DROPS weights sum to 1',
   Math.abs(Object.values(POWERUP_DROPS || {}).reduce((a, b) => a + b, 0) - 1) < 1e-9,

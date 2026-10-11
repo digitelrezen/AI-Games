@@ -289,6 +289,14 @@
 //          + bounded voice pool, rebuilt explosion tail, and the
 //          MusicScheduler jukebox preview session powering the DevPanel
 //          Music Jukebox). Milestone version synced with package.json.
+// v4.30.0: EXTRA-LIFE TIMER + TRACK REMOVAL — the 'life' pill left the
+//          shared drop pool and the score-bonus life (one per 30,000
+//          points) is GONE: extra lives now come from ONE place, the
+//          DropManager life timer (lifeDropTick in the update loop —
+//          every 30 s a 10% roll ejects a single 'life' pill from the
+//          top of the screen; no cap, very low chance). Also: When
+//          Johnny Comes Marching Home removed from the SONGS album
+//          (14 → 13 tracks).
 // v4.29.1: AD BANNER REWORK — starts hidden, pops up with a NEW ad every
 //          30–60 s (12 s on screen), true lower-left corner at joke size
 //          (240px / 64×64 sprite); the minimize button docks an "AD · MOM"
@@ -302,14 +310,14 @@
 //          primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js and the rebuilt vulkanShot() dual-layer
 //          mechanical snap). Milestone version synced with package.json.
-export const VERSION = 'v4.29.1';
-import { LIFE_SCORE_INTERVAL, PLAYER } from './config.js';
+export const VERSION = 'v4.30.0';
+import { PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)
 import InputManager from '../input/InputManager.js';
 import ParticleSystem from './ParticleSystem.js';
 import { createCatShip } from '../combat/CatShipFactory.js'; // v3.71.0: modular combat
-import { spawnSourceDrops } from './DropManager.js'; // v3.83.0: crate spill drop
+import { spawnSourceDrops, lifeDropTick, resetLifeTimer } from './DropManager.js'; // v3.83.0: crate spill drop (v4.30.0: extra-life timer)
 import WaveManager from './WaveManager.js';
 import BonusLevel from '../levels/BonusLevel.js';
 import LevelRegistry, { STAGE_SEQUENCE, BONUS_STAGES } from '../levels/LevelRegistry.js'; // v3.76.0 (v3.77.0 E6: BONUS_STAGES now consumed by game/StageFlow.js — import kept for the [6z] pin)
@@ -348,7 +356,7 @@ import { advanceStage, startBonusStage, startBonusLevel, startBonusSpecific, res
 import { syncMusicMode } from './game/MusicDirector.js'; // v4.4.0: dynamic soundtrack mode
 import { checkViewportChange, wantsPointerLock, syncCursor, settingsOpen, onPointerLockChange } from './game/DisplayPolicy.js';
 import { gameOver } from './game/GameOver.js';
-import { hitPlayer, destroyAsteroid, checkScoreLives, cleanup, spawnEnemyBullet } from './game/Gameplay.js';
+import { hitPlayer, destroyAsteroid, cleanup, spawnEnemyBullet } from './game/Gameplay.js';
 import SearchAndDestroy from '../modes/SearchAndDestroy/index.js'; // v3.99.0: Search & Destroy mode facade
 
 export default class Game {
@@ -406,7 +414,6 @@ export default class Game {
     this.score = 0;
     this.multiplier = 1;
     this.time = 0;
-    this.nextLifeAt = LIFE_SCORE_INTERVAL;
     this.player = null;
     this.players = [];      // v3.20.0: all live player ships (P1 + P2 in co-op)
     this.player2 = null;    // v3.20.0: the second cat ship (co-op / host)
@@ -481,7 +488,7 @@ export default class Game {
     this.score = 0;
     this.multiplier = 1;
     this.time = 0;
-    this.nextLifeAt = LIFE_SCORE_INTERVAL;
+    resetLifeTimer(); // v4.30.0: fresh extra-life timer per run
     this.enemies = [];
     this.bullets = [];
     this.powerups = [];
@@ -643,7 +650,7 @@ export default class Game {
       }
       runCollisions(this);
       this.cleanup();
-      this.checkScoreLives();
+      lifeDropTick(this, dt); // v4.30.0: extra-life timer (the only life source)
     }
     this.shake = Math.max(0, this.shake - dt * 20);
     this.hud.update(dt);
@@ -719,9 +726,6 @@ export default class Game {
   /** v3.11.0: destructible asteroid chain power-up (AsteroidBonus.js).
    *  v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
   destroyAsteroid(a) { destroyAsteroid(this, a); }
-
-  /** v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
-  checkScoreLives() { checkScoreLives(this); }
 
   /** v3.77.0 E6: logic lives in js/core/game/Gameplay.js. */
   cleanup() { cleanup(this); }

@@ -119,16 +119,15 @@ export default async function run() {
   }
   const plMod = await mod('js/core/audio/MusicPlaylists.js');
   check('MusicPlaylists: 4 context modes', Object.keys(plMod.MUSIC_MODES).length === 4, `got ${Object.keys(plMod.MUSIC_MODES).join(', ')}`);
-  check('MusicPlaylists: v4.26.0 the 14-track MIDI album (the v4.19.0 15-track album minus The Unforgiven — removed v4.26.0; 13 v4.17.0 tracks + Ozzy Osbourne — Crazy Train (intro riff) + Black Sabbath — Children Of The Grave; all procedural placeholder tracks removed)',
-    Object.keys(plMod.SONGS).length === 14, `got ${Object.keys(plMod.SONGS).length}`);
+  check('MusicPlaylists: v4.30.0 the 13-track MIDI album (the v4.26.0 14-track album minus When Johnny Comes Marching Home — removed v4.30.0; 13 v4.17.0 tracks + Ozzy Osbourne — Crazy Train (intro riff) + Black Sabbath — Children Of The Grave; all procedural placeholder tracks removed)',
+    Object.keys(plMod.SONGS).length === 13, `got ${Object.keys(plMod.SONGS).length}`);
   check('MusicPlaylists: 4 per-mode playlist queues', Object.keys(plMod.PLAYLISTS).length === 4);
   check('MusicPlaylists: every playlist entry resolves to a song',
     Object.values(plMod.PLAYLISTS).every((list) => list.every((id) => plMod.SONGS[id])));
   check('MusicPlaylists: v4.20.0 Children Of The Grave is the OPENING track (first in the open queue — the game starts on the Black Sabbath anthem)',
     plMod.PLAYLISTS.open[0] === 'black-sabbath-cotg', `got ${plMod.PLAYLISTS.open[0]}`);
-  check('MusicPlaylists: v4.17.0 crossover tracks ride two modes each (fur-elise open+boneyard, johnny-march open+combat, harvester boneyard+boss, cowboys combat+boss, classical-gas open+boneyard) + eiffel65-blue in the combat queue',
+  check('MusicPlaylists: v4.17.0 crossover tracks ride two modes each (fur-elise open+boneyard, harvester boneyard+boss, cowboys combat+boss, classical-gas open+boneyard) + eiffel65-blue in the combat queue (v4.30.0: johnny-march open+combat removed with the track)',
     plMod.PLAYLISTS.open.includes('fur-elise') && plMod.PLAYLISTS.boneyard.includes('fur-elise')
-    && plMod.PLAYLISTS.open.includes('johnny-march') && plMod.PLAYLISTS.combat.includes('johnny-march')
     && plMod.PLAYLISTS.boneyard.includes('metallica-harvester') && plMod.PLAYLISTS.boss.includes('metallica-harvester')
     && plMod.PLAYLISTS.combat.includes('pantera-cowboys') && plMod.PLAYLISTS.boss.includes('pantera-cowboys')
     && plMod.PLAYLISTS.open.includes('classical-gas') && plMod.PLAYLISTS.boneyard.includes('classical-gas')
@@ -142,7 +141,6 @@ export default async function run() {
     && plMod.SONGS['pantera-cowboys'].title === 'Cowboys From Hell' && plMod.SONGS['pantera-cowboys'].artist === 'Pantera'
     && plMod.SONGS['axel-f'].title === 'Axel F'
     && plMod.SONGS['fur-elise'].title === 'Für Elise' && plMod.SONGS['fur-elise'].artist === 'Beethoven'
-    && plMod.SONGS['johnny-march'].title === 'When Johnny Comes Marching Home'
     && plMod.SONGS['requiem-dream'].title === 'Requiem for a Dream'
     && plMod.SONGS['classical-gas'].title === 'Classical Gas' && plMod.SONGS['classical-gas'].artist === 'Mose Ziering'
     && plMod.SONGS['eiffel65-blue'].title === 'Blue (Da Ba Dee)' && plMod.SONGS['eiffel65-blue'].artist === 'Eiffel 65');
@@ -151,7 +149,6 @@ export default async function run() {
     && plMod.SONGS['requiem-dream'].bpm === 45 && plMod.SONGS['requiem-dream'].bars === 25
     && plMod.SONGS['axel-f'].bpm === 115 && plMod.SONGS['axel-f'].bars === 89
     && plMod.SONGS['fur-elise'].bpm === 135 && plMod.SONGS['fur-elise'].bars === 52
-    && plMod.SONGS['johnny-march'].bpm === 165 && plMod.SONGS['johnny-march'].bars === 137
     && plMod.SONGS['tool-forty-six'].bpm === 79 && plMod.SONGS['tool-forty-six'].bars === 124
     && plMod.SONGS['tool-no-quarter'].bpm === 110 && plMod.SONGS['tool-no-quarter'].bars === 15
     && plMod.SONGS['pantera-cowboys'].bpm === 230 && plMod.SONGS['pantera-cowboys'].bars === 45
@@ -187,9 +184,8 @@ export default async function run() {
     && plMod.SONGS['classical-gas'].events.drums.length === 0
     && plMod.SONGS['eiffel65-blue'].events.lead.length === 1141
     && plMod.SONGS['eiffel65-blue'].events.drums.length === 0);
-  check('v4.16.0 FIDELITY FIX: the main melody rides the LEAD slot (Requiem piano 1429 / Johnny trombone 481 / Harvester dist-gtr 395) + correct genre profiles (Axel F = piano perc 0.3, the v4.23.0 ragtime-piano arrangement; No Quarter + Für Elise = piano perc 0.3)',
+  check('v4.16.0 FIDELITY FIX: the main melody rides the LEAD slot (Requiem piano 1429 / Harvester dist-gtr 395) + correct genre profiles (Axel F = piano perc 0.3, the v4.23.0 ragtime-piano arrangement; No Quarter + Für Elise = piano perc 0.3)',
     plMod.SONGS['requiem-dream'].events.lead.length === 1429
-    && plMod.SONGS['johnny-march'].events.lead.length === 481
     && plMod.SONGS['metallica-harvester'].events.lead.length === 395
     && plMod.SONGS['axel-f'].vols.perc === 0.3
     && plMod.SONGS['tool-no-quarter'].vols.perc === 0.3
@@ -225,7 +221,7 @@ export default async function run() {
         && typeof m.gainArp === 'number' && typeof m.gainPad === 'number'
         && m.gainLead > 0 && m.gainBass > 0 && m.gainDrums > 0 && m.gainArp > 0 && m.gainPad > 0;
     }));
-  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their tuned mix (v4.23.0: Pneuma + Axel F piano gainLead 3; v4.26.0: Unforgiven removed; Johnny March gainLead 3 + gainDrums 0.2; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
+  check('v4.21.0 TRACK_MIX_SETTINGS: the Forty Six & 2 reference stays all-1.0 while the re-tuned tracks carry their tuned mix (v4.23.0: Pneuma + Axel F piano gainLead 3; v4.26.0: Unforgiven removed; v4.30.0: Johnny March removed; Crazy Train gainLead 4; CoTG gainLead 2.5 + gainDrums 0.8; Harvester gainBass 1)',
     plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainLead === 1 && plMod.TRACK_MIX_SETTINGS['tool-forty-six'].gainDrums === 1
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['axel-f'].gainArp === 1
@@ -233,8 +229,6 @@ export default async function run() {
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainLead === 3
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainDrums === 1
     && plMod.TRACK_MIX_SETTINGS['tool-pneuma'].gainArp === 1
-    && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainLead === 3
-    && plMod.TRACK_MIX_SETTINGS['johnny-march'].gainDrums === 0.2
     && plMod.TRACK_MIX_SETTINGS['ozzy-crazy-train'].gainLead === 4
     && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainLead === 2.5
     && plMod.TRACK_MIX_SETTINGS['black-sabbath-cotg'].gainDrums === 0.8

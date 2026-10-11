@@ -1,10 +1,18 @@
 // Filename: DropManager.js
-// Kitty Vs Everything — v3.83.0
+// Kitty Vs Everything — v4.30.0
 // Single home for every loot drop in the game: on-screen gating,
-// per-source chance + drop caps (DROP_POLICY in config/drops.js), and the
-// raw spawn primitive. Drop config (the POWERUP_DROPS pool, DROP_POLICY,
-// SHUTTLE_DROP) stays in js/core/config/drops.js — this module only decides
-// WHEN and WHERE a drop spawns.
+// per-source chance + drop caps (DROP_POLICY in config/drops.js), the
+// extra-life timer (LIFE_DROP_TIMER, v4.30.0), and the raw spawn
+// primitive. Drop config (the POWERUP_DROPS pool, DROP_POLICY,
+// SHUTTLE_DROP, LIFE_DROP_TIMER) stays in js/core/config/drops.js —
+// this module only decides WHEN and WHERE a drop spawns.
+//
+// v4.30.0: EXTRA-LIFE TIMER — the 'life' pill left the shared pool and
+// the score-bonus life was removed. Extra lives now come from ONE
+// place: lifeDropTick() — every LIFE_DROP_TIMER.interval seconds (game
+// time, active play only) it rolls LIFE_DROP_TIMER.chance to eject a
+// single 'life' pill from the top of the screen. No cap, very low
+// chance (~1 life per 5 minutes at 10%/30s).
 //
 // Normal sources (chance + cap, ON-SCREEN only — no off-screen clutter):
 //   mob      — regular enemy kills              (Combat.onEnemyDeath)
@@ -20,8 +28,8 @@
 // Event drops (wave clear, Internet bonus): a single pool roll at a fixed
 // off-screen spawn position — the player catches them as they fall, so
 // they are intentionally NOT gated by on-screen bounds.
-export const VERSION = 'v3.83.0';
-import { DROP_POLICY, rollPowerUpDrop } from './config.js';
+export const VERSION = 'v4.30.0';
+import { DROP_POLICY, rollPowerUpDrop, LIFE_DROP_TIMER } from './config.js';
 import { isOnScreen, rand } from './utils.js';
 import PowerUp from '../combat/PowerUp.js';
 
@@ -83,4 +91,34 @@ export function spawnEventDrop(game, x, y) {
  */
 export function spawnGuaranteedDrop(game, type, x, y) {
   return spawnDropAt(game, x, y, type);
+}
+
+// ─── v4.30.0: EXTRA-LIFE TIMER (the ONLY source of extra lives) ───
+// Module-level game-time accumulator: Game.update() calls lifeDropTick()
+// every frame while a run is active (paused games never tick), so the
+// timer naturally freezes on pause. Every LIFE_DROP_TIMER.interval
+// seconds it rolls LIFE_DROP_TIMER.chance once — on a hit it ejects a
+// single 'life' pill from the top of the screen (off-screen, falling —
+// the player catches it as it drops). At most ONE life per interval,
+// no cap on total lives.
+let lifeTimer = 0;
+
+/** Reset the extra-life timer (new run). */
+export function resetLifeTimer() {
+  lifeTimer = 0;
+}
+
+/**
+ * Tick the extra-life timer.
+ * @param {Game} game
+ * @param {number} dt seconds
+ * @returns {PowerUp|null} the spawned 'life' pill, or null
+ */
+export function lifeDropTick(game, dt) {
+  lifeTimer += dt;
+  if (lifeTimer < LIFE_DROP_TIMER.interval) return null;
+  lifeTimer -= LIFE_DROP_TIMER.interval;
+  if (Math.random() > LIFE_DROP_TIMER.chance) return null;
+  const x = rand(60, Math.max(61, game.view.viewW - 60));
+  return spawnDropAt(game, x, -40, 'life');
 }

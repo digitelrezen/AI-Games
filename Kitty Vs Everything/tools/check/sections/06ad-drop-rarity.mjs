@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════
 //  [6ad] v3.86.0 DROP POLICY + SHIPS EVERY LEVEL —
 //        (1) The shared POWERUP_DROPS pool is now coin-first:
-//            coin 0.75 / health 0.07 / shield 0.06 / frenzy 0.05 /
-//            mini 0.03 / crate 0.02 / life 0.01 / robot 0.01 (1%).
+//            coin 0.76 / health 0.07 / shield 0.06 / frenzy 0.05 /
+//            mini 0.03 / crate 0.02 / robot 0.01 (v4.30.0: the
+//            'life' pill left the pool — coin absorbed its 1%).
 //            The weights sum to exactly 1.00, and the guaranteed
 //            drops stay separate (SHUTTLE_DROP mini poster, ship
 //            flyby robot).
@@ -20,9 +21,16 @@
 //            in every 2–4s (spawnAsteroid, fully off-screen) and
 //            score crates fall every 12–20s while the wave is
 //            active; an inactive WaveManager spawns nothing.
+//        (5) v4.30.0: EXTRA-LIFE TIMER — LIFE_DROP_TIMER (30 s /
+//            10%) is the ONLY source of extra lives: Game.update
+//            ticks DropManager.lifeDropTick() every frame, which
+//            rolls once per interval and ejects a single 'life' pill
+//            from the top of the screen. The score-bonus life
+//            (checkScoreLives / LIFE_SCORE_INTERVAL) is GONE.
 //        Headless lifecycle: startNext() → ship egg alive + 2
 //            shuttles in the wave-1 queue; 30s of update() →
-//            5–15 ambient asteroids and 1–2 ambient crates.
+//            5–15 ambient asteroids and 1–2 ambient crates;
+//            lifeDropTick() spawns at most one 'life' per 30 s.
 // ═══════════════════════════════════════════════════════════
 
 import { ROOT, check, makeGame, mod } from '../infra.mjs';
@@ -40,17 +48,35 @@ export default async function run() {
   const cfgSrc = fs.readFileSync(path.join(ROOT, 'js/core/config.js'), 'utf8');
   const combatSrc = fs.readFileSync(path.join(ROOT, 'js/combat/Combat.js'), 'utf8');
   const waveSrc = fs.readFileSync(path.join(ROOT, 'js/core/WaveManager.js'), 'utf8');
+  const gameSrc = fs.readFileSync(path.join(ROOT, 'js/core/Game.js'), 'utf8');
 
   // ── (1) rarity ladder ──
-  const EXPECTED = { coin: 0.75, health: 0.07, shield: 0.06, frenzy: 0.05, mini: 0.03, crate: 0.02, life: 0.01, robot: 0.01 };
-  check('POWERUP_DROPS is the v3.86.0 coin-first pool',
+  const EXPECTED = { coin: 0.76, health: 0.07, shield: 0.06, frenzy: 0.05, mini: 0.03, crate: 0.02, robot: 0.01 };
+  check('POWERUP_DROPS is the v4.30.0 coin-first pool (life pill removed — coin absorbed its 1%)',
     JSON.stringify(Object.keys(POWERUP_DROPS)) === JSON.stringify(Object.keys(EXPECTED)) &&
     Object.entries(EXPECTED).every(([k, w]) => Math.abs(POWERUP_DROPS[k] - w) < 1e-9),
     `got ${JSON.stringify(POWERUP_DROPS)}`);
+  check('v4.30.0: the life pill is OUT of the shared pool (no kill can roll a life)', !('life' in POWERUP_DROPS), `got ${JSON.stringify(Object.keys(POWERUP_DROPS))}`);
   const total = Object.values(POWERUP_DROPS).reduce((a, b) => a + b, 0);
   check('POWERUP_DROPS weights sum to 1.00', Math.abs(total - 1) < 1e-9, `sum ${total}`);
   check('robot is super-rare at 0.01 (1%)', POWERUP_DROPS.robot === 0.01, `got ${POWERUP_DROPS.robot}`);
   check('SHUTTLE_DROP still guarantees the mini poster', SHUTTLE_DROP && SHUTTLE_DROP.type === 'mini', JSON.stringify(SHUTTLE_DROP));
+
+  // ── (5) v4.30.0 extra-life timer (the ONLY source of extra lives) ──
+  const { LIFE_DROP_TIMER } = await mod('js/core/config.js');
+  check('LIFE_DROP_TIMER = 30 s interval / 10% chance (very low, no cap)',
+    LIFE_DROP_TIMER && LIFE_DROP_TIMER.interval === 30 && Math.abs(LIFE_DROP_TIMER.chance - 0.10) < 1e-9,
+    JSON.stringify(LIFE_DROP_TIMER));
+  check('drops.js defines LIFE_DROP_TIMER', dropsSrc.includes('export const LIFE_DROP_TIMER'));
+  check('config.js re-exports LIFE_DROP_TIMER from config/drops.js',
+    cfgSrc.includes('LIFE_DROP_TIMER') && cfgSrc.includes("from './config/drops.js'"));
+  check('DropManager exports lifeDropTick + resetLifeTimer',
+    typeof DropManager.lifeDropTick === 'function' && typeof DropManager.resetLifeTimer === 'function');
+  check('Game.js ticks the extra-life timer in the update loop', gameSrc.includes('lifeDropTick(this, dt)'));
+  check('v4.30.0: the score-bonus life is GONE (no checkScoreLives, no LIFE_SCORE_INTERVAL, no nextLifeAt)',
+    !gameSrc.includes('checkScoreLives') && !gameSrc.includes('LIFE_SCORE_INTERVAL') && !gameSrc.includes('nextLifeAt')
+    && !fs.readFileSync(path.join(ROOT, 'js/core/game/Gameplay.js'), 'utf8').includes('checkScoreLives')
+    && !fs.readFileSync(path.join(ROOT, 'js/core/config/stages.js'), 'utf8').includes('LIFE_SCORE_INTERVAL'));
 
   // ── (2) DROP_POLICY per-source drop gate (v3.83.0 — DROP_RARITY is gone) ──
   check('DROP_POLICY.mob = 8% / max 1 (regular enemy kill)', DROP_POLICY.mob.chance === 0.08 && DROP_POLICY.mob.maxDrops === 1, JSON.stringify(DROP_POLICY.mob));
@@ -108,6 +134,24 @@ export default async function run() {
   const wm2 = new WaveManager(game2);
   for (let t = 0; t < 30; t += 0.25) wm2.update(0.25);
   check('ambient spawners are off when the wave is inactive', game2.powerups.length === 0, `got ${game2.powerups.length}`);
+
+  // ── v4.30.0 extra-life timer headless cadence ──
+  const lifeGame = makeGame();
+  lifeGame.powerups = [];
+  DropManager.resetLifeTimer();
+  // sub-interval ticks never roll: 29 s → zero life pills
+  for (let t = 0; t < 29; t += 0.25) DropManager.lifeDropTick(lifeGame, 0.25);
+  check('life timer: 29 s of ticks never rolls (no life pill)', lifeGame.powerups.length === 0, `got ${lifeGame.powerups.length}`);
+  // 120 s → at most one roll per 30 s window → at most 4 life pills
+  for (let t = 0; t < 120; t += 0.25) DropManager.lifeDropTick(lifeGame, 0.25);
+  const lifePills = lifeGame.powerups.filter((p) => p.type === 'life');
+  check('life timer: 120 s spawns at most 4 life pills (one roll per 30 s, 10% each)',
+    lifePills.length >= 0 && lifePills.length <= 4, `got ${lifePills.length}`);
+  if (lifePills.length > 0) {
+    check('life timer: the ejected pill is a falling "life" drop above the screen',
+      lifePills.every((p) => p.type === 'life' && p.y < 0), `got ${JSON.stringify(lifePills.map((p) => ({ type: p.type, y: p.y })))}`);
+  }
+  DropManager.resetLifeTimer();
 }
 
 }

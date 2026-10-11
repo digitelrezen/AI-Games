@@ -57,5 +57,3 @@ export const BONUS = {
   ],
   INTERNET_DURATION: 30,
 };
-
-export const LIFE_SCORE_INTERVAL = 30000;

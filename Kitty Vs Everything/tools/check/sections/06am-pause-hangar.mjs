@@ -76,7 +76,6 @@ export default async function run() {
       player2: { netId: 'p2' },
       score: 12500,
       multiplier: 4,
-      nextLifeAt: 90000,
       shake: 6,
       godMode: true,
       paused: true,

@@ -6,9 +6,6 @@
 // methods (Collisions / EnemyBase / bosses still call game.spawnEnemyBullet
 // & co. — the public surface is unchanged).
 
-import { LIFE_SCORE_INTERVAL } from '../config.js';
-import { bus } from '../EventBus.js';
-import { audio } from '../AudioSystem.js';
 import Bullet from '../../combat/Bullet.js';
 import { destroyAsteroid as breakAsteroid } from '../../levels/AsteroidBonus.js'; // v3.11.0
 
@@ -19,15 +16,6 @@ export function hitPlayer(game, dmg, player = game.player) {
 
 /** v3.11.0: destructible asteroid chain power-up (AsteroidBonus.js). */
 export function destroyAsteroid(game, a) { breakAsteroid(game, a); }
-
-export function checkScoreLives(game) {
-  if (game.score >= game.nextLifeAt) {
-    game.nextLifeAt += LIFE_SCORE_INTERVAL;
-    game.player.lives++;
-    bus.emit('banner', { text: 'SCORE BONUS: EXTRA LIFE!', tone: 'good', duration: 2 });
-    audio.powerup();
-  }
-}
 
 export function cleanup(game) {
   game.enemies = game.enemies.filter(e => e.alive);

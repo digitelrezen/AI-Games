@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 //  [6af] v3.86.0 GOLD COIN DROP —
 //        (1) config/drops.js: `coin` is the new COMMON drop at
-//            0.75 (75%) — the coin-first POWERUP_DROPS pool now
-//            leads with the coin (the 06ad section owns the full
-//            8-key ladder + sum-to-1.00; here we pin the coin
-//            entry at the source level and confirm it is the
-//            highest-weight drop in the pool).
+//            0.76 (76%, v4.30.0: absorbed the life pill's 1%) — the
+//            coin-first POWERUP_DROPS pool now leads with the coin
+//            (the 06ad section owns the full 7-key ladder + sum-to-1.00;
+//            here we pin the coin entry at the source level and confirm
+//            it is the highest-weight drop in the pool).
 //        (2) Game.js collectPowerUp: a new `case 'coin'` awards
 //            +500 score, plays audio.coin() (its own two-note
 //            arcade SFX, so the generic audio.powerup() below is
@@ -34,8 +34,8 @@ export default async function run() {
   const { POWERUP_DROPS } = await mod('js/core/config.js');
 
   // ── (1) coin is the new COMMON drop ──
-  check('drops.js source has `coin: 0.75` (COMMON)', /coin:\s*0\.75/.test(dropsSrc), 'no `coin: 0.75` in drops.js');
-  check('POWERUP_DROPS.coin === 0.75 (runtime)', Math.abs(POWERUP_DROPS.coin - 0.75) < 1e-9, `got ${POWERUP_DROPS.coin}`);
+  check('drops.js source has `coin: 0.76` (COMMON)', /coin:\s*0\.76/.test(dropsSrc), 'no `coin: 0.76` in drops.js');
+  check('POWERUP_DROPS.coin === 0.76 (runtime)', Math.abs(POWERUP_DROPS.coin - 0.76) < 1e-9, `got ${POWERUP_DROPS.coin}`);
   check('coin is the highest-weight drop in the pool (coin-first)',
     Object.entries(POWERUP_DROPS).every(([k, w]) => w <= POWERUP_DROPS.coin + 1e-9),
     JSON.stringify(POWERUP_DROPS));
