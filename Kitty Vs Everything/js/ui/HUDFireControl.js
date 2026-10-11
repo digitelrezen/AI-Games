@@ -46,7 +46,14 @@
 //          SUPER (F — the old T-keyed NOVA slot, now keyed to the 'ultimate'
 //          action with a live cooldown timer) / ORBIT (T — the undock/redock
 //          toggle state, DOCKED <-> ORBITING, from player.fleetOrbiting).
-export const VERSION = 'v4.2.0';
+// v4.27.0: EXPANDED MINIMIZED BAR — the M-key collapsed strip (#fc-mini-bar)
+//          now carries more combat readouts besides HULL + SHIELD: the FRENZY
+//          countdown chip (#fc-mini-frenzy — mirrors #frenzy-indicator, gold
+//          pulse, hidden unless player.frenzyTime > 0), the weapon name +
+//          READY/HOT/LOCKED status (#fc-mini-weapon / #fc-mini-weapon-status),
+//          the SUPER (ultimate) charge/cooldown state (#fc-mini-super), and
+//          the fleet count + orbit state (#fc-mini-fleet).
+export const VERSION = 'v4.27.0';
 import { WEAPONS, PLAYER, MINI_SHIP, SAR } from '../core/config.js';
 import { getBinds, codeLabel } from '../input/Keybinds.js';
 import { bus } from '../core/EventBus.js';
@@ -74,6 +81,10 @@ export default class HUDFireControl {
       // v3.21.0: minimized bar (M key) — compact hull/shield strip
       miniHpFill: byId('fc-mini-hp-fill'), miniHpText: byId('fc-mini-hp-text'),
       miniShieldFill: byId('fc-mini-shield-fill'), miniShieldText: byId('fc-mini-shield-text'),
+      // v4.27.0: expanded minimized bar — frenzy countdown + weapon / super / fleet
+      miniFrenzy: byId('fc-mini-frenzy'),
+      miniWeapon: byId('fc-mini-weapon'), miniWeaponStatus: byId('fc-mini-weapon-status'),
+      miniSuper: byId('fc-mini-super'), miniFleet: byId('fc-mini-fleet'),
     };
     // Re-sync slot key labels whenever keybinds change.
     bus.on('keybindsChanged', () => { this._keysDirty = true; });
@@ -171,6 +182,12 @@ export default class HUDFireControl {
       e.thermal.className = p.thermalLockout > 0 ? 'thermal-lockout' : (heatPct > 0.7 ? 'thermal-warn' : 'thermal-ok');
       e.thermal.textContent = p.thermalLockout > 0 ? '🔥 LOCK' : 'T:' + Math.round(heatPct * 100);
     }
+    // ─── v4.27.0: MINIMIZED BAR — weapon name + status (mirrors the panel) ───
+    if (e.miniWeapon && e.miniWeaponStatus) {
+      e.miniWeapon.textContent = w.name;
+      e.miniWeaponStatus.textContent = e.weaponStatus.textContent;
+      e.miniWeaponStatus.className = e.weaponStatus.className;
+    }
 
     // ─── v3.33.0: FRENZY INDICATOR (30s all-cooldowns-off, no overheat) ───
     // Shown while player.frenzyTime > 0; the weapon status above naturally
@@ -182,6 +199,15 @@ export default class HUDFireControl {
         e.frenzy.classList.remove('hidden');
       } else {
         e.frenzy.classList.add('hidden');
+      }
+    }
+    // ─── v4.27.0: the minimized bar carries the same FRENZY countdown chip ───
+    if (e.miniFrenzy) {
+      if (p.frenzyTime > 0) {
+        e.miniFrenzy.textContent = '⚡ FRENZY ' + Math.ceil(p.frenzyTime) + 's';
+        e.miniFrenzy.classList.remove('hidden');
+      } else {
+        e.miniFrenzy.classList.add('hidden');
       }
     }
 
@@ -208,6 +234,11 @@ export default class HUDFireControl {
       if (bar) {
         const pct = onCooldown ? (1 - p.ultimateCooldown / maxCd) * 100 : charge * 100;
         bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      }
+      // ─── v4.27.0: the minimized bar mirrors the SUPER state (text only) ───
+      if (e.miniSuper) {
+        e.miniSuper.textContent = onCooldown ? p.ultimateCooldown.toFixed(1) + 's' : (ready ? 'READY' : 'CHARGING');
+        e.miniSuper.className = 'fc-readout ' + (onCooldown ? 'cooldown' : ready ? 'ready' : 'charging');
       }
     }
     // ─── v4.2.0: ORBIT slot (T) — the undock/redock toggle state.
@@ -237,6 +268,11 @@ export default class HUDFireControl {
       const deployed = p.fleetDeployed && p.minis.length > 0;
       e.fleetDeploy.textContent = deployed ? 'DEPLOYED' : 'DOCKED';
       e.fleetDeploy.className = 'fc-fleet-deploy ' + (deployed ? 'deployed' : 'docked');
+    }
+    // ─── v4.27.0: the minimized bar mirrors the fleet count + orbit state ───
+    if (e.miniFleet) {
+      const orbiting = !!p.fleetOrbiting;
+      e.miniFleet.textContent = p.minis.length + '/' + MINI_SHIP.maxDocked + (orbiting ? ' ORBIT' : ' DOCKED');
     }
     const minis = e.fleetRow.querySelectorAll('.fleet-mini');
     minis.forEach((el, i) => {

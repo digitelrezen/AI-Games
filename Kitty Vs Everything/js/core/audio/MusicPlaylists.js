@@ -1,5 +1,5 @@
 // Filename: core/audio/MusicPlaylists.js
-// Kitty Vs Everything — v4.26.0
+// Kitty Vs Everything — v4.27.0
 // v4.26.0: TRACK REMOVAL — The Unforgiven (Metallica) is gone from the
 //          album: its SONGS data, its TRACK_MIX_SETTINGS entry, and its
 //          combat-queue slot are all removed (15 → 14 tracks). The combat

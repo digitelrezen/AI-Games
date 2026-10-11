@@ -1106,6 +1106,14 @@ body {
 #fc-dashboard.minimized #fc-mini-bar { display: flex; align-items: center; gap: 10px; }
 .fc-mini-meter { width: 140px; }
 .fc-mini-hint { font-size: 9px; letter-spacing: 1px; color: #ffd54f; margin-left: 8px; }
+/* v4.27.0: expanded minimized bar — thin gold separators between the new
+   readout groups (WPN / SUPER / FLEET). The FRENZY chip reuses the weapon
+   panel's .frenzy-indicator gold pulse; the SUPER readout gets the same
+   state colors as the weapon status. */
+.fc-mini-sep { width: 1px; height: 14px; background: rgba(255, 213, 79, 0.35); }
+#fc-mini-super.ready { color: #7ee2a8; }
+#fc-mini-super.charging { color: #ffd54f; }
+#fc-mini-super.cooldown { color: #ff7a6b; }
 
 /* ─── v3.23.0: DYNAMIC KEYBIND FOOTER (MenuKeybinds.js) ───
    #menu-keybinds replaces the old hardcoded .controls-help lines:
