@@ -6,6 +6,11 @@
 // "Kitty Vs Everything <version>.html" file in the external Builds folder
 // (C:\Dev\AI-GAMES\Builds) — no server needed.
 //
+// It ALSO syncs a copy to the repo root as index.html
+// (C:\Dev\AI-GAMES\index.html) — the git root is the GitHub Pages site root,
+// so that copy is the site's front page. Every build re-syncs it, so the
+// deployed copy never goes stale.
+//
 // Usage:
 //   node build.mjs            → Builds\Kitty Vs Everything <ver>.html (readable)
 //   node build.mjs --minify   → same, but minified (smaller file)
@@ -20,6 +25,9 @@
 //      "Kitty Vs Everything <version>.html" — <version> is read from
 //      package.json. The folder is created automatically if missing, so
 //      the (large) standalone files never live in the project workspace.
+//   5. The same bytes are written to the repo root as index.html
+//      (GitHub Pages deploy copy — relative-path-clean by construction:
+//      the bundle is fully self-contained, no external asset refs).
 
 import { build } from 'esbuild';
 import { readFileSync, writeFileSync, statSync, mkdirSync } from 'node:fs';
@@ -81,8 +89,17 @@ html = html.replace(
 // ── 4) Write the standalone file (external Builds folder) ──────────────────
 writeFileSync(OUT, html);
 
+// ── 5) Deploy copy → repo-root index.html (GitHub Pages) ───────────────────
+// The git root (C:\Dev\AI-GAMES) is the GitHub Pages site root. Writing the
+// identical bundle there as index.html makes the game the site's front page;
+// every build re-syncs it. The bundle is fully self-contained (inline
+// <style> + <script>, base64 assets), so it needs no relative-path fixes.
+const DEPLOY = path.resolve(ROOT, '..', 'index.html');
+writeFileSync(DEPLOY, html);
+
 const kb = (bytes) => (bytes / 1024).toFixed(1) + ' KB';
 console.log(`✔ Built ${OUT}`);
+console.log(`✔ Deployed ${DEPLOY} (GitHub Pages root)`);
 console.log(`  JS bundle : ${kb(Buffer.byteLength(js))}${minify ? ' (minified)' : ' (readable)'}`);
 console.log(`  CSS       : ${kb(Buffer.byteLength(css))}`);
 console.log(`  Total     : ${kb(statSync(OUT).size)}`);
