@@ -77,7 +77,7 @@ const tests = [
   ['v4.2.0: embedded radar scope canvas in the bundle', s.includes('fc-radar') && s.includes('_renderEmbedded') && s.includes('_fcPanelVisible')],
   // ── v3.48.0 procedural aim reticle (Crosshair.js) ──
   ['v3.48.0: Crosshair reticle module (circles + dot + ticks)', /Crosshair\s*=\s*class/.test(s) && /R_OUTER\s*=\s*16/.test(s) && /DOT_R\s*=\s*2\.6/.test(s)],
-  ['v3.55.0: crosshair defaults (on + 140px offset, 140–340 limits)', /crosshair:\s*true/.test(s) && /crosshairOffset:\s*\{\s*min:\s*140,\s*max:\s*340,\s*def:\s*140/.test(s)],
+  ['v4.31.0: crosshair defaults (off + 140px offset, 140–340 limits)', /crosshair:\s*false/.test(s) && /crosshairOffset:\s*\{\s*min:\s*140,\s*max:\s*340,\s*def:\s*140/.test(s)],
   ['v3.55.0: dev slider range 140–340 (index.html attributes)', /id=["']dev-crosshair-offset["']\s+min=["']140["']\s+max=["']340["']/.test(s)],
   ['v3.55.0: reticle offset clamped in Crosshair.draw (LIMITS)', /Math\.max\(\w+\.min,\s*Math\.min\(\w+\.max,\s*SETTINGS\.crosshairOffset\)\)/.test(s)],
   ['v3.48.0: reticle drawn in Game render', s.includes('this.crosshair.draw(ctx)')],

@@ -1,7 +1,14 @@
 // Filename: config.js
-// Kitty Vs Everything — v4.30.1
+// Kitty Vs Everything — v4.31.0
 // Central configuration: versioning, balance, enemy roster, tiers, weapons, themes,
 // and PLAYER flight physics constants.
+// v4.31.0: BASELINE SETTINGS — the SFX/music volume sliders are now
+//          multipliers around the mix baseline (SFX 40% / music 60% of
+//          full scale, master 100%): Settings.js defaults both sliders to
+//          50% and AudioCore.setVolumes maps slider 50% → the baseline
+//          gains (SFX_BASELINE 0.40 / MUSIC_BASELINE 0.60; 100% = 2×,
+//          0% = silence). Crosshair starts OFF; screen bounds start
+//          LOCKED (bounce walls). No balance changes.
 // v4.30.1: SPIDER HOURGLASS REMOVAL — SpiderEnemy.js v1.3.0 drops the red
 //          hourglass dorsal mark (sprite pass + procedural fallback): it
 //          sat too far left on the abdomen and read as a "B". Also: the
@@ -411,7 +418,7 @@
 //          rebuilt vulkanShot() dual-layer mechanical snap). Milestone
 //          version synced across package.json, config.js, main.js,
 //          Game.js, HUD.js and index.html.
-export const VERSION = 'v4.30.1';
+export const VERSION = 'v4.31.0';
 export { TAU, GAME } from './config/viewport.js';
 export { PLAYER, PLAYER2, MAIN_SHIP_SCALE, MINI_SCALE, SHIP_GEOMETRY, MINI_SHIP, PLAYER_THEMES, PLAYER_THEME_SPRITES } from './config/player.js';
 export { WEAPONS, WEAPON_ORDER, ROCKETS, FIRE_ZONE } from './config/weapons.js';

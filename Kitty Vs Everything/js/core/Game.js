@@ -1,5 +1,13 @@
 // Filename: Game.js
 // Kitty Vs Everything — v3.76.0
+// v4.31.0: BASELINE SETTINGS — the SFX/music volume sliders are now
+//          multipliers around the mix baseline (SFX 40% / music 60%;
+//          master 100%): Settings.js defaults both sliders to 50% and
+//          AudioCore.setVolumes maps slider 50% → the baseline gains
+//          (SFX_BASELINE 0.40 / MUSIC_BASELINE 0.60). Crosshair starts
+//          OFF; screen bounds start LOCKED (bounce walls). The startup
+//          audio.setVolumes() call is unchanged — the mapping lives in
+//          AudioCore.
 // v4.22.0: CONTROLLER SUPPORT — the InputManager's gamepad layer
 //         (js/input/Gamepad.js, Gamepad API, Xbox standard mapping) is
 //         polled once per frame in loop() before the sim reads input; the
@@ -310,7 +318,7 @@
 //          primary-weapon master bus WEAPON_BUS_GAIN 0.65 in
 //          SoundEffects.js and the rebuilt vulkanShot() dual-layer
 //          mechanical snap). Milestone version synced with package.json.
-export const VERSION = 'v4.30.1';
+export const VERSION = 'v4.31.0';
 import { PLAYER } from './config.js';
 import ViewScaler from './ViewScaler.js'; // v3.12.0: display scaling + fullscreen (U)
 import { loadAssets } from './AssetManager.js'; // v3.33.0: shared PNG pipeline (power-up art)

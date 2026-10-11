@@ -6,6 +6,13 @@
 //          compressor — the final anti-clipping ceiling for the v4.11.0
 //          weapon SFX suite. Music is untouched (musicBus feeds masterGain
 //          directly).
+// v4.31.0: BASELINE-NORMALIZED SFX/MUSIC SLIDERS — the Settings sliders
+//          are multipliers around the mix baseline: slider 50% (0.5) =
+//          1.0× baseline → actual bus gain SFX 0.40 / music 0.60
+//          (SFX_BASELINE / MUSIC_BASELINE); slider 100% = 2× baseline
+//          (0.80 / 1.20); slider 0% = silence. Master is untouched
+//          (100% = 1.0). setVolumes() is the single place the slider→gain
+//          mapping is applied.
 // v4.9.0: POLYPHONIC SYNTH OVERHAUL — unchanged surface: the context +
 //          master chain + buses + volumes + mute stay the single source of
 //          truth for every voice; the v4.9.0 SynthVoice.js engine and the
@@ -21,20 +28,29 @@
 //          global mute state — every voice in the game routes through this
 //          graph, so volume + mute are enforced in exactly one place
 //          (single source of truth).
-export const VERSION = 'v4.11.0';
+export const VERSION = 'v4.31.0';
 
 import { softClipCurve } from './SynthVoice.js';
 
 const clamp01 = (v) => Math.max(0, Math.min(1, +v || 0));
 
+// ─── v4.31.0: mix baseline (the gain each bus gets at slider 50%) ───
+// Settings.js defaults both sliders to SLIDER_BASE (0.5) so a fresh
+// profile reads 50/50 and hears the baseline mix: SFX 40%, music 60% of
+// full scale (master 100%). Slider 100% = 2× baseline, 0% = silence.
+export const SFX_BASELINE = 0.40;
+export const MUSIC_BASELINE = 0.60;
+export const SLIDER_BASE = 0.5;
+
 export class AudioCore {
   constructor() {
     this.ctx = null;          // AudioContext (created lazily on first use)
     this.enabled = true;      // false when no AudioContext is available (headless)
-    // ─── volume layer (Settings.js sliders → 0..1) ───
+    // ─── volume layer (Settings.js sliders → actual bus gains) ───
     this.master = 1;
-    this.sfx = 1;
-    this.music = 1;
+    // v4.31.0: pre-setVolumes defaults = the baseline gains (slider 50%)
+    this.sfx = SFX_BASELINE;
+    this.music = MUSIC_BASELINE;
     this.muted = false;       // global mute (master gain → 0)
     // ─── master output chain (built together with the context) ───
     this.masterGain = null;   // master volume → compressor → destination
@@ -86,11 +102,16 @@ export class AudioCore {
     this._applyVolumes();
   }
 
-  /** v3.14.0 API: apply the three Settings.js volumes (0..1 each). */
+  /**
+   * v3.14.0 API: apply the three Settings.js volumes. Master is a direct
+   * 0..1 gain; SFX/music are v4.31.0 baseline multipliers — slider 0..1
+   * maps to actual gain = baseline × (slider / 0.5), so slider 50% is
+   * the mix baseline (SFX 0.40 / music 0.60) and slider 100% is 2× it.
+   */
   setVolumes(master, sfx, music) {
     this.master = clamp01(master);
-    this.sfx = clamp01(sfx);
-    this.music = clamp01(music);
+    this.sfx = SFX_BASELINE * (clamp01(sfx) / SLIDER_BASE);
+    this.music = MUSIC_BASELINE * (clamp01(music) / SLIDER_BASE);
     this._applyVolumes();
   }
 

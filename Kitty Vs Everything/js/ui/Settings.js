@@ -20,7 +20,14 @@
 // crosshairStyle (enum, 'classic' default) + crosshairLength / crosshairSize
 // sliders (0.5–2×); and gamepad (boolean, default ON) — Gamepad API
 // controller support (js/input/Gamepad.js, Xbox standard mapping).
-export const VERSION = 'v4.22.0';
+// v4.31.0: BASELINE SETTINGS — the SFX / music volume sliders are now
+// multipliers around the mix baseline (SFX 40% / music 60% of full scale;
+// master stays 100%): both sliders default to 0.5 so they read 50%, and
+// AudioCore.setVolumes maps slider 50% → the baseline gains (SFX_BASELINE
+// 0.40 / MUSIC_BASELINE 0.60; slider 100% = 2× baseline, 0% = silence).
+// The crosshair starts OFF (opt-in in Settings → FX) and screen bounds
+// start LOCKED (bounce walls, not classic wrap).
+export const VERSION = 'v4.31.0';
 
 const STORAGE_KEY = 'kve-settings-v1';
 
@@ -29,8 +36,8 @@ export const LIMITS = {
   spinSpeedKeyboard: { min: 0.25, max: 3, def: 1 },
   spinSpeedMouse:    { min: 0.1,  max: 3, def: 1 },
   audioMaster:       { min: 0,    max: 1, def: 1 },
-  audioSfx:          { min: 0,    max: 1, def: 0.8 },
-  audioMusic:        { min: 0,    max: 1, def: 0.4 },
+  audioSfx:          { min: 0,    max: 1, def: 0.5 },  // v4.31.0: × around the 40% SFX baseline (50% = baseline, 100% = 80%)
+  audioMusic:        { min: 0,    max: 1, def: 0.5 },  // v4.31.0: × around the 60% music baseline (50% = baseline, 100% = 120%)
   particleDensity:   { min: 0,    max: 2, def: 1 },
   crosshairOffset:   { min: 140,  max: 340, def: 140 }, // v3.48.0: reticle forward offset (logical px) · v3.55.0: range 140–340
   crosshairLength:   { min: 0.5,  max: 2,   def: 1 },   // v4.22.0: reticle tick length (×, 50–200%)
@@ -38,8 +45,8 @@ export const LIMITS = {
 };
 const BOOLEANS = {
   screenShake: true,    // default ON (classic feel) — dev toggle in the settings panel
-  screenBounds: false,  // v3.11.0 dev toggle: bounce walls vs classic wrap
-  crosshair: true,      // v3.48.0: procedural aim reticle (Settings → FX, default ON)
+  screenBounds: true,   // v4.31.0: default LOCKED (bounce walls) — was classic wrap
+  crosshair: false,     // v4.31.0: procedural aim reticle (Settings → FX, default OFF)
   gamepad: true,        // v4.22.0: controller support (Gamepad API, Xbox standard mapping)
 };
 
@@ -99,8 +106,8 @@ export const SETTINGS = {
   crosshairLength:   num(saved.crosshairLength,   LIMITS.crosshairLength),   // v4.22.0
   crosshairSize:     num(saved.crosshairSize,     LIMITS.crosshairSize),     // v4.22.0
   screenShake:       saved.screenShake !== false,
-  screenBounds:      saved.screenBounds === true,
-  crosshair:         saved.crosshair !== false,
+  screenBounds:      saved.screenBounds !== false,  // v4.31.0: default ON (locked); explicit saved wrap still honored
+  crosshair:         saved.crosshair === true,      // v4.31.0: default OFF; explicit saved ON still honored
   gamepad:           saved.gamepad !== false,   // v4.22.0: controller support (default ON)
   // v3.78.0: A/D control mode — 'strafe' (default) or 'spin' (classic rotation)
   controlMode:       ENUMS.controlMode.values.includes(saved.controlMode) ? saved.controlMode : ENUMS.controlMode.def,

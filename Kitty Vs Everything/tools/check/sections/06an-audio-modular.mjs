@@ -107,7 +107,7 @@ export default async function run() {
 
   // ─── Module surface ───
   const coreMod = await mod('js/core/audio/AudioCore.js');
-  check('AudioCore exports the class + VERSION v4.11.0', typeof coreMod.AudioCore === 'function' && coreMod.VERSION === 'v4.11.0');
+  check('AudioCore exports the class + VERSION v4.31.0', typeof coreMod.AudioCore === 'function' && coreMod.VERSION === 'v4.31.0');
   const core = new coreMod.AudioCore();
   check('AudioCore: ensure() is headless-safe (no AudioContext → null, enabled=false)',
     core.ensure() === null && core.enabled === false);
@@ -292,9 +292,10 @@ export default async function run() {
   check('headless: restart after resetAudioEngine() is clean (no crash, playing=true)', a.musicPlaying === true);
   a.stopMusic();
   a.setVolumes(0.5, 0.5, 0.5);
-  check('headless: setVolumes() clamps + stores on the core', a.core.master === 0.5 && a.core.sfx === 0.5 && a.core.music === 0.5);
+  check('headless: setVolumes() slider 50% = mix baseline (v4.31.0: master 0.5, SFX 0.40, music 0.60)', a.core.master === 0.5 && a.core.sfx === 0.4 && a.core.music === 0.6);
   a.setMuted(true);
   check('headless: setMuted() flips the global mute state', a.muted === true);
   a.setMuted(false);
   a.setVolumes(1, 1, 1);
+  check('headless: setVolumes() slider 100% = 2× baseline (v4.31.0: SFX 0.80, music 1.20)', a.core.sfx === 0.8 && a.core.music === 1.2);
 }
