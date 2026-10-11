@@ -237,7 +237,12 @@ export class AdBannerManager {
       el.classList.add('ad-wiggle');
     });
 
-    if (!this.enabled) el.classList.add('hidden');
+    // v4.29.1 fix: the banner is ALWAYS built hidden — it only ever
+    // appears via _popup() (30–60 s in), which renders the ad FIRST.
+    // (The old `if (!this.enabled)` guard left an EMPTY window on
+    // screen at boot when ads were enabled — visible but blank, and
+    // minimize() refused to act because _visible was never set.)
+    el.classList.add('hidden');
   }
 
   /** v4.29.1: the minimized chip — a small "AD · MOM" button docked into
@@ -297,7 +302,13 @@ export class AdBannerManager {
    *  the "AD · MOM" chip into the fire-control mini-bar. The next pop-up
    *  is scheduled 30–60 s out. */
   minimize() {
-    if (!this._visible) return;
+    // The banner must actually be on screen (defensive: the _visible
+    // flag can lag if the DOM was shown out-of-band).
+    if (!this._root || this._root.classList.contains('hidden')) return;
+    if (!this._visible) {
+      this._visible = true;
+      this._clearVisibleTimer();
+    }
     this._retract();
     this._setDocked(true);
   }

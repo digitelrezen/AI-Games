@@ -48,6 +48,10 @@ export default async function run() {
   check('banner STARTS HIDDEN + undocked (no pop-up on boot)',
     m.visible === false && m.docked === false,
     `visible=${m.visible} docked=${m.docked}`);
+  const src = fs.readFileSync(path.join(ROOT, 'js/core/ui/AdBannerManager.js'), 'utf8');
+  check('_build() ALWAYS adds the hidden class (no blank window at boot)',
+    /el\.classList\.add\('hidden'\);/.test(src)
+      && !/if \(!this\.enabled\) el\.classList\.add\('hidden'\)/.test(src));
   m.setEnabled(false);
   check('setEnabled(false) disables + hides + undocks + persists kitty_enable_ads=false',
     m.enabled === false && m.visible === false && m.docked === false
