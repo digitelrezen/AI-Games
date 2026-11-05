@@ -1,0 +1,80 @@
+# =============================================================================
+# Hermes — multi-backend OpenAI-compatible AI routing gateway
+# =============================================================================
+# This file is the human-editable source of truth. Environment variables
+# (HERMES_*, see .env) always OVERRIDE the values below.
+#
+# Routing strategies:
+#   weighted     -> weighted round-robin (default; uses each backend's weight)
+#   round-robin  -> plain round-robin
+#   health       -> least-loaded (fewest in-flight requests, then lowest latency)
+# =============================================================================
+
+server:
+  host: 0.0.0.0
+  port: 3000
+
+routing:
+  # weighted | round-robin | health
+  strategy: weighted
+
+  health:
+    enabled: true
+    interval_sec: 15      # how often to probe each backend
+    timeout_sec: 5        # per-probe timeout (seconds)
+    path: /v1/models      # liveness + model-discovery endpoint
+
+  fallback:
+    enabled: true         # try the next healthy backend when one fails
+    max_retries: 2        # additional backends to try after the first pick
+
+log_level: info
+
+# --- Default generation parameters + VRAM lifecycle (Hermes v1.2) ----------
+defaults:
+  # Reasoning models (qwen3, deepseek, r1, qwq, ...) silently truncate their
+  # internal "thinking" when max_tokens is small. If a request omits
+  # max_tokens (or max_completion_tokens), Hermes injects this default so
+  # reasoning models actually finish their answer. Floor: 512.
+  # Explicit client-supplied max_tokens always wins, untouched.
+  max_tokens_reasoning: 512
+  # Case-insensitive word-boundary name patterns treated as reasoning models
+  # (word-boundary match, so "r1" never matches "llama-3.1").
+  reasoning_patterns: [qwen3, qwen-3, qwq, deepseek, r1, o1, o3, thinking, reasoning]
+
+vram:
+  # Poll Ollama backends (tagged "ollama") at /api/ps alongside the health
+  # checks to track which model weights are resident in VRAM.
+  poll: true
+  # Optional HARD flush hook, run (in a background thread) whenever Hermes
+  # detects a model switch on a backend and from POST /admin/flush.
+  # Ollama 0.40.x has NO REST unload endpoint — idle weights are released by
+  # the server-side OLLAMA_KEEP_ALIVE (set on the backend host). Use this
+  # hook only if you also need a hard flush (e.g. restart the ollama
+  # container). Empty = hook disabled (keep_alive-only mode, recommended).
+  flush_command: ""
+
+# -----------------------------------------------------------------------------
+# Backends
+#   name        : identifier (also usable to pin via the X-Hermes-Backend header)
+#   url         : base URL of the OpenAI-compatible inference server
+#   weight      : relative load-balancing weight (higher = more traffic)
+#   enabled     : true / false
+#   tags        : free-form labels (informational)
+#   health_path : optional per-backend override of the probe endpoint
+# -----------------------------------------------------------------------------
+backends:
+  - name: nvidia
+    # Ollama on the NVIDIA box (serves qwen2.5:14b). Port 80 is NOT an
+    # inference endpoint on this machine - :11434 is the OpenAI-compatible
+    # API (verified 2026-07-06).
+    url: http://192.168.1.16:11434
+    weight: 3
+    enabled: true
+    tags: [gpu, cuda, ollama]
+
+  - name: intel-arc
+    url: http://192.168.1.121:8080
+    weight: 2
+    enabled: true
+    tags: [gpu, sycl]

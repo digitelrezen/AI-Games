@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Gateway - Monitor</title>
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #121a23; --panel2: #0e151d; --line: #1f2c3a;
+    --text: #d7e1ea; --dim: #7d8fa1; --green: #2fbf71; --red: #e5534b;
+    --amber: #d9a441; --blue: #4aa3ff; --a: #ff8a3d; --b: #38c6d9;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+           justify-content: space-between; padding: 14px 20px;
+           background: var(--panel); border-bottom: 1px solid var(--line);
+           position: sticky; top: 0; z-index: 5; }
+  h1 { font-size: 17px; margin: 0; letter-spacing: .4px; }
+  h1 small { color: var(--dim); font-weight: 400; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .controls label { color: var(--dim); font-size: 12px; display: flex;
+                    gap: 6px; align-items: center; }
+  input { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+          border-radius: 6px; padding: 5px 8px; font: inherit; }
+  #endpoint { width: 250px; }
+  button { background: #16324c; color: var(--text); border: 1px solid #23527c;
+           border-radius: 6px; padding: 5px 12px; cursor: pointer; font: inherit; }
+  button:hover { background: #1b3d5e; }
+  .pill { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+          border: 1px solid var(--line); color: var(--dim); }
+  .pill.ok { color: var(--green); border-color: var(--green); }
+  .pill.bad { color: var(--red); border-color: var(--red); }
+  main { padding: 18px 20px 30px; max-width: 1100px; margin: 0 auto;
+         display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+          padding: 14px 16px; }
+  .card h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase;
+             letter-spacing: 1.2px; color: var(--dim); }
+  .statrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+             gap: 10px; }
+  .stat { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
+          padding: 8px 10px; }
+  .stat .k { color: var(--dim); font-size: 11px; text-transform: uppercase;
+             letter-spacing: .8px; }
+  .stat .v { font-size: 20px; font-weight: 600; margin-top: 2px; }
+  .stat.bad .v { color: var(--red); }
+  .bar-row { display: grid; grid-template-columns: 210px 1fr; gap: 10px;
+             align-items: center; margin: 8px 0; }
+  .bar-label { font-size: 13px; white-space: nowrap; }
+  .bar-track { position: relative; height: 26px; background: var(--panel2);
+               border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .bar-fill { position: absolute; top: 0; bottom: 0; left: 0; width: 0%;
+              transition: width .5s ease; }
+  #node-a-bar { background: linear-gradient(90deg, #b45a1f, var(--a)); }
+  #node-b-bar { background: linear-gradient(90deg, #1f7d8c, var(--b)); }
+  .bar-fill.down { background: repeating-linear-gradient(45deg, #5a2723, #5a2723 8px,
+                   #6e302a 8px, #6e302a 16px) !important; }
+  .bar-pct { position: absolute; top: 0; bottom: 0; right: 0; left: 0;
+             display: flex; align-items: center; padding-left: 10px;
+             font-size: 12px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6);
+             white-space: nowrap; }
+  .backend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+                  gap: 12px; }
+  .be { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
+        padding: 12px; }
+  .be .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+             flex-wrap: wrap; }
+  .be .name { font-weight: 600; font-size: 15px; }
+  .be .url { color: var(--dim); font-size: 12px; word-break: break-all; }
+  .be .kv { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+  .be .kv .stat { padding: 5px 8px; }
+  .be .kv .stat .v { font-size: 14px; }
+  .be .err { margin-top: 8px; color: var(--red); font-size: 12px; word-break: break-word; }
+  .be .models { margin-top: 8px; color: var(--dim); font-size: 12px; }
+  .be .models code { color: var(--blue); background: var(--panel); padding: 1px 5px;
+                     border-radius: 4px; margin-right: 4px; word-break: break-all; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+         background: var(--dim); }
+  .dot.up { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.down { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-size: 11px; text-transform: uppercase; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th.num { text-align: right; }
+  footer { color: var(--dim); font-size: 12px; text-align: center; padding: 4px 0 30px; }
+  footer code { color: var(--blue); }
+  #split-note { color: var(--dim); font-size: 12px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>HERMES <small>AI routing gateway &middot; live monitor</small></h1>
+  <div class="controls">
+    <label>Endpoint <input id="endpoint" value="http://192.168.1.120:3000" spellcheck="false"></label>
+    <label>Poll (s) <input id="interval" type="number" min="1" max="60" value="3" style="width:56px"></label>
+    <button id="refresh">Refresh</button>
+    <span id="conn" class="pill">connecting&hellip;</span>
+  </div>
+</header>
+<main>
+  <section class="card">
+    <h2>Traffic split (live, from GET /metrics)</h2>
+    <div class="bar-row">
+      <span class="bar-label"><span class="dot" id="node-a-dot"></span>Node A &mdash; <b>nvidia</b></span>
+      <div class="bar-track"><div class="bar-fill" id="node-a-bar"></div><span class="bar-pct" id="node-a-pct">&ndash;</span></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label"><span class="dot" id="node-b-dot"></span>Node B &mdash; <b>intel-arc</b></span>
+      <div class="bar-track"><div class="bar-fill" id="node-b-bar"></div><span class="bar-pct" id="node-b-pct">&ndash;</span></div>
+    </div>
+    <div id="split-note">Waiting for data&hellip;</div>
+  </section>
+
+  <section class="card">
+    <h2>Totals</h2>
+    <div id="totals" class="statrow"><div class="stat"><div class="k">requests</div><div class="v">&ndash;</div></div></div>
+  </section>
+
+  <section class="card">
+    <h2>Backends</h2>
+    <div id="backends" class="backend-grid"><div class="be">connecting&hellip;</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Requests by endpoint</h2>
+    <table id="endpoints">
+      <thead><tr><th>Path</th><th class="num">requests</th></tr></thead>
+      <tbody><tr><td colspan="2">&ndash;</td></tr></tbody>
+    </table>
+  </section>
+</main>
+<footer id="meta">Hermes monitor &middot; real-time data from <code>GET /metrics</code></footer>
+
+<script>
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+var state = { last: null, offline: false, timer: null };
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function fmtDur(sec) {
+  sec = Math.max(0, Math.floor(sec || 0));
+  var d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600),
+      m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  if (d) return d + "d " + h + "h";
+  if (h) return h + "h " + m + "m";
+  if (m) return m + "m " + s + "s";
+  return s + "s";
+}
+function fmtTs(t) {
+  if (!t) return "\u2014";
+  return new Date(t * 1000).toLocaleTimeString();
+}
+function baseUrl() { return $("endpoint").value.trim().replace(/\/+$/, ""); }
+function savePrefs() {
+  try { localStorage.setItem("hermes.prefs", JSON.stringify({
+    ep: $("endpoint").value.trim(), iv: $("interval").value })); } catch (e) {}
+}
+function loadPrefs() {
+  try {
+    var p = JSON.parse(localStorage.getItem("hermes.prefs") || "null");
+    if (p && p.ep) { $("endpoint").value = p.ep; $("interval").value = p.iv || 3; }
+  } catch (e) {}
+}
+function setPill(text, cls) {
+  var el = $("conn");
+  el.textContent = text;
+  el.className = "pill " + (cls || "");
+}
+function stat(k, v, cls) {
+  return '<div class="stat ' + (cls || "") + '"><div class="k">' + esc(k) +
+         '</div><div class="v">' + esc(v) + "</div></div>";
+}
+
+/* Real traffic split: bar width = backend share of total routed requests,
+   taken straight from /metrics (no random simulation). */
+function setBar(barId, pctId, dotId, be) {
+  var bar = $(barId), pct = $(pctId), dot = $(dotId);
+  if (!be) {
+    bar.style.width = "0%";
+    bar.classList.add("down");
+    pct.textContent = "\u2014 (no data)";
+    dot.className = "dot";
+    return;
+  }
+  bar.classList.toggle("down", !be.healthy);
+  dot.className = "dot " + (be.healthy ? "up" : "down");
+  var share = be.share || 0;
+  var w = be.requests > 0 ? Math.max(share * 100, 1.5) : 0;
+  bar.style.width = Math.min(100, w) + "%";
+  var lat = be.avg_latency_ms != null ? be.avg_latency_ms.toFixed(0) + "ms" : "\u2014";
+  pct.textContent = (share * 100).toFixed(1) + "% \u00b7 " + be.requests +
+    " req \u00b7 " + lat + (be.healthy ? "" : " \u00b7 DOWN");
+}
+function backendCard(b) {
+  var models = (b.models || []).map(function (m) {
+    return "<code>" + esc(m) + "</code>";
+  }).join(" ");
+  var probe = b.healthy
+    ? '<div class="url">healthy &middot; probe ' +
+      esc(b.health_latency_ms != null ? b.health_latency_ms.toFixed(0) + "ms" : "\u2014") +
+      " &middot; last check " + esc(fmtTs(b.last_check)) + "</div>"
+    : '<div class="url" style="color:var(--red)">DOWN &middot; ' + esc(b.health_failures) +
+      " consecutive probe failures</div>";
+  return '<div class="be">' +
+    '<div class="top"><span class="dot ' + (b.healthy ? "up" : "down") + '"></span>' +
+    '<span class="name">' + esc(b.name) + "</span>" +
+    '<span class="url">' + esc(b.url) + " \u00b7 weight " + esc(b.weight) + "</span></div>" +
+    probe +
+    '<div class="kv">' +
+    stat("requests", b.requests) +
+    stat("ok", b.ok) +
+    stat("errors", b.errors, b.errors ? "bad" : "") +
+    stat("fallbacks", b.fallbacks) +
+    stat("in-flight", b.inflight) +
+    stat("avg lat", b.avg_latency_ms != null ? b.avg_latency_ms.toFixed(0) + "ms" : "\u2014") +
+    stat("last ok", fmtTs(b.last_ok)) +
+    stat("status", b.status) +
+    "</div>" +
+    (b.last_error ? '<div class="err">last error: ' + esc(b.last_error) + "</div>" : "") +
+    (models ? '<div class="models">models: ' + models + "</div>" : "") +
+    "</div>";
+}
+
+function render(m) {
+  state.last = m;
+  var T = m.totals;
+  $("totals").innerHTML =
+    stat("requests", T.requests) +
+    stat("ok", T.ok) +
+    stat("errors", T.errors, T.errors ? "bad" : "") +
+    stat("fallbacks", T.fallbacks) +
+    stat("all-failed", T.all_failed, T.all_failed ? "bad" : "") +
+    stat("pinned", T.pinned) +
+    stat("model-routed", T.model_routed) +
+    stat("streamed", T.streamed) +
+    stat("req/min", (T.requests_per_min || 0).toFixed(1)) +
+    stat("uptime", fmtDur(m.uptime_seconds));
+  var byName = {};
+  (m.backends || []).forEach(function (b) { byName[b.name] = b; });
+  var a = byName["nvidia"] || (m.backends || [])[0];
+  var b = byName["intel-arc"] || (m.backends || [])[1];
+  setBar("node-a-bar", "node-a-pct", "node-a-dot", a);
+  setBar("node-b-bar", "node-b-pct", "node-b-dot", b);
+  $("split-note").textContent =
+    "Live share of " + T.requests + " routed requests (strategy: " + m.strategy +
+    "). Bars turn red when a backend is down.";
+  $("backends").innerHTML =
+    (m.backends || []).map(backendCard).join("") || '<div class="be">no backends</div>';
+  var rows = Object.keys(T.by_endpoint || {}).map(function (k) {
+    return "<tr><td>" + esc(k) + '</td><td class="num">' + T.by_endpoint[k] + "</td></tr>";
+  }).join("");
+  $("endpoints").tBodies[0].innerHTML = rows || '<tr><td colspan="2">\u2014</td></tr>';
+  $("meta").textContent =
+    "Hermes v" + m.version + " \u00b7 strategy " + m.strategy +
+    " \u00b7 generated " + new Date((m.generated_at || 0) * 1000).toLocaleTimeString() +
+    " \u00b7 polling every " + $("interval").value + "s";
+}
+
+function renderOffline(err) {
+  state.offline = true;
+  setPill("OFFLINE", "bad");
+  $("split-note").textContent =
+    "Cannot reach Hermes at " + baseUrl() + " (" + esc((err && err.message) || err) +
+    ") \u2014 showing last known data. Check the container / hermes.service.";
+  if (state.last) render(state.last);  // keep last known values; pill stays OFFLINE
+}
+function poll() {
+  var t0 = performance.now();
+  fetch(baseUrl() + "/metrics", { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (m) {
+      state.offline = false;
+      render(m);
+      setPill("LIVE \u00b7 " + Math.round(performance.now() - t0) + "ms", "ok");
+    })
+    .catch(function (e) { renderOffline(e); })
+    .then(function () {
+      clearTimeout(state.timer);
+      var iv = Math.min(60, Math.max(1, parseInt($("interval").value, 10) || 3));
+      state.timer = setTimeout(poll, iv * 1000);
+    });
+}
+
+$("refresh").addEventListener("click", function () { poll(); });
+$("endpoint").addEventListener("change", function () { savePrefs(); poll(); });
+$("interval").addEventListener("change", function () { savePrefs(); poll(); });
+
+loadPrefs();
+poll();
+</script>
+</body>
+</html>
