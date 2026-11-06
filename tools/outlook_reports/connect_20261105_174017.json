@@ -1,0 +1,8 @@
+{
+  "diagnostics": [
+    "Outlook version: 16.0.0.20326",
+    "accounts: ['digitel303@comcast.net']",
+    "inbox: Inbox (\\\\digitel303@comcast.net\\Inbox)",
+    "WARNING: this Outlook build/registration does not expose the Rules automation API (MAPIFolder.Rules missing; Application has no CreateRule). Nothing to audit or apply here."
+  ]
+}
