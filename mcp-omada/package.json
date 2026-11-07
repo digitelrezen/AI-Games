@@ -1,0 +1,19 @@
+{
+  "name": "mcp-omada",
+  "version": "1.0.0",
+  "description": "MCP server for TP-Link Omada SDN controller - sites, devices, clients (Open API)",
+  "type": "module",
+  "bin": {
+    "mcp-omada": "./index.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

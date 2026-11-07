@@ -1,0 +1,409 @@
+{
+  "generated": "2026-11-05T21:46:26",
+  "rule_count_after": 32,
+  "created": [
+    {
+      "rule": "Wildcard - Crap",
+      "folder": "Crap",
+      "status": "created",
+      "patterns": [
+        "aliexpress.com",
+        "aliexpress",
+        "comedy works",
+        "discounttire.com",
+        "discount tire",
+        "ftd.com",
+        "garlic knot",
+        "ikea.com",
+        "ikea",
+        "life is good",
+        "men's wearhouse",
+        "mens wearhouse",
+        "omhasteaks.com",
+        "omhasteaks.net",
+        "omaha steak",
+        "providentmetals.com",
+        "provident metals",
+        "redrobin.com",
+        "red robin",
+        "standard restaurant supply",
+        "hcg shotss",
+        "vision first eye care",
+        "ispring",
+        "spores101.com",
+        "azure standard"
+      ]
+    },
+    {
+      "rule": "Wildcard - Doctor stuff",
+      "folder": "Doctor stuff",
+      "status": "created",
+      "patterns": [
+        "adventhealth.com",
+        "adventhealth",
+        "questdiagnostics.com",
+        "quest diagnostics",
+        "envision",
+        "health images",
+        "radiology",
+        "integrated ear nose",
+        "tps pharmacy",
+        "us anesthesia",
+        "anesthesia partners",
+        "healthipass.com",
+        "paymydoc.net"
+      ]
+    },
+    {
+      "rule": "Wildcard - home depot",
+      "folder": "home depot",
+      "status": "created",
+      "patterns": [
+        "homedepot.com",
+        "homedepot",
+        "home depot",
+        "delta mechanical",
+        "angela giessinger",
+        "destani"
+      ]
+    },
+    {
+      "rule": "Wildcard - Gun stuff",
+      "folder": "Gun stuff",
+      "status": "created",
+      "patterns": [
+        "2awarehouse.com",
+        "2a warehouse",
+        "atlanticfirearms.com",
+        "atlantic firearms",
+        "classic firearms",
+        "psausa.com",
+        "palmetto state armory",
+        "tanner gun show"
+      ]
+    },
+    {
+      "rule": "Wildcard - Vonage",
+      "folder": "Vonage",
+      "status": "created",
+      "patterns": [
+        "vonage.com",
+        "vonage"
+      ]
+    },
+    {
+      "rule": "Wildcard - Guitar",
+      "folder": "Guitar",
+      "status": "created",
+      "patterns": [
+        "guitarcenter.com",
+        "guitar center",
+        "guitarfetish.com",
+        "guitar fetish",
+        "musiciansfriend.com",
+        "musician's friend",
+        "sologuitars.com",
+        "solo guitars",
+        "guitar"
+      ]
+    },
+    {
+      "rule": "Wildcard - Microcenter",
+      "folder": "Microcenter",
+      "status": "created",
+      "patterns": [
+        "microcenter.com",
+        "micro center"
+      ]
+    },
+    {
+      "rule": "Wildcard - Xfinity",
+      "folder": "Xfinity",
+      "status": "created",
+      "patterns": [
+        "xfinity.com",
+        "xfinity",
+        "yahoo mail"
+      ]
+    },
+    {
+      "rule": "Wildcard - ASUS",
+      "folder": "ASUS",
+      "status": "created",
+      "patterns": [
+        "asus.com",
+        "asus"
+      ]
+    },
+    {
+      "rule": "Wildcard - Ankarsrum",
+      "folder": "Ankarsrum",
+      "status": "created",
+      "patterns": [
+        "ankarsrum"
+      ]
+    },
+    {
+      "rule": "Wildcard - Bestbuy",
+      "folder": "Bestbuy",
+      "status": "created",
+      "patterns": [
+        "bestbuy.com",
+        "best buy"
+      ]
+    },
+    {
+      "rule": "Wildcard - Ebay",
+      "folder": "Ebay",
+      "status": "created",
+      "patterns": [
+        "ebay.com",
+        "ebay"
+      ]
+    },
+    {
+      "rule": "Wildcard - Intel",
+      "folder": "Intel",
+      "status": "created",
+      "patterns": [
+        "intel.com",
+        "intel"
+      ]
+    },
+    {
+      "rule": "Wildcard - Jenise",
+      "folder": "Jenise",
+      "status": "created",
+      "patterns": [
+        "jenise",
+        "jenes76"
+      ]
+    },
+    {
+      "rule": "Wildcard - Seagate",
+      "folder": "Seagate",
+      "status": "created",
+      "patterns": [
+        "seagate.com",
+        "seagate"
+      ]
+    },
+    {
+      "rule": "Wildcard - Twitch",
+      "folder": "Twitch",
+      "status": "created",
+      "patterns": [
+        "twitch.tv",
+        "twitch"
+      ]
+    },
+    {
+      "rule": "Wildcard - steam",
+      "folder": "steam",
+      "status": "created",
+      "patterns": [
+        "steam"
+      ]
+    },
+    {
+      "rule": "Wildcard - Bowley Lock",
+      "folder": "Bowley Lock",
+      "status": "created",
+      "patterns": [
+        "bowley lock"
+      ]
+    },
+    {
+      "rule": "Wildcard - CD keys",
+      "folder": "CD keys",
+      "status": "created",
+      "patterns": [
+        "cjs cd keys"
+      ]
+    },
+    {
+      "rule": "Wildcard - EA",
+      "folder": "EA",
+      "status": "created",
+      "patterns": [
+        "@ea.com",
+        "electronic arts"
+      ]
+    },
+    {
+      "rule": "Wildcard - Fractal Design",
+      "folder": "Fractal Design",
+      "status": "created",
+      "patterns": [
+        "fractal-design.com",
+        "fractal design"
+      ]
+    },
+    {
+      "rule": "Wildcard - Newegg",
+      "folder": "Newegg",
+      "status": "created",
+      "patterns": [
+        "newegg.com",
+        "newegg"
+      ]
+    },
+    {
+      "rule": "Wildcard - microsoft",
+      "folder": "microsoft",
+      "status": "created",
+      "patterns": [
+        "microsoft account",
+        "account.microsoft.com",
+        "@microsoft.com"
+      ]
+    },
+    {
+      "rule": "Wildcard - yahoo",
+      "folder": "yahoo",
+      "status": "created",
+      "patterns": [
+        "yahoo.com",
+        "yahoo"
+      ]
+    }
+  ],
+  "skipped_exists": [],
+  "folder_missing": [],
+  "failed": [],
+  "final_rules": [
+    {
+      "name": "Wildcard - yahoo",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - microsoft",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Newegg",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Fractal Design",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - EA",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - CD keys",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Bowley Lock",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - steam",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Twitch",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Seagate",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Jenise",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Intel",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Ebay",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Bestbuy",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Ankarsrum",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - ASUS",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Xfinity",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Microcenter",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Guitar",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Vonage",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Gun stuff",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - home depot",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Doctor stuff",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Crap",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Network",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - UPS",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - USPS",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Samsung",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Bills",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Amazon",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - AMEX",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - AFW",
+      "enabled": true
+    }
+  ],
+  "notes": [
+    "Conditions-only rules; Move-to-Folder target NOT set (COM setter is a silent no-op on this build). User sets each folder in the Manage Rules & Alerts UI.",
+    "No gmail.com wildcard (per user: friends use gmail).",
+    "Pattern style: bare domain = whole-domain wildcard; other strings = case-insensitive substring of sender name/address."
+  ]
+}

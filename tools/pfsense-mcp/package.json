@@ -1,0 +1,19 @@
+{
+  "name": "pfsense-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for pfSense firewall management - logs, status, rules, and diagnostics",
+  "type": "module",
+  "bin": {
+    "pfsense-mcp": "./index.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

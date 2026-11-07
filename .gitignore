@@ -1,9 +1,131 @@
-Builds/
-.tools/
+# =============================================================================
+# AI-GAMES .gitignore
+# Keep: game source, tracked assets, docs, scripts, MCP server source
+# Never commit: secrets, env files, dependencies, build/backup output, logs,
+#               Python bytecode, downloaded binaries
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
 node_modules/
-# shared art + generated previews stay out of git; the game's own asset PNGs are tracked
+bower_components/
+.jspm/
+
+# -----------------------------------------------------------------------------
+# Local projects / folders that do NOT belong in the AI-GAMES repo
+# -----------------------------------------------------------------------------
+hermes-gateway/
+
+# -----------------------------------------------------------------------------
+# Environment files & secrets  (NEVER commit)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+*.env
+!*.env.example
+.env.local
+.env.*.local
+
+# Key / certificate / credential / private-material files
+*.pem
+*.key
+*.p12
+*.pfx
+*.der
+*.crt
+*.keystore
+*.jks
+*.asc
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_ecdsa.*
+secrets/
+**/secrets/
+*.secret
+credentials.json
+service-account*.json
+*.token
+
+# -----------------------------------------------------------------------------
+# Builds & backups
+# -----------------------------------------------------------------------------
+Builds/
+backups/
+**/backups/
+dist/
+out/
+*.cfg
+*.bak
+*.backup
+*.backup.*
+*.old
+*.tmp
+
+# -----------------------------------------------------------------------------
+# Logs
+# -----------------------------------------------------------------------------
+*.log
+logs/
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log.*
+
+# -----------------------------------------------------------------------------
+# Python bytecode & virtualenvs
+# -----------------------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.pytype/
+*.egg-info/
+.venv/
+venv/
+.env/
+
+# -----------------------------------------------------------------------------
+# Downloaded / built binaries (installers, etc.)
+# -----------------------------------------------------------------------------
+*.exe
+*.msi
+*.appx
+*.dmg
+
+# -----------------------------------------------------------------------------
+# Local tooling / dev scratch (existing game-local rules)
+# -----------------------------------------------------------------------------
+.tools/
+tools/.*.txt
+tools/_*.txt
+# One-off debug/scratch probes (contain hardcoded credentials - keep local only)
+tools/omada_*
+tools/verify2.py
+
+# -----------------------------------------------------------------------------
+# OS / editor cruft
+# -----------------------------------------------------------------------------
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+*.code-workspace
+
+# -----------------------------------------------------------------------------
+# Images: shared/generated art stays out of git; the game's own asset PNGs are
+# intentionally tracked.
+# -----------------------------------------------------------------------------
 *.png
 !Kitty Vs Everything/assets/*.png
-Thumbs.db
-# temp debug dumps (game-local tools/)
-tools/.*.txt

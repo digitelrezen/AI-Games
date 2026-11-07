@@ -1,0 +1,13 @@
+{
+  "source_report": "connect_20261105_193644.json",
+  "rule_api_available": null,
+  "reported_rule_count": null,
+  "total_rules_in_mailbox": null,
+  "groups": [],
+  "delete_names": [],
+  "keep_names": [],
+  "delete_count": 0,
+  "keep_count": 0,
+  "keep_non_sender": [],
+  "keep_nomatch": []
+}

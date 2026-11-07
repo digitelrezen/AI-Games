@@ -552,12 +552,29 @@ def connect():
     ipath, _ = safe_get(inbox, "FullFolderPath")
     diags.append(f"inbox: {iname} ({ipath})")
 
-    rules, ok = safe_get(inbox, "Rules")
-    if not ok or rules is None:
+    # Rules API: the canonical entry point is MAPIStore.GetRules().
+    # NOTE: MAPIFolder has NO Rules property in any Outlook build — the
+    # earlier check of inbox.Rules was a false negative that made this
+    # tool (and downstream diagnostics) wrongly conclude the Rules API
+    # was unavailable. Try the store method first, then legacy fallback.
+    rules = None
+    store, ok = safe_get(ns, "DefaultStore")
+    if ok:
+        getrules, ok2 = safe_get(store, "GetRules")
+        if ok2:
+            try:
+                rules = getrules()
+            except Exception:
+                rules = None
+    if rules is None:
+        rules, ok = safe_get(inbox, "Rules")
+        if not ok or rules is None:
+            rules = None
+    if rules is None:
         diags.append(
-            "WARNING: this Outlook build/registration does not expose the "
-            "Rules automation API (MAPIFolder.Rules missing; Application has "
-            "no CreateRule). Nothing to audit or apply here."
+            "WARNING: Rules automation API unavailable (neither "
+            "MAPIStore.GetRules nor MAPIFolder.Rules worked). "
+            "Nothing to audit or apply here."
         )
         return outlook, ns, inbox, None, diags
     count, ok = safe_get(rules, "Count")

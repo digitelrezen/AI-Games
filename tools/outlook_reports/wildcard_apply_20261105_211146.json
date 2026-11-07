@@ -1,0 +1,148 @@
+{
+  "generated": "2026-11-05T21:11:46",
+  "rule_count_after": 8,
+  "created": [
+    {
+      "rule": "Wildcard - AFW",
+      "folder": "AFW",
+      "status": "created",
+      "patterns": [
+        "afw.com",
+        "american furniture warehouse",
+        "afwcs"
+      ]
+    },
+    {
+      "rule": "Wildcard - AMEX",
+      "folder": "AMEX",
+      "status": "created",
+      "patterns": [
+        "american express",
+        "aexp.com",
+        "americanexpress.com"
+      ]
+    },
+    {
+      "rule": "Wildcard - Amazon",
+      "folder": "Amazon",
+      "status": "created",
+      "patterns": [
+        "amazon.com",
+        "amazonservices.com",
+        "amazon"
+      ]
+    },
+    {
+      "rule": "Wildcard - Bills",
+      "folder": "Bills",
+      "status": "created",
+      "patterns": [
+        "paypal.com",
+        "paypal",
+        "etrade.com",
+        "e*trade",
+        "e-trade",
+        "xcelenergy.com",
+        "xcel energy",
+        "statefarm.com",
+        "state farm",
+        "rocketmortgage.com",
+        "rocket mortgage",
+        "rocket loans",
+        "pnc.com",
+        "pnc",
+        "social security",
+        "zelle",
+        "id.me",
+        "jbm"
+      ]
+    },
+    {
+      "rule": "Wildcard - Samsung",
+      "folder": "Samsung",
+      "status": "created",
+      "patterns": [
+        "samsung.com",
+        "samsungusa.com",
+        "samsung",
+        "rxo.com",
+        "assurant"
+      ]
+    },
+    {
+      "rule": "Wildcard - USPS",
+      "folder": "USPS",
+      "status": "created",
+      "patterns": [
+        "usps.com",
+        "informeddelivery",
+        "u.s. postal service",
+        "usps"
+      ]
+    },
+    {
+      "rule": "Wildcard - UPS",
+      "folder": "UPS",
+      "status": "created",
+      "patterns": [
+        "ups.com",
+        "id.ups.com"
+      ]
+    },
+    {
+      "rule": "Wildcard - Network",
+      "folder": "Network",
+      "status": "created",
+      "patterns": [
+        "nordvpn.com",
+        "nord",
+        "no-ip.com",
+        "no-ip",
+        "domain.com",
+        "tp-link.com",
+        "tp-link",
+        "network solutions"
+      ]
+    }
+  ],
+  "skipped": [],
+  "final_rules": [
+    {
+      "name": "Wildcard - Network",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - UPS",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - USPS",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Samsung",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Bills",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - Amazon",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - AMEX",
+      "enabled": true
+    },
+    {
+      "name": "Wildcard - AFW",
+      "enabled": true
+    }
+  ],
+  "notes": [
+    "No gmail.com wildcard created (per user: friends use gmail).",
+    "NordVPN routed to Network; American Express routed to AMEX.",
+    "One-off Network senders (Resideo, Emporia, G.Skill, Digitel Rezen, root) not wildcarded - re-add individually if needed."
+  ]
+}

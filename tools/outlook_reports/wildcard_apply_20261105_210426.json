@@ -1,0 +1,156 @@
+{
+  "generated": "2026-11-05T21:04:26",
+  "rule_count_after": 8,
+  "created": [],
+  "skipped": [
+    {
+      "rule": "Wildcard - AFW",
+      "folder": "AFW",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "afw.com",
+        "american furniture warehouse",
+        "afwcs"
+      ]
+    },
+    {
+      "rule": "Wildcard - AMEX",
+      "folder": "AMEX",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "american express",
+        "aexp.com",
+        "americanexpress.com"
+      ]
+    },
+    {
+      "rule": "Wildcard - Amazon",
+      "folder": "Amazon",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "amazon.com",
+        "amazonservices.com",
+        "amazon"
+      ]
+    },
+    {
+      "rule": "Wildcard - Bills",
+      "folder": "Bills",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "paypal.com",
+        "paypal",
+        "etrade.com",
+        "e*trade",
+        "e-trade",
+        "xcelenergy.com",
+        "xcel energy",
+        "statefarm.com",
+        "state farm",
+        "rocketmortgage.com",
+        "rocket mortgage",
+        "rocket loans",
+        "pnc.com",
+        "pnc",
+        "social security",
+        "zelle",
+        "id.me",
+        "jbm"
+      ]
+    },
+    {
+      "rule": "Wildcard - Samsung",
+      "folder": "Samsung",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "samsung.com",
+        "samsungusa.com",
+        "samsung",
+        "rxo.com",
+        "assurant"
+      ]
+    },
+    {
+      "rule": "Wildcard - USPS",
+      "folder": "USPS",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "usps.com",
+        "informeddelivery",
+        "u.s. postal service",
+        "usps"
+      ]
+    },
+    {
+      "rule": "Wildcard - UPS",
+      "folder": "UPS",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "ups.com",
+        "id.ups.com"
+      ]
+    },
+    {
+      "rule": "Wildcard - Network",
+      "folder": "Network",
+      "status": "failed",
+      "error": "com_error(-2147352571, 'Type mismatch.', None, 1)",
+      "patterns": [
+        "nordvpn.com",
+        "nord",
+        "no-ip.com",
+        "no-ip",
+        "domain.com",
+        "tp-link.com",
+        "tp-link",
+        "network solutions"
+      ]
+    }
+  ],
+  "final_rules": [
+    {
+      "name": "Wildcard - Network",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - UPS",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - USPS",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - Samsung",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - Bills",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - Amazon",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - AMEX",
+      "enabled": false
+    },
+    {
+      "name": "Wildcard - AFW",
+      "enabled": false
+    }
+  ],
+  "notes": [
+    "No gmail.com wildcard created (per user: friends use gmail).",
+    "NordVPN routed to Network; American Express routed to AMEX.",
+    "One-off Network senders (Resideo, Emporia, G.Skill, Digitel Rezen, root) not wildcarded - re-add individually if needed."
+  ]
+}
