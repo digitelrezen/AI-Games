@@ -16,6 +16,8 @@ bower_components/
 # Local projects / folders that do NOT belong in the AI-GAMES repo
 # -----------------------------------------------------------------------------
 hermes-gateway/
+# Vendored pentest-mcp clone (own .git + upstream remote) + sandbox venv + portable nmap
+mcp-pentest/
 
 # -----------------------------------------------------------------------------
 # Environment files & secrets  (NEVER commit)
