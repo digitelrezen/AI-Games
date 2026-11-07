@@ -1,0 +1,11 @@
+{
+  "name": "mcp-jellyfin",
+  "version": "1.0.0",
+  "description": "MCP server for Jellyfin media server - libraries, items, sessions, users",
+  "type": "module",
+  "bin": { "mcp-jellyfin": "./index.js" },
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.32.2" },
+  "engines": { "node": ">=18.0.0" }
+}
