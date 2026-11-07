@@ -481,14 +481,14 @@ async function handleToolCall(name, args) {
       output += "ID (short) | Type | Interface | Proto | Source | Dest | Port | Descr | Log\n";
       output += "---|---|---|---|---|---|---|---|---\n";
       for (const r of rules) {
-        const id = (r.id || r.uuid || "N/A").substring(0, 8);
-        const type = r.disabled ? `❌${r.type}` : r.type;
-        const iface = r.interface || "N/A";
-        const proto = (r.ipprotocol || "TCP").substring(0, 4);
-        const src = r.source?.address || r.source || "any";
-        const dst = r.destination?.address || r.destination || "any";
-        const port = r.destination_port || r.destination?.port || "";
-        const descr = (r.descr || "").substring(0, 30);
+        const id = String(r.id || r.uuid || "N/A").substring(0, 8);
+        const type = r.disabled ? `❌${String(r.type || "?")}` : String(r.type || "?");
+        const iface = String(r.interface || "N/A");
+        const proto = String(r.ipprotocol || "TCP").substring(0, 4);
+        const src = String(r.source?.address || r.source || "any");
+        const dst = String(r.destination?.address || r.destination || "any");
+        const port = String(r.destination_port || r.destination?.port || "");
+        const descr = String(r.descr || "").substring(0, 30);
         const log = r.log ? "✓" : "";
         output += `${id} | ${type} | ${iface} | ${proto} | ${src} | ${dst} | ${port} | ${descr} | ${log}\n`;
       }
